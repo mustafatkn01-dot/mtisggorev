@@ -7731,7 +7731,7 @@ window.addEventListener('resize', calMobInit);
 
   // ── Açılışta buluttan oku ──────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
-    ROOT.on('value')
+    ROOT.once('value')
       .then(snap => {
         const d = snap.val();
         if (d && Object.keys(d).length) {
@@ -7752,7 +7752,7 @@ window.addEventListener('resize', calMobInit);
   // ── Sekmeye geri dönünce tazele ────────────────────────────
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible' || !hazir) return;
-    ROOT.on('value').then(snap => {
+    ROOT.once('value').then(snap => {
       const d = snap.val();
       if (d && Object.keys(d).length) { uygula(d); yenidenCiz(); }
       nokta(true);
