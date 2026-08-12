@@ -3139,6 +3139,34 @@ const LIST_COLS = [
 ];
 let listFilters = {};   // colKey -> Set(seçili değerler)
 let openFilterCol = null;
+let openFilterColDir = { h: 'left' };   // sütun başlığı filtre kutusunun açılma yönü
+
+// Açılır kutunun (dropdown) ekranın neresinde kaldığına göre yukarı/aşağı,
+// sola/sağa açılması gerektiğini hesaplar — hem PC hem mobilde, sayfanın
+// en altında/en sağında olan satırlarda kutunun kesilmesini önler.
+function dropdownYonHesapla(ev, kutuYaklasikYukseklik, kutuYaklasikGenislik) {
+  const tetikleyici = ev && (ev.currentTarget || ev.target);
+  if (!tetikleyici || typeof tetikleyici.getBoundingClientRect !== 'function') {
+    return { v: 'down', h: 'left' };
+  }
+  const r = tetikleyici.getBoundingClientRect();
+  const altBosluk  = window.innerHeight - r.bottom;
+  const sagBosluk  = window.innerWidth  - r.left;
+  return {
+    v: altBosluk < (kutuYaklasikYukseklik || 260) ? 'up'    : 'down',
+    h: sagBosluk < (kutuYaklasikGenislik  || 200) ? 'right' : 'left'
+  };
+}
+// Hesaplanan yöne göre .lf-dropdown için satır-içi konum stili üretir.
+function dropdownPozStil(dir) {
+  const v = (dir && dir.v === 'up')
+    ? 'top:auto; bottom:100%; margin-top:0; margin-bottom:4px;'
+    : 'top:100%; bottom:auto; margin-top:2px; margin-bottom:0;';
+  const h = (dir && dir.h === 'right')
+    ? 'left:auto; right:0;'
+    : 'left:0; right:auto;';
+  return v + h;
+}
 
 function jsSafe(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
@@ -3159,8 +3187,10 @@ function getFilterOptions(colKey) {
   return uniq.map(v => ({ value:v, label:v }));
 }
 
-function toggleListFilterDD(colKey) {
-  openFilterCol = (openFilterCol === colKey) ? null : colKey;
+function toggleListFilterDD(colKey, ev) {
+  if (openFilterCol === colKey) { openFilterCol = null; render(); return; }
+  openFilterCol = colKey;
+  openFilterColDir = dropdownYonHesapla(ev, 260, 220);
   render();
 }
 function toggleListFilterVal(colKey, val) {
@@ -3177,7 +3207,7 @@ function clearListFilter(colKey) {
 function buildListFilterDropdown(colKey) {
   const selected = listFilters[colKey] || new Set();
   const options = getFilterOptions(colKey);
-  return `<div class="lf-dropdown" onclick="event.stopPropagation()">
+  return `<div class="lf-dropdown" style="${dropdownPozStil(openFilterColDir)}" onclick="event.stopPropagation()">
     ${selected.size > 0 ? `<div class="lf-clear" onclick="clearListFilter('${colKey}')">Tümünü Temizle (${selected.size})</div>` : ''}
     ${options.length === 0 ? '<div class="lf-empty">Değer yok</div>' : options.map(o => `
       <label class="lf-option">
@@ -3211,10 +3241,14 @@ function applyListFilters(list) {
 
 // ── Liste görünümünde satır içi hızlı düzenleme (Durum / Öncelik / Fabrika) ──
 let openInlineEdit = null; // örn: "status:123456"
+let openInlineEditDir = { v: 'down', h: 'left' };
 
-function toggleInlineEdit(kind, id) {
+function toggleInlineEdit(kind, id, ev) {
   const key = kind + ':' + id;
-  openInlineEdit = (openInlineEdit === key) ? null : key;
+  if (openInlineEdit === key) { openInlineEdit = null; render(); return; }
+  openInlineEdit = key;
+  const yaklasikYukseklik = kind === 'status' ? 300 : (kind === 'fab' ? 220 : 180);
+  openInlineEditDir = dropdownYonHesapla(ev, yaklasikYukseklik, 210);
   render();
 }
 
@@ -3256,7 +3290,7 @@ function toggleTaskFab(id, fabName) {
 }
 
 function buildInlineStatusDropdown(t) {
-  return `<div class="lf-dropdown" onclick="event.stopPropagation()">
+  return `<div class="lf-dropdown" style="${dropdownPozStil(openInlineEditDir)}" onclick="event.stopPropagation()">
     ${COLS.map(c => `<label class="lf-option" onclick="setTaskStatus('${t.id}','${c.id}')">
       <span class="lf-dot" style="background:${c.color}"></span>
       <span>${esc(c.label)}</span>
@@ -3272,7 +3306,7 @@ function buildInlinePrioDropdown(t) {
     { value:'low',    label:'⬇️ Düşük'  }
   ];
   const cur = t.prio || 'normal';
-  return `<div class="lf-dropdown" onclick="event.stopPropagation()">
+  return `<div class="lf-dropdown" style="${dropdownPozStil(openInlineEditDir)}" onclick="event.stopPropagation()">
     ${opts.map(o => `<label class="lf-option" onclick="setTaskPrio('${t.id}','${o.value}')">
       <span>${esc(o.label)}</span>
       ${cur===o.value ? '<span style="margin-left:auto;color:#378ADD;font-weight:700;">✓</span>' : ''}
@@ -3284,7 +3318,7 @@ function buildInlineFabDropdown(t) {
   const curFabs = (t.fabs && t.fabs.length) ? t.fabs : [];
   const allSelected = curFabs.length === 0;
   const opts = [{ name:'Tüm fabrikalar', color:'#888780' }, ...fabrikalar];
-  return `<div class="lf-dropdown" onclick="event.stopPropagation()">
+  return `<div class="lf-dropdown" style="${dropdownPozStil(openInlineEditDir)}" onclick="event.stopPropagation()">
     ${opts.map(f => {
       const checked = f.name === 'Tüm fabrikalar' ? allSelected : curFabs.includes(f.name);
       return `<label class="lf-option">
@@ -3371,7 +3405,7 @@ function renderListView(tasksToShow) {
     return `<th class="lv-th-filterable" style="position:relative">
       <div class="lv-th-inner">
         <span>${esc(col.label)}</span>
-        <span class="lf-icon ${activeCount ? 'active' : ''}" onclick="event.stopPropagation();toggleListFilterDD('${col.key}')">▾${activeCount ? `<span class="lf-badge">${activeCount}</span>` : ''}</span>
+        <span class="lf-icon ${activeCount ? 'active' : ''}" onclick="event.stopPropagation();toggleListFilterDD('${col.key}', event)">▾${activeCount ? `<span class="lf-badge">${activeCount}</span>` : ''}</span>
       </div>
       ${isOpen ? buildListFilterDropdown(col.key) : ''}
     </th>`;
@@ -3397,7 +3431,7 @@ function renderListView(tasksToShow) {
       <td class="lv-sno">${i+1}</td>
       <td class="lv-text">${cellEditable('text', t.id, t.text, esc(t.text))}</td>
       <td class="lv-nowrap" style="position:relative">
-        <div class="lv-editable" onclick="event.stopPropagation();toggleInlineEdit('status','${t.id}')">
+        <div class="lv-editable" onclick="event.stopPropagation();toggleInlineEdit('status','${t.id}', event)">
           <span class="lv-status-badge" style="background:${statusColor}22;color:${statusColor}">${esc(statusLabel)}</span>
           <span class="lv-edit-caret">▾</span>
         </div>
@@ -3409,14 +3443,14 @@ function renderListView(tasksToShow) {
       <td class="lv-nowrap">${cellEditable('acilis', t.id, t.acilis, t.acilis ? esc(t.acilis) : '<span class="lv-muted">—</span>')}</td>
       <td class="lv-nowrap ${terminCls?'lv-termin '+terminCls:''}">${cellEditable('termin', t.id, t.termin, t.termin ? esc(t.termin) : '<span class="lv-muted">—</span>')}</td>
       <td class="lv-nowrap" style="position:relative">
-        <div class="lv-editable" onclick="event.stopPropagation();toggleInlineEdit('prio','${t.id}')">
+        <div class="lv-editable" onclick="event.stopPropagation();toggleInlineEdit('prio','${t.id}', event)">
           <span class="lv-prio-badge" style="background:${pColor[prio]}22;color:${pColor[prio]}">${pLabel[prio]}</span>
           <span class="lv-edit-caret">▾</span>
         </div>
         ${openInlineEdit === 'prio:'+t.id ? buildInlinePrioDropdown(t) : ''}
       </td>
       <td class="lv-nowrap" style="position:relative">
-        <div class="lv-editable" onclick="event.stopPropagation();toggleInlineEdit('fab','${t.id}')">
+        <div class="lv-editable" onclick="event.stopPropagation();toggleInlineEdit('fab','${t.id}', event)">
           ${renderFabTags(t)}
           <span class="lv-edit-caret">▾</span>
         </div>
