@@ -1794,17 +1794,19 @@ html[data-tema="gokkusagi"] #topbar::after {
     <button onclick="topluOpen()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">📋 Toplu Bulgu Yapıştır</button>
     <button onclick="denetimPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
   </div>
-  <!-- Filtreler -->
-  <div style="flex-shrink:0;display:flex;gap:6px;padding:6px 14px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);background:var(--surface);">
-    <input id="dn-f-ara" placeholder="Bulgu ara..." oninput="denetimRender()"
-      style="flex:1;min-width:150px;padding:5px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"/>
-    <select id="dn-f-denetim" onchange="denetimRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;max-width:200px;"></select>
-    <select id="dn-f-fab" onchange="denetimRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
-    <div id="dn-f-durum" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-    <div id="dn-f-onem" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+  <!-- Gövde: filtreler + istatistik kartları + liste — tümü birlikte kaydırılır -->
+  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 14px 80px;display:flex;flex-direction:column;gap:10px;min-height:0;">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding-top:6px;">
+      <input id="dn-f-ara" placeholder="Bulgu ara..." oninput="denetimRender()"
+        style="flex:1;min-width:150px;padding:5px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"/>
+      <select id="dn-f-denetim" onchange="denetimRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;max-width:200px;"></select>
+      <select id="dn-f-fab" onchange="denetimRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
+      <div id="dn-f-durum" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+      <div id="dn-f-onem" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+    </div>
+    <div id="dn-stats" style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));"></div>
+    <div id="dn-body" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
-  <div id="dn-stats" style="flex-shrink:0;display:grid;gap:8px;padding:8px 14px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));"></div>
-  <div id="dn-body" style="flex:1;overflow:auto;padding:0 14px 80px;display:flex;flex-direction:column;gap:10px;min-height:0;"></div>
 </div>
 
 <!-- Denetim Ekle / Düzenle -->
@@ -1944,16 +1946,17 @@ html[data-tema="gokkusagi"] #topbar::after {
     <button onclick="kazaPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
     <button onclick="kazaOpenSettings()" title="Çalışma saati ayarı" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;">⚙️</button>
   </div>
-  <!-- Filtreler -->
-  <div style="flex-shrink:0;display:flex;gap:6px;padding:6px 14px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);background:var(--surface);">
-    <select id="kaza-f-yil" onchange="kazaRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
-    <div id="kaza-f-tur" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-    <select id="kaza-f-fab" onchange="kazaRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
-  </div>
-  <!-- İstatistik kartları -->
-  <div id="kaza-stats" style="flex-shrink:0;display:grid;gap:8px;padding:8px 14px;"></div>
-  <!-- Gövde: aylık grafik + liste -->
-  <div style="flex:1;overflow-y:auto;padding:0 14px 80px;">
+  <!-- Gövde: filtreler + istatistik kartları + aylık grafik + liste — tümü birlikte kaydırılır,
+       sadece yukarıdaki başlık/buton satırı sabit kalır -->
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 80px;">
+    <!-- Filtreler -->
+    <div style="display:flex;gap:6px;padding:6px 0;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);background:var(--bg);">
+      <select id="kaza-f-yil" onchange="kazaRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
+      <div id="kaza-f-tur" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+      <select id="kaza-f-fab" onchange="kazaRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
+    </div>
+    <!-- İstatistik kartları -->
+    <div id="kaza-stats" style="display:grid;gap:8px;padding:8px 0;"></div>
     <div id="kaza-chart" style="margin-bottom:12px;"></div>
     <div id="kaza-body" style="display:flex;flex-direction:column;gap:6px;"></div>
   </div>
@@ -2071,19 +2074,19 @@ html[data-tema="gokkusagi"] #topbar::after {
     <button onclick="perPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
     <button onclick="perOpenSettings()" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;" title="Ayarlar">⚙️</button>
   </div>
-  <!-- Stats -->
-  <!-- Arama & filtreleme -->
-  <div style="flex-shrink:0;display:flex;gap:6px;padding:6px 14px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);background:var(--surface);">
-    <input id="per-ara" placeholder="Görev, personel veya fabrika ara..." oninput="perRender()"
-      style="flex:1;min-width:170px;padding:5px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"/>
-    <select id="per-f-kisi" onchange="perRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
-    <select id="per-f-fab" onchange="perRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
-    <div id="per-f-durum" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-    <span id="per-sonuc" style="font-size:11px;color:var(--text3);white-space:nowrap;"></span>
+  <!-- Gövde: arama/filtre + istatistikler + görev listesi — tümü birlikte kaydırılır -->
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 80px;display:flex;flex-direction:column;gap:6px;">
+    <div style="flex-shrink:0;display:flex;gap:6px;padding-top:6px;flex-wrap:wrap;align-items:center;">
+      <input id="per-ara" placeholder="Görev, personel veya fabrika ara..." oninput="perRender()"
+        style="flex:1;min-width:170px;padding:5px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"/>
+      <select id="per-f-kisi" onchange="perRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
+      <select id="per-f-fab" onchange="perRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
+      <div id="per-f-durum" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+      <span id="per-sonuc" style="font-size:11px;color:var(--text3);white-space:nowrap;"></span>
+    </div>
+    <div id="per-stats" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    <div id="per-body" style="display:flex;flex-direction:column;gap:6px;"></div>
   </div>
-  <div id="per-stats" style="flex-shrink:0;display:flex;gap:8px;padding:6px 14px;flex-wrap:wrap;"></div>
-  <!-- Görev listesi -->
-  <div id="per-body" style="flex:1;overflow-y:auto;padding:8px 14px 80px;display:flex;flex-direction:column;gap:6px;"></div>
 </div><!-- /per-wrap -->
 </div><!-- /app -->
 
