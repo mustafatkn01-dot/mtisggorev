@@ -1244,7 +1244,7 @@ html[data-tema="gokkusagi"] #topbar::after {
 .vt-btn:hover { background:var(--surface2); }
 .vt-btn.on { background:#378ADD; color:#fff; }
 
-#list-view-wrap { flex:1; min-height:0; overflow:auto; padding:0 14px 12px; background:var(--bg); }
+#list-view-wrap { flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch; padding:0 14px 12px; background:var(--bg); }
 #list-table { width:100%; border-collapse:collapse; font-size:12px; background:var(--surface); }
 #list-table thead th {
   position: sticky; top: 0; z-index: 5;
@@ -5436,6 +5436,13 @@ function calTaskClick(id) {
   /* Board mobil: durum sütunları artık yan yana değil, alt alta (dikey) sıralanır.
      Tek sütun kaydırma/sekme sistemi devre dışı — tüm sütunlar aynı anda görünür. */
   #mob-col-nav { display: none !important; }
+
+  /* Liste görünümü mobilde: alt kısımda yüzen "+ Yeni Görev" butonunun (mob-fab)
+     son satırları kapatmasını / kaydırmayı OS kenar-jesti bölgesine denk getirmesini
+     önlemek için yeterli alt boşluk + daha akıcı (momentum) kaydırma */
+  #list-view-wrap { padding-bottom: 96px !important; -webkit-overflow-scrolling: touch !important; }
+  #list-tbody tr:last-child td { padding-bottom: 18px !important; }
+
   #board { flex-direction: column !important; gap: 12px !important; }
   .col {
     display: flex !important;
@@ -7627,17 +7634,27 @@ window.addEventListener('resize', calMobInit);
 
   // ── Yazma (undefined temizlenir, 400 ms geciktirilir) ──────
   const zamanlayici = {};
+  // Bu cihazda henüz buluta gönderilmemiş (400ms bekleme + istek sürüyor) yollar.
+  // Gerçek zamanlı dinleyici bu yollara ait veriyi, yazma bitene kadar YOK SAYAR —
+  // yoksa yeni eklenen bir görev, kendi bekleyen yazması tamamlanmadan gelen eski
+  // buluş anlık görüntüsü tarafından silinebilir (senkronun tamamen kopmasının nedeni buydu).
+  const yazimBekliyor = {};
   function temizle(v) {
     try { return JSON.parse(JSON.stringify(v === undefined ? null : v)); }
     catch (e) { return null; }
   }
   function yaz(yol, uretici) {
     if (!hazir) return;
+    yazimBekliyor[yol] = true;
     clearTimeout(zamanlayici[yol]);
     zamanlayici[yol] = setTimeout(() => {
       ROOT.child(yol).set(temizle(uretici()))
-        .then(() => nokta(true))
-        .catch(err => { console.error('Firebase yazma hatası (' + yol + '):', err); nokta(false); });
+        .then(() => { yazimBekliyor[yol] = false; nokta(true); })
+        .catch(err => {
+          yazimBekliyor[yol] = false;
+          console.error('Firebase yazma hatası (' + yol + '):', err);
+          nokta(false);
+        });
     }, 400);
   }
 
@@ -7676,10 +7693,13 @@ window.addEventListener('resize', calMobInit);
   }
 
   // ── Buluttan gelen veriyi uygula ───────────────────────────
+  // Not: bu cihazda o yol için gönderilmeyi bekleyen bir yazma varsa (yazimBekliyor[yol]),
+  // gelen bulut verisi o yol için ATLANIR — yoksa henüz gönderilmemiş yerel değişiklik
+  // eski bulut verisiyle ezilir ve hiç buluta ulaşmadan kaybolur.
   function uygula(d) {
-    if (Array.isArray(d.tasks)) doldur(tasks, d.tasks);
+    if (!yazimBekliyor['tasks'] && Array.isArray(d.tasks)) doldur(tasks, d.tasks);
 
-    if (d.settings) {
+    if (!yazimBekliyor['settings'] && d.settings) {
       const s = d.settings;
       doldur(COLS, s.cols);
       doldur(fabrikalar, s.fabrikalar);
@@ -7688,23 +7708,23 @@ window.addEventListener('resize', calMobInit);
       if (s.tema && typeof applyTema === 'function') applyTema(s.tema, false);
     }
 
-    if (Array.isArray(d.archive)) doldur(archived, d.archive);
-    if (d.takvim && typeof calReminders !== 'undefined') calReminders = d.takvim;
+    if (!yazimBekliyor['archive'] && Array.isArray(d.archive)) doldur(archived, d.archive);
+    if (!yazimBekliyor['takvim'] && d.takvim && typeof calReminders !== 'undefined') calReminders = d.takvim;
 
-    if (d.per) {
+    if (!yazimBekliyor['per'] && d.per) {
       doldur(perTasks,   d.per.tasks);
       doldur(perPersons, d.per.persons);
       doldur(perFabs,    d.per.fabs);
     }
-    if (d.kontrol) {
+    if (!yazimBekliyor['kontrol'] && d.kontrol) {
       doldur(kontrolItems, d.kontrol.items);
       doldur(kontrolFabs,  d.kontrol.fabs);
     }
-    if (d.kaza) {
+    if (!yazimBekliyor['kaza'] && d.kaza) {
       doldur(kazaItems, d.kaza.items);
       if (d.kaza.ayar) kazaAyar = d.kaza.ayar;
     }
-    if (Array.isArray(d.denetim)) doldur(denetimler, d.denetim);
+    if (!yazimBekliyor['denetim'] && Array.isArray(d.denetim)) doldur(denetimler, d.denetim);
 
     // Yerel kopyayı da güncelle (çevrimdışı açılışta veri kaybolmasın)
     try { lsSaveTasks(); lsSaveSettings(); } catch (e) {}
@@ -7729,27 +7749,31 @@ window.addEventListener('resize', calMobInit);
     window._fbSaveDenetim();
   }
 
-  // ── Açılışta buluttan oku ──────────────────────────────────
+  // ── CANLI DİNLEYİCİ: buluttaki HERHANGİ bir değişiklik anında buraya düşer ──
+  // (once yerine on kullanıyoruz — bağlantı açık kaldığı sürece Firebase
+  //  kendisi push ediyor, sayfa yenilemeye ya da sekme değişimine gerek yok)
+  let ilkOkumaBitti = false;
   window.addEventListener('DOMContentLoaded', () => {
-    ROOT.once('value')
-      .then(snap => {
-        const d = snap.val();
-        if (d && Object.keys(d).length) {
-          uygula(d);
-          hazir = true;
-          yenidenCiz();
-        } else {
-          ilkYukleme();          // bulut boş → yerel veriyi yukarı taşı
-        }
-        nokta(true);
-      })
-      .catch(err => {
-        console.error('Firebase okuma hatası:', err);
-        nokta(false, 'Bulut bağlantısı yok — veriler yalnızca bu cihazda');
-      });
+    ROOT.on('value', (snap) => {
+      const d = snap.val();
+      if (d && Object.keys(d).length) {
+        uygula(d);
+        hazir = true;
+        yenidenCiz();
+      } else if (!ilkOkumaBitti) {
+        ilkYukleme();          // bulut boş → yerel veriyi yukarı taşı (sadece ilk seferde)
+      }
+      ilkOkumaBitti = true;
+      nokta(true);
+    }, (err) => {
+      console.error('Firebase okuma hatası:', err);
+      nokta(false, 'Bulut bağlantısı yok — veriler yalnızca bu cihazda');
+    });
   });
 
-  // ── Sekmeye geri dönünce tazele ────────────────────────────
+  // ── Sekmeye geri dönünce yine de bir kez tazele ────────────
+  // (mobil tarayıcılar uzun süre arka plandayken soketi kapatabiliyor;
+  //  öne gelince anlık tutarlılık için ek güvence)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible' || !hazir) return;
     ROOT.once('value').then(snap => {
