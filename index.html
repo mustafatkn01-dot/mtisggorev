@@ -579,9 +579,10 @@ html, body { height: 100%; overflow: hidden;
 .modal-body { padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
 .mrow2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .mrow3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-.mfield { display:flex; flex-direction:column; gap:4px; }
+.mfield { display:flex; flex-direction:column; gap:4px; min-width:0; }
 .mfield label { font-size:11px; color:var(--text2); font-weight:500; }
 .mfield input, .mfield select, .mfield textarea {
+  width:100%; box-sizing:border-box; min-width:0;
   padding:7px 10px; font-size:12px;
   border:1px solid var(--border2); border-radius:var(--r);
   background:var(--bg); color:var(--text); outline:none; font-family:inherit;
@@ -5473,6 +5474,10 @@ function calTaskClick(id) {
   /* Board mobil: durum sütunları artık yan yana değil, alt alta (dikey) sıralanır.
      Tek sütun kaydırma/sekme sistemi devre dışı — tüm sütunlar aynı anda görünür. */
   #mob-col-nav { display: none !important; }
+
+  /* Kaza & Ramak Kala > Oran Hesabı Ayarları > aylık saat girişi:
+     dar ekranda 4 sütun yerine 2 sütun — her kutucuk rahat tıklanabilir kalsın */
+  #kaza-s-aylik { grid-template-columns: repeat(2, 1fr) !important; }
 
   /* Liste görünümü mobilde: alt kısımda yüzen "+ Yeni Görev" butonunun (mob-fab)
      son satırları kapatmasını / kaydırmayı OS kenar-jesti bölgesine denk getirmesini
