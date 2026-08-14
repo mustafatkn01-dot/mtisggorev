@@ -2,6 +2,11 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<!-- Tarayıcının bu sayfayı önbellekte eskitmesini engeller — her güncellemeden
+     sonra kullanıcıların "eski sürüm görünüyor" sorunu yaşamaması için. -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Görev Takip</title>
 <script>
@@ -7898,5 +7903,29 @@ window.addEventListener('resize', calMobInit);
   });
 })();
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════
+     YAZDIRMA GÜVENCESİ — bu blok dosyanın en sonunda olduğu için
+     CSS önceliğinde tema/koyu-mod kurallarının önüne geçer.
+     Amaç: Board (Durum Tablosu) raporu ve modül raporları (Kaza,
+     Kontroller, Denetim, Personel) her zaman TEMİZ BEYAZ arka planla
+     yazdırılsın — aktif tema (özellikle koyu tema) hiçbir zaman
+     yazdırma çıktısına karışmasın.
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+@media print {
+  html, body,
+  #app, #board-wrap, #board-scroll, #board,
+  #kaza-print, #modul-print, #denetim-print,
+  .kp-ozet div, .mp-meta, .dp-meta {
+    background: #fff !important;
+    background-color: #fff !important;
+  }
+  html, body, #app { color: #111 !important; }
+  /* Koyu tema aktifken bile yazdırma her zaman aydınlık kalsın */
+  * { color-scheme: light !important; }
+}
+</style>
+
 </body>
 </html>
