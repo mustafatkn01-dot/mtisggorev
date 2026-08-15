@@ -7148,13 +7148,13 @@ function kazaPrint() {
 
   const cizVeYazdir = () => {
     if (grafikTur && liste.length) {
-      const turMap = {};
-      liste.forEach(k => { const v = (k.yaralanma||'').trim() || 'Belirtilmemiş'; turMap[v] = (turMap[v]||0)+1; });
-      const turSirali = Object.entries(turMap).sort((a,b) => b[1]-a[1]);
+      const yilFiltreTur = document.getElementById('kaza-f-yil')?.value || 'tumu';
+      const turVeri = ksTurVeriHesapla(liste, yilFiltreTur);
+      const turTumDegerler = turVeri.datasets.flatMap(d => d.data);
       new Chart(document.getElementById('kp-canvas-tur').getContext('2d'), {
         type:'bar',
-        data:{ labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
-        options:{ ...ksBarOptions(turSirali.map(x=>x[1])), responsive:false, animation:false }
+        data:{ labels: turVeri.labels, datasets: turVeri.datasets },
+        options:{ ...ksBarOptions(turTumDegerler, !turVeri.tekYil), responsive:false, animation:false }
       });
     }
     if (grafikAy && liste.length) {
@@ -7249,7 +7249,7 @@ const ksDataLabelPlugin = {
       if (meta.hidden) return;
       meta.data.forEach((bar, index) => {
         const value = dataset.data[index];
-        if (value === undefined || value === null || value === 0) return;
+        if (value === undefined || value === null) return;
         ctx.save();
         ctx.fillStyle = '#333';
         ctx.font = '10px Arial, sans-serif';
@@ -7269,6 +7269,34 @@ const KS_YIL_RENKLERI = ['#378ADD','#C0392B','#27AE60','#E09000','#7F77DD','#16A
 // Aylık dağılım verisini hesaplar. "Tüm Yıllar" seçiliyse her yıl ayrı bir seri
 // (grup sütun, farklı renk) olarak döner; tek bir yıl seçiliyse mevcut tek-seri
 // davranışı aynen korunur (sütun genişlik yapısı değişmez).
+// Kaza/Hasar Türü dağılımını hesaplar. "Tüm Yıllar" seçiliyse X ekseni TÜM
+// yıllardaki türlerin BİRLEŞİMİ (union) olur — bir tür 2026'da 1, 2025'te 0 ise
+// 2025 serisinde o tür için açıkça 0 gösterilir (kategori listeden düşmez),
+// böylece yıllar arası karşılaştırma X ekseninde her zaman net olur.
+function ksTurVeriHesapla(liste, yilFiltre) {
+  if (yilFiltre !== 'tumu') {
+    const turMap = {};
+    liste.forEach(k => { const v = (k.yaralanma||'').trim() || 'Belirtilmemiş'; turMap[v] = (turMap[v]||0)+1; });
+    const turSirali = Object.entries(turMap).sort((a,b) => b[1]-a[1]);
+    return { tekYil:true, labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] };
+  }
+  const yillar = Array.from(new Set(liste.filter(k => k.tarih).map(k => k.tarih.slice(0,4)))).sort();
+  const turToplam = {};
+  liste.forEach(k => { const v = (k.yaralanma||'').trim() || 'Belirtilmemiş'; turToplam[v] = (turToplam[v]||0)+1; });
+  const turListesi = Object.entries(turToplam).sort((a,b) => b[1]-a[1]).map(x => x[0]); // birleşim, azalan sıralı
+  const datasets = yillar.map((yil, i) => {
+    const yilMap = {};
+    liste.forEach(k => {
+      if (k.tarih && k.tarih.startsWith(yil)) {
+        const v = (k.yaralanma||'').trim() || 'Belirtilmemiş';
+        yilMap[v] = (yilMap[v]||0)+1;
+      }
+    });
+    return { label: yil, data: turListesi.map(t => yilMap[t] || 0), backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:4 };
+  });
+  return { tekYil: (yillar.length <= 1), labels: turListesi, datasets };
+}
+
 function ksAylikVeriHesapla(liste, yilFiltre) {
   if (yilFiltre !== 'tumu') {
     const ayMap = new Array(12).fill(0);
@@ -7375,26 +7403,30 @@ function kazaStatsRender() {
 
   if (!liste.length) return;
 
-  // Kaza/Hasar Türüne göre sayım (Yaralanma/Hasar Türü alanı referans alınır)
+  // Kaza/Hasar Türüne göre sayım (Pareto için tek toplam seri her zaman gerekir)
   const turMap = {};
   liste.forEach(k => { const v = (k.yaralanma||'').trim() || 'Belirtilmemiş'; turMap[v] = (turMap[v]||0)+1; });
   const turEntries = Object.entries(turMap);
-  const turSirali  = turEntries.slice().sort((a,b) => b[1]-a[1]);
 
   // Aylara göre sayım (Pareto için tek toplam seri her zaman gerekir)
   const ayMap = new Array(12).fill(0);
   liste.forEach(k => { if (k.tarih) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
   const ayEntries = KS_AY_ISIM.map((ad,i) => [ad, ayMap[i]]);
 
+  const ksYilFiltre = document.getElementById('ks-f-yil')?.value || 'tumu';
+
+  // Kaza/Hasar Türü sütun grafiği — "Tüm Yıllar" seçiliyse her yıl ayrı renkli seri,
+  // X ekseni tüm yıllardaki türlerin birleşimi (eksik yıllarda 0 açıkça gösterilir)
+  const ksTurVeri = ksTurVeriHesapla(liste, ksYilFiltre);
+  const ksTurTumDegerler = ksTurVeri.datasets.flatMap(d => d.data);
   ksMakeChart('ks-canvas-tur', {
     type:'bar',
-    data:{ labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
-    options: ksBarOptions(turSirali.map(x=>x[1]))
+    data:{ labels: ksTurVeri.labels, datasets: ksTurVeri.datasets },
+    options: ksBarOptions(ksTurTumDegerler, !ksTurVeri.tekYil)
   });
   ksMakeChart('ks-canvas-tur-pareto', ksParetoConfig(ksParetoVerisi(turEntries)));
 
   // Aylara göre sütun grafiği — "Tüm Yıllar" seçiliyse her yıl ayrı renkli seri olarak gösterilir
-  const ksYilFiltre = document.getElementById('ks-f-yil')?.value || 'tumu';
   const ksAyVeri = ksAylikVeriHesapla(liste, ksYilFiltre);
   const ksAyTumDegerler = ksAyVeri.datasets.flatMap(d => d.data);
   ksMakeChart('ks-canvas-ay', {
