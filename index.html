@@ -837,6 +837,10 @@ html, body { height: 100%; overflow: hidden;
   body.print-kaza #kaza-print tr { break-inside:avoid; page-break-inside:avoid; }
   body.print-kaza #kaza-print .kp-ozet { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px; font-size:10px; }
   body.print-kaza #kaza-print .kp-ozet div { border:1px solid #ccc; padding:4px 8px; border-radius:4px; }
+  body.print-kaza #kaza-print .kp-charts { margin-top:22px; display:flex; flex-direction:column; gap:20px; }
+  body.print-kaza #kaza-print .kp-chart-block { break-inside:avoid; page-break-inside:avoid; page-break-before:auto; }
+  body.print-kaza #kaza-print .kp-chart-block h3 { font-size:12px; font-weight:700; color:#222; margin-bottom:8px; }
+  body.print-kaza #kaza-print .kp-chart-block canvas { width:100% !important; height:auto !important; max-width:100%; }
 }
 
 /* ── TALEP NO ROZETİ ── */
@@ -1987,7 +1991,7 @@ html[data-tema="gokkusagi"] #topbar::after {
     <div style="flex:1"></div>
     <button onclick="kazaOpenAdd()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#C0392B;color:#fff;cursor:pointer;">+ Olay Ekle</button>
     <button onclick="kazaImportAc()" style="padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">📥 Excel/CSV Yükle</button>
-    <button onclick="kazaPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
+    <button onclick="kazaPrintOpen()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
     <button onclick="kazaOpenStats()" title="İstatistik" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;">📊</button>
     <button onclick="kazaOpenSettings()" title="Çalışma saati ayarı" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;">⚙️</button>
   </div>
@@ -2111,6 +2115,33 @@ html[data-tema="gokkusagi"] #topbar::after {
       <div id="kaza-s-aylik-toplam" style="font-size:11px;color:var(--text2);margin-top:6px;"></div>
     </div>
     <button onclick="kazaSaveSettings()" style="padding:9px;background:#378ADD;color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;">Kaydet</button>
+  </div>
+</div>
+
+<!-- ── Kaza Rapor Yazdırma Seçenekleri (grafik ekleme) ── -->
+<div id="kaza-print-opts-bg" onclick="if(event.target===this)kazaPrintOptsClose()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:20px;width:380px;max-width:95vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-size:14px;font-weight:700;color:#222;">🖨 Rapor Seçenekleri</h3>
+      <button onclick="kazaPrintOptsClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button>
+    </div>
+    <div id="kaza-print-opts-meta" style="font-size:11px;color:#666;background:#f7f7f8;padding:8px 10px;border-radius:8px;line-height:1.5;"></div>
+    <div style="font-size:11.5px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;">
+      Rapora eklenecek grafikler <span style="font-weight:400;text-transform:none;color:#999;">(opsiyonel)</span>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#333;cursor:pointer;padding:8px 10px;border:1px solid #e2e2e5;border-radius:8px;">
+      <input type="checkbox" id="kp-opt-tur" style="width:15px;height:15px;accent-color:#378ADD;cursor:pointer;">
+      Kaza / Hasar Türüne Göre Grafik
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#333;cursor:pointer;padding:8px 10px;border:1px solid #e2e2e5;border-radius:8px;">
+      <input type="checkbox" id="kp-opt-ay" style="width:15px;height:15px;accent-color:#378ADD;cursor:pointer;">
+      Aylara Göre Grafik
+    </label>
+    <div style="font-size:10.5px;color:#999;">Hiçbiri işaretlenmezse rapor sadece tablo olarak yazdırılır.</div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button onclick="kazaPrintOptsClose()" style="flex:1;padding:9px;background:#f0f0f2;color:#333;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">İptal</button>
+      <button onclick="kazaPrint()" style="flex:2;padding:9px;background:#378ADD;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">🖨 Yazdır</button>
+    </div>
   </div>
 </div>
 
@@ -7041,7 +7072,24 @@ function kazaImportKaydet() {
 }
 
 // ── Yazdırma / PDF ──────────────────────────────────────────
+function kazaPrintOpen() {
+  const yil = document.getElementById('kaza-f-yil')?.value || 'Tüm yıllar';
+  const fab = document.getElementById('kaza-f-fab')?.value || 'Tüm fabrikalar';
+  const liste = kazaFiltreli();
+  document.getElementById('kaza-print-opts-meta').innerHTML =
+    `<b>Dönem:</b> ${esc(yil)} &nbsp;·&nbsp; <b>Kapsam:</b> ${esc(fab)} &nbsp;·&nbsp; <b>Kayıt sayısı:</b> ${liste.length}`;
+  document.getElementById('kp-opt-tur').checked = false;
+  document.getElementById('kp-opt-ay').checked  = false;
+  document.getElementById('kaza-print-opts-bg').style.display = 'flex';
+}
+function kazaPrintOptsClose() {
+  document.getElementById('kaza-print-opts-bg').style.display = 'none';
+}
+
 function kazaPrint() {
+  const grafikTur = document.getElementById('kp-opt-tur')?.checked;
+  const grafikAy  = document.getElementById('kp-opt-ay')?.checked;
+
   const liste = kazaFiltreli().sort((a,b) => (a.tarih||'').localeCompare(b.tarih||''));
   const yil   = document.getElementById('kaza-f-yil')?.value || 'Tüm yıllar';
   const fab   = document.getElementById('kaza-f-fab')?.value || 'Tüm fabrikalar';
@@ -7090,10 +7138,43 @@ function kazaPrint() {
           </tr>`;
         }).join('') || '<tr><td colspan="9">Kayıt yok</td></tr>'}
       </tbody>
-    </table>`;
-  document.body.classList.add('print-kaza');
-  window.print();
-  setTimeout(() => document.body.classList.remove('print-kaza'), 800);
+    </table>
+    ${(grafikTur || grafikAy) && liste.length ? `<div class="kp-charts">
+      ${grafikTur ? `<div class="kp-chart-block"><h3>Kaza / Hasar Türüne Göre Dağılım</h3><canvas id="kp-canvas-tur" width="900" height="360"></canvas></div>` : ''}
+      ${grafikAy  ? `<div class="kp-chart-block"><h3>Aylara Göre Kaza / Olay Dağılımı</h3><canvas id="kp-canvas-ay" width="900" height="360"></canvas></div>` : ''}
+    </div>` : ''}`;
+
+  kazaPrintOptsClose();
+
+  const cizVeYazdir = () => {
+    if (grafikTur && liste.length) {
+      const turMap = {};
+      liste.forEach(k => { const v = (k.yaralanma||'').trim() || 'Belirtilmemiş'; turMap[v] = (turMap[v]||0)+1; });
+      const turSirali = Object.entries(turMap).sort((a,b) => b[1]-a[1]);
+      new Chart(document.getElementById('kp-canvas-tur').getContext('2d'), {
+        type:'bar',
+        data:{ labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
+        options:{ ...ksBarOptions(turSirali.map(x=>x[1])), responsive:false, animation:false }
+      });
+    }
+    if (grafikAy && liste.length) {
+      const ayMap = new Array(12).fill(0);
+      liste.forEach(k => { if (k.tarih) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
+      const ayEntries = KS_AY_ISIM.map((ad,i) => [ad, ayMap[i]]);
+      new Chart(document.getElementById('kp-canvas-ay').getContext('2d'), {
+        type:'bar',
+        data:{ labels: ayEntries.map(x=>x[0]), datasets:[{ label:'Olay', data: ayEntries.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
+        options:{ ...ksBarOptions(ayEntries.map(x=>x[1])), responsive:false, animation:false }
+      });
+    }
+    document.body.classList.add('print-kaza');
+    // Grafiklerin canvas'a çizilmesi için bir sonraki kareyi bekle, sonra yazdır
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.print();
+      setTimeout(() => document.body.classList.remove('print-kaza'), 800);
+    }));
+  };
+  cizVeYazdir();
 }
 
 // ── Kaza & Ramak Kala İstatistik Paneli ──────────────────────
