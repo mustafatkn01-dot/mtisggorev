@@ -1117,6 +1117,44 @@ html[data-tema="gokkusagi"] #topbar::after {
 }
 .stat-filter-btn.on { background:#378ADD; color:#fff; border-color:#378ADD; }
 
+/* ── Kaza & Ramak Kala İstatistik Paneli ── */
+#kaza-stats-panel-wrap {
+  display:none; position:fixed; inset:0;
+  background:#fff !important; z-index:56; flex-direction:column;
+}
+#kaza-stats-panel-wrap.on { display:flex; }
+#kaza-stats-topbar {
+  flex-shrink:0; background:#f7f7f8 !important;
+  border-bottom:1px solid #e2e2e5;
+  padding:10px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+#kaza-stats-topbar h2 { font-size:14px; font-weight:700; color:#222; margin-right:4px; }
+#kaza-stats-body {
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:16px; background:#fff !important;
+  display:flex; flex-direction:column; gap:16px;
+}
+.ks-stat-row { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
+@media (max-width:899px) { .ks-stat-row { grid-template-columns:repeat(2,1fr); } }
+.ks-stat-box {
+  background:#f7f7f8 !important; border:1px solid #e2e2e5; border-radius:10px;
+  padding:12px 10px; text-align:center;
+}
+.ks-stat-box .sb-val { font-size:20px; font-weight:700; }
+.ks-stat-box .sb-lbl { font-size:10.5px; color:#777; margin-top:2px; }
+.ks-chart-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:899px) { .ks-chart-row { grid-template-columns:1fr; } }
+.ks-chart-card {
+  background:#fff !important; border:1px solid #e2e2e5; border-radius:10px;
+  padding:12px; min-height:280px; display:flex; flex-direction:column; box-sizing:border-box;
+}
+.ks-chart-card .ks-canvas-wrap { position:relative; flex:1; min-height:230px; }
+.ks-chart-title {
+  font-size:11.5px; font-weight:700; color:#333; margin-bottom:8px;
+  text-transform:uppercase; letter-spacing:.05em;
+}
+.ks-empty { color:#999; font-size:12px; text-align:center; padding:40px 0; }
+
 /* ── AYARLAR MODAL ── */
 #settings-bg {
   display:none; position:fixed; inset:0;
@@ -1950,6 +1988,7 @@ html[data-tema="gokkusagi"] #topbar::after {
     <button onclick="kazaOpenAdd()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#C0392B;color:#fff;cursor:pointer;">+ Olay Ekle</button>
     <button onclick="kazaImportAc()" style="padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">📥 Excel/CSV Yükle</button>
     <button onclick="kazaPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
+    <button onclick="kazaOpenStats()" title="İstatistik" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;">📊</button>
     <button onclick="kazaOpenSettings()" title="Çalışma saati ayarı" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;">⚙️</button>
   </div>
   <!-- Gövde: filtreler + istatistik kartları + aylık grafik + liste — tümü birlikte kaydırılır,
@@ -2345,6 +2384,21 @@ html[data-tema="gokkusagi"] #topbar::after {
     <button onclick="closeStatsPanel()" style="padding:6px 14px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;margin-left:auto;">× Kapat</button>
   </div>
   <div id="stats-body"></div>
+</div>
+
+<!-- ── Kaza & Ramak Kala İstatistik Paneli ──────────────────────
+     Arka plan kasıtlı olarak sabit/opak (#fff) — hangi tema aktif
+     olursa olsun (Gökkuşağı dahil) grafiklerin okunabilirliği
+     hiçbir zaman etkilenmesin. -->
+<div id="kaza-stats-panel-wrap">
+  <div id="kaza-stats-topbar">
+    <h2>📊 Kaza & Ramak Kala İstatistikleri</h2>
+    <select id="ks-f-yil" onchange="kazaStatsRender()" style="padding:5px 10px;font-size:12px;border:1px solid #d8d8dc;border-radius:6px;background:#fff;color:#222;outline:none;"></select>
+    <div id="ks-f-tur" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+    <select id="ks-f-fab" onchange="kazaStatsRender()" style="padding:5px 10px;font-size:12px;border:1px solid #d8d8dc;border-radius:6px;background:#fff;color:#222;outline:none;"></select>
+    <button onclick="kazaCloseStats()" style="padding:6px 14px;font-size:12px;border:1px solid #d8d8dc;border-radius:6px;background:transparent;color:#222;cursor:pointer;margin-left:auto;">× Kapat</button>
+  </div>
+  <div id="kaza-stats-body"></div>
 </div>
 <div id="toast"></div>
 <div id="loading-msg" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:200;flex-direction:column;gap:14px">
@@ -7041,6 +7095,173 @@ function kazaPrint() {
   window.print();
   setTimeout(() => document.body.classList.remove('print-kaza'), 800);
 }
+
+// ── Kaza & Ramak Kala İstatistik Paneli ──────────────────────
+const KS_AY_ISIM = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+let ksFTur = null;     // null = tüm türler
+let ksCharts = {};     // canvas id -> Chart.js örneği (yeniden çizmeden önce yok edilir)
+
+function kazaOpenStats() {
+  kazaStatsRenderFiltreler();
+  kazaStatsRender();
+  document.getElementById('kaza-stats-panel-wrap').classList.add('on');
+}
+function kazaCloseStats() {
+  document.getElementById('kaza-stats-panel-wrap').classList.remove('on');
+}
+function ksSetTur(id) {
+  ksFTur = (ksFTur === id) ? null : id;
+  kazaStatsRenderFiltreler();
+  kazaStatsRender();
+}
+
+function kazaStatsRenderFiltreler() {
+  const yilSel = document.getElementById('ks-f-yil');
+  const yillar = new Set();
+  kazaItems.forEach(k => { if (k.tarih) yillar.add(k.tarih.slice(0,4)); });
+  const yilList = Array.from(yillar).sort((a,b) => b.localeCompare(a));
+  const oncekiYil = yilSel.value;
+  yilSel.innerHTML = '<option value="tumu">Tüm Yıllar</option>' + yilList.map(y => `<option value="${y}">${esc(y)}</option>`).join('');
+  if (oncekiYil && (oncekiYil === 'tumu' || yilList.includes(oncekiYil))) {
+    yilSel.value = oncekiYil;
+  } else {
+    yilSel.value = yilList.includes(String(new Date().getFullYear())) ? String(new Date().getFullYear()) : (yilList[0] || 'tumu');
+  }
+
+  const turWrap = document.getElementById('ks-f-tur');
+  turWrap.innerHTML = `<button class="stat-filter-btn ${ksFTur===null?'on':''}" onclick="ksSetTur(null)">Tümü</button>` +
+    KAZA_TURLER.map(t => `<button class="stat-filter-btn ${ksFTur===t.id?'on':''}" onclick="ksSetTur('${t.id}')">${t.ikon} ${esc(t.ad)}</button>`).join('');
+
+  const fabSel = document.getElementById('ks-f-fab');
+  const oncekiFab = fabSel.value;
+  fabSel.innerHTML = '<option value="tumu">Tüm fabrikalar</option>' + fabrikalar.map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`).join('');
+  fabSel.value = (oncekiFab && (oncekiFab === 'tumu' || fabrikalar.some(f=>f.name===oncekiFab))) ? oncekiFab : 'tumu';
+}
+
+function kazaStatsFiltrele() {
+  const yil = document.getElementById('ks-f-yil')?.value || 'tumu';
+  const fab = document.getElementById('ks-f-fab')?.value || 'tumu';
+  return kazaItems.filter(k => {
+    if (yil !== 'tumu' && (!k.tarih || !k.tarih.startsWith(yil))) return false;
+    if (ksFTur && k.tur !== ksFTur) return false;
+    if (fab !== 'tumu' && k.fab !== fab) return false;
+    return true;
+  });
+}
+
+function ksMakeChart(canvasId, config) {
+  const el = document.getElementById(canvasId);
+  if (!el || typeof Chart === 'undefined') return;
+  if (ksCharts[canvasId]) { ksCharts[canvasId].destroy(); }
+  ksCharts[canvasId] = new Chart(el.getContext('2d'), config);
+}
+
+// Değerleri azalan sırayla kümülatif yüzdeye çevirir (Pareto analizi için)
+function ksParetoVerisi(entries) {
+  const siraliVeAzalan = entries.slice().sort((a,b) => b[1]-a[1]);
+  const toplam = siraliVeAzalan.reduce((s,[,v]) => s+v, 0) || 1;
+  let kum = 0;
+  return siraliVeAzalan.map(([label,val]) => { kum += val; return { label, val, kumPct: Math.round(kum/toplam*1000)/10 }; });
+}
+
+function ksBarOptions() {
+  return {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    scales:{
+      x:{ ticks:{ color:'#444', font:{ size:10 } }, grid:{ display:false } },
+      y:{ beginAtZero:true, ticks:{ color:'#444', precision:0 }, grid:{ color:'#eee' } }
+    }
+  };
+}
+
+function ksParetoConfig(data) {
+  return {
+    data: {
+      labels: data.map(d => d.label),
+      datasets: [
+        { type:'bar',  label:'Adet',         data: data.map(d => d.val),    backgroundColor:'#7F77DD', borderRadius:4, order:2, yAxisID:'y' },
+        { type:'line', label:'Kümülatif %',  data: data.map(d => d.kumPct), borderColor:'#C0392B', backgroundColor:'#C0392B', pointRadius:3, tension:0.25, order:1, yAxisID:'y1' }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:true, position:'bottom', labels:{ color:'#444', font:{ size:10 }, boxWidth:12 } } },
+      scales:{
+        x:  { ticks:{ color:'#444', font:{ size:10 } }, grid:{ display:false } },
+        y:  { beginAtZero:true, position:'left',  ticks:{ color:'#444', precision:0 }, grid:{ color:'#eee' } },
+        y1: { beginAtZero:true, max:100, position:'right', ticks:{ color:'#444', callback:v=>v+'%' }, grid:{ drawOnChartArea:false } }
+      }
+    }
+  };
+}
+
+function kazaStatsRender() {
+  const liste = kazaStatsFiltrele();
+  const body  = document.getElementById('kaza-stats-body');
+  if (!body) return;
+
+  const say = id => liste.filter(k => k.tur === id).length;
+  const kayipToplam = liste.reduce((s,k) => s + (parseInt(k.kayip)||0), 0);
+
+  body.innerHTML = `
+    <div class="ks-stat-row">
+      <div class="ks-stat-box"><div class="sb-val" style="color:#333">${liste.length}</div><div class="sb-lbl">Toplam Olay</div></div>
+      <div class="ks-stat-box"><div class="sb-val" style="color:#C0392B">${say('kaza')}</div><div class="sb-lbl">İş Kazası</div></div>
+      <div class="ks-stat-box"><div class="sb-val" style="color:#E09000">${say('ramak')}</div><div class="sb-lbl">Ramak Kala</div></div>
+      <div class="ks-stat-box"><div class="sb-val" style="color:#BA7517">${say('ilkyardim')}</div><div class="sb-lbl">İlk Yardım</div></div>
+      <div class="ks-stat-box"><div class="sb-val" style="color:#7F77DD">${say('maddi')}</div><div class="sb-lbl">Maddi Hasar</div></div>
+      <div class="ks-stat-box"><div class="sb-val" style="color:#333">${kayipToplam}</div><div class="sb-lbl">Kayıp Gün</div></div>
+    </div>
+
+    <div class="ks-chart-row">
+      <div class="ks-chart-card">
+        <div class="ks-chart-title">Kaza / Hasar Türüne Göre Dağılım</div>
+        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-tur"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+      </div>
+      <div class="ks-chart-card">
+        <div class="ks-chart-title">Kaza / Hasar Türü — Pareto Analizi</div>
+        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-tur-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+      </div>
+    </div>
+    <div class="ks-chart-row">
+      <div class="ks-chart-card">
+        <div class="ks-chart-title">Aylara Göre Kaza / Olay Dağılımı</div>
+        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-ay"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+      </div>
+      <div class="ks-chart-card">
+        <div class="ks-chart-title">Aylara Göre — Pareto Analizi</div>
+        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-ay-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+      </div>
+    </div>`;
+
+  if (!liste.length) return;
+
+  // Kaza/Hasar Türüne göre sayım (Yaralanma/Hasar Türü alanı referans alınır)
+  const turMap = {};
+  liste.forEach(k => { const v = (k.yaralanma||'').trim() || 'Belirtilmemiş'; turMap[v] = (turMap[v]||0)+1; });
+  const turEntries = Object.entries(turMap);
+  const turSirali  = turEntries.slice().sort((a,b) => b[1]-a[1]);
+
+  // Aylara göre sayım
+  const ayMap = new Array(12).fill(0);
+  liste.forEach(k => { if (k.tarih) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
+  const ayEntries = KS_AY_ISIM.map((ad,i) => [ad, ayMap[i]]);
+
+  ksMakeChart('ks-canvas-tur', {
+    type:'bar',
+    data:{ labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
+    options: ksBarOptions()
+  });
+  ksMakeChart('ks-canvas-tur-pareto', ksParetoConfig(ksParetoVerisi(turEntries)));
+
+  ksMakeChart('ks-canvas-ay', {
+    type:'bar',
+    data:{ labels: ayEntries.map(x=>x[0]), datasets:[{ label:'Olay', data: ayEntries.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
+    options: ksBarOptions()
+  });
+  ksMakeChart('ks-canvas-ay-pareto', ksParetoConfig(ksParetoVerisi(ayEntries)));
+}
 // ── End Kaza Modülü ──
 </script>
 
@@ -7714,6 +7935,7 @@ window.addEventListener('resize', calMobInit);
 <!-- ── FIREBASE BULUT SENKRONİZASYONU ───────────────────────── -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
 <script>
 (function () {
