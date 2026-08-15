@@ -7164,18 +7164,25 @@ function ksParetoVerisi(entries) {
   return siraliVeAzalan.map(([label,val]) => { kum += val; return { label, val, kumPct: Math.round(kum/toplam*1000)/10 }; });
 }
 
-function ksBarOptions() {
+// Y ekseni tavanını her zaman 5'in katına yuvarlar (min 5), ama aralık işaretleri 1'er birim kalır
+function ksYEksenMax(vals) {
+  const maxVal = vals && vals.length ? Math.max(...vals) : 0;
+  return Math.max(5, Math.ceil(maxVal / 5) * 5);
+}
+
+function ksBarOptions(vals) {
   return {
     responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{ display:false } },
     scales:{
       x:{ ticks:{ color:'#444', font:{ size:10 } }, grid:{ display:false } },
-      y:{ beginAtZero:true, ticks:{ color:'#444', precision:0 }, grid:{ color:'#eee' } }
+      y:{ beginAtZero:true, min:0, max: ksYEksenMax(vals), ticks:{ color:'#444', stepSize:1, precision:0 }, grid:{ color:'#eee' } }
     }
   };
 }
 
 function ksParetoConfig(data) {
+  const vals = data.map(d => d.val);
   return {
     data: {
       labels: data.map(d => d.label),
@@ -7189,7 +7196,7 @@ function ksParetoConfig(data) {
       plugins:{ legend:{ display:true, position:'bottom', labels:{ color:'#444', font:{ size:10 }, boxWidth:12 } } },
       scales:{
         x:  { ticks:{ color:'#444', font:{ size:10 } }, grid:{ display:false } },
-        y:  { beginAtZero:true, position:'left',  ticks:{ color:'#444', precision:0 }, grid:{ color:'#eee' } },
+        y:  { beginAtZero:true, min:0, max: ksYEksenMax(vals), position:'left',  ticks:{ color:'#444', stepSize:1, precision:0 }, grid:{ color:'#eee' } },
         y1: { beginAtZero:true, max:100, position:'right', ticks:{ color:'#444', callback:v=>v+'%' }, grid:{ drawOnChartArea:false } }
       }
     }
@@ -7251,14 +7258,14 @@ function kazaStatsRender() {
   ksMakeChart('ks-canvas-tur', {
     type:'bar',
     data:{ labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
-    options: ksBarOptions()
+    options: ksBarOptions(turSirali.map(x=>x[1]))
   });
   ksMakeChart('ks-canvas-tur-pareto', ksParetoConfig(ksParetoVerisi(turEntries)));
 
   ksMakeChart('ks-canvas-ay', {
     type:'bar',
     data:{ labels: ayEntries.map(x=>x[0]), datasets:[{ label:'Olay', data: ayEntries.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
-    options: ksBarOptions()
+    options: ksBarOptions(ayEntries.map(x=>x[1]))
   });
   ksMakeChart('ks-canvas-ay-pareto', ksParetoConfig(ksParetoVerisi(ayEntries)));
 }
