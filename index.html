@@ -7158,13 +7158,13 @@ function kazaPrint() {
       });
     }
     if (grafikAy && liste.length) {
-      const ayMap = new Array(12).fill(0);
-      liste.forEach(k => { if (k.tarih) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
-      const ayEntries = KS_AY_ISIM.map((ad,i) => [ad, ayMap[i]]);
+      const yilFiltre = document.getElementById('kaza-f-yil')?.value || 'tumu';
+      const ayVeri = ksAylikVeriHesapla(liste, yilFiltre);
+      const ayTumDegerler = ayVeri.datasets.flatMap(d => d.data);
       new Chart(document.getElementById('kp-canvas-ay').getContext('2d'), {
         type:'bar',
-        data:{ labels: ayEntries.map(x=>x[0]), datasets:[{ label:'Olay', data: ayEntries.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
-        options:{ ...ksBarOptions(ayEntries.map(x=>x[1])), responsive:false, animation:false }
+        data:{ labels: ayVeri.labels, datasets: ayVeri.datasets },
+        options:{ ...ksBarOptions(ayTumDegerler, !ayVeri.tekYil), responsive:false, animation:false }
       });
     }
     document.body.classList.add('print-kaza');
@@ -7237,6 +7237,53 @@ function ksMakeChart(canvasId, config) {
   ksCharts[canvasId] = new Chart(el.getContext('2d'), config);
 }
 
+// Sütunların hemen üzerine (dışına) değerini yazan basit, bağımsız bir Chart.js eklentisi
+const ksDataLabelPlugin = {
+  id: 'ksDataLabel',
+  afterDatasetsDraw(chart) {
+    if (!chart.options.plugins || !chart.options.plugins.ksDataLabel || !chart.options.plugins.ksDataLabel.enabled) return;
+    const { ctx } = chart;
+    chart.data.datasets.forEach((dataset, dsIndex) => {
+      if (dataset.type === 'line') return; // Pareto çizgisine değer yazılmaz
+      const meta = chart.getDatasetMeta(dsIndex);
+      if (meta.hidden) return;
+      meta.data.forEach((bar, index) => {
+        const value = dataset.data[index];
+        if (value === undefined || value === null || value === 0) return;
+        ctx.save();
+        ctx.fillStyle = '#333';
+        ctx.font = '10px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(String(value), bar.x, bar.y - 3);
+        ctx.restore();
+      });
+    });
+  }
+};
+if (typeof Chart !== 'undefined') Chart.register(ksDataLabelPlugin);
+
+// Yıl renkleri (Tüm Yıllar karşılaştırmasında her yıla ayrı renk)
+const KS_YIL_RENKLERI = ['#378ADD','#C0392B','#27AE60','#E09000','#7F77DD','#16A085','#D4527E','#8E44AD'];
+
+// Aylık dağılım verisini hesaplar. "Tüm Yıllar" seçiliyse her yıl ayrı bir seri
+// (grup sütun, farklı renk) olarak döner; tek bir yıl seçiliyse mevcut tek-seri
+// davranışı aynen korunur (sütun genişlik yapısı değişmez).
+function ksAylikVeriHesapla(liste, yilFiltre) {
+  if (yilFiltre !== 'tumu') {
+    const ayMap = new Array(12).fill(0);
+    liste.forEach(k => { if (k.tarih) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
+    return { tekYil:true, labels: KS_AY_ISIM, datasets: [{ label:'Olay', data: ayMap, backgroundColor:'#378ADD', borderRadius:4 }] };
+  }
+  const yillar = Array.from(new Set(liste.filter(k => k.tarih).map(k => k.tarih.slice(0,4)))).sort();
+  const datasets = yillar.map((yil, i) => {
+    const ayMap = new Array(12).fill(0);
+    liste.forEach(k => { if (k.tarih && k.tarih.startsWith(yil)) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
+    return { label: yil, data: ayMap, backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:4 };
+  });
+  return { tekYil: (yillar.length <= 1), labels: KS_AY_ISIM, datasets };
+}
+
 // Değerleri azalan sırayla kümülatif yüzdeye çevirir (Pareto analizi için)
 function ksParetoVerisi(entries) {
   const siraliVeAzalan = entries.slice().sort((a,b) => b[1]-a[1]);
@@ -7251,10 +7298,13 @@ function ksYEksenMax(vals) {
   return Math.max(5, Math.ceil(maxVal / 5) * 5);
 }
 
-function ksBarOptions(vals) {
+function ksBarOptions(vals, legendOn) {
   return {
     responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{ display:false } },
+    plugins:{
+      legend:{ display: !!legendOn, position:'top', labels:{ color:'#444', font:{ size:10 }, boxWidth:12 } },
+      ksDataLabel:{ enabled:true }
+    },
     scales:{
       x:{ ticks:{ color:'#444', font:{ size:10 } }, grid:{ display:false } },
       y:{ beginAtZero:true, min:0, max: ksYEksenMax(vals), ticks:{ color:'#444', stepSize:1, precision:0 }, grid:{ color:'#eee' } }
@@ -7331,7 +7381,7 @@ function kazaStatsRender() {
   const turEntries = Object.entries(turMap);
   const turSirali  = turEntries.slice().sort((a,b) => b[1]-a[1]);
 
-  // Aylara göre sayım
+  // Aylara göre sayım (Pareto için tek toplam seri her zaman gerekir)
   const ayMap = new Array(12).fill(0);
   liste.forEach(k => { if (k.tarih) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
   const ayEntries = KS_AY_ISIM.map((ad,i) => [ad, ayMap[i]]);
@@ -7343,10 +7393,14 @@ function kazaStatsRender() {
   });
   ksMakeChart('ks-canvas-tur-pareto', ksParetoConfig(ksParetoVerisi(turEntries)));
 
+  // Aylara göre sütun grafiği — "Tüm Yıllar" seçiliyse her yıl ayrı renkli seri olarak gösterilir
+  const ksYilFiltre = document.getElementById('ks-f-yil')?.value || 'tumu';
+  const ksAyVeri = ksAylikVeriHesapla(liste, ksYilFiltre);
+  const ksAyTumDegerler = ksAyVeri.datasets.flatMap(d => d.data);
   ksMakeChart('ks-canvas-ay', {
     type:'bar',
-    data:{ labels: ayEntries.map(x=>x[0]), datasets:[{ label:'Olay', data: ayEntries.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] },
-    options: ksBarOptions(ayEntries.map(x=>x[1]))
+    data:{ labels: ksAyVeri.labels, datasets: ksAyVeri.datasets },
+    options: ksBarOptions(ksAyTumDegerler, !ksAyVeri.tekYil)
   });
   ksMakeChart('ks-canvas-ay-pareto', ksParetoConfig(ksParetoVerisi(ayEntries)));
 }
