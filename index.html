@@ -7915,11 +7915,14 @@ window.addEventListener('resize', calMobInit);
 <style>
 @media print {
   html, body,
+  html[data-tema] , html[data-tema] body,           /* her tema id'si için (gökkuşağı dahil) — spesifiklik eşitle */
   #app, #board-wrap, #board-scroll, #board,
   #kaza-print, #modul-print, #denetim-print,
   .kp-ozet div, .mp-meta, .dp-meta {
     background: #fff !important;
     background-color: #fff !important;
+    background-image: none !important;
+    background-attachment: initial !important;
   }
   html, body, #app { color: #111 !important; }
   /* Koyu tema aktifken bile yazdırma her zaman aydınlık kalsın */
