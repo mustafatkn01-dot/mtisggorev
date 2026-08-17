@@ -833,8 +833,8 @@ html, body { height: 100%; overflow: hidden;
   body.print-kaza #kaza-print .kp-meta { font-size:10px; color:#666; margin-bottom:10px; }
   body.print-kaza #kaza-print table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:9px; }
   body.print-kaza #kaza-print th,
-  body.print-kaza #kaza-print td { border:1px solid #ccc; padding:3px 4px; text-align:left; vertical-align:top; word-wrap:break-word; overflow-wrap:break-word; }
-  body.print-kaza #kaza-print th { background:#eee !important; font-weight:700; }
+  body.print-kaza #kaza-print td { border:1px solid #ccc; padding:3px 3px; text-align:left; vertical-align:top; word-wrap:break-word; overflow-wrap:break-word; word-break:normal; hyphens:none; }
+  body.print-kaza #kaza-print th { background:#eee !important; font-weight:700; font-size:8.5px; }
   body.print-kaza #kaza-print tr { break-inside:avoid; page-break-inside:avoid; }
   body.print-kaza #kaza-print .kp-ozet { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px; font-size:10px; }
   body.print-kaza #kaza-print .kp-ozet div { border:1px solid #ccc; padding:4px 8px; border-radius:4px; }
@@ -2141,6 +2141,10 @@ html[data-tema="gokkusagi"] #topbar::after {
     <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#333;cursor:pointer;padding:8px 10px;border:1px solid #e2e2e5;border-radius:8px;">
       <input type="checkbox" id="kp-opt-ay" style="width:15px;height:15px;accent-color:#378ADD;cursor:pointer;">
       Aylara Göre Grafik
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#333;cursor:pointer;padding:8px 10px;border:1px solid #e2e2e5;border-radius:8px;">
+      <input type="checkbox" id="kp-opt-kok" style="width:15px;height:15px;accent-color:#378ADD;cursor:pointer;">
+      Kök Nedene Göre Grafik
     </label>
     <div style="font-size:10.5px;color:#999;">Hiçbiri işaretlenmezse rapor sadece tablo olarak yazdırılır.</div>
     <div style="display:flex;gap:8px;margin-top:4px;">
@@ -7174,6 +7178,7 @@ function kazaPrintOpen() {
     `<b>Dönem:</b> ${esc(yil)} &nbsp;·&nbsp; <b>Kapsam:</b> ${esc(fab)} &nbsp;·&nbsp; <b>Kayıt sayısı:</b> ${liste.length}`;
   document.getElementById('kp-opt-tur').checked = false;
   document.getElementById('kp-opt-ay').checked  = false;
+  document.getElementById('kp-opt-kok').checked = false;
   document.getElementById('kaza-print-opts-bg').style.display = 'flex';
 }
 function kazaPrintOptsClose() {
@@ -7183,6 +7188,7 @@ function kazaPrintOptsClose() {
 function kazaPrint() {
   const grafikTur = document.getElementById('kp-opt-tur')?.checked;
   const grafikAy  = document.getElementById('kp-opt-ay')?.checked;
+  const grafikKok = document.getElementById('kp-opt-kok')?.checked;
 
   const liste = kazaFiltreli().sort((a,b) => (a.tarih||'').localeCompare(b.tarih||''));
   const yil   = document.getElementById('kaza-f-yil')?.value || 'Tüm yıllar';
@@ -7211,33 +7217,35 @@ function kazaPrint() {
     </div>
     <table>
       <thead><tr>
-        <th style="width:58px">Tarih</th><th style="width:68px">Olayın Adı</th><th style="width:68px">Fabrika</th>
-        <th style="width:52px">Bölüm</th><th>Olay</th><th style="width:90px">Kaza/Hasar Türü</th>
-        <th style="width:100px">Kök Neden</th><th>Önlem</th><th style="width:30px">Kayıp Gün</th>
+        <th style="width:56px">Tarih</th><th style="width:62px">Olayın Adı</th><th style="width:56px">Fabrika</th>
+        <th style="width:48px">Bölüm</th><th>Olay</th><th style="width:86px">Kaza/Hasar Türü</th>
+        <th style="width:98px">Kök Neden</th><th>Önlem</th><th style="width:40px">Kayıp Gün</th>
       </tr></thead>
       <tbody>
         ${liste.map(k => {
           const t = kazaTur(k.tur);
           const tarihStr = k.tarih ? new Date(k.tarih+'T00:00:00').toLocaleDateString('tr-TR') : '-';
-          const surec = k.onlem ? `<span style="color:#666;font-size:8.5px;">Süreç: ${k.onlemTamam ? 'Tamamlandı' : 'Açık'}</span><br>` : '';
+          const surec = k.onlem ? `<br><br><span style="color:#666;font-size:8.5px;font-style:italic;">Süreç: ${k.onlemTamam ? 'Tamamlandı' : 'Açık'}</span>` : '';
           const kokKategori = kazaKokNedenKategori(k.kokNeden);
           const kokHucre = (kokKategori ? `<span style="font-size:8px;color:#666;font-style:italic;">${esc(kokKategori)}</span><br><br>` : '') + esc(k.kokNeden||'-');
+          const olayHucre = esc(k.aciklama||'') + (k.kisi ? '<br><br><i>Kişi: '+esc(k.kisi)+'</i>' : '');
           return `<tr>
             <td>${tarihStr}${k.saat ? '<br><span style="color:#666;font-size:8.5px;">Saat: '+esc(k.saat)+'</span>' : ''}</td>
             <td>${esc((t.ad || '').toLocaleUpperCase('tr-TR'))}</td>
             <td>${esc(k.fab||'-')}</td><td>${esc(k.bolum||'-')}</td>
-            <td>${esc(k.aciklama||'')}${k.kisi?'<br><i>Kişi: '+esc(k.kisi)+'</i>':''}</td>
+            <td>${olayHucre}</td>
             <td>${esc(k.yaralanma||'-')}</td>
             <td>${kokHucre}</td>
-            <td>${surec}${esc(k.onlem||'-')}</td>
+            <td>${esc(k.onlem||'-')}${surec}</td>
             <td>${k.kayip||0}</td>
           </tr>`;
         }).join('') || '<tr><td colspan="9">Kayıt yok</td></tr>'}
       </tbody>
     </table>
-    ${(grafikTur || grafikAy) && liste.length ? `<div class="kp-charts">
+    ${(grafikTur || grafikAy || grafikKok) && liste.length ? `<div class="kp-charts">
       ${grafikTur ? `<div class="kp-chart-block"><h3>Kaza / Hasar Türüne Göre Dağılım</h3><canvas id="kp-canvas-tur" width="900" height="360"></canvas></div>` : ''}
       ${grafikAy  ? `<div class="kp-chart-block"><h3>Aylara Göre Kaza / Olay Dağılımı</h3><canvas id="kp-canvas-ay" width="900" height="360"></canvas></div>` : ''}
+      ${grafikKok ? `<div class="kp-chart-block"><h3>Kök Nedene Göre Dağılım</h3><canvas id="kp-canvas-kok" width="900" height="360"></canvas></div>` : ''}
     </div>` : ''}`;
 
   kazaPrintOptsClose();
@@ -7261,6 +7269,16 @@ function kazaPrint() {
         type:'bar',
         data:{ labels: ayVeri.labels, datasets: ayVeri.datasets },
         options:{ ...ksBarOptions(ayTumDegerler, !ayVeri.tekYil), responsive:false, animation:false }
+      });
+    }
+    if (grafikKok && liste.length) {
+      const yilFiltreKok = document.getElementById('kaza-f-yil')?.value || 'tumu';
+      const kokVeri = ksKokVeriHesapla(liste, yilFiltreKok);
+      const kokTumDegerler = kokVeri.datasets.flatMap(d => d.data);
+      new Chart(document.getElementById('kp-canvas-kok').getContext('2d'), {
+        type:'bar',
+        data:{ labels: kokVeri.labels, datasets: kokVeri.datasets },
+        options:{ ...ksBarOptions(kokTumDegerler, !kokVeri.tekYil), responsive:false, animation:false }
       });
     }
     document.body.classList.add('print-kaza');
@@ -7393,6 +7411,26 @@ function ksTurVeriHesapla(liste, yilFiltre) {
   return { tekYil: (yillar.length <= 1), labels: turListesi, datasets };
 }
 
+function ksKokVeriHesapla(liste, yilFiltre) {
+  const deg = k => (k.kokNeden||'').trim() || 'Belirtilmemiş';
+  if (yilFiltre !== 'tumu') {
+    const m = {};
+    liste.forEach(k => { const v = deg(k); m[v] = (m[v]||0)+1; });
+    const sirali = Object.entries(m).sort((a,b) => b[1]-a[1]);
+    return { tekYil:true, labels: sirali.map(x=>x[0]), datasets:[{ label:'Adet', data: sirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] };
+  }
+  const yillar = Array.from(new Set(liste.filter(k => k.tarih).map(k => k.tarih.slice(0,4)))).sort();
+  const toplam = {};
+  liste.forEach(k => { const v = deg(k); toplam[v] = (toplam[v]||0)+1; });
+  const listesi = Object.entries(toplam).sort((a,b) => b[1]-a[1]).map(x => x[0]); // birleşim, azalan sıralı
+  const datasets = yillar.map((yil, i) => {
+    const yilMap = {};
+    liste.forEach(k => { if (k.tarih && k.tarih.startsWith(yil)) { const v = deg(k); yilMap[v] = (yilMap[v]||0)+1; } });
+    return { label: yil, data: listesi.map(t => yilMap[t] || 0), backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:4 };
+  });
+  return { tekYil: (yillar.length <= 1), labels: listesi, datasets };
+}
+
 function ksAylikVeriHesapla(liste, yilFiltre) {
   if (yilFiltre !== 'tumu') {
     const ayMap = new Array(12).fill(0);
@@ -7495,6 +7533,16 @@ function kazaStatsRender() {
         <div class="ks-chart-title">Aylara Göre — Pareto Analizi</div>
         <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-ay-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
       </div>
+    </div>
+    <div class="ks-chart-row">
+      <div class="ks-chart-card">
+        <div class="ks-chart-title">Kök Nedene Göre Dağılım</div>
+        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-kok"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+      </div>
+      <div class="ks-chart-card">
+        <div class="ks-chart-title">Kök Neden — Pareto Analizi</div>
+        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-kok-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+      </div>
     </div>`;
 
   if (!liste.length) return;
@@ -7531,6 +7579,19 @@ function kazaStatsRender() {
     options: ksBarOptions(ksAyTumDegerler, !ksAyVeri.tekYil)
   });
   ksMakeChart('ks-canvas-ay-pareto', ksParetoConfig(ksParetoVerisi(ayEntries)));
+
+  // Kök Nedene göre sayım (Pareto için tek toplam seri) + yıl-bazlı sütun grafiği
+  const kokMap = {};
+  liste.forEach(k => { const v = (k.kokNeden||'').trim() || 'Belirtilmemiş'; kokMap[v] = (kokMap[v]||0)+1; });
+  const kokEntries = Object.entries(kokMap);
+  const ksKokVeri = ksKokVeriHesapla(liste, ksYilFiltre);
+  const ksKokTumDegerler = ksKokVeri.datasets.flatMap(d => d.data);
+  ksMakeChart('ks-canvas-kok', {
+    type:'bar',
+    data:{ labels: ksKokVeri.labels, datasets: ksKokVeri.datasets },
+    options: ksBarOptions(ksKokTumDegerler, !ksKokVeri.tekYil)
+  });
+  ksMakeChart('ks-canvas-kok-pareto', ksParetoConfig(ksParetoVerisi(kokEntries)));
 }
 // ── End Kaza Modülü ──
 </script>
