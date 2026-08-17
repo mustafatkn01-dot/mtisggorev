@@ -2016,9 +2016,15 @@ html[data-tema="gokkusagi"] #topbar::after {
       <textarea id="tp-metin" oninput="topluOnizle()" placeholder="1. Yangın söndürücünün önü kapalı&#10;2. Acil çıkış levhası yanmıyor → LED levha ile değiştirilecek&#10;3. Depo rafında etiketsiz kimyasal var" style="min-height:150px;font-family:inherit;"></textarea>
     </div>
     <div id="tp-onizleme" style="font-size:12px;color:var(--text2);"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:10px;">
-      <button class="mbtn-cancel" onclick="topluClose()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
-      <button id="tp-kaydet" onclick="topluKaydet()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">Hepsini Ekle</button>
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:10px;flex-wrap:wrap;">
+      <label for="tp-dosya" title="Excel (.xlsx) veya CSV dosyası yükle" style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;font-size:12px;font-weight:600;border:1px dashed #639922;border-radius:var(--r);background:#F0F7E6;color:#3E6614;cursor:pointer;">
+        📁 Dosya Yükle (.xlsx / .csv)
+        <input type="file" id="tp-dosya" accept=".xlsx,.xls,.csv" onchange="topluDosyaYukle(this)" style="display:none;"/>
+      </label>
+      <div style="display:flex;gap:8px;">
+        <button class="mbtn-cancel" onclick="topluClose()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
+        <button id="tp-kaydet" onclick="topluKaydet()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">Hepsini Ekle</button>
+      </div>
     </div>
   </div>
 </div>
@@ -8116,6 +8122,184 @@ function topluKaydet() {
   toast(list.length + ' bulgu eklendi');
 }
 
+// ── DOSYA YÜKLEME (Excel .xlsx / CSV) → Toplu bulgu + gerekli denetimleri oluştur ──
+// Beklenen sütun başlıkları (DENETİM_BULGULARI.xlsx referans): S.NO, Tarih, Denetim Türü,
+// Denetim Adı, Denetçi, Fabrika, Tespit, Öneri, Tür, Önem, Sorumlu, Termin, Durum.
+// Her satır, "+Denetim" ve "+Bulgu" formundan girilmiş gibi yerli yerine kaydedilir.
+function dnNorm(s) {
+  return String(s == null ? '' : s).toLocaleLowerCase('tr-TR')
+    .replace(/ı/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g').replace(/ç/g,'c').replace(/ö/g,'o').replace(/ü/g,'u')
+    .replace(/[^a-z0-9]/g,'').trim();
+}
+// Excel tarih seri numarasını veya metin tarihi YYYY-MM-DD'ye çevirir
+function dnTarihCevir(v) {
+  if (v == null || v === '') return '';
+  if (typeof v === 'number') {
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    if (!isNaN(d)) return d.toISOString().slice(0,10);
+  }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})/);         // 2026-08-15
+  if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m = s.match(/^(\d{1,2})[-.\/](\d{1,2})[-.\/](\d{4})/);            // 15.08.2026
+  if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  return '';
+}
+// Serbest metni bilinen anahtarlara eşler (tür/önem/durum/denetim türü)
+function dnDegerEsle(ham, harita, varsayilan) {
+  const n = dnNorm(ham);
+  for (const [anahtar, ipuclari] of Object.entries(harita)) {
+    if (ipuclari.some(ip => n.includes(dnNorm(ip)))) return anahtar;
+  }
+  return varsayilan;
+}
+
+function topluDosyaYukle(inp) {
+  const f = inp.files && inp.files[0];
+  if (!f) return;
+  const uzanti = (f.name.split('.').pop() || '').toLowerCase();
+  const okuyucu = new FileReader();
+  okuyucu.onload = () => {
+    try {
+      let satirlar;
+      if (uzanti === 'xlsx' || uzanti === 'xls') {
+        if (typeof XLSX === 'undefined') { alert('Excel okuma kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.'); return; }
+        const wb = XLSX.read(okuyucu.result, { type:'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        satirlar = XLSX.utils.sheet_to_json(ws, { header:1, blankrows:false, defval:'' });
+      } else {
+        // CSV
+        const metin = new TextDecoder('utf-8').decode(okuyucu.result);
+        const ilk = metin.split(/\r?\n/)[0] || '';
+        const ayirac = (ilk.match(/\t/g)||[]).length ? '\t' : (ilk.match(/;/g)||[]).length ? ';' : ',';
+        satirlar = metin.split(/\r?\n/).filter(x => x.trim()).map(x => kazaSatirAyir(x, ayirac));
+      }
+      topluDosyaIsle(satirlar);
+    } catch (e) {
+      console.error(e);
+      alert('Dosya okunamadı: ' + e.message);
+    } finally {
+      inp.value = '';
+    }
+  };
+  okuyucu.readAsArrayBuffer(f); // hem .xlsx (XLSX) hem .csv (TextDecoder) ArrayBuffer'dan çözülür
+}
+
+function topluDosyaIsle(satirlar) {
+  if (!satirlar || satirlar.length < 2) { alert('Dosyada veri satırı bulunamadı (yalnızca başlık ya da boş).'); return; }
+  const basliklar = satirlar[0].map(x => dnNorm(x));
+  const kullanilan = new Set();
+  // Sütun indeksi bul: önce TÜM başlıklarda tam eşleşme, olmazsa includes.
+  // haric: bu normalize metni içeren başlıklar atlanır ("tur" ararken "denetimturu"nu dışla).
+  const bul = (ipuclari, haric) => {
+    const haricListe = (haric || []).map(dnNorm);
+    const uygunMu = (bi) => !kullanilan.has(bi) && !haricListe.some(h => basliklar[bi].includes(h));
+    // 1) tam eşleşme
+    for (const ip of ipuclari) {
+      const hedef = dnNorm(ip);
+      const i = basliklar.findIndex((b, bi) => b === hedef && uygunMu(bi));
+      if (i !== -1) { kullanilan.add(i); return i; }
+    }
+    // 2) kısmi eşleşme (includes)
+    for (const ip of ipuclari) {
+      const hedef = dnNorm(ip);
+      const i = basliklar.findIndex((b, bi) => b.includes(hedef) && uygunMu(bi));
+      if (i !== -1) { kullanilan.add(i); return i; }
+    }
+    return -1;
+  };
+  const idx = {
+    denetimTur: bul(['denetimturu','denetimtur']),
+    denetimAd:  bul(['denetimadi','denetimad']),
+    tarih:      bul(['tarih']),
+    denetci:    bul(['denetci']),
+    fabrika:    bul(['fabrika']),
+    tespit:     bul(['tespit','bulgu']),
+    oneri:      bul(['oneri']),
+    tur:        bul(['tur'], ['denetimturu','denetimtur']),
+    onem:       bul(['onem']),
+    sorumlu:    bul(['sorumlu']),
+    termin:     bul(['termin']),
+    durum:      bul(['durum']),
+  };
+  if (idx.tespit === -1) {
+    alert('“Tespit” sütunu bulunamadı. Dosyanın ilk satırında sütun başlıkları olmalı (Tespit / Denetim Adı / Fabrika ...).');
+    return;
+  }
+
+  const turHarita   = { uygunsuzluk:['uygunsuzluk','majör','major','minör','minor'], oneri:['oneri','tavsiye'], gozlem:['gozlem','gözlem'] };
+  const onemHarita  = { yuksek:['yuksek','yüksek','kritik','high'], dusuk:['dusuk','düşük','low'], orta:['orta','medium'] };
+  const durumHarita = { kapali:['kapali','kapandı','tamam','closed'], devam:['devam','islemde','progress'], acik:['acik','açık','open'] };
+  const dTurHarita  = { ic:['ic','iç','internal'], dis:['dis','dış','external'], musteri:['musteri','müşteri'], resmi:['resmi','yasal','bakanlik'] };
+  const al = (satir, i) => i === -1 ? '' : String(satir[i] == null ? '' : satir[i]).trim();
+
+  const zaman = Date.now();
+  let denetimEklenen = 0, bulguEklenen = 0;
+  const yeniDenetimHaritasi = {}; // "ad|tarih" -> denetimId
+
+  for (let r = 1; r < satirlar.length; r++) {
+    const satir = satirlar[r];
+    if (!satir || satir.every(c => String(c == null ? '' : c).trim() === '')) continue;
+    const tespit = al(satir, idx.tespit);
+    if (!tespit) continue; // tespiti olmayan satır atlanır
+
+    // ── Denetim kaydını bul veya oluştur ──
+    const dAd    = al(satir, idx.denetimAd) || 'İçe Aktarılan Denetim';
+    const dTarih = dnTarihCevir(al(satir, idx.tarih));
+    const anahtar = dnNorm(dAd) + '|' + dTarih;
+
+    let denetim = denetimler.find(d => dnNorm(d.ad) === dnNorm(dAd) && (d.tarih||'') === dTarih);
+    if (!denetim && yeniDenetimHaritasi[anahtar]) {
+      denetim = denetimler.find(d => d.id === yeniDenetimHaritasi[anahtar]);
+    }
+    if (!denetim) {
+      const fabHam = al(satir, idx.fabrika);
+      const fabs = fabHam ? fabHam.split(/[,;\/]/).map(s => s.trim()).filter(Boolean) : [];
+      // Bilinmeyen fabrikaları fabrika listesine ekle (denetim formundaki gibi)
+      fabs.forEach(fn => {
+        if (fn && !fabrikalar.some(f => dnNorm(f.name) === dnNorm(fn))) {
+          fabrikalar.push({ name: fn, color: RENK_PALETI ? RENK_PALETI[fabrikalar.length % RENK_PALETI.length] : '#378ADD' });
+        }
+      });
+      const yeniId = 'dn' + (zaman + denetimEklenen) + Math.random().toString(36).slice(2,5);
+      denetim = {
+        id: yeniId,
+        ad: dAd,
+        tarih: dTarih || td(),
+        tur: dnDegerEsle(al(satir, idx.denetimTur), dTurHarita, 'ic'),
+        denetci: al(satir, idx.denetci),
+        fabs: fabs,
+        fab: fabs[0] || '',
+        not: '',
+        createdAt: zaman + denetimEklenen
+      };
+      denetimler.push(denetim);
+      yeniDenetimHaritasi[anahtar] = yeniId;
+      denetimEklenen++;
+    }
+
+    // ── Bulgu kaydı (tıpkı +Bulgu formundaki gibi) ──
+    bulgular.push({
+      id: 'bg' + (zaman + r) + Math.random().toString(36).slice(2,6),
+      denetimId: denetim.id,
+      metin:   tespit,
+      oneri:   al(satir, idx.oneri),
+      tur:     dnDegerEsle(al(satir, idx.tur),  turHarita,  'uygunsuzluk'),
+      onem:    dnDegerEsle(al(satir, idx.onem), onemHarita, 'orta'),
+      durum:   dnDegerEsle(al(satir, idx.durum),durumHarita,'acik'),
+      bolum:   '',
+      sorumlu: al(satir, idx.sorumlu),
+      termin:  dnTarihCevir(al(satir, idx.termin)),
+      createdAt: zaman + r
+    });
+    bulguEklenen++;
+  }
+
+  if (!bulguEklenen) { alert('Uygun veri satırı bulunamadı. Sütun başlıklarını kontrol edin.'); return; }
+  saveFabrikalar(); denetimSave(); topluClose(); denetimRender();
+  toast(bulguEklenen + ' bulgu' + (denetimEklenen ? ' ve ' + denetimEklenen + ' yeni denetim' : '') + ' içe aktarıldı');
+}
+
 // ── Rapor ───────────────────────────────────────────────────
 function denetimPrint() {
   const liste = dnFiltreliBulgular();
@@ -8357,6 +8541,7 @@ window.addEventListener('resize', calMobInit);
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
 (function () {
