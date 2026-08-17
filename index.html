@@ -1073,39 +1073,39 @@ html[data-tema="gokkusagi"] #topbar::after {
 /* ── İSTATİSTİK PANELİ ── */
 #stats-panel-wrap {
   display:none; position:fixed; inset:0;
-  background:var(--bg); z-index:55; flex-direction:column;
+  background:#fff !important; z-index:58; flex-direction:column;
 }
 #stats-panel-wrap.on { display:flex; }
 #stats-topbar {
-  flex-shrink:0; background:var(--surface);
-  border-bottom:1px solid var(--border);
+  flex-shrink:0; background:#f7f7f8 !important;
+  border-bottom:1px solid #e2e2e5;
   padding:10px 16px; display:flex; align-items:center; gap:10px;
 }
-#stats-topbar h2 { font-size:14px; font-weight:600; flex:1; }
+#stats-topbar h2 { font-size:14px; font-weight:600; flex:1; color:#222; }
 #stats-body {
-  flex:1; overflow-y:auto; padding:16px;
+  flex:1; overflow-y:auto; padding:16px; background:#fff !important;
   display:flex; flex-direction:column; gap:14px;
 }
 .stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 .stat-box {
-  background:var(--surface); border:1px solid var(--border);
+  background:#f7f7f8 !important; border:1px solid #e2e2e5;
   border-radius:var(--rl); padding:12px 14px;
 }
-.stat-box .sb-val { font-size:22px; font-weight:600; color:var(--text); }
-.stat-box .sb-lbl { font-size:11px; color:var(--text3); margin-top:2px; }
+.stat-box .sb-val { font-size:22px; font-weight:600; color:#222; }
+.stat-box .sb-lbl { font-size:11px; color:#777; margin-top:2px; }
 .stat-section-title {
   font-size:11px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.07em; color:var(--text3); margin-bottom:6px;
+  letter-spacing:.07em; color:#555; margin-bottom:6px;
 }
 .bar-chart { display:flex; flex-direction:column; gap:6px; }
 .bar-row { display:flex; align-items:center; gap:8px; }
-.bar-label { font-size:11px; color:var(--text2); width:120px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.bar-track { flex:1; background:var(--surface2); border-radius:3px; height:12px; overflow:hidden; }
+.bar-label { font-size:11px; color:#444; width:120px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bar-track { flex:1; background:#ececef; border-radius:3px; height:12px; overflow:hidden; }
 .bar-fill { height:100%; border-radius:3px; transition:width .4s; }
-.bar-val { font-size:11px; color:var(--text3); width:28px; text-align:right; flex-shrink:0; }
+.bar-val { font-size:11px; color:#666; width:28px; text-align:right; flex-shrink:0; }
 .pct-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
 .pct-box {
-  background:var(--surface); border:1px solid var(--border);
+  background:#f7f7f8 !important; border:1px solid #e2e2e5;
   border-radius:var(--rl); padding:10px 12px; text-align:center;
 }
 .pct-circle {
@@ -1113,12 +1113,12 @@ html[data-tema="gokkusagi"] #topbar::after {
   display:flex; align-items:center; justify-content:center;
   font-size:14px; font-weight:600; margin:0 auto 6px;
 }
-.pct-lbl { font-size:10px; color:var(--text3); }
+.pct-lbl { font-size:10px; color:#777; }
 .stat-filter-row { display:flex; gap:6px; margin-bottom:4px; }
 .stat-filter-btn {
   padding:4px 12px; font-size:11px; font-weight:500;
-  border:1px solid var(--border2); border-radius:99px;
-  background:transparent; color:var(--text2); cursor:pointer;
+  border:1px solid #d8d8dc; border-radius:99px;
+  background:transparent; color:#555; cursor:pointer;
 }
 .stat-filter-btn.on { background:#378ADD; color:#fff; border-color:#378ADD; }
 
@@ -1379,6 +1379,38 @@ html[data-tema="gokkusagi"] #topbar::after {
 }
 @media print {
   #list-view-wrap { display: none !important; }
+
+  /* Görünüm moduna göre yazdırma: Liste seçiliyse board gizlenir, liste tablosu gösterilir */
+  body.print-board-liste #board-wrap { display: none !important; }
+  body.print-board-liste #list-view-wrap {
+    display: block !important;
+    overflow: visible !important;
+    max-height: none !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  body.print-board-liste #list-table { font-size: 9px !important; table-layout: auto !important; }
+  body.print-board-liste #list-table thead th {
+    position: static !important;
+    background: #eee !important;
+    color: #111 !important;
+    border: 1px solid #ccc !important;
+    padding: 4px 5px !important;
+  }
+  body.print-board-liste #list-table thead th .lf-icon { display: none !important; }
+  body.print-board-liste #list-table tbody td {
+    border: 1px solid #ccc !important;
+    padding: 3px 5px !important;
+    color: #111 !important;
+  }
+  body.print-board-liste #list-table tbody tr { break-inside: avoid; page-break-inside: avoid; }
+  /* Liste görünümünde satır içi düzenleme okları / işlem butonları yazdırmada gizlenir */
+  body.print-board-liste #list-table .lv-edit-caret,
+  body.print-board-liste #list-table .lv-actions,
+  body.print-board-liste #list-table th:last-child,
+  body.print-board-liste #list-table td:last-child { display: none !important; }
+  body.print-board-liste #list-table .lv-status-badge,
+  body.print-board-liste #list-table .lv-prio-badge { border: 1px solid #bbb; }
 }
 
 </style>
@@ -2734,6 +2766,7 @@ function modulPdf(modul) {
 function printReport() {
   const vdef = VIEWS.find(vd => vd.id === curView);
   const viewLabel = vdef ? vdef.label : 'Tümü';
+  const gorunumLabel = viewMode === 'list' ? 'Liste' : 'Durum Tablosu';
   const now = new Date();
   const dateStr = String(now.getDate()).padStart(2,'0') + '.' +
                   String(now.getMonth()+1).padStart(2,'0') + '.' +
@@ -2742,9 +2775,14 @@ function printReport() {
                   String(now.getMinutes()).padStart(2,'0');
 
   document.getElementById('print-header').textContent = 'İSG Görev Takip Raporu — ' + viewLabel;
-  document.getElementById('print-meta').textContent = 'Rapor tarihi: ' + dateStr + '  |  Görünüm: ' + viewLabel;
+  document.getElementById('print-meta').textContent = 'Rapor tarihi: ' + dateStr + '  |  Filtre: ' + viewLabel + '  |  Görünüm: ' + gorunumLabel;
+
+  // Aktif görünüme göre yazdırma formatını seç (Durum Tablosu ↔ Liste)
+  document.body.classList.remove('print-board-durum', 'print-board-liste');
+  document.body.classList.add(viewMode === 'list' ? 'print-board-liste' : 'print-board-durum');
 
   window.print();
+  setTimeout(() => document.body.classList.remove('print-board-durum', 'print-board-liste'), 800);
 }
 
 // ── Ayarlar verisi (localStorage) ──────────────────────────────
@@ -4288,6 +4326,13 @@ function switchTab(tab) {
   if (sr) sr.style.display = tab === 'board' ? '' : 'none';
   const mn = document.getElementById('mob-col-nav');
   if (mn) mn.style.display = tab === 'board' && window.innerWidth < MOBILE_BP_G ? 'flex' : 'none';
+  // Mobil: arama satırı ve board'a özel butonlar (PDF, İstatistik) yalnızca Board sekmesinde
+  const msr = document.getElementById('mob-searchrow');
+  if (msr) msr.style.display = tab === 'board' ? 'flex' : 'none';
+  const mbp = document.getElementById('mob-board-pdf');
+  if (mbp) mbp.style.display = tab === 'board' ? '' : 'none';
+  const msb = document.getElementById('mob-stats-btn');
+  if (msb) msb.style.display = tab === 'board' ? '' : 'none';
   const kw = document.getElementById('kontrol-wrap');
   if (kw) kw.style.display = tab === 'kontrol' ? 'flex' : 'none';
   const zw = document.getElementById('kaza-wrap');
@@ -5002,6 +5047,7 @@ function calTaskClick(id) {
         <span id="mob-title">İSG Takip</span>
         <span id="sync-dot-mob" title="Yerel kayıt aktif ✓" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#639922;"></span>
         <div style="flex:1"></div>
+        <button class="mob-icon-btn" id="mob-board-pdf" onclick="modulPdf('board')" title="Board PDF raporu">🖨</button>
         <button class="mob-icon-btn" onclick="openSettings()" title="Ayarlar">⚙️</button>
         <button class="mob-icon-btn" onclick="openArchive()" title="Arşiv">📦</button>
       </div>
@@ -5021,7 +5067,10 @@ function calTaskClick(id) {
           <button class="vt-btn on" id="vt-board-mob" onclick="setViewMode('board')" type="button">🗂 Durum</button>
           <button class="vt-btn" id="vt-list-mob" onclick="setViewMode('list')" type="button">📋 Liste</button>
         </div>
-        <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off"/>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off" style="flex:1;min-width:0;"/>
+          <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik" style="flex-shrink:0;">📊</button>
+        </div>
       </div>
     `;
     document.getElementById('app').insertBefore(mobUI, document.getElementById('app').firstChild);
@@ -5350,6 +5399,12 @@ function calTaskClick(id) {
   #cal-wrap > div > div:first-child { width:100% !important; border-right:none !important; border-bottom:1px solid var(--border); max-height:48vh; }
   #cal-detail { min-height:120px; border-right:none !important; }
   #cal-wrap > div > div:last-child { width:100% !important; max-height:160px; }
+  /* Board istatistik paneli — dar ekranda kartlar 2 sütun, yüzdeler 1 sütun, tam okunur */
+  #stats-topbar { flex-wrap:wrap; }
+  #stats-topbar h2 { flex-basis:100%; }
+  .stat-row { grid-template-columns:repeat(2,1fr) !important; }
+  .pct-row  { grid-template-columns:1fr !important; }
+  .bar-label { width:88px !important; font-size:10px !important; }
 }
 @media (max-width:899px) {
   #cal-wrap  { padding:4px 6px 6px; }
@@ -7526,22 +7581,22 @@ function kazaStatsRender() {
     </div>
     <div class="ks-chart-row">
       <div class="ks-chart-card">
-        <div class="ks-chart-title">Aylara Göre Kaza / Olay Dağılımı</div>
-        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-ay"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
-      </div>
-      <div class="ks-chart-card">
-        <div class="ks-chart-title">Aylara Göre — Pareto Analizi</div>
-        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-ay-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
-      </div>
-    </div>
-    <div class="ks-chart-row">
-      <div class="ks-chart-card">
         <div class="ks-chart-title">Kök Nedene Göre Dağılım</div>
         <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-kok"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
       </div>
       <div class="ks-chart-card">
         <div class="ks-chart-title">Kök Neden — Pareto Analizi</div>
         <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-kok-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+      </div>
+    </div>
+    <div class="ks-chart-row">
+      <div class="ks-chart-card">
+        <div class="ks-chart-title">Aylara Göre Kaza / Olay Dağılımı</div>
+        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-ay"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+      </div>
+      <div class="ks-chart-card">
+        <div class="ks-chart-title">Aylara Göre — Pareto Analizi</div>
+        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-ay-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
       </div>
     </div>`;
 
@@ -8122,15 +8177,19 @@ window.addEventListener('resize', calMobInit);
         <span id="mob-title">İSG Takip</span>
         <span id="sync-dot-mob" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#639922;margin-left:6px;"></span>
         <div style="flex:1"></div>
-        <button class="mob-icon-btn" onclick="openSettings()" title="Ayarlar"></button>
-        <button class="mob-icon-btn" onclick="openArchive()" title="Arşiv"></button>
+        <button class="mob-icon-btn" id="mob-board-pdf" onclick="modulPdf('board')" title="Board PDF raporu">🖨</button>
+        <button class="mob-icon-btn" onclick="openSettings()" title="Ayarlar">⚙️</button>
+        <button class="mob-icon-btn" onclick="openArchive()" title="Arşiv">📦</button>
       </div>
       <div id="mob-searchrow">
         <div class="view-toggle" id="view-toggle-mob" style="margin-bottom:6px;">
           <button class="vt-btn on" id="vt-board-mob" onclick="setViewMode('board')" type="button">🗂 Durum</button>
           <button class="vt-btn" id="vt-list-mob" onclick="setViewMode('list')" type="button">📋 Liste</button>
         </div>
-        <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off"/>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off" style="flex:1;min-width:0;"/>
+          <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik" style="flex-shrink:0;">📊</button>
+        </div>
       </div>
     `;
     // app'in başına ekle
