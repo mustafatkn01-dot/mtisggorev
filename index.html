@@ -1982,7 +1982,7 @@ html[data-tema="gokkusagi"] #topbar::after {
 </div>
 
 <!-- TOPLU BULGU YAPIŞTIRMA -->
-<div id="toplu-modal-bg" onclick="if(event.target===this)topluClose()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:62;align-items:center;justify-content:center;">
+<div id="toplu-modal-bg" onclick="if(event.target===this)topluClose()" ondragover="event.preventDefault()" ondrop="event.preventDefault()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:62;align-items:center;justify-content:center;">
   <div style="background:var(--surface);border-radius:12px;padding:20px;width:640px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:94vh;overflow-y:auto;">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <h3 style="font-size:14px;font-weight:700;color:var(--text);">📋 Toplu Bulgu Yapıştır</h3>
@@ -2011,20 +2011,30 @@ html[data-tema="gokkusagi"] #topbar::after {
       </div>
       <div class="mfield"><label>Ortak Termin</label><input type="date" id="tp-termin"/></div>
     </div>
+    <div id="tp-dropzone"
+         onclick="document.getElementById('tp-dosya').click()"
+         ondragover="topluDragOver(event)"
+         ondragleave="topluDragLeave(event)"
+         ondrop="topluDrop(event)"
+         style="border:2px dashed #639922;border-radius:10px;background:#F0F7E6;color:#3E6614;padding:18px 14px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;">
+      <div style="font-size:22px;line-height:1;margin-bottom:6px;">📥</div>
+      <div id="tp-dropzone-text" style="font-size:12.5px;font-weight:600;">Excel / CSV dosyasını buraya sürükleyip bırak</div>
+      <div style="font-size:10.5px;color:#5b7d33;margin-top:3px;">ya da tıklayıp dosya seç (.xlsx / .xls / .csv)</div>
+      <input type="file" id="tp-dosya" accept=".xlsx,.xls,.csv" onchange="topluDosyaYukle(this)" style="display:none;"/>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;color:var(--text3);font-size:11px;">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <span>veya metni yapıştır</span>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
     <div class="mfield">
       <label>Metni buraya yapıştır *</label>
       <textarea id="tp-metin" oninput="topluOnizle()" placeholder="1. Yangın söndürücünün önü kapalı&#10;2. Acil çıkış levhası yanmıyor → LED levha ile değiştirilecek&#10;3. Depo rafında etiketsiz kimyasal var" style="min-height:150px;font-family:inherit;"></textarea>
     </div>
     <div id="tp-onizleme" style="font-size:12px;color:var(--text2);"></div>
-    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:10px;flex-wrap:wrap;">
-      <label for="tp-dosya" title="Excel (.xlsx) veya CSV dosyası yükle" style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;font-size:12px;font-weight:600;border:1px dashed #639922;border-radius:var(--r);background:#F0F7E6;color:#3E6614;cursor:pointer;">
-        📁 Dosya Yükle (.xlsx / .csv)
-        <input type="file" id="tp-dosya" accept=".xlsx,.xls,.csv" onchange="topluDosyaYukle(this)" style="display:none;"/>
-      </label>
-      <div style="display:flex;gap:8px;">
-        <button class="mbtn-cancel" onclick="topluClose()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
-        <button id="tp-kaydet" onclick="topluKaydet()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">Hepsini Ekle</button>
-      </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;border-top:1px solid var(--border);padding-top:10px;flex-wrap:wrap;">
+      <button class="mbtn-cancel" onclick="topluClose()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
+      <button id="tp-kaydet" onclick="topluKaydet()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">Hepsini Ekle</button>
     </div>
   </div>
 </div>
@@ -8052,6 +8062,7 @@ function topluOpen() {
   document.getElementById('tp-metin').value = '';
   document.getElementById('tp-termin').value = '';
   document.getElementById('tp-onizleme').innerHTML = '';
+  if (typeof topluDropReset === 'function') topluDropReset();
   document.getElementById('toplu-modal-bg').style.display = 'flex';
   setTimeout(() => document.getElementById('tp-metin').focus(), 80);
 }
@@ -8157,7 +8168,18 @@ function dnDegerEsle(ham, harita, varsayilan) {
 function topluDosyaYukle(inp) {
   const f = inp.files && inp.files[0];
   if (!f) return;
+  topluDosyaOku(f);
+  inp.value = '';
+}
+
+// Bir File nesnesini okuyup içe aktarır — hem "dosya seç" hem "sürükle-bırak" bunu kullanır
+function topluDosyaOku(f) {
+  if (!f) return;
   const uzanti = (f.name.split('.').pop() || '').toLowerCase();
+  if (!['xlsx','xls','csv'].includes(uzanti)) {
+    alert('Yalnızca .xlsx, .xls veya .csv dosyaları yüklenebilir.');
+    return;
+  }
   const okuyucu = new FileReader();
   okuyucu.onload = () => {
     try {
@@ -8178,11 +8200,36 @@ function topluDosyaYukle(inp) {
     } catch (e) {
       console.error(e);
       alert('Dosya okunamadı: ' + e.message);
-    } finally {
-      inp.value = '';
     }
   };
   okuyucu.readAsArrayBuffer(f); // hem .xlsx (XLSX) hem .csv (TextDecoder) ArrayBuffer'dan çözülür
+}
+
+// ── Sürükle-bırak ──
+function topluDragOver(ev) {
+  ev.preventDefault();
+  const dz = document.getElementById('tp-dropzone');
+  if (dz) { dz.style.background = '#DCEFC4'; dz.style.borderColor = '#3E6614'; }
+  const t = document.getElementById('tp-dropzone-text');
+  if (t) t.textContent = 'Bırak, hemen yükleyeyim ✓';
+}
+function topluDragLeave(ev) {
+  ev.preventDefault();
+  topluDropReset();
+}
+function topluDropReset() {
+  const dz = document.getElementById('tp-dropzone');
+  if (dz) { dz.style.background = '#F0F7E6'; dz.style.borderColor = '#639922'; }
+  const t = document.getElementById('tp-dropzone-text');
+  if (t) t.textContent = 'Excel / CSV dosyasını buraya sürükleyip bırak';
+}
+function topluDrop(ev) {
+  ev.preventDefault();
+  topluDropReset();
+  const dt = ev.dataTransfer;
+  const f = dt && dt.files && dt.files[0];
+  if (!f) return;
+  topluDosyaOku(f);
 }
 
 function topluDosyaIsle(satirlar) {
