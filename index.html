@@ -1675,50 +1675,55 @@ html[data-tema="gokkusagi"] #topbar::after {
     <!-- Orta bölüm -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0;">
       <!-- Gecikmiş görevler -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">
+      <div class="dash-acc" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div class="dash-acc-head" onclick="dashToggleAcc('overdue')" style="padding:10px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;">
           <span style="font-size:13px;">🔴</span>
           <span style="font-size:12px;font-weight:700;color:var(--text);">Gecikmiş Görevler</span>
           <span id="dash-overdue-count" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:#FFE0ED;color:#8B1A3A;"></span>
+          <span class="dash-acc-ico" id="dash-acc-ico-overdue" style="font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
         </div>
-        <div id="dash-overdue-list" style="overflow-y:auto;max-height:200px;padding:8px 12px;display:flex;flex-direction:column;gap:5px;"></div>
+        <div id="dash-overdue-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);overflow-y:auto;max-height:240px;padding:8px 12px;flex-direction:column;gap:5px;"></div>
       </div>
       <!-- Bu hafta terminler -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">
+      <div class="dash-acc" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div class="dash-acc-head" onclick="dashToggleAcc('week')" style="padding:10px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;">
           <span style="font-size:13px;">📅</span>
           <span style="font-size:12px;font-weight:700;color:var(--text);">Bu Hafta Bitenler</span>
           <span id="dash-week-count" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:#E6F1FB;color:#185FA5;"></span>
+          <span class="dash-acc-ico" id="dash-acc-ico-week" style="font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
         </div>
-        <div id="dash-week-list" style="overflow-y:auto;max-height:200px;padding:8px 12px;display:flex;flex-direction:column;gap:5px;"></div>
+        <div id="dash-week-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);overflow-y:auto;max-height:240px;padding:8px 12px;flex-direction:column;gap:5px;"></div>
       </div>
     </div>
     <!-- Alt bölüm -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <!-- Yaklaşan kontroller -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">
+      <div class="dash-acc" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div class="dash-acc-head" onclick="dashToggleAcc('kontrol')" style="padding:10px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;">
           <span style="font-size:13px;">🔬</span>
           <span style="font-size:12px;font-weight:700;color:var(--text);">Yaklaşan Kontroller <span style="font-weight:400;color:var(--text3);font-size:10px;">(30 gün)</span></span>
+          <span class="dash-acc-ico" id="dash-acc-ico-kontrol" style="margin-left:auto;font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
         </div>
-        <div id="dash-kontrol-list" style="overflow-y:auto;max-height:180px;padding:8px 12px;display:flex;flex-direction:column;gap:5px;"></div>
+        <div id="dash-kontrol-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);overflow-y:auto;max-height:240px;padding:8px 12px;flex-direction:column;gap:5px;"></div>
       </div>
       <!-- Personel yük dağılımı -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">
+      <div class="dash-acc" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div class="dash-acc-head" onclick="dashToggleAcc('per')" style="padding:10px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;">
           <span style="font-size:13px;">👥</span>
           <span style="font-size:12px;font-weight:700;color:var(--text);">Personel Yük Dağılımı</span>
+          <span class="dash-acc-ico" id="dash-acc-ico-per" style="margin-left:auto;font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
         </div>
-        <div id="dash-per-list" style="overflow-y:auto;max-height:180px;padding:8px 12px;display:flex;flex-direction:column;gap:6px;"></div>
+        <div id="dash-per-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);overflow-y:auto;max-height:240px;padding:8px 12px;flex-direction:column;gap:6px;"></div>
       </div>
     </div>
     <!-- Takvim etkinlikleri -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">
+    <div class="dash-acc" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div class="dash-acc-head" onclick="dashToggleAcc('cal')" style="padding:10px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;">
         <span style="font-size:13px;">🗓</span>
         <span style="font-size:12px;font-weight:700;color:var(--text);">Önümüzdeki 14 Gün — Takvim Etkinlikleri</span>
+        <span class="dash-acc-ico" id="dash-acc-ico-cal" style="margin-left:auto;font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
       </div>
-      <div id="dash-cal-list" style="padding:8px 12px;display:flex;flex-direction:column;gap:5px;"></div>
+      <div id="dash-cal-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);padding:8px 12px;flex-direction:column;gap:5px;"></div>
     </div>
   </div>
   <div id="list-view-wrap" style="display:none">
@@ -6526,6 +6531,21 @@ function dashGoToTask(text) {
   if (inp)    inp.value    = text;
   if (mobInp) mobInp.value = text;
   render();
+}
+
+// Özet ekranı akordeon kartları: bir karta dokununca aşağı açılır (+→−),
+// tekrar dokununca kapanır; başka bir kart açılınca önceki otomatik kapanır.
+let dashAcikAcc = null;
+function dashToggleAcc(key) {
+  const acilacak = (dashAcikAcc !== key) ? key : null;
+  ['overdue','week','kontrol','per','cal'].forEach(k => {
+    const body = document.getElementById('dash-' + (k==='overdue'?'overdue-list':k==='week'?'week-list':k==='kontrol'?'kontrol-list':k==='per'?'per-list':'cal-list'));
+    const ico  = document.getElementById('dash-acc-ico-' + k);
+    const acik = (k === acilacak);
+    if (body) body.style.display = acik ? 'flex' : 'none';
+    if (ico)  ico.textContent = acik ? '−' : '+';
+  });
+  dashAcikAcc = acilacak;
 }
 // ── End Dashboard ──
 </script>
