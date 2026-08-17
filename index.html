@@ -1567,18 +1567,14 @@ html[data-tema="gokkusagi"] #topbar::after {
   min-width:40px; min-height:36px; display:flex; align-items:center; justify-content:center;
 }
 #mob-searchrow {
-  display:flex; flex-direction:column; gap:6px; padding:0 12px 10px;
+  display:flex; align-items:center; gap:8px; padding:0 12px 10px;
 }
-#mob-searchrow .view-toggle { width:100%; }
-#mob-searchrow .mob-search-line {
-  display:flex; align-items:center; gap:6px; width:100%;
-}
+#mob-searchrow .view-toggle { flex-shrink:0; }
 #mob-search-inp {
   flex:1 1 auto; min-width:0; padding:8px 12px; font-size:14px;
   border:1px solid var(--border2); border-radius:8px;
   background:var(--bg); color:var(--text); outline:none; min-height:40px;
 }
-#mob-searchrow #mob-stats-btn { flex:0 0 auto; }
 #mob-fab { display:none; }
 #mob-col-nav {
   display:none;
@@ -1703,7 +1699,7 @@ html[data-tema="gokkusagi"] #topbar::after {
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">
           <span style="font-size:13px;">🔬</span>
-          <span style="font-size:12px;font-weight:700;color:var(--text);">Yaklaşan Kontroller</span>
+          <span style="font-size:12px;font-weight:700;color:var(--text);">Yaklaşan Kontroller <span style="font-weight:400;color:var(--text3);font-size:10px;">(30 gün)</span></span>
         </div>
         <div id="dash-kontrol-list" style="overflow-y:auto;max-height:180px;padding:8px 12px;display:flex;flex-direction:column;gap:5px;"></div>
       </div>
@@ -5052,6 +5048,7 @@ function calTaskClick(id) {
         <span id="mob-title">İSG Takip</span>
         <span id="sync-dot-mob" title="Yerel kayıt aktif ✓" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#639922;"></span>
         <div style="flex:1"></div>
+        <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik">📊</button>
         <button class="mob-icon-btn" id="mob-board-pdf" onclick="modulPdf('board')" title="Board PDF raporu">🖨</button>
         <button class="mob-icon-btn" onclick="openSettings()" title="Ayarlar">⚙️</button>
         <button class="mob-icon-btn" onclick="openArchive()" title="Arşiv">📦</button>
@@ -5072,10 +5069,7 @@ function calTaskClick(id) {
           <button class="vt-btn on" id="vt-board-mob" onclick="setViewMode('board')" type="button">🗂 Durum</button>
           <button class="vt-btn" id="vt-list-mob" onclick="setViewMode('list')" type="button">📋 Liste</button>
         </div>
-        <div class="mob-search-line">
-          <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off"/>
-          <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik">📊</button>
-        </div>
+        <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off"/>
       </div>
     `;
     document.getElementById('app').insertBefore(mobUI, document.getElementById('app').firstChild);
@@ -5459,17 +5453,11 @@ function calTaskClick(id) {
 
 #mob-searchrow {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   padding: 0 12px 10px;
 }
-#mob-searchrow .view-toggle { width: 100%; }
-#mob-searchrow .mob-search-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-}
+#mob-searchrow .view-toggle { flex-shrink: 0; }
 
 #mob-search-inp {
   flex: 1 1 auto;
@@ -5483,7 +5471,6 @@ function calTaskClick(id) {
   outline: none;
   min-height: 40px;
 }
-#mob-searchrow #mob-stats-btn { flex: 0 0 auto; }
 #mob-search-inp:focus { border-color: #378ADD; }
 
 #mob-fab-sel {
@@ -6419,7 +6406,7 @@ function dashRender() {
         const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
         const diff     = Math.round((nextDate - today) / 86400000);
         return { ...it, nextDate, diff };
-      }).filter(it => it.diff <= 60).sort((a,b) => a.diff - b.diff).slice(0, 6);
+      }).filter(it => it.diff <= 30).sort((a,b) => a.diff - b.diff).slice(0, 6);
     } catch(e) {}
 
     if (!kItems.length) {
@@ -6521,13 +6508,24 @@ function dashTaskRow(t, today, accentColor) {
   const fabList = t.fabs && t.fabs.length ? t.fabs : (t.fab ? [t.fab] : []);
   const dateDisp = d.toLocaleDateString('tr-TR',{day:'numeric',month:'short'});
   const diffLbl  = diff < 0 ? `${Math.abs(diff)}g gecikti` : diff === 0 ? 'Bugün' : `${diff}g kaldı`;
-  return `<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;background:var(--surface2);border-left:3px solid ${colClr};border-radius:0 7px 7px 0;cursor:pointer;" onclick="switchTab('board')">
+  return `<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;background:var(--surface2);border-left:3px solid ${colClr};border-radius:0 7px 7px 0;cursor:pointer;" onclick="dashGoToTask('${jsSafe(t.text)}')">
     <div style="flex:1;min-width:0;">
       <div style="font-size:11px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(t.text)}</div>
       <div style="font-size:10px;color:var(--text3);">${fabList.slice(0,2).map(f=>esc(f)).join(', ')} · ${dateDisp}</div>
     </div>
     <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px;background:${accentColor}22;color:${accentColor};white-space:nowrap;">${diffLbl}</span>
   </div>`;
+}
+
+// Özet kartındaki bir göreve tıklanınca Board'a geç ve SADECE o görevi göster
+// (arama kutusuna görev metnini yazıp filtreler — tüm görevler değil, tıklanan görev)
+function dashGoToTask(text) {
+  switchTab('board');
+  const inp    = document.getElementById('search-inp');
+  const mobInp = document.getElementById('mob-search-inp');
+  if (inp)    inp.value    = text;
+  if (mobInp) mobInp.value = text;
+  render();
 }
 // ── End Dashboard ──
 </script>
@@ -8192,6 +8190,7 @@ window.addEventListener('resize', calMobInit);
         <span id="mob-title">İSG Takip</span>
         <span id="sync-dot-mob" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#639922;margin-left:6px;"></span>
         <div style="flex:1"></div>
+        <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik">📊</button>
         <button class="mob-icon-btn" id="mob-board-pdf" onclick="modulPdf('board')" title="Board PDF raporu">🖨</button>
         <button class="mob-icon-btn" onclick="openSettings()" title="Ayarlar">⚙️</button>
         <button class="mob-icon-btn" onclick="openArchive()" title="Arşiv">📦</button>
@@ -8201,10 +8200,7 @@ window.addEventListener('resize', calMobInit);
           <button class="vt-btn on" id="vt-board-mob" onclick="setViewMode('board')" type="button">🗂 Durum</button>
           <button class="vt-btn" id="vt-list-mob" onclick="setViewMode('list')" type="button">📋 Liste</button>
         </div>
-        <div class="mob-search-line">
-          <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off"/>
-          <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik">📊</button>
-        </div>
+        <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off"/>
       </div>
     `;
     // app'in başına ekle
