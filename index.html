@@ -823,6 +823,7 @@ html, body { height: 100%; overflow: hidden;
 /* Kaza raporu yazdırma — sadece rapor görünür */
 #kaza-print { display:none; }
 @media print {
+  @page { size: A4 portrait; margin: 10mm 8mm; }
   body.print-kaza #app,
   body.print-kaza #toast,
   body.print-kaza #mob-fab,
@@ -830,9 +831,9 @@ html, body { height: 100%; overflow: hidden;
   body.print-kaza #kaza-print { display:block !important; padding:0; color:#111; }
   body.print-kaza #kaza-print h1 { font-size:16px; margin-bottom:2px; }
   body.print-kaza #kaza-print .kp-meta { font-size:10px; color:#666; margin-bottom:10px; }
-  body.print-kaza #kaza-print table { width:100%; border-collapse:collapse; font-size:9.5px; }
+  body.print-kaza #kaza-print table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:9px; }
   body.print-kaza #kaza-print th,
-  body.print-kaza #kaza-print td { border:1px solid #ccc; padding:4px 5px; text-align:left; vertical-align:top; }
+  body.print-kaza #kaza-print td { border:1px solid #ccc; padding:3px 4px; text-align:left; vertical-align:top; word-wrap:break-word; overflow-wrap:break-word; }
   body.print-kaza #kaza-print th { background:#eee !important; font-weight:700; }
   body.print-kaza #kaza-print tr { break-inside:avoid; page-break-inside:avoid; }
   body.print-kaza #kaza-print .kp-ozet { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px; font-size:10px; }
@@ -2043,7 +2044,11 @@ html[data-tema="gokkusagi"] #topbar::after {
       </div>
     </div>
     <div class="mfield"><label>Olayın Anlatımı *</label><textarea id="kaza-m-aciklama" placeholder="Ne oldu, nasıl oldu?"></textarea></div>
-    <div class="mfield"><label>Kök Neden</label><textarea id="kaza-m-koknedan" placeholder="Neden kaynaklandı?" style="min-height:50px"></textarea></div>
+    <div class="mfield">
+      <label>Kök Neden</label>
+      <input id="kaza-m-koknedan" list="kaza-kokneden-list" placeholder="Listeden seç ya da yeni yaz (örn: KKD Kullanmamak)" autocomplete="off"/>
+      <datalist id="kaza-kokneden-list"></datalist>
+    </div>
     <div class="mfield"><label>Alınan / Alınacak Önlem</label><textarea id="kaza-m-onlem" placeholder="Tekrarını önlemek için ne yapıldı?" style="min-height:50px"></textarea></div>
     <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;">
       <input type="checkbox" id="kaza-m-onlem-tamam" style="accent-color:#639922;width:14px;height:14px;"> Önlem tamamlandı
@@ -6457,7 +6462,8 @@ function dashTaskRow(t, today, accentColor) {
 // ── KAZA / RAMAK KALA MODÜLÜ ───────────────────────────────
 const LS_KAZA_ITEMS = 'yeni_isg_kaza_items_v1';
 const LS_KAZA_AYAR  = 'yeni_isg_kaza_ayar_v1';
-const LS_KAZA_YARALANMA = 'yeni_isg_kaza_yaralanma_v1';
+const LS_KAZA_YARALANMA = 'yeni_isg_kaza_yaralanma_v2'; // v2: hatalı eski liste yerine Excel referanslı düzeltilmiş liste
+const LS_KAZA_KOKNEDEN  = 'yeni_isg_kaza_kokneden_v1';
 
 let kazaItems  = [];
 let kazaAyar   = { calisan: 0, saat: 0 };
@@ -6466,28 +6472,26 @@ let kazaFTur   = null;          // null = tüm türler
 let _kazaReady = false;
 let kazaMTur   = 'kaza';        // modalda seçili tür
 
-// Kaza/Hasar Türü için varsayılan liste (KAZA_OLAY_RAPORU.xlsx referans alınarak)
+// Kaza/Hasar Türü için varsayılan liste ("İŞ KAZASI OLAY VERİ KÜTÜPHANESİ.xlsx" →
+// "Kaza - Hasar Türleri" sayfası, B5:B21 referans alınarak)
 const KAZA_YARALANMA_VARSAYILAN = [
-  'İşi bilinçsiz yapmak',
-  'Dalgınlık ve dikkatsizlik',
-  'Düşme',
-  'Tehlikeli hızla çalışmak',
-  'Koruyucusuz makine kullanmak',
-  'İşyeri düzensizliği',
-  'İş disiplinine uymamak',
-  'KKD kullanmamak',
-  'Emniyetsiz ve sağlıksız çevre koşulları',
-  '2. şahıs kusuru',
-  'Görevi dışında iş yapmak',
-  'Yorgunluk',
-  'Kazaya yatkınlık',
-  'Arızalı makine kullanma',
-  'Ehliyetsiz araç kullanmak',
-  'Stres ve depresyon',
-  'Makineyi durdurmadan çalışma yapmak',
-  "Diğer (KKD'nin yetersiz olması)",
-  'Makine koruyucuların yetersiz olması',
-  'Sağlık sorunu',
+  'Kesilme / Delinme',
+  'Yanık (Termal / Isıl)',
+  'Kafa Darbesi / Travma',
+  'Doku Ezilmesi / Sıkışma',
+  'Kayma / Takılma / Aynı Seviyede Düşme',
+  'Yüksekten Düşme',
+  'Kırık',
+  'Çıkık',
+  'Çatlak',
+  'Burkulma / İncinme',
+  'Uzuv Kaybı (Amputasyon)',
+  'Elektrik Çarpması / Ark Sıçraması',
+  'Zehirlenme / Solunum İrritasyonu',
+  'Göze Cisim / Çapak Kaçması',
+  'Ani Sağlık Problemi / Biyolojik Hal',
+  'Kimyasal Madde Sıçraması / Teması',
+  'Kas-İskelet Sistemi Zorlanması',
 ];
 // Kullanıcının serbest yazdığı yeni değerler de buraya eklenip kalıcı hale gelir
 let kazaYaralanmaListesi = [];
@@ -6521,6 +6525,93 @@ function kazaRenderYaralanmaListesi() {
     .map(v => `<option value="${esc(v)}">`).join('');
 }
 
+// Kök Neden için varsayılan liste ("İŞ KAZASI OLAY VERİ KÜTÜPHANESİ.xlsx" →
+// "Kök Nedenler" sayfası, C5:C26 referans alınarak). Her başlığın hangi kategoriye
+// (B5:B26) ait olduğu KAZA_KOKNEDEN_KATEGORI ile eşleştirilir — sadece rapor
+// yazdırmada kullanılır, ayrı bir giriş alanı DEĞİLDİR.
+const KAZA_KOKNEDEN_VARSAYILAN = [
+  'İşi Bilinçsiz / Eğitimsiz Yapmak',
+  'Dalgınlık ve Dikkatsizlik',
+  'Tehlikeli Hızla Çalışmak',
+  'İş Disiplinine / Talimatlara Uymamak',
+  'Görevi Dışında İş Yapmak',
+  'KKD Kullanmamak',
+  'Ehliyetsiz / Yetkisiz Araç Kullanmak',
+  'Makineyi Durdurmadan Müdahale Yapmak',
+  '2. Şahıs Kusuru / İletişim Hatası',
+  'Koruyucusuz / Muhafazasız Makine Kullanmak',
+  'Makine Koruyucularının Yetersiz Olması',
+  'Arızalı / Bakımsız Ekipman Kullanımı',
+  "KKD'nin Yetersiz / Uygunsuz Olması",
+  'İşyeri Düzensizliği (5S Eksikliği)',
+  'Emniyetsiz ve Sağlıksız Çevre Koşulları',
+  'Yorgunluk ve Uykusuzluk',
+  'Stres ve Depresyon',
+  'Kazaya Yatkınlık / Bireysel Risk Faktörleri',
+  'Kronik / Anlık Sağlık Sorunu',
+  'Düşme ve Denge Kaybı',
+  'Yetersiz Eğitim, Denetim',
+  'EKED/LOTO Eksikliği',
+];
+const KAZA_KOKNEDEN_KATEGORI = {
+  'İşi Bilinçsiz / Eğitimsiz Yapmak':        'İnsan Odaklı / Davranışsal',
+  'Dalgınlık ve Dikkatsizlik':                'İnsan Odaklı / Davranışsal',
+  'Tehlikeli Hızla Çalışmak':                 'İnsan Odaklı / Davranışsal',
+  'İş Disiplinine / Talimatlara Uymamak':     'İnsan Odaklı / Davranışsal',
+  'Görevi Dışında İş Yapmak':                 'İnsan Odaklı / Davranışsal',
+  'KKD Kullanmamak':                          'İnsan Odaklı / Davranışsal',
+  'Ehliyetsiz / Yetkisiz Araç Kullanmak':     'İnsan Odaklı / Davranışsal',
+  'Makineyi Durdurmadan Müdahale Yapmak':     'İnsan Odaklı / Davranışsal',
+  '2. Şahıs Kusuru / İletişim Hatası':        'İnsan Odaklı / Davranışsal',
+  'Koruyucusuz / Muhafazasız Makine Kullanmak':'Mekanik / Ekipman Odaklı',
+  'Makine Koruyucularının Yetersiz Olması':   'Mekanik / Ekipman Odaklı',
+  'Arızalı / Bakımsız Ekipman Kullanımı':     'Mekanik / Ekipman Odaklı',
+  "KKD'nin Yetersiz / Uygunsuz Olması":       'Mekanik / Ekipman Odaklı',
+  'İşyeri Düzensizliği (5S Eksikliği)':       'Çevresel / Saha Odaklı',
+  'Emniyetsiz ve Sağlıksız Çevre Koşulları':  'Çevresel / Saha Odaklı',
+  'Yorgunluk ve Uykusuzluk':                  'Bireysel / Sağlık / Psikolojik',
+  'Stres ve Depresyon':                       'Bireysel / Sağlık / Psikolojik',
+  'Kazaya Yatkınlık / Bireysel Risk Faktörleri':'Bireysel / Sağlık / Psikolojik',
+  'Kronik / Anlık Sağlık Sorunu':             'Bireysel / Sağlık / Psikolojik',
+  'Düşme ve Denge Kaybı':                     'Çevresel / Davranışsal',
+  'Yetersiz Eğitim, Denetim':                 'Yönetsel / Organizasyonel',
+  'EKED/LOTO Eksikliği':                      'Yönetsel / Organizasyonel',
+};
+let kazaKokNedenListesi = [];
+
+function kazaKokNedenYukle() {
+  try {
+    const kayitli = JSON.parse(localStorage.getItem(LS_KAZA_KOKNEDEN) || 'null');
+    kazaKokNedenListesi = (Array.isArray(kayitli) && kayitli.length) ? kayitli : [...KAZA_KOKNEDEN_VARSAYILAN];
+  } catch(e) { kazaKokNedenListesi = [...KAZA_KOKNEDEN_VARSAYILAN]; }
+}
+function kazaKokNedenSaveLS() {
+  localStorage.setItem(LS_KAZA_KOKNEDEN, JSON.stringify(kazaKokNedenListesi));
+  if (window._fbSaveKaza) window._fbSaveKaza();
+}
+function kazaKokNedenKaydet(deger) {
+  const v = (deger || '').trim();
+  if (!v) return;
+  const varMi = kazaKokNedenListesi.some(x => x.toLocaleLowerCase('tr-TR') === v.toLocaleLowerCase('tr-TR'));
+  if (!varMi) {
+    kazaKokNedenListesi.push(v);
+    kazaKokNedenSaveLS();
+  }
+}
+function kazaRenderKokNedenListesi() {
+  const dl = document.getElementById('kaza-kokneden-list');
+  if (!dl) return;
+  dl.innerHTML = kazaKokNedenListesi
+    .slice()
+    .sort((a,b) => a.localeCompare(b, 'tr'))
+    .map(v => `<option value="${esc(v)}">`).join('');
+}
+// Bir kök neden başlığı için kategori döner — sadece yerleşik (Excel kaynaklı) başlıklarda bulunur;
+// kullanıcı serbest yazdıysa (kategorisi bilinmiyorsa) boş döner.
+function kazaKokNedenKategori(baslik) {
+  return KAZA_KOKNEDEN_KATEGORI[(baslik||'').trim()] || '';
+}
+
 const KAZA_TURLER = [
   { id:'kaza',      ad:'İş Kazası',   ikon:'🚑', renk:'#C0392B' },
   { id:'ramak',     ad:'Ramak Kala',  ikon:'⚠️', renk:'#E09000' },
@@ -6533,6 +6624,7 @@ function kazaLoad() {
   try { kazaItems = JSON.parse(localStorage.getItem(LS_KAZA_ITEMS) || '[]'); } catch(e) { kazaItems = []; }
   try { const a = JSON.parse(localStorage.getItem(LS_KAZA_AYAR)); if (a) kazaAyar = a; } catch(e) {}
   kazaYaralanmaYukle();
+  kazaKokNedenYukle();
 }
 function kazaSave() {
   localStorage.setItem(LS_KAZA_ITEMS, JSON.stringify(kazaItems));
@@ -6754,6 +6846,7 @@ function kazaOpenAdd(editId) {
   if (k && k.fab) fabSel.value = k.fab;
 
   kazaRenderYaralanmaListesi();
+  kazaRenderKokNedenListesi();
 
   document.getElementById('kaza-modal-bg').style.display = 'flex';
   setTimeout(() => document.getElementById('kaza-m-aciklama').focus(), 80);
@@ -6797,6 +6890,7 @@ function kazaSubmit() {
     kazaItems.unshift({ id: Date.now()+'', ...veri, createdAt: Date.now() });
   }
   kazaYaralanmaKaydet(veri.yaralanma);
+  kazaKokNedenKaydet(veri.kokNeden);
   kazaSave(); kazaCloseAdd(); kazaRenderFiltreler(); kazaRender();
   toast(kazaEditId ? 'Kayıt güncellendi' : 'Olay kaydedildi');
 }
@@ -7117,22 +7211,24 @@ function kazaPrint() {
     </div>
     <table>
       <thead><tr>
-        <th style="width:64px">Tarih</th><th style="width:74px">Olayın Adı</th><th style="width:76px">Fabrika</th>
-        <th style="width:58px">Bölüm</th><th>Olay</th><th style="width:100px">Kaza/Hasar Türü</th>
-        <th>Kök Neden</th><th>Önlem</th><th style="width:34px">Kayıp Gün</th>
+        <th style="width:58px">Tarih</th><th style="width:68px">Olayın Adı</th><th style="width:68px">Fabrika</th>
+        <th style="width:52px">Bölüm</th><th>Olay</th><th style="width:90px">Kaza/Hasar Türü</th>
+        <th style="width:100px">Kök Neden</th><th>Önlem</th><th style="width:30px">Kayıp Gün</th>
       </tr></thead>
       <tbody>
         ${liste.map(k => {
           const t = kazaTur(k.tur);
           const tarihStr = k.tarih ? new Date(k.tarih+'T00:00:00').toLocaleDateString('tr-TR') : '-';
           const surec = k.onlem ? `<span style="color:#666;font-size:8.5px;">Süreç: ${k.onlemTamam ? 'Tamamlandı' : 'Açık'}</span><br>` : '';
+          const kokKategori = kazaKokNedenKategori(k.kokNeden);
+          const kokHucre = (kokKategori ? `<span style="font-size:8px;color:#666;font-style:italic;">${esc(kokKategori)}</span><br><br>` : '') + esc(k.kokNeden||'-');
           return `<tr>
             <td>${tarihStr}${k.saat ? '<br><span style="color:#666;font-size:8.5px;">Saat: '+esc(k.saat)+'</span>' : ''}</td>
             <td>${esc((t.ad || '').toLocaleUpperCase('tr-TR'))}</td>
             <td>${esc(k.fab||'-')}</td><td>${esc(k.bolum||'-')}</td>
             <td>${esc(k.aciklama||'')}${k.kisi?'<br><i>Kişi: '+esc(k.kisi)+'</i>':''}</td>
             <td>${esc(k.yaralanma||'-')}</td>
-            <td>${esc(k.kokNeden||'-')}</td>
+            <td>${kokHucre}</td>
             <td>${surec}${esc(k.onlem||'-')}</td>
             <td>${k.kayip||0}</td>
           </tr>`;
@@ -8191,7 +8287,7 @@ window.addEventListener('resize', calMobInit);
   window._fbSaveTakvim  = () => yaz('takvim',  () => calReminders);
   window._fbSavePer     = () => yaz('per',     () => ({ tasks: perTasks, persons: perPersons, fabs: perFabs }));
   window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs }));
-  window._fbSaveKaza    = () => yaz('kaza',    () => ({ items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi }));
+  window._fbSaveKaza    = () => yaz('kaza',    () => ({ items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }));
   window._fbSaveDenetim = () => yaz('denetim', () => denetimler);
 
   window._fbReady = true;
@@ -8237,6 +8333,10 @@ window.addEventListener('resize', calMobInit);
       if (Array.isArray(d.kaza.yaralanmaListesi) && d.kaza.yaralanmaListesi.length) {
         doldur(kazaYaralanmaListesi, d.kaza.yaralanmaListesi);
         kazaRenderYaralanmaListesi();
+      }
+      if (Array.isArray(d.kaza.kokNedenListesi) && d.kaza.kokNedenListesi.length) {
+        doldur(kazaKokNedenListesi, d.kaza.kokNedenListesi);
+        kazaRenderKokNedenListesi();
       }
     }
     if (!yazimBekliyor['denetim'] && Array.isArray(d.denetim)) doldur(denetimler, d.denetim);
