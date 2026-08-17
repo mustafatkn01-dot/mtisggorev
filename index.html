@@ -1567,13 +1567,18 @@ html[data-tema="gokkusagi"] #topbar::after {
   min-width:40px; min-height:36px; display:flex; align-items:center; justify-content:center;
 }
 #mob-searchrow {
-  display:flex; gap:8px; padding:0 12px 10px;
+  display:flex; flex-direction:column; gap:6px; padding:0 12px 10px;
+}
+#mob-searchrow .view-toggle { width:100%; }
+#mob-searchrow .mob-search-line {
+  display:flex; align-items:center; gap:6px; width:100%;
 }
 #mob-search-inp {
-  flex:1; padding:8px 12px; font-size:14px;
+  flex:1 1 auto; min-width:0; padding:8px 12px; font-size:14px;
   border:1px solid var(--border2); border-radius:8px;
   background:var(--bg); color:var(--text); outline:none; min-height:40px;
 }
+#mob-searchrow #mob-stats-btn { flex:0 0 auto; }
 #mob-fab { display:none; }
 #mob-col-nav {
   display:none;
@@ -5063,13 +5068,13 @@ function calTaskClick(id) {
         </div>
       </div>
       <div id="mob-searchrow">
-        <div class="view-toggle" id="view-toggle-mob" style="margin-bottom:6px;">
+        <div class="view-toggle" id="view-toggle-mob">
           <button class="vt-btn on" id="vt-board-mob" onclick="setViewMode('board')" type="button">🗂 Durum</button>
           <button class="vt-btn" id="vt-list-mob" onclick="setViewMode('list')" type="button">📋 Liste</button>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off" style="flex:1;min-width:0;"/>
-          <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik" style="flex-shrink:0;">📊</button>
+        <div class="mob-search-line">
+          <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off"/>
+          <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik">📊</button>
         </div>
       </div>
     `;
@@ -5454,12 +5459,21 @@ function calTaskClick(id) {
 
 #mob-searchrow {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   padding: 0 12px 10px;
+}
+#mob-searchrow .view-toggle { width: 100%; }
+#mob-searchrow .mob-search-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
 }
 
 #mob-search-inp {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 8px 12px;
   font-size: 14px;
   border: 1px solid var(--border2);
@@ -5469,6 +5483,7 @@ function calTaskClick(id) {
   outline: none;
   min-height: 40px;
 }
+#mob-searchrow #mob-stats-btn { flex: 0 0 auto; }
 #mob-search-inp:focus { border-color: #378ADD; }
 
 #mob-fab-sel {
@@ -8182,13 +8197,13 @@ window.addEventListener('resize', calMobInit);
         <button class="mob-icon-btn" onclick="openArchive()" title="Arşiv">📦</button>
       </div>
       <div id="mob-searchrow">
-        <div class="view-toggle" id="view-toggle-mob" style="margin-bottom:6px;">
+        <div class="view-toggle" id="view-toggle-mob">
           <button class="vt-btn on" id="vt-board-mob" onclick="setViewMode('board')" type="button">🗂 Durum</button>
           <button class="vt-btn" id="vt-list-mob" onclick="setViewMode('list')" type="button">📋 Liste</button>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off" style="flex:1;min-width:0;"/>
-          <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik" style="flex-shrink:0;">📊</button>
+        <div class="mob-search-line">
+          <input id="mob-search-inp" placeholder="Ara..." oninput="document.getElementById('search-inp').value=this.value;render()" autocomplete="off"/>
+          <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik">📊</button>
         </div>
       </div>
     `;
