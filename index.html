@@ -5710,7 +5710,7 @@ let perFabs = [
 ];
 
 let perSelPriVal = 'high';
-let _perReady = false;
+window._perReady = window._perReady || false;
 
 function perLoad() {
   try { perTasks   = JSON.parse(localStorage.getItem(LS_PER_TASKS)   || '[]'); } catch(e) { perTasks=[]; }
@@ -5727,7 +5727,7 @@ function perSaveFabs()    { localStorage.setItem(LS_PER_FABS,    JSON.stringify(
 let perFDurum = 'hepsi';   // hepsi | bekleyen | tamamlanan
 
 function perInit() {
-  if (!_perReady) { perLoad(); _perReady = true; }
+  if (!window._perReady) { perLoad(); window._perReady = true; }
   perFiltreKur();
   perRender();
 }
@@ -6139,9 +6139,9 @@ function kontrolLoad() {
 function kontrolSave()     { localStorage.setItem(LS_KONTROL_ITEMS,JSON.stringify(kontrolItems)); if(window._fbSaveKontrol) window._fbSaveKontrol(); }
 function kontrolSaveFabs() { localStorage.setItem(LS_KONTROL_FABS, JSON.stringify(kontrolFabs));  if(window._fbSaveKontrol) window._fbSaveKontrol(); }
 
-let _kontrolReady = false;
+window._kontrolReady = window._kontrolReady || false;
 function kontrolInit() {
-  if (!_kontrolReady) { kontrolLoad(); _kontrolReady = true; }
+  if (!window._kontrolReady) { kontrolLoad(); window._kontrolReady = true; }
   kontrolRenderFabFilter();
   kontrolRender();
 }
@@ -6586,7 +6586,7 @@ let kazaItems  = [];
 let kazaAyar   = { calisan: 0, saat: 0 };
 let kazaEditId = null;
 let kazaFTur   = null;          // null = tüm türler
-let _kazaReady = false;
+window._kazaReady = window._kazaReady || false;
 let kazaMTur   = 'kaza';        // modalda seçili tür
 
 // Kaza/Hasar Türü için varsayılan liste ("İŞ KAZASI OLAY VERİ KÜTÜPHANESİ.xlsx" →
@@ -6753,7 +6753,7 @@ function kazaSaveAyarLS() {
 }
 
 function kazaInit() {
-  if (!_kazaReady) { kazaLoad(); _kazaReady = true; }
+  if (!window._kazaReady) { kazaLoad(); window._kazaReady = true; }
   kazaRenderFiltreler();
   kazaRender();
 }
@@ -7774,7 +7774,7 @@ const LS_DENETIM = 'yeni_isg_denetim_v1';
 
 let denetimler = [];    // { id, ad, tarih, fab, tur, denetci, not }
 let bulgular   = [];    // { id, denetimId, metin, oneri, tur, onem, durum, bolum, sorumlu, termin, createdAt }
-let _denetimReady = false;
+window._denetimReady = window._denetimReady || false;
 let dnEditId = null, bgEditId = null;
 let dnFDurum = null, dnFOnem = null;
 let dnKapali = {};      // hangi denetim grubu kapalı (akordeon)
@@ -7807,7 +7807,7 @@ function denetimSave() {
   if (window._fbSaveDenetim) window._fbSaveDenetim();
 }
 function denetimInit() {
-  if (!_denetimReady) { denetimLoad(); _denetimReady = true; }
+  if (!window._denetimReady) { denetimLoad(); window._denetimReady = true; }
   denetimFiltreKur();
   denetimRender();
 }
@@ -8773,10 +8773,12 @@ window.addEventListener('resize', calMobInit);
       doldur(perTasks,   d.per.tasks);
       doldur(perPersons, d.per.persons);
       doldur(perFabs,    d.per.fabs);
+      window._perReady = true;      // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
     if (!yazimBekliyor['kontrol'] && d.kontrol) {
       doldur(kontrolItems, d.kontrol.items);
       doldur(kontrolFabs,  d.kontrol.fabs);
+      window._kontrolReady = true;  // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
     if (!yazimBekliyor['kaza'] && d.kaza) {
       doldur(kazaItems, d.kaza.items);
@@ -8789,8 +8791,12 @@ window.addEventListener('resize', calMobInit);
         doldur(kazaKokNedenListesi, d.kaza.kokNedenListesi);
         kazaRenderKokNedenListesi();
       }
+      window._kazaReady = true;     // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
-    if (!yazimBekliyor['denetim'] && Array.isArray(d.denetim)) doldur(denetimler, d.denetim);
+    if (!yazimBekliyor['denetim'] && Array.isArray(d.denetim)) {
+      doldur(denetimler, d.denetim);
+      window._denetimReady = true;  // bulut verisi yüklendi → lazy Load() artık ezmesin
+    }
 
     // Yerel kopyayı da güncelle (çevrimdışı açılışta veri kaybolmasın)
     try { lsSaveTasks(); lsSaveSettings(); } catch (e) {}
@@ -8800,6 +8806,11 @@ window.addEventListener('resize', calMobInit);
     const c = f => { try { if (typeof window[f] === 'function') window[f](); } catch (e) {} };
     c('buildViews'); c('renderFabDropdown'); c('renderTicker'); c('renderQN'); c('render');
     c('perRender'); c('kontrolRender'); c('kazaRender'); c('denetimRender');
+    // Özet ekranı açıksa sayaçları da tazele (açılışta 0 kalmasını önler)
+    try {
+      const dashWrap = document.getElementById('dash-wrap');
+      if (dashWrap && dashWrap.offsetParent !== null && typeof dashRender === 'function') dashRender();
+    } catch (e) {}
   }
 
   // ── Mevcut yerel veriyi buluta ilk kez yükle ───────────────
