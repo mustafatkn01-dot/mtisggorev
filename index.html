@@ -823,7 +823,16 @@ html, body { height: 100%; overflow: hidden;
 /* Kaza raporu yazdırma — sadece rapor görünür */
 #kaza-print { display:none; }
 @media print {
-  @page { size: A4 portrait; margin: 10mm 8mm; }
+  @page {
+    size: A4 portrait;
+    margin: 10mm 8mm 16mm 8mm;
+    @bottom-center {
+      content: "Sayfa " counter(page) "/" counter(pages);
+      font-family: Arial, sans-serif;
+      font-size: 9px;
+      color: #555;
+    }
+  }
   body.print-kaza #app,
   body.print-kaza #toast,
   body.print-kaza #mob-fab,
@@ -2121,10 +2130,9 @@ html[data-tema="gokkusagi"] #topbar::after {
       <h3 style="font-size:14px;font-weight:700;color:var(--text);">📥 Kaza Kayıtlarını İçe Aktar</h3>
       <button onclick="kazaImportKapat()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
     </div>
-    <div style="font-size:11px;color:var(--text2);line-height:1.6;background:var(--surface2);padding:9px 11px;border-radius:var(--r);">
+    <div style="font-size:10px;color:var(--text2);line-height:1.7;background:var(--surface2);padding:9px 11px;border-radius:var(--r);">
       Dosyanın ilk satırı başlık olmalıdır. Beklenen sütun başlıkları:
-      <br><b>Tarih</b> (Tarih + Saat aynı hücrede olabilir), <b>Olayın Adı</b> (İş Kazası / Ramak Kala / İlk Yardım / Maddi Hasar),
-      <b>Fabrika</b>, <b>Bölüm</b>, <b>Adı Soyadı</b>, <b>Olay</b>, <b>Kaza/Hasar Türü</b>, <b>Kök Neden</b>, <b>Önlem</b>, <b>Kayıp Gün</b>.
+      <br><b>Tarih</b> <span style="color:var(--text3);">|</span> <b>Olayın Adı</b> <span style="color:var(--text3);">|</span> <b>Fabrika</b> <span style="color:var(--text3);">|</span> <b>Bölüm</b> <span style="color:var(--text3);">|</span> <b>Adı Soyadı</b> <span style="color:var(--text3);">|</span> <b>Olay</b> <span style="color:var(--text3);">|</span> <b>Kaza/Hasar Türü</b> <span style="color:var(--text3);">|</span> <b>Kök Neden</b> <span style="color:var(--text3);">|</span> <b>Önlem</b> <span style="color:var(--text3);">|</span> <b>Kayıp Gün</b>
     </div>
     <div id="kaza-imp-dropzone"
          onclick="document.getElementById('kaza-imp-dosya').click()"
@@ -2143,7 +2151,7 @@ html[data-tema="gokkusagi"] #topbar::after {
       <div style="flex:1;height:1px;background:var(--border);"></div>
     </div>
     <div class="mfield">
-      <textarea id="kaza-imp-metin" oninput="kazaImportMetin()" placeholder="Tarih&#9;Olayın Adı&#9;Fabrika&#9;Bölüm&#9;Adı Soyadı&#9;Olay&#9;Kaza/Hasar Türü&#9;Kök Neden&#9;Önlem&#9;Kayıp Gün&#10;30.01.2026 Saat: 04:00&#9;İlk Yardım&#9;Adana Metal&#9;Kutu İmalat&#9;Ömer F.&#9;Bel ağrısı&#9;Ani Sağlık Problemi&#9;Kronik Sağlık Sorunu&#9;Takip edilmeli&#9;0"
+      <textarea id="kaza-imp-metin" oninput="kazaImportMetin()" placeholder="Tarih | Olayın Adı | Fabrika | Bölüm | Adı Soyadı | Olay | Kaza/Hasar Türü | Kök Neden | Önlem | Kayıp Gün"
         style="min-height:100px;font-family:ui-monospace,Menlo,monospace;font-size:11px;"></textarea>
     </div>
     <div id="kaza-imp-onizleme" style="font-size:11px;color:var(--text2);"></div>
@@ -8874,6 +8882,21 @@ window.addEventListener('resize', calMobInit);
   html, body, #app { color: #111 !important; }
   /* Koyu tema aktifken bile yazdırma her zaman aydınlık kalsın */
   * { color-scheme: light !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   YAZDIRMA SAYFA NUMARALARI — tüm PDF/yazdırma çıktılarında
+   alt-orta konumda "Sayfa X/Y" formatında sayfa numarası.
+   Destekleyen tarayıcılarda (Chrome/Edge/Firefox) @page ile basılır.
+   ══════════════════════════════════════════════════════════════ */
+@page {
+  margin: 12mm 10mm 16mm 10mm;
+  @bottom-center {
+    content: "Sayfa " counter(page) "/" counter(pages);
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    color: #555;
+  }
 }
 </style>
 
