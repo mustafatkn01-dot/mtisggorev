@@ -399,120 +399,94 @@ html, body { height: 100%; overflow: hidden;
 
 /* ===================== PRINT / PDF STYLES ===================== */
 @media print {
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  /* Sade, renksiz yazdırma: ekran renkleri (fabrika/öncelik/durum renkleri)
+     yalnızca ekran görünümü içindir; yazdırmada normal siyah-beyaz çıktı olur. */
 
   html, body {
     height: auto !important;
     overflow: visible !important;
     background: #fff !important;
-    color: #111 !important;
+    color: #000 !important;
     font-size: 11px !important;
   }
 
   #app { height: auto !important; display: block !important; }
 
-  #topbar { display: none !important; }
-  #navbar  { display: none !important; }
-  #toast   { display: none !important; }
-
-  /* Stats row — keep visible */
-  #statsrow {
-    display: flex !important;
-    background: #fff !important;
-    padding: 8px 0 12px !important;
-    gap: 10px !important;
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 12px;
+  /* Ekrana ait tüm arayüz öğelerini yazdırmadan gizle */
+  #topbar, #navbar, #toast, #search-bar,
+  #mob-topbar, #mob-searchrow, #mob-main-tabs, #mob-col-nav,
+  #mob-fab, #loading-msg, .ikon-grup, .ikon-btn {
+    display: none !important;
   }
-  .scard {
-    background: #f5f5f5 !important;
-    border: 1px solid #ccc !important;
-    border-radius: 6px !important;
-    padding: 4px 14px !important;
-  }
-  .scard strong { font-size: 14px !important; color: #111 !important; }
-  .scard span   { font-size: 10px !important; color: #555 !important; }
 
-  /* Print header injected via JS */
+  /* İstatistik satırını gizle — yazdırmada sadece başlık + tablo istenir */
+  #statsrow { display: none !important; }
+
+  /* Başlık ve alt açıklama (JS ile doldurulur) */
   #print-header {
     display: block !important;
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    color: #111;
+    font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #000;
   }
   #print-meta {
     display: block !important;
-    font-size: 10px;
-    color: #666;
-    margin-bottom: 10px;
+    font-size: 10px; color: #333; margin-bottom: 10px;
   }
 
-  /* Board */
-  #board-wrap {
-    flex: none !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    display: block !important;
-  }
-  #board {
-    display: block !important;
-    min-height: 0 !important;
-  }
+  /* Board — Durum Tablosu görünümü: sütunlar tam genişlik bölüm olur */
+  #board-wrap { flex: none !important; min-height: 0 !important; padding: 0 !important; display: block !important; }
+  #board      { display: block !important; min-height: 0 !important; }
 
-  /* Each column becomes a full-width section */
   .col {
     display: block !important;
     overflow: visible !important;
+    border: none !important;
     border-radius: 0 !important;
     background: #fff !important;
     margin-bottom: 14px !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid; page-break-inside: avoid;
   }
   .col-hd {
-    border-bottom: 2px solid #ddd !important;
+    border: none !important;
+    border-bottom: 1.5px solid #000 !important;
     padding: 5px 0 4px !important;
     background: #fff !important;
-    color: #333 !important;
-    font-size: 9px !important;
-    letter-spacing: .08em !important;
+    color: #000 !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: .06em !important;
   }
   .col-hd .cc {
-    background: #eee !important;
-    border: 1px solid #ccc !important;
-    color: #555 !important;
+    background: #fff !important;
+    border: 1px solid #000 !important;
+    color: #000 !important;
   }
 
-  .col-body {
-    overflow: visible !important;
-    padding: 4px 0 !important;
-  }
+  .col-body { overflow: visible !important; padding: 4px 0 !important; display: flex !important; flex-wrap: wrap !important; gap: 6px !important; }
 
-  /* Cards in print: arranged as a 2-column table-like layout */
-  .col-body { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; }
-
+  /* Kartlar: renksiz, ince siyah çerçeve — hiçbir fabrika/öncelik renk şeridi yok */
   .card {
-    background: #fafafa !important;
-    border: 1px solid #ddd !important;
-    border-radius: 5px !important;
+    background: #fff !important;
+    border: 1px solid #999 !important;
+    border-left: 1px solid #999 !important;   /* öncelik renk şeridini nötrle */
+    border-radius: 4px !important;
     padding: 6px 8px !important;
     margin-bottom: 0 !important;
     box-shadow: none !important;
     width: calc(50% - 4px) !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid; page-break-inside: avoid;
   }
+  /* Öncelik renk şeritlerini yazdırmada gri yap */
+  .prio-high, .prio-normal, .prio-low { border-left: 1px solid #999 !important; }
 
-  /* Hide move buttons in print */
-  .cbtns { display: none !important; }
-  .cdel  { display: none !important; }
+  .cbtns, .cdel { display: none !important; }
 
-  .ctxt  { font-size: 10.5px !important; color: #111 !important; }
-  .cfab  { font-size: 9px !important; color: #444 !important; background: #eee !important; border-color: #ccc !important; }
-  .cdate { font-size: 9px !important; color: #777 !important; }
-  .cdott { width: 7px !important; height: 7px !important; margin-top: 3px !important; }
-  .empty { color: #999 !important; font-size: 10px !important; }
+  .ctxt  { font-size: 10.5px !important; color: #000 !important; }
+  /* Fabrika etiketi: renkli zemin yerine ince çerçeveli sade etiket */
+  .cfab  { font-size: 9px !important; color: #000 !important; background: #fff !important; border: 1px solid #666 !important; }
+  .cdate { font-size: 9px !important; color: #333 !important; }
+  /* Durum noktası: renkli daire yerine ince çerçeveli nötr işaret */
+  .cdott { width: 7px !important; height: 7px !important; margin-top: 3px !important; background: #fff !important; border: 1px solid #000 !important; }
+  .empty { color: #666 !important; font-size: 10px !important; }
 }
 /* ============================================================= */
 
@@ -1418,8 +1392,27 @@ html[data-tema="gokkusagi"] #topbar::after {
   body.print-board-liste #list-table .lv-actions,
   body.print-board-liste #list-table th:last-child,
   body.print-board-liste #list-table td:last-child { display: none !important; }
+  /* Renkli durum/öncelik/fabrika etiketlerini sade, çerçeveli, renksiz hale getir */
   body.print-board-liste #list-table .lv-status-badge,
-  body.print-board-liste #list-table .lv-prio-badge { border: 1px solid #bbb; }
+  body.print-board-liste #list-table .lv-prio-badge,
+  body.print-board-liste #list-table .lv-fab-badge,
+  body.print-board-liste #list-table [class*="badge"] {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #888 !important;
+    box-shadow: none !important;
+  }
+  body.print-board-liste #list-table * { color: #000 !important; }
+  /* Liste yazdırmada da ekran arayüzünü gizle */
+  body.print-board-liste #topbar,
+  body.print-board-liste #navbar,
+  body.print-board-liste #search-bar,
+  body.print-board-liste #mob-topbar,
+  body.print-board-liste #mob-searchrow,
+  body.print-board-liste #mob-main-tabs,
+  body.print-board-liste #mob-col-nav,
+  body.print-board-liste #mob-fab,
+  body.print-board-liste #statsrow { display: none !important; }
 }
 
 </style>
@@ -5395,7 +5388,6 @@ function calTaskClick(id) {
   .cal-rem-chip.type-tatbikat  { background:repeating-linear-gradient(135deg,#581400 0,#581400 3px,#400a00 3px,#400a00 7px); color:#f8a878; border-color:#c84818; }
   .cal-rem-chip.type-rapor     { background:repeating-linear-gradient(135deg,#181858 0,#181858 3px,#0c0c38 3px,#0c0c38 7px); color:#c0c8ff; border-color:#5858c8; }
   .cal-rem-chip.type-diger     { background:var(--surface2); color:var(--text2); }
-}
   .cal-cell.today { background:color-mix(in srgb,var(--surface) 75%,#378ADD 25%) !important; }
   .cal-rem-chip { background:#3D2E00; color:#F0C875; border-color:#7A5800; }
   .cal-rem-chip.type-toplanti  { background:repeating-linear-gradient(135deg,#0c3068 0,#0c3068 3px,#071838 3px,#071838 7px); color:#90d0ff; border-color:#3888d8; }
@@ -8882,6 +8874,10 @@ window.addEventListener('resize', calMobInit);
   html, body, #app { color: #111 !important; }
   /* Koyu tema aktifken bile yazdırma her zaman aydınlık kalsın */
   * { color-scheme: light !important; }
+
+  /* Yazdırmada ekran arayüzü her zaman gizli kalsın (mobil display:flex kuralını da ezer) */
+  #mob-fab, #mob-topbar, #mob-searchrow, #mob-main-tabs, #mob-col-nav,
+  #topbar, #navbar, #search-bar, #statsrow { display: none !important; }
 }
 
 /* ══════════════════════════════════════════════════════════════
