@@ -8739,7 +8739,7 @@ window.addEventListener('resize', calMobInit);
   window._fbSavePer     = () => yaz('per',     () => ({ tasks: perTasks, persons: perPersons, fabs: perFabs }));
   window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs }));
   window._fbSaveKaza    = () => yaz('kaza',    () => ({ items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }));
-  window._fbSaveDenetim = () => yaz('denetim', () => denetimler);
+  window._fbSaveDenetim = () => yaz('denetim', () => ({ denetimler, bulgular }));
 
   window._fbReady = true;
 
@@ -8793,8 +8793,23 @@ window.addEventListener('resize', calMobInit);
       }
       window._kazaReady = true;     // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
-    if (!yazimBekliyor['denetim'] && Array.isArray(d.denetim)) {
-      doldur(denetimler, d.denetim);
+    if (!yazimBekliyor['denetim'] && d.denetim) {
+      // Yeni biçim: { denetimler, bulgular }  |  Eski biçim: sadece denetimler dizisi
+      if (Array.isArray(d.denetim)) {
+        // ESKİ BİÇİM — bulgular buluta hiç yazılmamış. Denetimleri uygula ama
+        // yerel bulguları (localStorage) KORU ve yeni biçimde buluta geri yaz.
+        doldur(denetimler, d.denetim);
+        try {
+          const yerel = JSON.parse(localStorage.getItem('yeni_isg_denetim_v1') || '{}');
+          if (Array.isArray(yerel.bulgular) && yerel.bulgular.length) {
+            doldur(bulgular, yerel.bulgular);
+            if (window._fbSaveDenetim) window._fbSaveDenetim();  // bulguları buluta taşı
+          }
+        } catch (e) {}
+      } else {
+        if (Array.isArray(d.denetim.denetimler)) doldur(denetimler, d.denetim.denetimler);
+        if (Array.isArray(d.denetim.bulgular))   doldur(bulgular,   d.denetim.bulgular);
+      }
       window._denetimReady = true;  // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
 
