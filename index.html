@@ -2115,32 +2115,41 @@ html[data-tema="gokkusagi"] #topbar::after {
 </div>
 
 <!-- KAZA EXCEL/CSV İÇE AKTARMA -->
-<div id="kaza-import-bg" onclick="if(event.target===this)kazaImportKapat()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:62;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border-radius:12px;padding:20px;width:760px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:94vh;overflow:auto;">
+<div id="kaza-import-bg" onclick="if(event.target===this)kazaImportKapat()" ondragover="event.preventDefault()" ondrop="event.preventDefault()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:62;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:12px;padding:20px;width:640px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:94vh;overflow:auto;">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <h3 style="font-size:14px;font-weight:700;color:var(--text);">📥 Kaza Kayıtlarını İçe Aktar</h3>
       <button onclick="kazaImportKapat()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
     </div>
     <div style="font-size:11px;color:var(--text2);line-height:1.6;background:var(--surface2);padding:9px 11px;border-radius:var(--r);">
-      <b>İki yol var:</b> Excel'de tabloyu seçip kopyala, aşağıdaki kutuya <b>yapıştır</b> —
-      ya da dosyayı <b>CSV</b> olarak kaydedip yükle.
-      İlk satır başlık satırı olmalı; sütunları aşağıda kendim eşleştirebilirsin.
-      <br><span style="color:var(--text3);">Not: .xlsx dosyası doğrudan okunamaz (sıkıştırılmış biçim). Excel'de “Farklı Kaydet → CSV UTF-8” yeterli, ya da doğrudan kopyala-yapıştır.</span>
+      Dosyanın ilk satırı başlık olmalıdır. Beklenen sütun başlıkları:
+      <br><b>Tarih</b> (Tarih + Saat aynı hücrede olabilir), <b>Olayın Adı</b> (İş Kazası / Ramak Kala / İlk Yardım / Maddi Hasar),
+      <b>Fabrika</b>, <b>Bölüm</b>, <b>Adı Soyadı</b>, <b>Olay</b>, <b>Kaza/Hasar Türü</b>, <b>Kök Neden</b>, <b>Önlem</b>, <b>Kayıp Gün</b>.
     </div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input type="file" id="kaza-imp-dosya" accept=".csv,.tsv,.txt" onchange="kazaImportDosya(this)"
-        style="font-size:11px;color:var(--text2);"/>
-      <span style="font-size:11px;color:var(--text3);">veya aşağıya yapıştır ↓</span>
+    <div id="kaza-imp-dropzone"
+         onclick="document.getElementById('kaza-imp-dosya').click()"
+         ondragover="kazaImpDragOver(event)"
+         ondragleave="kazaImpDragLeave(event)"
+         ondrop="kazaImpDrop(event)"
+         style="border:2px dashed #639922;border-radius:10px;background:#F0F7E6;color:#3E6614;padding:18px 14px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;">
+      <div style="font-size:22px;line-height:1;margin-bottom:6px;">📥</div>
+      <div id="kaza-imp-dropzone-text" style="font-size:12.5px;font-weight:600;">Excel / CSV dosyasını buraya sürükleyip bırak</div>
+      <div style="font-size:10.5px;color:#5b7d33;margin-top:3px;">ya da tıklayıp dosya seç (.xlsx / .xls / .csv)</div>
+      <input type="file" id="kaza-imp-dosya" accept=".xlsx,.xls,.csv" onchange="kazaImportDosya(this)" style="display:none;"/>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;color:var(--text3);font-size:11px;">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <span>veya metni yapıştır</span>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
     </div>
     <div class="mfield">
-      <textarea id="kaza-imp-metin" oninput="kazaImportCozumle()" placeholder="Tarih	Fabrika	Bölüm	Olay	Kayıp gün&#10;12.03.2026	Fabrika 1	Presler	Elde kesik	3"
-        style="min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size:11px;"></textarea>
+      <textarea id="kaza-imp-metin" oninput="kazaImportMetin()" placeholder="Tarih&#9;Olayın Adı&#9;Fabrika&#9;Bölüm&#9;Adı Soyadı&#9;Olay&#9;Kaza/Hasar Türü&#9;Kök Neden&#9;Önlem&#9;Kayıp Gün&#10;30.01.2026 Saat: 04:00&#9;İlk Yardım&#9;Adana Metal&#9;Kutu İmalat&#9;Ömer F.&#9;Bel ağrısı&#9;Ani Sağlık Problemi&#9;Kronik Sağlık Sorunu&#9;Takip edilmeli&#9;0"
+        style="min-height:100px;font-family:ui-monospace,Menlo,monospace;font-size:11px;"></textarea>
     </div>
-    <div id="kaza-imp-eslestir"></div>
     <div id="kaza-imp-onizleme" style="font-size:11px;color:var(--text2);"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:10px;">
       <button class="mbtn-cancel" onclick="kazaImportKapat()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
-      <button id="kaza-imp-btn" onclick="kazaImportKaydet()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">İçe Aktar</button>
+      <button id="kaza-imp-btn" onclick="kazaImportMetinKaydet()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">Metinden İçe Aktar</button>
     </div>
   </div>
 </div>
@@ -7120,26 +7129,72 @@ function kzNorm(x) {
 function kazaImportAc() {
   document.getElementById('kaza-imp-metin').value = '';
   document.getElementById('kaza-imp-dosya').value = '';
-  document.getElementById('kaza-imp-eslestir').innerHTML = '';
   document.getElementById('kaza-imp-onizleme').innerHTML = '';
-  kazaImpSatirlar = [];
+  if (typeof kazaImpDropReset === 'function') kazaImpDropReset();
   document.getElementById('kaza-import-bg').style.display = 'flex';
 }
 function kazaImportKapat() { document.getElementById('kaza-import-bg').style.display = 'none'; }
 
-function kazaImportDosya(inp) {
-  const f = inp.files && inp.files[0];
+// Bir File'ı okur — hem "dosya seç" hem "sürükle-bırak" bunu kullanır.
+// .xlsx doğrudan okunur (SheetJS), .csv metin olarak.
+function kazaImportDosyaOku(f) {
   if (!f) return;
-  if (/\.xlsx?$/i.test(f.name)) {
-    alert('Excel dosyası (.xlsx) doğrudan okunamıyor.\nExcel\'de "Farklı Kaydet → CSV UTF-8" yap ya da tabloyu kopyalayıp aşağıya yapıştır.');
-    inp.value = ''; return;
+  const uzanti = (f.name.split('.').pop() || '').toLowerCase();
+  if (!['xlsx','xls','csv'].includes(uzanti)) {
+    alert('Yalnızca .xlsx, .xls veya .csv dosyaları yüklenebilir.');
+    return;
   }
   const okuyucu = new FileReader();
   okuyucu.onload = () => {
-    document.getElementById('kaza-imp-metin').value = okuyucu.result;
-    kazaImportCozumle();
+    try {
+      let satirlar;
+      if (uzanti === 'xlsx' || uzanti === 'xls') {
+        if (typeof XLSX === 'undefined') { alert('Excel okuma kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.'); return; }
+        const wb = XLSX.read(okuyucu.result, { type:'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        satirlar = XLSX.utils.sheet_to_json(ws, { header:1, blankrows:false, defval:'' });
+      } else {
+        const metin = new TextDecoder('utf-8').decode(okuyucu.result);
+        const ilk = metin.split(/\r?\n/)[0] || '';
+        const ayirac = (ilk.match(/\t/g)||[]).length ? '\t' : (ilk.match(/;/g)||[]).length ? ';' : ',';
+        satirlar = metin.split(/\r?\n/).filter(x => x.trim()).map(x => kazaSatirAyir(x, ayirac));
+      }
+      kazaImportIsle(satirlar);
+    } catch (e) {
+      console.error(e);
+      alert('Dosya okunamadı: ' + e.message);
+    }
   };
-  okuyucu.readAsText(f, 'UTF-8');
+  okuyucu.readAsArrayBuffer(f);
+}
+function kazaImportDosya(inp) {
+  const f = inp.files && inp.files[0];
+  if (!f) return;
+  kazaImportDosyaOku(f);
+  inp.value = '';
+}
+
+// ── Sürükle-bırak ──
+function kazaImpDragOver(ev) {
+  ev.preventDefault();
+  const dz = document.getElementById('kaza-imp-dropzone');
+  if (dz) { dz.style.background = '#DCEFC4'; dz.style.borderColor = '#3E6614'; }
+  const t = document.getElementById('kaza-imp-dropzone-text');
+  if (t) t.textContent = 'Bırak, hemen yükleyeyim ✓';
+}
+function kazaImpDragLeave(ev) { ev.preventDefault(); kazaImpDropReset(); }
+function kazaImpDropReset() {
+  const dz = document.getElementById('kaza-imp-dropzone');
+  if (dz) { dz.style.background = '#F0F7E6'; dz.style.borderColor = '#639922'; }
+  const t = document.getElementById('kaza-imp-dropzone-text');
+  if (t) t.textContent = 'Excel / CSV dosyasını buraya sürükleyip bırak';
+}
+function kazaImpDrop(ev) {
+  ev.preventDefault();
+  kazaImpDropReset();
+  const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+  if (!f) return;
+  kazaImportDosyaOku(f);
 }
 
 // Ayırıcıyı kendi bulur: sekme, noktalı virgül veya virgül
@@ -7157,120 +7212,133 @@ function kazaSatirAyir(satir, ayirac) {
   return cikti.map(x => x.trim());
 }
 
-function kazaImportCozumle() {
+// Metin kutusundan (yapıştırma) içe aktarma
+function kazaImportMetin() {
+  // sadece önizleme sayacı; asıl işleme "Metinden İçe Aktar" ile
+  const metin = document.getElementById('kaza-imp-metin').value.trim();
+  const el = document.getElementById('kaza-imp-onizleme');
+  if (!metin) { el.innerHTML = ''; return; }
+  const n = metin.split(/\r?\n/).filter(x => x.trim()).length - 1;
+  el.innerHTML = n > 0 ? `<span style="color:var(--text3)">${n} veri satırı algılandı — “Metinden İçe Aktar”a bas.</span>` : '';
+}
+function kazaImportMetinKaydet() {
   const metin = document.getElementById('kaza-imp-metin').value;
-  const esEl  = document.getElementById('kaza-imp-eslestir');
-  const onEl  = document.getElementById('kaza-imp-onizleme');
-  if (!metin.trim()) { esEl.innerHTML=''; onEl.innerHTML=''; kazaImpSatirlar=[]; return; }
-
-  const satirlar = metin.split(/\r?\n/).filter(x => x.trim());
-  const ilk = satirlar[0];
-  const ayirac = (ilk.match(/\t/g)||[]).length ? '\t'
-               : (ilk.match(/;/g)||[]).length  ? ';' : ',';
-  kazaImpSatirlar = satirlar.map(x => kazaSatirAyir(x, ayirac));
-  const basliklar = kazaImpSatirlar[0];
-
-  // Başlık adlarından otomatik eşleştirme
-  const otomatik = basliklar.map(b => {
-    const kucuk = kzNorm(b);
-    let enIyi = '', enUzun = 0;
-    KAZA_ALANLAR.forEach(a => {
-      if (!a.id) return;
-      a.ipuclari.forEach(ip => {
-        const n = kzNorm(ip);
-        if (kucuk.includes(n) && n.length > enUzun) { enUzun = n.length; enIyi = a.id; }
-      });
-    });
-    return enIyi;
-  });
-
-  esEl.innerHTML = `
-    <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px;">
-      Sütun eşleştirme — ${basliklar.length} sütun, ${kazaImpSatirlar.length-1} veri satırı bulundu
-      <span style="font-weight:400;color:var(--text3);">(ayırıcı: ${ayirac==='\t'?'sekme':ayirac})</span>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;">
-      ${basliklar.map((b,i) => `
-        <div class="mfield">
-          <label style="font-size:10px;">Sütun ${i+1}: <b>${esc(b||'(boş)')}</b></label>
-          <select class="kaza-imp-map" data-sutun="${i}" onchange="kazaImportOnizle()" style="padding:4px 6px;font-size:11px;">
-            ${KAZA_ALANLAR.map(a => `<option value="${a.id}"${otomatik[i]===a.id?' selected':''}>${a.ad}</option>`).join('')}
-          </select>
-        </div>`).join('')}
-    </div>`;
-  kazaImportOnizle();
+  if (!metin.trim()) { alert('Önce bir dosya sürükleyin ya da tabloyu buraya yapıştırın.'); return; }
+  const satirlarHam = metin.split(/\r?\n/).filter(x => x.trim());
+  const ilk = satirlarHam[0];
+  const ayirac = (ilk.match(/\t/g)||[]).length ? '\t' : (ilk.match(/;/g)||[]).length ? ';' : ',';
+  const satirlar = satirlarHam.map(x => kazaSatirAyir(x, ayirac));
+  kazaImportIsle(satirlar);
 }
 
-// Türkçe tarih biçimlerini YYYY-MM-DD'ye çevirir
+// Türkçe tarih biçimlerini YYYY-MM-DD'ye çevirir (Excel seri no da desteklenir)
 function kazaTarihCevir(x) {
-  if (!x) return '';
+  if (x == null || x === '') return '';
+  if (typeof x === 'number') {
+    const d = new Date(Math.round((x - 25569) * 86400 * 1000));
+    if (!isNaN(d)) return d.toISOString().slice(0,10);
+  }
   const t = String(x).trim();
-  let m = t.match(/^(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})$/);          // 2026-03-12
+  let m = t.match(/(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})/);          // 2026-03-12
   if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
-  m = t.match(/^(\d{1,2})[-.\/](\d{1,2})[-.\/](\d{4})$/);              // 12.03.2026
+  m = t.match(/(\d{1,2})[-.\/](\d{1,2})[-.\/](\d{4})/);              // 12.03.2026
   if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
-  const d = new Date(t);
-  if (!isNaN(d)) return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   return '';
+}
+// "30.01.2026 Saat: 04:00" veya ayrı hücre → saat (HH:MM)
+function kazaSaatCevir(x) {
+  if (x == null) return '';
+  const m = String(x).match(/(\d{1,2}):(\d{2})/);
+  return m ? `${m[1].padStart(2,'0')}:${m[2]}` : '';
 }
 function kazaTurCevir(x) {
   const t = kzNorm(x);
-  if (t.includes('ramak'))                        return 'ramak';
-  if (t.includes('ilk yardim') || t.includes('ilkyardim')) return 'ilkyardim';
-  if (t.includes('maddi') || t.includes('hasar')) return 'maddi';
+  if (t.includes('ramak'))                                  return 'ramak';
+  if (t.includes('ilk yardim') || t.includes('ilkyardim'))  return 'ilkyardim';
+  if (t.includes('maddi'))                                  return 'maddi';
+  if (t.includes('is kazasi') || t.includes('kaza'))        return 'kaza';
   return 'kaza';
 }
 
-function kazaImportKayitlar() {
-  const esleme = {};
-  document.querySelectorAll('.kaza-imp-map').forEach(sel => {
-    if (sel.value) esleme[sel.value] = parseInt(sel.dataset.sutun);
-  });
-  const al = (satir, alan) => esleme[alan] !== undefined ? (satir[esleme[alan]] || '').trim() : '';
-  return kazaImpSatirlar.slice(1).map(satir => {
-    const tarih = kazaTarihCevir(al(satir,'tarih'));
-    const aciklama = al(satir,'aciklama') || al(satir,'yaralanma') || '(açıklama yok)';
-    return {
-      tarih, aciklama,
-      tur:       esleme.tur !== undefined ? kazaTurCevir(al(satir,'tur')) : 'kaza',
-      saat:      al(satir,'saat'),
-      fab:       al(satir,'fab'),
-      bolum:     al(satir,'bolum'),
-      kisi:      al(satir,'kisi'),
-      yaralanma: al(satir,'yaralanma'),
-      kokNeden:  al(satir,'kokNeden'),
-      onlem:     al(satir,'onlem'),
-      kayip:     parseInt(al(satir,'kayip')) || 0,
-      onlemTamam:false
-    };
-  }).filter(k => k.tarih || (k.aciklama && k.aciklama !== '(açıklama yok)'));
-}
+// Ortak işleme: başlıkları otomatik eşleştir, her satırı kaza kaydı olarak ekle
+function kazaImportIsle(satirlar) {
+  if (!satirlar || satirlar.length < 2) { alert('Dosyada veri satırı bulunamadı (yalnızca başlık ya da boş).'); return; }
+  const basliklar = satirlar[0].map(x => kzNorm(x));
+  const kullanilan = new Set();
+  const bul = (ipuclari, haric) => {
+    const haricN = (haric||[]).map(kzNorm);
+    const uygun = (bi) => !kullanilan.has(bi) && !haricN.some(h => basliklar[bi].includes(h));
+    for (const ip of ipuclari) { const hedef = kzNorm(ip); const i = basliklar.findIndex((b,bi)=>b===hedef && uygun(bi)); if (i!==-1){kullanilan.add(i);return i;} }
+    for (const ip of ipuclari) { const hedef = kzNorm(ip); const i = basliklar.findIndex((b,bi)=>b.includes(hedef) && uygun(bi)); if (i!==-1){kullanilan.add(i);return i;} }
+    return -1;
+  };
+  const idx = {
+    tarih:     bul(['tarih','date']),
+    olayAdi:   bul(['olayin adi','olay adi','olayadi']),
+    fab:       bul(['fabrika','tesis','lokasyon']),
+    bolum:     bul(['bolum','birim','departman']),
+    kisi:      bul(['adi soyadi','ad soyad','kisi','personel','isim','calisan']),
+    aciklama:  bul(['olay','aciklama','anlatim','detay'], ['olayin adi','olay adi','olayadi']),
+    yaralanma: bul(['kaza/hasar turu','kaza hasar turu','yaralanma','hasar turu','hasar']),
+    kokNeden:  bul(['kok neden','kok','sebep']),
+    onlem:     bul(['onlem','aksiyon','duzeltici','faaliyet']),
+    kayip:     bul(['kayip gun','gun kaybi','kayip','is gunu']),
+  };
+  if (idx.aciklama === -1 && idx.yaralanma === -1) {
+    alert('“Olay” sütunu bulunamadı. Dosyanın ilk satırında sütun başlıkları olmalı (Tarih, Olay, Fabrika ...).');
+    return;
+  }
+  const al = (satir, i) => i === -1 ? '' : String(satir[i] == null ? '' : satir[i]).trim();
 
-function kazaImportOnizle() {
-  const kayitlar = kazaImportKayitlar();
-  const el  = document.getElementById('kaza-imp-onizleme');
-  const btn = document.getElementById('kaza-imp-btn');
-  const tarihsiz = kayitlar.filter(k => !k.tarih).length;
-  el.innerHTML = `
-    <div style="background:var(--surface2);border-radius:var(--r);padding:9px 11px;max-height:150px;overflow:auto;">
-      <div style="font-weight:700;color:var(--text);margin-bottom:5px;">
-        ${kayitlar.length} kayıt aktarılacak${tarihsiz?` · <span style="color:#BA7517">${tarihsiz} tanesinde tarih okunamadı</span>`:''}
-      </div>
-      ${kayitlar.slice(0,6).map((k,i) => `<div style="padding:3px 0;border-top:1px solid var(--border);">
-        <b>${i+1}.</b> ${k.tarih||'(tarih yok)'} · ${esc(k.fab||'-')} · ${esc(k.aciklama.slice(0,60))}${k.kayip?` · ${k.kayip} gün`:''}
-      </div>`).join('')}
-      ${kayitlar.length>6?`<div style="padding-top:4px;color:var(--text3);">… ve ${kayitlar.length-6} tane daha</div>`:''}
-    </div>`;
-  btn.textContent = kayitlar.length ? `${kayitlar.length} Kaydı İçe Aktar` : 'İçe Aktar';
-}
-
-function kazaImportKaydet() {
-  const kayitlar = kazaImportKayitlar();
-  if (!kayitlar.length) { alert('Aktarılacak kayıt bulunamadı.'); return; }
   const zaman = Date.now();
-  kayitlar.forEach((k,i) => kazaItems.unshift({ id:'kz'+(zaman+i), ...k, createdAt: zaman+i }));
+  const yeniKayitlar = [];
+  for (let r = 1; r < satirlar.length; r++) {
+    const satir = satirlar[r];
+    if (!satir || satir.every(c => String(c==null?'':c).trim() === '')) continue;
+    const aciklama = al(satir, idx.aciklama);
+    const tarihHam = idx.tarih !== -1 ? satir[idx.tarih] : '';
+    const tarih = kazaTarihCevir(tarihHam);
+    // Boş satır ya da hem tarih hem açıklama yoksa atla
+    if (!aciklama && !tarih) continue;
+
+    const yaralanma = al(satir, idx.yaralanma);
+    const kokNeden  = al(satir, idx.kokNeden);
+    yeniKayitlar.push({
+      id: 'kz' + (zaman + r) + Math.random().toString(36).slice(2,5),
+      tur:        kazaTurCevir(al(satir, idx.olayAdi)),
+      tarih:      tarih,
+      saat:       kazaSaatCevir(tarihHam),
+      kayip:      parseInt(al(satir, idx.kayip)) || 0,
+      fab:        al(satir, idx.fab),
+      bolum:      al(satir, idx.bolum),
+      kisi:       al(satir, idx.kisi),
+      yaralanma:  yaralanma,
+      aciklama:   aciklama || yaralanma || '(açıklama yok)',
+      kokNeden:   kokNeden,
+      onlem:      al(satir, idx.onlem),
+      onlemTamam: false,
+      createdAt:  zaman + r
+    });
+  }
+  if (!yeniKayitlar.length) { alert('Uygun veri satırı bulunamadı. Sütun başlıklarını kontrol edin.'); return; }
+
+  // Excel'de olmayan fabrikaları listeye ekle (kayıt formundaki gibi)
+  let yeniFab = 0;
+  yeniKayitlar.forEach(k => {
+    const fn = (k.fab || '').trim();
+    if (fn && !fabrikalar.some(f => kzNorm(f.name) === kzNorm(fn))) {
+      fabrikalar.push({ name: fn, color: RENK_PALETI ? RENK_PALETI[fabrikalar.length % RENK_PALETI.length] : '#378ADD' });
+      yeniFab++;
+    }
+    // Yeni yaralanma/kök neden değerlerini de kütüphaneye kat
+    if (typeof kazaYaralanmaKaydet === 'function') kazaYaralanmaKaydet(k.yaralanma);
+    if (typeof kazaKokNedenKaydet === 'function')  kazaKokNedenKaydet(k.kokNeden);
+  });
+
+  yeniKayitlar.forEach(k => kazaItems.unshift(k));
+  if (yeniFab && typeof saveFabrikalar === 'function') saveFabrikalar();
   kazaSave(); kazaImportKapat(); kazaRenderFiltreler(); kazaRender();
-  toast(kayitlar.length + ' kaza kaydı içe aktarıldı');
+  toast(yeniKayitlar.length + ' kaza kaydı içe aktarıldı' + (yeniFab ? ' (' + yeniFab + ' yeni fabrika)' : ''));
 }
 
 // ── Yazdırma / PDF ──────────────────────────────────────────
