@@ -7871,6 +7871,21 @@ function denetimRender() {
   const stats = document.getElementById('dn-stats');
   if (!body) return;
 
+  // Fantom/bozuk bulgu temizliği: metni tamamen boş olan ya da hiçbir denetime
+  // bağlı olmayan (denetimId'si geçersiz) kayıtlar sayımı bozar — bir kez ayıkla.
+  const gecerliIdler = new Set(denetimler.map(d => d.id));
+  const oncekiSayi = bulgular.length;
+  const temiz = bulgular.filter(b =>
+    b && typeof b === 'object' &&
+    (b.metin || '').trim() !== '' &&      // boş metinli fantom bulgu değil
+    b.denetimId && gecerliIdler.has(b.denetimId)  // var olan bir denetime bağlı
+  );
+  if (temiz.length !== oncekiSayi) {
+    bulgular.length = 0;
+    temiz.forEach(b => bulgular.push(b));
+    try { denetimSave(); } catch (e) {}   // temizlenmiş hali kalıcılaştır + buluta yaz
+  }
+
   const liste  = dnFiltreliBulgular();
   const bugun  = new Date(); bugun.setHours(0,0,0,0);
   const acik   = liste.filter(b => b.durum === 'acik').length;
