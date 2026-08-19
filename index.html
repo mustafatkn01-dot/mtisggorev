@@ -1947,7 +1947,13 @@ html[data-tema="gokkusagi"] #topbar::after {
     </div>
     <div class="mfield"><label>Ait Olduğu Denetim *</label><select id="bg-m-denetim"></select></div>
     <div class="mfield"><label>Tespit / Uygunsuzluk *</label><textarea id="bg-m-metin" placeholder="Ne tespit edildi?"></textarea></div>
-    <div class="mfield"><label>Öneri / Düzeltici Faaliyet</label><textarea id="bg-m-oneri" placeholder="Ne yapılmalı?" style="min-height:50px"></textarea></div>
+    <div class="mfield">
+      <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Öneri / Düzeltici Faaliyet
+        <button type="button" onclick="aiDenetimOneri(this)" title="Tespit içeriğine göre yapay zeka önerisi üret"
+          style="padding:3px 10px;font-size:11px;font-weight:600;border:none;border-radius:6px;background:#378ADD;color:#fff;cursor:pointer;">✨ Öneri Oluştur</button>
+      </label>
+      <textarea id="bg-m-oneri" placeholder="Ne yapılmalı?" style="min-height:50px"></textarea>
+    </div>
     <div class="mrow3">
       <div class="mfield"><label>Tür</label>
         <select id="bg-m-tur">
@@ -2105,7 +2111,13 @@ html[data-tema="gokkusagi"] #topbar::after {
       <input id="kaza-m-koknedan" list="kaza-kokneden-list" placeholder="Listeden seç ya da yeni yaz (örn: KKD Kullanmamak)" autocomplete="off"/>
       <datalist id="kaza-kokneden-list"></datalist>
     </div>
-    <div class="mfield"><label>Alınan / Alınacak Önlem</label><textarea id="kaza-m-onlem" placeholder="Tekrarını önlemek için ne yapıldı?" style="min-height:50px"></textarea></div>
+    <div class="mfield">
+      <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Alınan / Alınacak Önlem
+        <button type="button" onclick="aiKazaOneri(this)" title="Yaralanma türü, olay anlatımı ve kök nedene göre yapay zeka önerisi üret"
+          style="padding:3px 10px;font-size:11px;font-weight:600;border:none;border-radius:6px;background:#378ADD;color:#fff;cursor:pointer;">✨ Öneri Oluştur</button>
+      </label>
+      <textarea id="kaza-m-onlem" placeholder="Tekrarını önlemek için ne yapıldı?" style="min-height:50px"></textarea>
+    </div>
     <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;">
       <input type="checkbox" id="kaza-m-onlem-tamam" style="accent-color:#639922;width:14px;height:14px;"> Önlem tamamlandı
     </label>
@@ -2403,6 +2415,24 @@ html[data-tema="gokkusagi"] #topbar::after {
       <div class="set-section">
         <div class="set-section-title">Renk Teması</div>
         <div class="tema-grid" id="tema-grid"></div>
+      </div>
+
+      <div class="set-section">
+        <div class="set-section-title">🤖 Yapay Zeka (Gemini)</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.55;background:var(--surface2);padding:8px 10px;border-radius:var(--r);margin-bottom:8px;">
+          Denetim bulgularında <b>Öneri / Düzeltici Faaliyet</b> ve kaza kayıtlarında
+          <b>Alınan / Alınacak Önlem</b> alanları için yapay zekâ ile otomatik öneri
+          üretmek istersen, Google <b>Gemini API</b> anahtarını buraya gir. Anahtar yalnızca
+          bu cihazda saklanır. Ücretsiz anahtar:
+          <span style="color:#378ADD;">aistudio.google.com/apikey</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <input id="ai-key-input" type="password" placeholder="AIza... ile başlayan Gemini anahtarı"
+            style="flex:1;min-width:180px;padding:7px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"/>
+          <button onclick="aiKeyKaydet()" style="padding:7px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">Kaydet</button>
+          <button onclick="aiKeyTest()" style="padding:7px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;">Test Et</button>
+        </div>
+        <div id="ai-key-durum" style="font-size:11px;margin-top:6px;color:var(--text3);"></div>
       </div>
     </div>
   </div>
@@ -3053,7 +3083,143 @@ function changeColColor(i) {
 
 function openSettings() {
   renderSettingsPanel();
+  const ak = document.getElementById('ai-key-input');
+  if (ak) ak.value = aiKeyAl();
+  const ad = document.getElementById('ai-key-durum');
+  if (ad) ad.innerHTML = aiKeyAl() ? '<span style="color:#639922">✓ Anahtar kayıtlı — öneri butonları aktif.</span>' : 'Anahtar girilmedi — öneri butonları uyarı verir.';
   document.getElementById('settings-bg').classList.add('on');
+}
+
+/* ════════════════════════════════════════════════════════════════
+   YAPAY ZEKA MODÜLÜ (Google Gemini)
+   - API anahtarı yalnızca bu cihazda (localStorage) saklanır.
+   - Denetim bulgusu: Tespit içeriğinden düzeltici faaliyet önerir.
+   - Kaza/olay: yaralanma türü + olay anlatımı + kök nedenden önlem önerir.
+   ════════════════════════════════════════════════════════════════ */
+const LS_AI_KEY = 'yeni_isg_ai_key_v1';
+function aiKeyAl()  { try { return localStorage.getItem(LS_AI_KEY) || ''; } catch(e) { return ''; } }
+function aiKeyKaydet() {
+  const v = (document.getElementById('ai-key-input').value || '').trim();
+  try { localStorage.setItem(LS_AI_KEY, v); } catch(e) {}
+  const d = document.getElementById('ai-key-durum');
+  if (d) d.innerHTML = v ? '<span style="color:#639922">✓ Kaydedildi.</span>' : '<span style="color:#C0392B">Anahtar temizlendi.</span>';
+  toast(v ? 'Gemini anahtarı kaydedildi' : 'Anahtar silindi');
+}
+async function aiKeyTest() {
+  const d = document.getElementById('ai-key-durum');
+  if (d) d.innerHTML = '<span style="color:var(--text3)">Test ediliyor…</span>';
+  try {
+    const cevap = await geminiUret('Sadece "OK" yaz.', 20);
+    if (d) d.innerHTML = cevap ? '<span style="color:#639922">✓ Bağlantı başarılı.</span>' : '<span style="color:#C0392B">Yanıt alınamadı.</span>';
+  } catch (e) {
+    if (d) d.innerHTML = '<span style="color:#C0392B">Hata: ' + esc(e.message) + '</span>';
+  }
+}
+
+// Gemini API çağrısı — kısa metin döndürür
+async function geminiUret(prompt, maxToken) {
+  const key = aiKeyAl();
+  if (!key) throw new Error('Önce Ayarlar → Yapay Zeka bölümünden Gemini API anahtarını girin.');
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + encodeURIComponent(key);
+  const govde = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.4, maxOutputTokens: maxToken || 220 }
+  };
+  const yanit = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(govde)
+  });
+  if (!yanit.ok) {
+    let mesaj = 'Gemini API hatası (' + yanit.status + ')';
+    try { const h = await yanit.json(); if (h.error && h.error.message) mesaj += ': ' + h.error.message; } catch(e) {}
+    if (yanit.status === 400 || yanit.status === 403) mesaj += ' — Anahtar geçersiz olabilir.';
+    throw new Error(mesaj);
+  }
+  const veri = await yanit.json();
+  const metin = veri?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return metin.trim();
+}
+
+// Bir "Öneri Oluştur" butonunu yükleniyor durumuna al / geri döndür
+function aiBtnDurum(btn, yukleniyor) {
+  if (!btn) return;
+  if (yukleniyor) {
+    btn.dataset.eski = btn.innerHTML;
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.innerHTML = '⏳ Üretiliyor…';
+  } else {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    if (btn.dataset.eski) btn.innerHTML = btn.dataset.eski;
+  }
+}
+
+// ── DENETİM: Tespit içeriğinden düzeltici faaliyet önerisi ──
+async function aiDenetimOneri(btn) {
+  const tespit = (document.getElementById('bg-m-metin')?.value || '').trim();
+  const tur    = document.getElementById('bg-m-tur')?.value || '';
+  const onem   = document.getElementById('bg-m-onem')?.value || '';
+  if (!tespit) { alert('Önce "Tespit" alanına bulguyu yazın; öneri onun içeriğine göre üretilir.'); return; }
+  const prompt =
+    'Sen bir İş Sağlığı ve Güvenliği (İSG) uzmanısın. Aşağıdaki denetim bulgusu için ' +
+    'somut, uygulanabilir bir DÜZELTİCİ FAALİYET / ÖNERİ yaz. ' +
+    'Kurallar: Türkçe yaz, en fazla 2 kısa cümle, madde işareti veya başlık kullanma, ' +
+    'doğrudan yapılacak eylemi belirt.\n\n' +
+    'Tespit: ' + tespit + '\n' +
+    (tur ? 'Bulgu türü: ' + tur + '\n' : '') +
+    (onem ? 'Önem: ' + onem + '\n' : '');
+  aiBtnDurum(btn, true);
+  try {
+    const oneri = await geminiUret(prompt, 200);
+    if (oneri) {
+      document.getElementById('bg-m-oneri').value = oneri;
+      toast('Öneri oluşturuldu');
+    } else {
+      alert('Öneri üretilemedi, tekrar deneyin.');
+    }
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    aiBtnDurum(btn, false);
+  }
+}
+
+// ── KAZA: yaralanma türü + olay anlatımı + kök nedenden önlem önerisi ──
+async function aiKazaOneri(btn) {
+  const aciklama  = (document.getElementById('kaza-m-aciklama')?.value || '').trim();
+  const yaralanma = (document.getElementById('kaza-m-yaralanma')?.value || '').trim();
+  const kokNeden  = (document.getElementById('kaza-m-koknedan')?.value || '').trim();
+  const tur       = kazaMTur || '';
+  if (!aciklama && !yaralanma && !kokNeden) {
+    alert('Öneri üretmek için önce "Olayın Anlatımı", "Yaralanma/Hasar Türü" ya da "Kök Neden" alanlarından en az birini doldurun.');
+    return;
+  }
+  const turAd = (kazaTur(tur)?.ad) || '';
+  const prompt =
+    'Sen bir İş Sağlığı ve Güvenliği (İSG) uzmanısın. Aşağıdaki iş kazası / ramak kala olayı için ' +
+    'tekrarını önleyecek somut, uygulanabilir bir ALINACAK ÖNLEM yaz. ' +
+    'Kurallar: Türkçe yaz, en fazla 2 kısa cümle, madde işareti veya başlık kullanma, ' +
+    'doğrudan yapılacak eylemi belirt.\n\n' +
+    (turAd     ? 'Olay türü: ' + turAd + '\n' : '') +
+    (yaralanma ? 'Yaralanma/Hasar türü: ' + yaralanma + '\n' : '') +
+    (aciklama  ? 'Olayın anlatımı: ' + aciklama + '\n' : '') +
+    (kokNeden  ? 'Kök neden: ' + kokNeden + '\n' : '');
+  aiBtnDurum(btn, true);
+  try {
+    const oneri = await geminiUret(prompt, 200);
+    if (oneri) {
+      document.getElementById('kaza-m-onlem').value = oneri;
+      toast('Önlem önerisi oluşturuldu');
+    } else {
+      alert('Öneri üretilemedi, tekrar deneyin.');
+    }
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    aiBtnDurum(btn, false);
+  }
 }
 function closeSettings() { document.getElementById('settings-bg').classList.remove('on'); }
 
