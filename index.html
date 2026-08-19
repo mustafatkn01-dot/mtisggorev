@@ -3120,7 +3120,7 @@ async function aiKeyTest() {
 async function geminiUret(prompt, maxToken) {
   const key = aiKeyAl();
   if (!key) throw new Error('Önce Ayarlar → Yapay Zeka bölümünden Gemini API anahtarını girin.');
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + encodeURIComponent(key);
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + encodeURIComponent(key);
   const govde = {
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: { temperature: 0.4, maxOutputTokens: maxToken || 220 }
@@ -3134,6 +3134,8 @@ async function geminiUret(prompt, maxToken) {
     let mesaj = 'Gemini API hatası (' + yanit.status + ')';
     try { const h = await yanit.json(); if (h.error && h.error.message) mesaj += ': ' + h.error.message; } catch(e) {}
     if (yanit.status === 400 || yanit.status === 403) mesaj += ' — Anahtar geçersiz olabilir.';
+    if (yanit.status === 404) mesaj += ' — Model adı güncel değil olabilir.';
+    if (yanit.status === 429) mesaj += ' — Kota/hız sınırı aşıldı, biraz sonra tekrar deneyin.';
     throw new Error(mesaj);
   }
   const veri = await yanit.json();
