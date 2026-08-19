@@ -3109,7 +3109,7 @@ async function aiKeyTest() {
   const d = document.getElementById('ai-key-durum');
   if (d) d.innerHTML = '<span style="color:var(--text3)">Test ediliyor…</span>';
   try {
-    const cevap = await geminiUret('Sadece "OK" yaz.', 20);
+    const cevap = await geminiUret('Sadece "OK" yaz.', 512);
     if (d) d.innerHTML = cevap ? '<span style="color:#639922">✓ Bağlantı başarılı.</span>' : '<span style="color:#C0392B">Yanıt alınamadı.</span>';
   } catch (e) {
     if (d) d.innerHTML = '<span style="color:#C0392B">Hata: ' + esc(e.message) + '</span>';
@@ -3123,7 +3123,9 @@ async function geminiUret(prompt, maxToken) {
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + encodeURIComponent(key);
   const govde = {
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.4, maxOutputTokens: maxToken || 220 }
+    // Yeni nesil modeller yanıt öncesi "düşünme" tokenı harcar; bütçeyi geniş tut
+    // ki gerçek metin yarıda kesilmesin.
+    generationConfig: { temperature: 0.4, maxOutputTokens: maxToken || 1024 }
   };
   const yanit = await fetch(url, {
     method: 'POST',
@@ -3139,8 +3141,20 @@ async function geminiUret(prompt, maxToken) {
     throw new Error(mesaj);
   }
   const veri = await yanit.json();
-  const metin = veri?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return metin.trim();
+  const aday = veri?.candidates?.[0];
+  // İçerik güvenlik filtresine takıldıysa ya da hiç aday yoksa açıkla
+  if (!aday) {
+    const blok = veri?.promptFeedback?.blockReason;
+    throw new Error(blok ? ('İçerik engellendi: ' + blok) : 'Yapay zekadan yanıt alınamadı.');
+  }
+  // Metni tüm part'lardan birleştir (bazı yanıtlar çok parçalı gelebilir)
+  const parcalar = aday?.content?.parts || [];
+  let metin = parcalar.map(p => (p && p.text) ? p.text : '').join('').trim();
+  // Yanıt token sınırına takılıp boş/yarıda kaldıysa bildir
+  if (!metin && aday.finishReason === 'MAX_TOKENS') {
+    throw new Error('Yanıt token sınırına takıldı. Lütfen tekrar deneyin.');
+  }
+  return metin;
 }
 
 // Bir "Öneri Oluştur" butonunu yükleniyor durumuna al / geri döndür
@@ -3174,7 +3188,7 @@ async function aiDenetimOneri(btn) {
     (onem ? 'Önem: ' + onem + '\n' : '');
   aiBtnDurum(btn, true);
   try {
-    const oneri = await geminiUret(prompt, 200);
+    const oneri = await geminiUret(prompt, 1024);
     if (oneri) {
       document.getElementById('bg-m-oneri').value = oneri;
       toast('Öneri oluşturuldu');
@@ -3210,7 +3224,7 @@ async function aiKazaOneri(btn) {
     (kokNeden  ? 'Kök neden: ' + kokNeden + '\n' : '');
   aiBtnDurum(btn, true);
   try {
-    const oneri = await geminiUret(prompt, 200);
+    const oneri = await geminiUret(prompt, 1024);
     if (oneri) {
       document.getElementById('kaza-m-onlem').value = oneri;
       toast('Önlem önerisi oluşturuldu');
