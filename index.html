@@ -715,13 +715,13 @@ html, body { height: 100%; overflow: hidden;
 .dnk-tespit { font-size:13px; color:var(--text); line-height:1.5; word-break:break-word; }
 .dnk-oneri { font-size:12px; color:var(--text2); line-height:1.5; background:var(--surface2); padding:6px 9px; border-radius:var(--r); }
 .dnk-satir { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.dnk-bosluk { width:18px; flex-shrink:0; }   /* iki birim boşluk */
-.dnk-sorumlu { font-size:12px; color:var(--text2); font-weight:600; }
-.dnk-alt { display:flex; margin-top:2px; }
+.dnk-bosluk { width:18px; flex-shrink:0; }   /* iki birim boşluk (tür/önem arası) */
+.dnk-sorumlu { font-size:12px; color:var(--text2); font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dnk-alt { display:flex; align-items:center; gap:8px; margin-top:2px; flex-wrap:wrap; }
 .dnk-gorev-btn {
   font-size:11px; font-weight:600; padding:5px 12px;
   border:1px solid var(--border2); border-radius:6px;
-  background:var(--surface2); cursor:pointer; color:var(--text2);
+  background:var(--surface2); cursor:pointer; color:var(--text2); flex-shrink:0;
 }
 .dnk-gorev-btn:hover { background:var(--surface); border-color:var(--accent,#378ADD); color:var(--accent,#378ADD); }
 
@@ -748,6 +748,7 @@ html, body { height: 100%; overflow: hidden;
 }
 .dn-bulgu-metin { font-size:12px; color:var(--text); line-height:1.5; word-break:break-word; }
 .dn-bulgu-oneri { font-size:11px; color:var(--text2); line-height:1.5; margin-top:3px; }
+.dnk-satir .dn-durum-sel { flex-shrink:0; max-width:140px; }
 .dn-durum-sel {
   font-size:10px; font-weight:700; padding:2px 6px; border-radius:99px;
   border:1px solid var(--border2); background:var(--surface); color:var(--text2);
@@ -825,11 +826,28 @@ html, body { height: 100%; overflow: hidden;
 .kaza-alan { font-size:11px; color:var(--text2); line-height:1.5; margin-top:4px; }
 .kaza-alan b { color:var(--text); font-weight:600; }
 .kaza-onlem-durum { font-size:10px; font-weight:700; padding:1px 7px; border-radius:99px; }
+.kaza-onlem-kutu { font-size:12px; color:var(--text2); line-height:1.5; background:var(--surface2); padding:6px 9px; border-radius:var(--r); margin-top:6px; }
+.kaza-onlem-alt { display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap; }
+.kaza-onlem-gorev-btn {
+  font-size:11px; font-weight:600; padding:5px 12px;
+  border:1px solid var(--border2); border-radius:6px;
+  background:var(--surface2); cursor:pointer; color:var(--text2); flex-shrink:0;
+}
+.kaza-onlem-gorev-btn:hover { background:var(--surface); border-color:var(--accent,#378ADD); color:var(--accent,#378ADD); }
+.kaza-onlem-sel {
+  font-size:10px; font-weight:700; padding:2px 6px; border-radius:99px;
+  border:1px solid var(--border2); background:var(--surface); color:var(--text2);
+  cursor:pointer; outline:none; flex-shrink:0; max-width:120px;
+}
+.kaza-onlem-sel.acik  { background:#FFF3CD; color:#8A6914; border-color:#f0d060; }
+.kaza-onlem-sel.tamam { background:#EBF5EB; color:#27682A; border-color:#b8dcb8; }
 .kaza-onlem-durum.acik  { background:#FFF3CD; color:#8A6914; }
 .kaza-onlem-durum.tamam { background:#EBF5EB; color:#27682A; }
 @media (prefers-color-scheme:dark) {
   .kaza-onlem-durum.acik  { background:#4a3800; color:#ffd966; }
   .kaza-onlem-durum.tamam { background:#1a3a1a; color:#7fbf7f; }
+  .kaza-onlem-sel.acik  { background:#4a3800; color:#ffd966; border-color:#7a5800; }
+  .kaza-onlem-sel.tamam { background:#1a3a1a; color:#7fbf7f; border-color:#2f5f2f; }
 }
 .kaza-bar-row { display:flex; align-items:flex-end; gap:3px; height:80px; }
 .kaza-bar-col { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:2px; height:100%; }
@@ -7151,11 +7169,14 @@ function kazaRender() {
       ${k.kisi ? alan('Kişi', k.kisi) : ''}
       ${alan('Yaralanma/Hasar', k.yaralanma)}
       ${alan('Kök neden', k.kokNeden)}
-      ${k.onlem ? `<div class="kaza-alan" style="display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;">
-          <span style="flex:1;min-width:180px;"><b>Önlem:</b> ${esc(k.onlem)}</span>
-          <span class="kaza-onlem-durum ${k.onlemTamam?'tamam':'acik'}">${k.onlemTamam?'✓ Tamamlandı':'Açık'}</span>
-          ${!k.onlemTamam ? `<button onclick="kazaOnlemGorev('${k.id}')" title="Bu önlemi görev panosuna ekle"
-            style="font-size:10px;padding:2px 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);">📋 Göreve ekle</button>` : ''}
+      ${k.onlem ? `<div class="kaza-onlem-kutu">💡 <b>Alınan / Alınacak Önlem:</b> ${esc(k.onlem)}</div>
+        <div class="kaza-onlem-alt">
+          <button onclick="kazaOnlemGorev('${k.id}')" title="Bu önlemi görev panosuna ekle" class="kaza-onlem-gorev-btn">📋 Göreve Ekle</button>
+          <div style="flex:1"></div>
+          <select class="kaza-onlem-sel ${k.onlemTamam?'tamam':'acik'}" onchange="kazaOnlemDurum('${k.id}',this.value)">
+            <option value="acik"${!k.onlemTamam?' selected':''}>Açık</option>
+            <option value="kapali"${k.onlemTamam?' selected':''}>Kapalı</option>
+          </select>
         </div>` : ''}
     </div>`;
   }).join('');
@@ -7241,6 +7262,15 @@ function kazaDel(id) {
   kazaItems = kazaItems.filter(x => x.id !== id);
   kazaSave(); kazaRenderFiltreler(); kazaRender();
   toast('Kayıt silindi');
+}
+
+// Önlem durumu (Açık/Kapalı) — "Kapalı" seçilince Önlem Tamamlandı işaretlenir
+function kazaOnlemDurum(id, deger) {
+  const k = kazaItems.find(x => x.id === id);
+  if (!k) return;
+  k.onlemTamam = (deger === 'kapali');
+  kazaSave();
+  kazaRender();
 }
 
 // Önlemi görev panosuna aktar
@@ -8160,7 +8190,6 @@ function denetimRender() {
           <span class="dnk-no">${i+1}.</span>
           ${bFabs.length ? `<span class="cfab-tag" style="background:${bFabRenk};color:${contrastText(bFabRenk)}">${esc(bFabs[0])}</span>` : ''}
           ${b.bolum ? `<span class="dnk-bolum">${esc(b.bolum)}</span>` : ''}
-          ${terminStr ? `<span class="dnk-termin ${gecikmis?'gecikmis':''}">📅 ${terminStr}${gecikmis?' · Termini geçti':''}</span>` : ''}
           <div style="flex:1"></div>
           <button onclick="bulguOpen('${b.id}')" title="Düzenle" class="dnk-ikon">✏️</button>
           <button onclick="bulguSil('${b.id}')" title="Sil" class="dnk-ikon sil">🗑</button>
@@ -8176,7 +8205,7 @@ function denetimRender() {
         </div>
         <div class="dnk-satir">
           <span class="dnk-sorumlu">👤 ${b.sorumlu ? esc(b.sorumlu) : '<span style=\'color:var(--text3)\'>Sorumlu atanmadı</span>'}</span>
-          <span class="dnk-bosluk"></span>
+          <div style="flex:1"></div>
           <select class="dn-durum-sel ${b.durum}" onchange="bulguDurumDegistir('${b.id}',this.value)">
             ${Object.entries(BG_DURUM).map(([k,v]) => `<option value="${k}"${b.durum===k?' selected':''}>${v}</option>`).join('')}
           </select>
@@ -8184,6 +8213,8 @@ function denetimRender() {
 
         <div class="dnk-alt">
           <button onclick="bulguGoreveEkle('${b.id}')" title="Görev panosuna ekle" class="dnk-gorev-btn">📋 Göreve Ekle</button>
+          <div style="flex:1"></div>
+          ${terminStr ? `<span class="dnk-termin ${gecikmis?'gecikmis':''}">📅 ${terminStr}${gecikmis?' · Termini geçti':''}</span>` : ''}
         </div>
       </div>`;
     }).join('') || '<div style="font-size:11px;color:var(--text3);padding:8px;text-align:center;">Bu denetimde bulgu yok — “+ Bulgu” ile ekle.</div>';
