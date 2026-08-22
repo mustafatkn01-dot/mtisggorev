@@ -653,6 +653,11 @@ html, body { height: 100%; overflow: hidden;
 #cal-upcoming > *, #dash-overdue-list > *, #dash-week-list > *,
 #dash-kontrol-list > *, #dash-per-list > * { flex-shrink: 0; }
 
+/* Özet akordeon liste gövdesi: masaüstünde çok uzun listelerde ekran
+   yüksekliğine göre kaydırma; mobilde (aşağıdaki media kuralı) tamamı görünür.
+   Not: max-height açıldığında JS display:flex ile ezilir, kapalıyken display:none. */
+.dash-acc-body { max-height: min(60vh, 520px); overflow-y: auto; }
+
 /* ── DENETİMLER MODÜLÜ ── */
 .dn-scard { background:var(--surface); border:1px solid var(--border); border-radius:var(--rl); padding:9px 12px; }
 .dn-scard .dn-val { font-size:20px; font-weight:700; line-height:1.1; }
@@ -1578,7 +1583,7 @@ html[data-tema="gokkusagi"] #topbar::after {
   #dash-stats { grid-template-columns:repeat(2,1fr) !important; gap:6px !important; }
   #dash-wrap > div:nth-child(2),
   #dash-wrap > div:nth-child(3) { display:flex !important; flex-direction:column !important; gap:8px !important; }
-  #dash-overdue-list, #dash-week-list, #dash-kontrol-list, #dash-per-list { max-height:none !important; overflow-y:visible !important; }
+  .dash-acc-body { max-height:none !important; overflow-y:visible !important; }
   #dash-cal-list > div { grid-template-columns:1fr !important; }
   /* Board mobil — JS yönetiyor */
   /* Modal bottom sheet */
@@ -1744,7 +1749,7 @@ html[data-tema="gokkusagi"] #topbar::after {
           <span id="dash-overdue-count" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:#FFE0ED;color:#8B1A3A;"></span>
           <span class="dash-acc-ico" id="dash-acc-ico-overdue" style="font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
         </div>
-        <div id="dash-overdue-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);overflow-y:auto;max-height:240px;padding:8px 12px;flex-direction:column;gap:5px;"></div>
+        <div id="dash-overdue-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);padding:8px 12px;flex-direction:column;gap:5px;"></div>
       </div>
       <!-- Bu hafta terminler -->
       <div class="dash-acc" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
@@ -1754,7 +1759,7 @@ html[data-tema="gokkusagi"] #topbar::after {
           <span id="dash-week-count" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:#E6F1FB;color:#185FA5;"></span>
           <span class="dash-acc-ico" id="dash-acc-ico-week" style="font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
         </div>
-        <div id="dash-week-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);overflow-y:auto;max-height:240px;padding:8px 12px;flex-direction:column;gap:5px;"></div>
+        <div id="dash-week-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);padding:8px 12px;flex-direction:column;gap:5px;"></div>
       </div>
     </div>
     <!-- Alt bölüm -->
@@ -1766,7 +1771,7 @@ html[data-tema="gokkusagi"] #topbar::after {
           <span style="font-size:12px;font-weight:700;color:var(--text);">Yaklaşan Kontroller <span style="font-weight:400;color:var(--text3);font-size:10px;">(30 gün)</span></span>
           <span class="dash-acc-ico" id="dash-acc-ico-kontrol" style="margin-left:auto;font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
         </div>
-        <div id="dash-kontrol-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);overflow-y:auto;max-height:240px;padding:8px 12px;flex-direction:column;gap:5px;"></div>
+        <div id="dash-kontrol-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);padding:8px 12px;flex-direction:column;gap:5px;"></div>
       </div>
       <!-- Personel yük dağılımı -->
       <div class="dash-acc" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
@@ -1775,7 +1780,7 @@ html[data-tema="gokkusagi"] #topbar::after {
           <span style="font-size:12px;font-weight:700;color:var(--text);">Personel Yük Dağılımı</span>
           <span class="dash-acc-ico" id="dash-acc-ico-per" style="margin-left:auto;font-size:16px;font-weight:700;color:var(--text3);width:16px;text-align:center;">+</span>
         </div>
-        <div id="dash-per-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);overflow-y:auto;max-height:240px;padding:8px 12px;flex-direction:column;gap:6px;"></div>
+        <div id="dash-per-list" class="dash-acc-body" style="display:none;border-top:1px solid var(--border);padding:8px 12px;flex-direction:column;gap:6px;"></div>
       </div>
     </div>
     <!-- Takvim etkinlikleri -->
