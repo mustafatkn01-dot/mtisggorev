@@ -1585,6 +1585,123 @@ html[data-tema="gokkusagi"] #topbar::after {
   .kontrol-grup-body { padding:6px; }
   .kontrol-card { padding:10px; }
 }
+
+/* ── AŞAMA 2: Makine/Ekipman seçim kataloğu ── */
+.kontrol-ekipman-toolbar {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:8px 9px; border:1px dashed var(--border2);
+  border-radius:var(--r); background:var(--surface2);
+}
+.kontrol-ekipman-toolbar button {
+  padding:6px 11px; font-size:11px; font-weight:700;
+  border:1px solid #378ADD; border-radius:6px;
+  background:#378ADD; color:#fff; cursor:pointer; white-space:nowrap;
+}
+.kontrol-ekipman-toolbar button:hover { background:#2a6db5; border-color:#2a6db5; }
+.kontrol-ekipman-toolbar span { font-size:10.5px; color:var(--text3); line-height:1.4; }
+
+#kontrol-ekipman-bg {
+  display:none; position:fixed; inset:0; z-index:64;
+  background:rgba(0,0,0,.48); align-items:center; justify-content:center;
+}
+#kontrol-ekipman-bg.on { display:flex; }
+#kontrol-ekipman-modal {
+  width:720px; max-width:96vw; max-height:92vh;
+  background:var(--surface); border-radius:14px;
+  box-shadow:0 12px 38px rgba(0,0,0,.28);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.kem-head {
+  display:flex; align-items:center; gap:10px; padding:13px 15px;
+  border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.kem-head h3 { flex:1; font-size:14px; font-weight:700; color:var(--text); }
+.kem-close {
+  width:32px; height:32px; border:none; background:transparent;
+  color:var(--text3); font-size:21px; cursor:pointer; border-radius:7px;
+}
+.kem-close:hover { background:var(--surface2); color:var(--text); }
+.kem-search {
+  flex-shrink:0; padding:9px 14px; border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.kem-search input {
+  width:100%; padding:8px 10px; font-size:12px;
+  border:1px solid var(--border2); border-radius:8px;
+  background:var(--bg); color:var(--text); outline:none;
+}
+.kem-search input:focus { border-color:#378ADD; }
+#kem-body {
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:10px 12px; display:flex; flex-direction:column; gap:8px;
+}
+.kem-cat {
+  border:1px solid var(--border); border-radius:10px;
+  background:var(--surface); overflow:hidden;
+}
+.kem-cat-head {
+  display:flex; align-items:center; gap:8px; padding:9px 11px;
+  background:var(--surface2); cursor:pointer; user-select:none;
+}
+.kem-cat-head strong { flex:1; font-size:12px; color:var(--text); }
+.kem-cat-count {
+  font-size:9.5px; font-weight:700; padding:2px 7px;
+  border:1px solid var(--border); border-radius:99px;
+  background:var(--surface); color:var(--text2);
+}
+.kem-cat-body {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px; padding:8px;
+}
+.kem-item {
+  display:flex; align-items:flex-start; gap:7px;
+  padding:7px 8px; border:1px solid var(--border);
+  border-radius:7px; background:var(--surface);
+  cursor:pointer; font-size:11px; line-height:1.35; color:var(--text2);
+  user-select:none;
+}
+.kem-item:hover { border-color:var(--border2); background:var(--surface2); }
+.kem-item input { margin-top:1px; accent-color:#378ADD; flex-shrink:0; }
+.kem-item.track {
+  background:rgba(99,153,34,.08); border-color:rgba(99,153,34,.45);
+  color:var(--text);
+}
+.kem-item.track .kem-status {
+  margin-left:auto; font-size:9px; font-weight:700;
+  color:#4f7f16; white-space:nowrap;
+}
+.kem-foot {
+  flex-shrink:0; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:10px 14px; border-top:1px solid var(--border);
+  background:var(--surface);
+}
+#kem-selected-count { flex:1; font-size:11px; color:var(--text2); }
+.kem-btn-cancel, .kem-btn-add {
+  padding:8px 15px; font-size:12px; font-weight:600;
+  border-radius:7px; cursor:pointer;
+}
+.kem-btn-cancel {
+  border:1px solid var(--border2); background:transparent; color:var(--text2);
+}
+.kem-btn-add { border:none; background:#378ADD; color:#fff; }
+.kem-btn-add:disabled { opacity:.45; cursor:not-allowed; }
+
+.kontrol-card.kontrol-nodate {
+  border-left:4px solid #888780;
+  background:rgba(136,135,128,.06);
+}
+.kontrol-nodate-badge {
+  background:#888780; color:#fff; font-size:9.5px; font-weight:700;
+  padding:2px 7px; border-radius:99px; white-space:nowrap;
+}
+
+@media (max-width:899px) {
+  #kontrol-ekipman-modal { width:100vw; max-width:100vw; max-height:94vh; border-radius:16px 16px 0 0; }
+  #kontrol-ekipman-bg { align-items:flex-end; }
+  .kem-cat-body { grid-template-columns:1fr; }
+  .kem-item { font-size:12px; padding:9px; }
+}
+
 /* future-day: handled below via :not selectors */
 </style>
 
@@ -1895,7 +2012,7 @@ html[data-tema="gokkusagi"] #topbar::after {
 
   <!-- PERSONEL SEKMESİ -->
   
-<!-- KONTROL SEKMESİ -->
+<!-- KONTROL SEKMESİ — AŞAMA 2 -->
 <div id="kontrol-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg);">
   <!-- Topbar -->
   <div style="flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 14px;">
@@ -1926,6 +2043,7 @@ html[data-tema="gokkusagi"] #topbar::after {
           <option value="makine">Makine Ekipman Kontrolleri</option>
           <option value="cevre">Çevre Süreçleri</option>
         </select>
+        <div style="font-size:9.5px;color:var(--text3);margin-top:3px;">Makine/Ekipman için hazır katalogdan seçim yapmak isterseniz ana karttaki “Ekipmanları Yönet” düğmesini kullanın.</div>
       </div>
       <div>
         <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Kontrol Tipi *</label>
@@ -1961,6 +2079,35 @@ html[data-tema="gokkusagi"] #topbar::after {
       </div>
     </div>
     <button onclick="kontrolSubmit()" style="padding:9px;background:#378ADD;color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;">Kaydet</button>
+  </div>
+</div>
+
+
+<!-- AŞAMA 2 — Makine / Ekipman Seçim Kataloğu -->
+<div id="kontrol-ekipman-bg" onclick="if(event.target===this)kontrolEkipmanClose()">
+  <div id="kontrol-ekipman-modal">
+    <div class="kem-head">
+      <div style="font-size:20px;">⚙️</div>
+      <div style="min-width:0;">
+        <h3>Makine / Ekipman Takip Listesini Belirle</h3>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">
+          İşyerinizde bulunan kontrol tiplerini seçin. Her ekipman türü takip listesine yalnızca bir kez eklenir.
+        </div>
+      </div>
+      <button class="kem-close" onclick="kontrolEkipmanClose()" title="Kapat">×</button>
+    </div>
+    <div class="kem-search">
+      <input id="kem-search" placeholder="Ekipman ara... örn. forklift, hava tankı, topraklama"
+             oninput="kontrolEkipmanRender()"/>
+    </div>
+    <div id="kem-body"></div>
+    <div class="kem-foot">
+      <span id="kem-selected-count">Yeni seçim yok</span>
+      <button class="kem-btn-cancel" onclick="kontrolEkipmanClose()">İptal</button>
+      <button class="kem-btn-add" id="kem-add-btn" onclick="kontrolEkipmanAddSelected()" disabled>
+        Seçilenleri Takip Listesine Ekle
+      </button>
+    </div>
   </div>
 </div>
 
@@ -6426,6 +6573,248 @@ const KONTROL_GRUPLAR = {
   }
 };
 
+
+// ── AŞAMA 2: EK-III esaslı Makine/Ekipman seçim kataloğu ─────
+// Bu katalog uygulama içindeki takip başlıklarını oluşturur.
+// Aynı ekipman türü birden fazla fiziksel ekipman olsa dahi tek takip satırı olarak tutulur.
+const KONTROL_EKIPMAN_KATALOG = [
+  {
+    id:'basinc', ad:'Basınçlı Kap ve Tesisatlar', ikon:'🧯',
+    items:[
+      ['buhar-kazani','Buhar Kazanı'],
+      ['kizgin-su-kazani','Kızgın Su Kazanı'],
+      ['kalorifer-sicak-su-kazani','Kalorifer / Sıcak Su Kazanı'],
+      ['kizgin-yag-kazani','Kızgın Yağ Kazanı'],
+      ['buhar-jeneratoru','Buhar Jeneratörü'],
+      ['basincli-hava-tanki','Basınçlı Hava Tankı'],
+      ['kompresor-hava-tanki','Kompresör Hava Tankı'],
+      ['basincli-gaz-tanki','Basınçlı Gaz Tankı'],
+      ['hidrofor-genlesme','Hidrofor / Genleşme Tankı'],
+      ['kapali-genlesme','Kapalı Genleşme Tankı'],
+      ['boyler-akumulasyon','Boyler / Akümülasyon Tankı'],
+      ['endustriyel-otoklav','Endüstriyel Otoklav'],
+      ['lpg-tanki','Sıvılaştırılmış Gaz Tankları (LPG ve benzeri)'],
+      ['kriyojenik-tank','Kriyojenik Tank'],
+      ['boyama-kazani','Boyama Kazanı / Ateşle Temas Etmeyen Basınçlı Kap'],
+      ['tehlikeli-sivi-tanki','Tehlikeli Sıvı Depolama Tankı'],
+      ['atmosferik-depolama','Atmosferik Depolama Tankı']
+    ]
+  },
+  {
+    id:'kaldirma', ad:'Kaldırma ve İletme Ekipmanları', ikon:'🏗️',
+    items:[
+      ['koprulu-kren','Gezer Köprülü Kren'],
+      ['portal-kren','Portal Kren'],
+      ['monoray-kren','Monoray Kren'],
+      ['mobil-kren','Mobil Kren'],
+      ['kule-kren','Kule Kren'],
+      ['yukleyici-kren','Yükleyici Kren'],
+      ['doner-kollu-vinc','Döner Kollu / Pergel Vinç'],
+      ['caraskal','Caraskal'],
+      ['ysip','Yükseltilebilen Seyyar İş Platformu'],
+      ['asili-erisim','Asılı Erişim Donanımı'],
+      ['sutunlu-platform','Sütunlu Çalışma Platformu'],
+      ['engelli-platform','Hareket Engelliler İçin Güç Tahrikli Kaldırma Platformu'],
+      ['tasit-kaldirma','Taşıt Kaldırma Donanımı / Lift'],
+      ['servis-asansoru','Servis Asansörü'],
+      ['insaat-asansoru','İnşaat Asansörü'],
+      ['kriko','Kriko'],
+      ['halatli-cektirme','Halatlı Çektirme'],
+      ['zincirli-cektirme','Zincirli Çektirme'],
+      ['transpalet','Transpalet'],
+      ['istif-makinesi','İstif Makinesi'],
+      ['forklift','Forklift'],
+      ['degisken-erisimli-arac','Değişken Erişimli Araç'],
+      ['hareketli-yukleme-rampasi','Hareketli Yükleme Rampası'],
+      ['kuyruktan-kaldirici','Kuyruktan Kaldırıcı'],
+      ['yuruyen-merdiven','Yürüyen Merdiven'],
+      ['yuruyen-bant','Yürüyen Bant'],
+      ['kaldirma-aksesuarlari','Kaldırma Aksesuarları (Sapan, Kanca, Mapa, Travers vb.)'],
+      ['yapi-iskelesi','Yapı İskelesi']
+    ]
+  },
+  {
+    id:'tesisat', ad:'Tesisatlar', ikon:'⚡',
+    items:[
+      ['elektrik-tesisati','Elektrik Tesisatı'],
+      ['topraklama','Topraklama Tesisatı'],
+      ['yildirimdan-korunma','Yıldırımdan Korunma / Paratoner Tesisatı'],
+      ['akumulator','Akümülatör Tesisatı'],
+      ['transformator','Transformatör'],
+      ['jenerator','Jeneratör'],
+      ['katodik-koruma','Katodik Koruma Tesisatı'],
+      ['yangin-mekanik','Yangın Mekanik Tesisatı'],
+      ['yangin-algilama','Yangın Algılama ve Uyarı Sistemi'],
+      ['yangin-pompa','Yangın Pompa Grubu'],
+      ['sprinkler','Sprinkler / Otomatik Yağmurlama Sistemi'],
+      ['hidrant','Hidrant Sistemi'],
+      ['yangin-dolabi','Yangın Dolapları'],
+      ['gazli-sondurme','Otomatik Gazlı Söndürme Sistemi'],
+      ['havalandirma','Havalandırma Tesisatı'],
+      ['klima','Klima Tesisatı']
+    ]
+  },
+  {
+    id:'tezgah', ad:'Tezgâhlar', ikon:'🏭',
+    items:[
+      ['mekanik-pres','Mekanik Pres'],
+      ['hidrolik-pres','Hidrolik Pres'],
+      ['pnomatik-pres','Pnömatik Pres'],
+      ['abkant-pres','Abkant Pres'],
+      ['giyotin-makas','Giyotin Makas'],
+      ['torna','Torna Tezgâhı'],
+      ['freze','Freze Tezgâhı'],
+      ['delme-makinesi','Delme / Matkap Tezgâhı'],
+      ['serit-testere','Şerit Testere'],
+      ['soguk-metal-testere','Soğuk Metal Testere'],
+      ['sabit-taslama','Sabit Taşlama Makinesi'],
+      ['agac-isleme','Ağaç İşleme Tezgâhı'],
+      ['isleme-merkezi','İşleme Merkezi'],
+      ['transfer-tezgahi','Transfer Tipi Tezgâh'],
+      ['ozel-amacli-tezgah','Özel Amaçlı Tezgâh']
+    ]
+  },
+  {
+    id:'raf-kapi', ad:'Endüstriyel Raf ve Kapılar', ikon:'🚪',
+    items:[
+      ['endustriyel-raf','Endüstriyel Raf Sistemi'],
+      ['endustriyel-kapi','Endüstriyel Kapı'],
+      ['seksiyonel-kapi','Seksiyonel Kapı'],
+      ['otomatik-endustriyel-kapi','Otomatik Endüstriyel Kapı']
+    ]
+  },
+  {
+    id:'is-makinesi', ad:'İş Makineleri', ikon:'🚜',
+    items:[
+      ['ekskavator','Hidrolik Kazıcı / Ekskavatör'],
+      ['yukleyici','Yükleyici'],
+      ['kazici-yukleyici','Kazıcı-Yükleyici'],
+      ['dozer','Dozer'],
+      ['greyder','Greyder'],
+      ['damperli-kamyon','Damperli Kamyon'],
+      ['skreyper','Skreyper'],
+      ['trencer','Trençer'],
+      ['zemin-sikistirma','Zemin Sıkıştırma Makinesi'],
+      ['toprak-cop-sikistirma','Toprak / Çöp Sıkıştırma Makinesi'],
+      ['zemin-stabilize','Zemin Stabilize Makinesi'],
+      ['asfaltlama','Asfaltlama Makinesi'],
+      ['beton-pompasi','Beton Pompası'],
+      ['sondaj','Sondaj Makinesi'],
+      ['boru-doseyici','Boru Döşeyici']
+    ]
+  }
+];
+
+let kontrolEkipmanYeniSecim = new Set();
+let kontrolEkipmanKatAcik = {};
+
+function kontrolEkipmanBul(key) {
+  for (const kat of KONTROL_EKIPMAN_KATALOG) {
+    const x = kat.items.find(i => i[0] === key);
+    if (x) return { key:x[0], ad:x[1], katId:kat.id, katAd:kat.ad };
+  }
+  return null;
+}
+function kontrolEkipmanTakipte(key, ad) {
+  return kontrolItems.some(it =>
+    kontrolGrupId(it)==='makine' &&
+    (it.equipmentKey === key || (!it.equipmentKey && (it.name||'').toLocaleLowerCase('tr-TR') === ad.toLocaleLowerCase('tr-TR')))
+  );
+}
+function kontrolEkipmanOpen() {
+  kontrolEkipmanYeniSecim.clear();
+  KONTROL_EKIPMAN_KATALOG.forEach(k => {
+    if (kontrolEkipmanKatAcik[k.id] === undefined) kontrolEkipmanKatAcik[k.id] = true;
+  });
+  const s = document.getElementById('kem-search');
+  if (s) s.value = '';
+  document.getElementById('kontrol-ekipman-bg').classList.add('on');
+  kontrolEkipmanRender();
+}
+function kontrolEkipmanClose() {
+  document.getElementById('kontrol-ekipman-bg').classList.remove('on');
+  kontrolEkipmanYeniSecim.clear();
+}
+function kontrolEkipmanToggleKat(id) {
+  kontrolEkipmanKatAcik[id] = !kontrolEkipmanKatAcik[id];
+  kontrolEkipmanRender();
+}
+function kontrolEkipmanToggle(key, checked) {
+  if (checked) kontrolEkipmanYeniSecim.add(key);
+  else kontrolEkipmanYeniSecim.delete(key);
+  kontrolEkipmanSecimDurum();
+}
+function kontrolEkipmanSecimDurum() {
+  const n = kontrolEkipmanYeniSecim.size;
+  const count = document.getElementById('kem-selected-count');
+  const btn = document.getElementById('kem-add-btn');
+  if (count) count.textContent = n ? `${n} yeni kontrol tipi seçildi` : 'Yeni seçim yok';
+  if (btn) btn.disabled = n === 0;
+}
+function kontrolEkipmanRender() {
+  const body = document.getElementById('kem-body');
+  if (!body) return;
+  const q = (document.getElementById('kem-search')?.value || '').trim().toLocaleLowerCase('tr-TR');
+
+  const html = KONTROL_EKIPMAN_KATALOG.map(kat => {
+    const eslesen = kat.items.filter(i => !q || i[1].toLocaleLowerCase('tr-TR').includes(q) || kat.ad.toLocaleLowerCase('tr-TR').includes(q));
+    if (!eslesen.length) return '';
+    const acik = q ? true : kontrolEkipmanKatAcik[kat.id] !== false;
+    const takipte = eslesen.filter(i => kontrolEkipmanTakipte(i[0],i[1])).length;
+    return `<section class="kem-cat">
+      <div class="kem-cat-head" onclick="kontrolEkipmanToggleKat('${kat.id}')">
+        <span>${acik?'▾':'▸'}</span>
+        <span style="font-size:15px;">${kat.ikon}</span>
+        <strong>${esc(kat.ad)}</strong>
+        <span class="kem-cat-count">${takipte}/${eslesen.length} takipte</span>
+      </div>
+      ${acik ? `<div class="kem-cat-body">${eslesen.map(i => {
+        const varMi = kontrolEkipmanTakipte(i[0],i[1]);
+        const secili = kontrolEkipmanYeniSecim.has(i[0]);
+        return `<label class="kem-item${varMi?' track':''}">
+          <input type="checkbox" ${varMi?'checked disabled':(secili?'checked':'')}
+            onchange="kontrolEkipmanToggle('${i[0]}',this.checked)">
+          <span>${esc(i[1])}</span>
+          ${varMi?'<span class="kem-status">TAKİPTE</span>':''}
+        </label>`;
+      }).join('')}</div>` : ''}
+    </section>`;
+  }).join('');
+
+  body.innerHTML = html || '<div style="text-align:center;padding:28px 10px;color:var(--text3);font-size:12px;">Aramayla eşleşen ekipman bulunamadı.</div>';
+  kontrolEkipmanSecimDurum();
+}
+function kontrolEkipmanAddSelected() {
+  if (!kontrolEkipmanYeniSecim.size) return;
+  let eklendi = 0;
+  [...kontrolEkipmanYeniSecim].forEach(key => {
+    const e = kontrolEkipmanBul(key);
+    if (!e || kontrolEkipmanTakipte(e.key,e.ad)) return;
+    kontrolItems.push({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      grup:'makine',
+      equipmentKey:e.key,
+      equipmentCategory:e.katId,
+      name:e.ad,
+      fabs:[],
+      fab:'',
+      lastDate:'',
+      periodVal:'1',
+      periodUnit:'year',
+      note:''
+    });
+    eklendi++;
+  });
+  if (eklendi) {
+    kontrolGrupAcik.makine = true;
+    kontrolSave();
+    kontrolRender();
+    if (typeof dashRender === 'function') dashRender();
+    toast(eklendi + ' kontrol tipi takip listesine eklendi');
+  }
+  kontrolEkipmanClose();
+}
+
 let kontrolItems = [];
 let kontrolFabs  = [
   'Fabrika 1','Fabrika 2','Fabrika 3'
@@ -6462,7 +6851,9 @@ function kontrolToggleGrup(id) {
 
 // ── Sonraki tarihi hesapla ──────────────────────────────────
 function kontrolNextDate(lastDate, periodVal, periodUnit) {
+  if (!lastDate) return null;
   const d = new Date(lastDate + 'T00:00:00');
+  if (Number.isNaN(d.getTime())) return null;
   const v = parseInt(periodVal)||1;
   if (periodUnit==='year')  d.setFullYear(d.getFullYear()+v);
   else if (periodUnit==='month') d.setMonth(d.getMonth()+v);
@@ -6471,6 +6862,7 @@ function kontrolNextDate(lastDate, periodVal, periodUnit) {
 }
 
 function kontrolDaysLeft(nextDate) {
+  if (!nextDate || Number.isNaN(nextDate.getTime())) return null;
   const today = new Date(); today.setHours(0,0,0,0);
   return Math.round((nextDate - today) / 86400000);
 }
@@ -6492,23 +6884,47 @@ function kontrolSetFabFilter(fab) {
 
 function kontrolKartHtml(it) {
   const dl = it.daysLeft;
-  let urgCls='', urgTxt='', urgColor='var(--text3)';
+  const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
+  const periodStr = `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
+
+  // Katalogdan yeni eklenen kayıt henüz kontrol tarihi almamış olabilir.
+  if (dl === null || !it.lastDate || !it.nextDate) {
+    return `<div class="kontrol-card kontrol-nodate">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(it.name||'')}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
+            ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
+            <span style="font-size:10px;color:var(--text3);">⏱ Varsayılan periyot: ${esc(periodStr)}</span>
+            ${it.equipmentKey?'<span style="font-size:9.5px;font-weight:700;color:#4f7f16;background:#EAF3DE;padding:1px 6px;border-radius:99px;">Katalog</span>':''}
+          </div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);">Kontrol tarihi girilmedi</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Düzenle düğmesiyle fabrika, son kontrol tarihi ve periyodu girin.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;">
+          <div class="kontrol-nodate-badge">Tarih Bekliyor</div>
+          <button onclick="kontrolEdit('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);">✏️</button>
+          <button onclick="kontrolDel('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid #fde8e8;border-radius:4px;background:transparent;cursor:pointer;color:#D4537E;">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let urgCls='', urgTxt='', urgColor='var(--text3)', badgeBg='#639922';
   if (dl < 0) {
-    urgCls='kontrol-overdue'; urgTxt=`${Math.abs(dl)} gün gecikti`; urgColor='#D4537E';
+    urgCls='kontrol-overdue'; urgTxt=`${Math.abs(dl)} gün gecikti`; urgColor='#D4537E'; badgeBg='#D4537E';
   } else if (dl === 0) {
-    urgCls='kontrol-today';   urgTxt='Bugün!'; urgColor='#E09000';
-  } else if (dl <= 14) {
-    urgCls='kontrol-soon';    urgTxt=`${dl} gün kaldı`; urgColor='#E09000';
+    urgCls='kontrol-today'; urgTxt='Bugün!'; urgColor='#E09000'; badgeBg='#E09000';
   } else if (dl <= 30) {
-    urgTxt=`${dl} gün kaldı`; urgColor='#BA7517';
+    urgCls='kontrol-soon'; urgTxt=`${dl} gün kaldı`; urgColor='#E09000'; badgeBg='#E09000';
+  } else if (dl <= 90) {
+    urgTxt=`${dl} gün kaldı`; urgColor='#BA7517'; badgeBg='#BA7517';
   } else {
-    urgTxt=`${dl} gün kaldı`; urgColor='var(--text3)';
+    urgTxt=`${dl} gün kaldı`; urgColor='#4f7f16'; badgeBg='#639922';
   }
 
   const nextStr = it.nextDate.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
   const lastStr = new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
-  const periodStr = `${it.periodVal} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
-  const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
 
   return `<div class="kontrol-card ${urgCls}">
     <div style="display:flex;align-items:flex-start;gap:8px;">
@@ -6523,7 +6939,7 @@ function kontrolKartHtml(it) {
         <div style="font-size:11px;font-weight:600;color:${urgColor};">Sonraki: ${nextStr} — ${urgTxt}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;">
-        <div class="kontrol-days-badge" style="background:${dl<0?'#D4537E':dl<=14?'#E09000':'#639922'};">${dl<0?'⚠ Gecikti':dl===0?'Bugün!':dl+'g'}</div>
+        <div class="kontrol-days-badge" style="background:${badgeBg};">${dl<0?Math.abs(dl)+' Gün Gecikti':dl===0?'Bugün':dl+' Gün Kaldı'}</div>
         <button onclick="kontrolEdit('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);">✏️</button>
         <button onclick="kontrolDel('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid #fde8e8;border-radius:4px;background:transparent;cursor:pointer;color:#D4537E;">🗑</button>
       </div>
@@ -6545,7 +6961,12 @@ function kontrolRender() {
     const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
     const daysLeft = kontrolDaysLeft(nextDate);
     return { ...it, nextDate, daysLeft, grup:kontrolGrupId(it) };
-  }).sort((a,b) => a.daysLeft - b.daysLeft);
+  }).sort((a,b) => {
+    if (a.daysLeft === null && b.daysLeft === null) return (a.name||'').localeCompare(b.name||'','tr');
+    if (a.daysLeft === null) return 1;
+    if (b.daysLeft === null) return -1;
+    return a.daysLeft - b.daysLeft;
+  });
 
   body.innerHTML = Object.entries(KONTROL_GRUPLAR).map(([id,g]) => {
     const grupItems = items.filter(it => it.grup === id);
@@ -6561,6 +6982,10 @@ function kontrolRender() {
         <span class="kontrol-grup-sayi">${grupItems.length}</span>
       </div>
       <div class="kontrol-grup-body">
+        ${id==='makine' ? `<div class="kontrol-ekipman-toolbar">
+          <button onclick="event.stopPropagation();kontrolEkipmanOpen()">☑ Ekipmanları Yönet</button>
+          <span>İşyerinizde bulunan ekipman türlerini seçin; seçilen her tür takip listesine tek kayıt olarak eklenir.</span>
+        </div>` : ''}
         ${grupItems.length ? grupItems.map(kontrolKartHtml).join('') : '<div style="text-align:center;padding:18px 8px;font-size:12px;color:var(--text3);">Bu grupta kayıt yok.</div>'}
       </div>
     </section>`;
@@ -6678,7 +7103,11 @@ function kontrolPrint() {
     return { ...it, grup:kontrolGrupId(it), nextDate, daysLeft: kontrolDaysLeft(nextDate) };
   }).sort((a,b) => {
     const ga = Object.keys(KONTROL_GRUPLAR).indexOf(a.grup), gb = Object.keys(KONTROL_GRUPLAR).indexOf(b.grup);
-    return ga === gb ? a.daysLeft-b.daysLeft : ga-gb;
+    if (ga !== gb) return ga-gb;
+    if (a.daysLeft === null && b.daysLeft === null) return (a.name||'').localeCompare(b.name||'','tr');
+    if (a.daysLeft === null) return 1;
+    if (b.daysLeft === null) return -1;
+    return a.daysLeft-b.daysLeft;
   });
   const simdi = new Date().toLocaleString('tr-TR');
   let el = document.getElementById('modul-print');
@@ -6692,13 +7121,14 @@ function kontrolPrint() {
         <th style="width:62px">Sonraki</th><th style="width:60px">Durum</th><th>Not</th></tr></thead>
       <tbody>${items.map((it,i) => {
         const dl = it.daysLeft;
-        const durum = dl < 0 ? Math.abs(dl)+' gün gecikti' : dl === 0 ? 'Bugün' : dl+' gün kaldı';
-        const per = it.periodVal + ' ' + (it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta');
+        const durum = dl === null ? 'Tarih girilmedi' : dl < 0 ? Math.abs(dl)+' gün gecikti' : dl === 0 ? 'Bugün' : dl+' gün kaldı';
+        const per = (it.periodVal||1) + ' ' + (it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta');
         const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
+        const son = it.lastDate ? new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR') : '-';
+        const sonraki = it.nextDate ? it.nextDate.toLocaleDateString('tr-TR') : '-';
         return `<tr><td>${i+1}</td><td>${esc(KONTROL_GRUPLAR[it.grup].ad)}</td><td>${esc(it.name||'')}</td>
-          <td>${esc(fabs.join(', '))}</td><td>${esc(per)}</td>
-          <td>${new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR')}</td>
-          <td>${it.nextDate.toLocaleDateString('tr-TR')}</td>
+          <td>${esc(fabs.join(', ')||'-')}</td><td>${esc(per)}</td>
+          <td>${son}</td><td>${sonraki}</td>
           <td>${esc(durum)}</td><td>${esc(it.note||'-')}</td></tr>`;
       }).join('') || '<tr><td colspan="9">Kayıt yok</td></tr>'}</tbody>
     </table>`;
@@ -6770,9 +7200,10 @@ function dashRender() {
       const saved = JSON.parse(localStorage.getItem('yeni_isg_kontrol_items_v1') || '[]');
       kItems = saved.map(it => {
         const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
-        const diff     = Math.round((nextDate - today) / 86400000);
+        if (!nextDate) return null;
+        const diff = Math.round((nextDate - today) / 86400000);
         return { ...it, nextDate, diff };
-      }).filter(it => it.diff <= 30).sort((a,b) => a.diff - b.diff).slice(0, 6);
+      }).filter(it => it && it.diff <= 30).sort((a,b) => a.diff - b.diff).slice(0, 6);
     } catch(e) {}
 
     if (!kItems.length) {
