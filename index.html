@@ -1561,8 +1561,8 @@ html[data-tema="gokkusagi"] #topbar::after {
   border-radius:var(--r); padding:10px 12px; box-shadow:var(--sh);
 }
 .kontrol-card.kontrol-overdue { border-left:4px solid #D4537E; background:rgba(212,83,126,.05); }
-.kontrol-card.kontrol-today   { border-left:4px solid #E09000; background:rgba(224,144,0,.07); }
-.kontrol-card.kontrol-soon    { border-left:4px solid #E09000; }
+.kontrol-card.kontrol-today   { border-left:4px solid #F97316; background:rgba(249,115,22,.08); }
+.kontrol-card.kontrol-soon    { border-left:4px solid #F97316; background:rgba(249,115,22,.055); }
 .kontrol-days-badge {
   color:#fff; font-size:10px; font-weight:700;
   padding:2px 7px; border-radius:99px; white-space:nowrap;
@@ -1606,7 +1606,9 @@ html[data-tema="gokkusagi"] #topbar::after {
 }
 #kontrol-ekipman-bg.on { display:flex; }
 #kontrol-ekipman-modal {
-  width:720px; max-width:96vw; max-height:92vh;
+  width:720px; max-width:96vw;
+  height:min(92vh,820px); max-height:92vh;
+  min-height:0;
   background:var(--surface); border-radius:14px;
   box-shadow:0 12px 38px rgba(0,0,0,.28);
   display:flex; flex-direction:column; overflow:hidden;
@@ -1632,10 +1634,20 @@ html[data-tema="gokkusagi"] #topbar::after {
 }
 .kem-search input:focus { border-color:#378ADD; }
 #kem-body {
-  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
-  padding:10px 12px; display:flex; flex-direction:column; gap:8px;
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  padding:10px 12px;
+  display:flex; flex-direction:column; gap:8px;
 }
 .kem-cat {
+  flex:0 0 auto;
+  flex-shrink:0;
+  min-height:max-content;
   border:1px solid var(--border); border-radius:10px;
   background:var(--surface); overflow:hidden;
 }
@@ -1650,8 +1662,13 @@ html[data-tema="gokkusagi"] #topbar::after {
   background:var(--surface); color:var(--text2);
 }
 .kem-cat-body {
-  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:5px; padding:8px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px;
+  padding:8px;
+  overflow:visible;
+  max-height:none;
+  flex-shrink:0;
 }
 .kem-item {
   display:flex; align-items:flex-start; gap:7px;
@@ -1696,10 +1713,759 @@ html[data-tema="gokkusagi"] #topbar::after {
 }
 
 @media (max-width:899px) {
-  #kontrol-ekipman-modal { width:100vw; max-width:100vw; max-height:94vh; border-radius:16px 16px 0 0; }
-  #kontrol-ekipman-bg { align-items:flex-end; }
-  .kem-cat-body { grid-template-columns:1fr; }
-  .kem-item { font-size:12px; padding:9px; }
+  #kontrol-ekipman-bg {
+    align-items:flex-end;
+    overflow:hidden;
+  }
+  #kontrol-ekipman-modal {
+    width:100vw;
+    max-width:100vw;
+    height:94dvh;
+    max-height:94dvh;
+    min-height:0;
+    border-radius:16px 16px 0 0;
+    overflow:hidden;
+  }
+  .kem-head,
+  .kem-search,
+  .kem-foot {
+    flex:0 0 auto;
+    flex-shrink:0;
+  }
+  #kem-body {
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto !important;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
+    padding-bottom:18px;
+  }
+  .kem-cat {
+    flex:0 0 auto !important;
+    flex-shrink:0 !important;
+    min-height:max-content;
+  }
+  .kem-cat-head {
+    min-height:50px;
+    flex:0 0 auto;
+  }
+  .kem-cat-body {
+    grid-template-columns:1fr;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  .kem-item {
+    min-height:54px;
+    font-size:12px;
+    padding:9px;
+  }
+  .kem-foot {
+    padding-bottom:max(10px, env(safe-area-inset-bottom));
+  }
+}
+
+
+/* ── AŞAMA 3: Kontrol kartı — majör bilgileri tek bakışta göster ── */
+.kontrol-card {
+  position:relative;
+  overflow:hidden;
+  transition:border-color .15s, box-shadow .15s, transform .12s;
+}
+.kontrol-card:hover {
+  border-color:var(--border2);
+  box-shadow:0 3px 12px rgba(0,0,0,.09);
+}
+.kc-layout {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:start;
+}
+.kc-title-row {
+  display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+  margin-bottom:6px;
+}
+.kc-title {
+  font-size:13.5px; font-weight:750; color:var(--text);
+  line-height:1.35; min-width:0;
+}
+.kc-tags {
+  display:flex; align-items:center; gap:5px; flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.kc-period {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:10px; color:var(--text3);
+  padding:1px 6px; border-radius:99px;
+  background:var(--surface2); border:1px solid var(--border);
+}
+.kc-dategrid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
+  margin-top:2px;
+}
+.kc-datebox {
+  min-width:0;
+  padding:6px 8px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:7px;
+}
+.kc-lbl {
+  display:block;
+  font-size:9px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.04em; color:var(--text3); margin-bottom:2px;
+}
+.kc-val {
+  display:block;
+  font-size:11.5px; font-weight:650; color:var(--text);
+  line-height:1.35; word-break:break-word;
+}
+.kc-bottom {
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  margin-top:7px;
+}
+.kc-firm {
+  display:inline-flex; align-items:center; gap:4px;
+  max-width:100%; font-size:10.5px; color:var(--text2);
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:5px; padding:3px 7px;
+}
+.kc-result {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10px; font-weight:750; border-radius:99px;
+  padding:3px 8px; border:1px solid transparent; white-space:nowrap;
+}
+.kc-result.bekliyor {
+  background:var(--surface2); color:var(--text2); border-color:var(--border2);
+}
+.kc-result.uygun {
+  background:#EAF3DE; color:#27500A; border-color:#B7D58B;
+}
+.kc-result.sartli {
+  background:#FFF3CD; color:#7A5700; border-color:#E7C55D;
+}
+.kc-result.uygun-degil {
+  background:#FFE0ED; color:#8B1A3A; border-color:#E8A4BA;
+}
+.kc-note {
+  width:100%;
+  font-size:10px; color:var(--text3); line-height:1.4;
+  margin-top:1px; overflow-wrap:anywhere;
+}
+.kc-actions {
+  display:flex; flex-direction:column; align-items:flex-end; gap:5px;
+}
+.kc-icon-btn {
+  width:30px; height:28px; display:flex; align-items:center; justify-content:center;
+  font-size:12px; border:1px solid var(--border2); border-radius:6px;
+  background:transparent; cursor:pointer; color:var(--text2);
+}
+.kc-icon-btn:hover { background:var(--surface2); }
+.kc-icon-btn.danger { border-color:#fde8e8; color:#D4537E; }
+.kc-status-line {
+  margin-top:4px;
+  font-size:10.5px; font-weight:700;
+}
+.kontrol-card.kontrol-medium {
+  /* 31–90 gün: gerçek sarı — yaklaşan fakat kritik olmayan dönem */
+  border-left:4px solid #FACC15;
+  background:rgba(250,204,21,.10);
+}
+.kontrol-card.kontrol-ok {
+  /* 90+ gün: güvenli dönem */
+  border-left:4px solid #639922;
+  background:rgba(99,153,34,.035);
+}
+@media (prefers-color-scheme:dark) {
+  .kc-result.uygun { background:#1a3a1a; color:#9ed27e; border-color:#395f2e; }
+  .kc-result.sartli { background:#4a3800; color:#ffd966; border-color:#765d10; }
+  .kc-result.uygun-degil { background:#501a2d; color:#ffb2c9; border-color:#7a314b; }
+  .kontrol-card.kontrol-medium { background:rgba(250,204,21,.12); }
+  .kontrol-card.kontrol-ok { background:rgba(99,153,34,.07); }
+}
+@media (max-width:899px) {
+  .kontrol-card { padding:10px !important; }
+  .kc-layout { grid-template-columns:minmax(0,1fr) auto; gap:7px; }
+  .kc-title { font-size:13px; }
+  .kc-dategrid { grid-template-columns:1fr 1fr; gap:5px; }
+  .kc-datebox { padding:6px; }
+  .kc-val { font-size:11px; }
+  .kc-firm { font-size:10px; }
+  .kc-actions { gap:4px; }
+}
+
+
+/* ── AŞAMA 5: Makine/Ekipman toplu kontrol güncelleme ── */
+.kontrol-ekipman-toolbar .kbulk-btn {
+  border-color:#639922;
+  background:#639922;
+}
+.kontrol-ekipman-toolbar .kbulk-btn:hover {
+  background:#4f7f16;
+  border-color:#4f7f16;
+}
+#kontrol-toplu-bg {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:65;
+  background:rgba(0,0,0,.48);
+  align-items:center;
+  justify-content:center;
+}
+#kontrol-toplu-bg.on { display:flex; }
+#kontrol-toplu-modal {
+  width:760px;
+  max-width:96vw;
+  height:min(90vh,850px);
+  max-height:90vh;
+  min-height:0;
+  background:var(--surface);
+  border-radius:14px;
+  box-shadow:0 12px 38px rgba(0,0,0,.28);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.ktp-head {
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:13px 15px;
+  border-bottom:1px solid var(--border);
+}
+.ktp-head-main { flex:1; min-width:0; }
+.ktp-head h3 {
+  font-size:14px;
+  font-weight:750;
+  color:var(--text);
+}
+.ktp-head-sub {
+  font-size:10px;
+  color:var(--text3);
+  margin-top:2px;
+  line-height:1.45;
+}
+.ktp-close {
+  width:32px;
+  height:32px;
+  border:none;
+  border-radius:7px;
+  background:transparent;
+  color:var(--text3);
+  font-size:21px;
+  cursor:pointer;
+}
+.ktp-close:hover { background:var(--surface2); color:var(--text); }
+
+.ktp-controls {
+  flex:0 0 auto;
+  padding:10px 13px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.ktp-selectbar {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+}
+.ktp-selectbar button {
+  padding:5px 10px;
+  font-size:10.5px;
+  font-weight:650;
+  border:1px solid var(--border2);
+  border-radius:6px;
+  background:var(--surface2);
+  color:var(--text2);
+  cursor:pointer;
+}
+.ktp-selectbar button:hover { background:var(--surface); }
+#ktp-filter-label {
+  margin-left:auto;
+  font-size:10px;
+  font-weight:650;
+  color:var(--text3);
+}
+
+#ktp-list {
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  padding:9px 11px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.ktp-cat {
+  flex:0 0 auto;
+  border:1px solid var(--border);
+  border-radius:9px;
+  overflow:hidden;
+  background:var(--surface);
+}
+.ktp-cat-head {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 9px;
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  font-size:10.5px;
+  font-weight:750;
+  color:var(--text2);
+}
+.ktp-cat-count {
+  margin-left:auto;
+  font-size:9px;
+  font-weight:700;
+  padding:1px 6px;
+  border:1px solid var(--border);
+  border-radius:99px;
+  background:var(--surface);
+  color:var(--text3);
+}
+.ktp-item {
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  padding:8px 9px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  background:var(--surface);
+}
+.ktp-item:last-child { border-bottom:none; }
+.ktp-item:hover { background:var(--surface2); }
+.ktp-item input {
+  width:15px;
+  height:15px;
+  accent-color:#378ADD;
+  cursor:pointer;
+}
+.ktp-item-main { min-width:0; }
+.ktp-item-name {
+  font-size:11.5px;
+  font-weight:650;
+  color:var(--text);
+  line-height:1.35;
+}
+.ktp-item-meta {
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  margin-top:3px;
+  font-size:9.5px;
+  color:var(--text3);
+}
+.ktp-item-period {
+  font-size:9.5px;
+  font-weight:650;
+  white-space:nowrap;
+  color:var(--text2);
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:99px;
+  padding:2px 6px;
+}
+
+.ktp-form {
+  flex:0 0 auto;
+  border-top:1px solid var(--border);
+  padding:10px 13px;
+  background:var(--surface);
+  display:grid;
+  grid-template-columns:1fr 1.4fr 1fr;
+  gap:8px;
+}
+.ktp-field {
+  min-width:0;
+}
+.ktp-field label {
+  display:block;
+  font-size:10px;
+  font-weight:700;
+  color:var(--text2);
+  margin-bottom:4px;
+}
+.ktp-field input,
+.ktp-field select,
+.ktp-field textarea {
+  width:100%;
+  padding:7px 8px;
+  font-size:12px;
+  border:1px solid var(--border2);
+  border-radius:7px;
+  background:var(--bg);
+  color:var(--text);
+  outline:none;
+  font-family:inherit;
+}
+.ktp-field input:focus,
+.ktp-field select:focus,
+.ktp-field textarea:focus { border-color:#378ADD; }
+.ktp-note-row {
+  grid-column:1 / -1;
+}
+.ktp-note-row textarea {
+  resize:vertical;
+  min-height:54px;
+  max-height:100px;
+}
+.ktp-hint {
+  margin-top:3px;
+  font-size:9px;
+  color:var(--text3);
+  line-height:1.35;
+}
+
+.ktp-foot {
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 13px;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+}
+#ktp-selected-count {
+  flex:1;
+  font-size:11px;
+  color:var(--text2);
+}
+.ktp-cancel,
+.ktp-save {
+  padding:8px 14px;
+  font-size:12px;
+  font-weight:650;
+  border-radius:7px;
+  cursor:pointer;
+}
+.ktp-cancel {
+  border:1px solid var(--border2);
+  background:transparent;
+  color:var(--text2);
+}
+.ktp-save {
+  border:none;
+  background:#639922;
+  color:#fff;
+}
+.ktp-save:hover { background:#4f7f16; }
+.ktp-save:disabled {
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+@media (max-width:899px) {
+  #kontrol-toplu-bg {
+    align-items:flex-end;
+    overflow:hidden;
+  }
+  #kontrol-toplu-modal {
+    width:100vw;
+    max-width:100vw;
+    height:95dvh;
+    max-height:95dvh;
+    min-height:0;
+    border-radius:16px 16px 0 0;
+  }
+  .ktp-form {
+    grid-template-columns:1fr 1fr;
+  }
+  .ktp-field.ktp-firm {
+    grid-column:1 / -1;
+  }
+  .ktp-item {
+    grid-template-columns:22px minmax(0,1fr);
+  }
+  .ktp-item-period {
+    grid-column:2;
+    width:max-content;
+  }
+  .ktp-foot {
+    padding-bottom:max(10px, env(safe-area-inset-bottom));
+  }
+}
+
+
+/* ── AŞAMA 6: Çevre süreçleri kataloğu ── */
+.kontrol-cevre-toolbar {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:8px 9px;
+  border:1px dashed var(--border2);
+  border-radius:var(--r);
+  background:var(--surface2);
+}
+.kontrol-cevre-toolbar button {
+  padding:6px 11px;
+  font-size:11px;
+  font-weight:700;
+  border:1px solid #3B8C6E;
+  border-radius:6px;
+  background:#3B8C6E;
+  color:#fff;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.kontrol-cevre-toolbar button:hover {
+  background:#2E7058;
+  border-color:#2E7058;
+}
+.kontrol-cevre-toolbar span {
+  font-size:10.5px;
+  color:var(--text3);
+  line-height:1.4;
+}
+
+#kontrol-cevre-bg {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:64;
+  background:rgba(0,0,0,.48);
+  align-items:center;
+  justify-content:center;
+}
+#kontrol-cevre-bg.on { display:flex; }
+#kontrol-cevre-modal {
+  width:720px;
+  max-width:96vw;
+  height:min(92vh,820px);
+  max-height:92vh;
+  min-height:0;
+  background:var(--surface);
+  border-radius:14px;
+  box-shadow:0 12px 38px rgba(0,0,0,.28);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+#kcv-body {
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  padding:10px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+#kcv-selected-count {
+  flex:1;
+  font-size:11px;
+  color:var(--text2);
+}
+
+/* ── AŞAMA 6: Rapor seçim modalı ── */
+#kontrol-rapor-bg {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:66;
+  background:rgba(0,0,0,.48);
+  align-items:center;
+  justify-content:center;
+}
+#kontrol-rapor-bg.on { display:flex; }
+#kontrol-rapor-modal {
+  width:480px;
+  max-width:95vw;
+  background:var(--surface);
+  border-radius:14px;
+  box-shadow:0 12px 38px rgba(0,0,0,.28);
+  overflow:hidden;
+}
+.krp-head {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:13px 15px;
+  border-bottom:1px solid var(--border);
+}
+.krp-head h3 {
+  flex:1;
+  font-size:14px;
+  font-weight:750;
+  color:var(--text);
+}
+.krp-close {
+  width:30px;
+  height:30px;
+  border:none;
+  border-radius:7px;
+  background:transparent;
+  color:var(--text3);
+  font-size:20px;
+  cursor:pointer;
+}
+.krp-close:hover { background:var(--surface2); color:var(--text); }
+.krp-body {
+  padding:12px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.krp-info {
+  font-size:10.5px;
+  line-height:1.5;
+  color:var(--text2);
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:8px 10px;
+}
+.krp-option {
+  display:grid;
+  grid-template-columns:22px 34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:10px 11px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  cursor:pointer;
+  background:var(--surface);
+}
+.krp-option:hover { background:var(--surface2); border-color:var(--border2); }
+.krp-option.disabled { opacity:.5; cursor:not-allowed; }
+.krp-option input {
+  width:15px;
+  height:15px;
+  accent-color:#378ADD;
+  cursor:pointer;
+}
+.krp-option-icon {
+  width:30px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  background:var(--surface2);
+  font-size:16px;
+}
+.krp-option-main strong {
+  display:block;
+  font-size:12px;
+  color:var(--text);
+}
+.krp-option-main span {
+  display:block;
+  margin-top:2px;
+  font-size:9.5px;
+  color:var(--text3);
+}
+.krp-count {
+  font-size:10px;
+  font-weight:700;
+  padding:2px 7px;
+  border-radius:99px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  color:var(--text2);
+  white-space:nowrap;
+}
+.krp-foot {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 14px;
+  border-top:1px solid var(--border);
+}
+#krp-selected-info {
+  flex:1;
+  font-size:10.5px;
+  color:var(--text3);
+}
+.krp-cancel,
+.krp-print {
+  padding:8px 14px;
+  font-size:12px;
+  font-weight:650;
+  border-radius:7px;
+  cursor:pointer;
+}
+.krp-cancel {
+  border:1px solid var(--border2);
+  background:transparent;
+  color:var(--text2);
+}
+.krp-print {
+  border:none;
+  background:#378ADD;
+  color:#fff;
+}
+.krp-print:disabled { opacity:.45; cursor:not-allowed; }
+
+@media (max-width:899px) {
+  #kontrol-cevre-bg {
+    align-items:flex-end;
+    overflow:hidden;
+  }
+  #kontrol-cevre-modal {
+    width:100vw;
+    max-width:100vw;
+    height:94dvh;
+    max-height:94dvh;
+    min-height:0;
+    border-radius:16px 16px 0 0;
+  }
+  #kcv-body {
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto !important;
+    overflow-x:hidden;
+    padding-bottom:18px;
+  }
+  #kontrol-rapor-bg { align-items:flex-end; }
+  #kontrol-rapor-modal {
+    width:100vw;
+    max-width:100vw;
+    border-radius:16px 16px 0 0;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+}
+
+/* Rapor bölümleri — birden fazla rapor seçildiğinde birbirine karışmasın */
+#modul-print .mp-section {
+  margin:0 0 14px;
+}
+#modul-print .mp-section h2 {
+  font-size:13px;
+  font-weight:700;
+  margin:0 0 5px;
+  padding-bottom:3px;
+  border-bottom:1.5px solid #777;
+  color:#111;
+}
+#modul-print .mp-section-meta {
+  font-size:9.5px;
+  color:#666;
+  margin-bottom:7px;
+}
+@media print {
+  #modul-print .mp-section + .mp-section {
+    break-before:page;
+    page-break-before:always;
+  }
 }
 
 /* future-day: handled below via :not selectors */
@@ -2012,7 +2778,7 @@ html[data-tema="gokkusagi"] #topbar::after {
 
   <!-- PERSONEL SEKMESİ -->
   
-<!-- KONTROL SEKMESİ — AŞAMA 2 -->
+<!-- KONTROL SEKMESİ — AŞAMA 6 ÇEVRE KATALOĞU + SEÇİMLİ RAPORLAMA -->
 <div id="kontrol-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg);">
   <!-- Topbar -->
   <div style="flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 14px;">
@@ -2073,6 +2839,23 @@ html[data-tema="gokkusagi"] #topbar::after {
           </select>
         </div>
       </div>
+      <div style="display:grid;grid-template-columns:1.35fr .9fr;gap:8px;">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Kontrol Firması / Yetkili</label>
+          <input id="km-firm" placeholder="örn. ABC Periyodik Kontrol"
+            style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Kontrol Sonucu</label>
+          <select id="km-result"
+            style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;">
+            <option value="bekliyor">Bekliyor</option>
+            <option value="uygun">Uygun</option>
+            <option value="sartli">Takip Gerekli</option>
+            <option value="uygun-degil">Uygun Değil</option>
+          </select>
+        </div>
+      </div>
       <div>
         <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Not (opsiyonel)</label>
         <input id="km-note" placeholder="Açıklama..." style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;"/>
@@ -2107,6 +2890,121 @@ html[data-tema="gokkusagi"] #topbar::after {
       <button class="kem-btn-add" id="kem-add-btn" onclick="kontrolEkipmanAddSelected()" disabled>
         Seçilenleri Takip Listesine Ekle
       </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- AŞAMA 5 — Makine / Ekipman Toplu Kontrol Güncelleme -->
+<div id="kontrol-toplu-bg" onclick="if(event.target===this)kontrolTopluClose()">
+  <div id="kontrol-toplu-modal">
+    <div class="ktp-head">
+      <div style="font-size:20px;">☑️</div>
+      <div class="ktp-head-main">
+        <h3>Makine / Ekipman Toplu Kontrol Güncelleme</h3>
+        <div class="ktp-head-sub">
+          Aynı gün ve aynı firma tarafından kontrol edilen ekipmanları seçin. Her kaydın mevcut kontrol periyodu korunur; sonraki kontrol tarihi kendi periyoduna göre otomatik hesaplanır.
+        </div>
+      </div>
+      <button class="ktp-close" onclick="kontrolTopluClose()" title="Kapat">×</button>
+    </div>
+
+    <div class="ktp-controls">
+      <div class="ktp-selectbar">
+        <button type="button" onclick="kontrolTopluTumunuSec()">✓ Tümünü Seç</button>
+        <button type="button" onclick="kontrolTopluSecimiTemizle()">Seçimi Temizle</button>
+        <span id="ktp-filter-label"></span>
+      </div>
+    </div>
+
+    <div id="ktp-list"></div>
+
+    <div class="ktp-form">
+      <div class="ktp-field">
+        <label>Kontrol Tarihi *</label>
+        <input type="date" id="ktp-date"/>
+      </div>
+
+      <div class="ktp-field ktp-firm">
+        <label>Kontrol Firması / Yetkili</label>
+        <input id="ktp-firm" placeholder="örn. ABC Periyodik Kontrol"/>
+        <div class="ktp-hint">Boş bırakırsanız kayıtlardaki mevcut firma bilgisi korunur.</div>
+      </div>
+
+      <div class="ktp-field">
+        <label>Kontrol Sonucu</label>
+        <select id="ktp-result">
+          <option value="uygun">Uygun</option>
+          <option value="sartli">Takip Gerekli</option>
+          <option value="uygun-degil">Uygun Değil</option>
+          <option value="bekliyor">Bekliyor</option>
+        </select>
+      </div>
+
+      <div class="ktp-field ktp-note-row">
+        <label>Ortak Not <span style="font-weight:400;color:var(--text3);">(opsiyonel)</span></label>
+        <textarea id="ktp-note" placeholder="Seçili kayıtların tamamına uygulanacak ortak açıklama..."></textarea>
+        <div class="ktp-hint">Boş bırakırsanız mevcut notlar korunur. Metin girerseniz seçili kayıtların not alanı bu metinle güncellenir.</div>
+      </div>
+    </div>
+
+    <div class="ktp-foot">
+      <span id="ktp-selected-count">0 kayıt seçildi</span>
+      <button class="ktp-cancel" onclick="kontrolTopluClose()">İptal</button>
+      <button class="ktp-save" id="ktp-save-btn" onclick="kontrolTopluKaydet()" disabled>
+        Seçili Kayıtları Güncelle
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- AŞAMA 6 — Çevre Süreçleri Seçim Kataloğu -->
+<div id="kontrol-cevre-bg" onclick="if(event.target===this)kontrolCevreClose()">
+  <div id="kontrol-cevre-modal">
+    <div class="kem-head">
+      <div style="font-size:20px;">🌿</div>
+      <div style="min-width:0;flex:1;">
+        <h3>Çevre Süreçleri Takip Listesini Belirle</h3>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">
+          İşyerinizde takip ettiğiniz çevre izin, belge, atık, atıksu, emisyon ve raporlama süreçlerini seçin.
+        </div>
+      </div>
+      <button class="kem-close" onclick="kontrolCevreClose()" title="Kapat">×</button>
+    </div>
+    <div class="kem-search">
+      <input id="kcv-search" placeholder="Çevre süreci ara... örn. kapasite raporu, atıksu, emisyon"
+             oninput="kontrolCevreRender()"/>
+    </div>
+    <div id="kcv-body"></div>
+    <div class="kem-foot">
+      <span id="kcv-selected-count">Yeni seçim yok</span>
+      <button class="kem-btn-cancel" onclick="kontrolCevreClose()">İptal</button>
+      <button class="kem-btn-add" id="kcv-add-btn" onclick="kontrolCevreAddSelected()" disabled>
+        Seçilenleri Takip Listesine Ekle
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- AŞAMA 6 — Kontrol Raporu Bölüm Seçimi -->
+<div id="kontrol-rapor-bg" onclick="if(event.target===this)kontrolRaporClose()">
+  <div id="kontrol-rapor-modal">
+    <div class="krp-head">
+      <div style="font-size:19px;">🖨️</div>
+      <h3>Rapor Bölümlerini Seç</h3>
+      <button class="krp-close" onclick="kontrolRaporClose()">×</button>
+    </div>
+    <div class="krp-body">
+      <div class="krp-info">
+        Yalnızca işaretlediğiniz kontrol grupları yazdırılır. Birden fazla bölüm seçerseniz her bölüm kendi başlığı ve sütun yapısıyla ayrı sayfadan başlar.
+      </div>
+      <div id="krp-options"></div>
+    </div>
+    <div class="krp-foot">
+      <span id="krp-selected-info"></span>
+      <button class="krp-cancel" onclick="kontrolRaporClose()">İptal</button>
+      <button class="krp-print" id="krp-print-btn" onclick="kontrolPrintRun()">🖨 Yazdır</button>
     </div>
   </div>
 </div>
@@ -6721,23 +7619,61 @@ function kontrolEkipmanTakipte(key, ad) {
     (it.equipmentKey === key || (!it.equipmentKey && (it.name||'').toLocaleLowerCase('tr-TR') === ad.toLocaleLowerCase('tr-TR')))
   );
 }
+function kontrolEkipmanMobilMi() {
+  return window.matchMedia && window.matchMedia('(max-width:899px)').matches;
+}
 function kontrolEkipmanOpen() {
   kontrolEkipmanYeniSecim.clear();
-  KONTROL_EKIPMAN_KATALOG.forEach(k => {
-    if (kontrolEkipmanKatAcik[k.id] === undefined) kontrolEkipmanKatAcik[k.id] = true;
-  });
+
+  if (kontrolEkipmanMobilMi()) {
+    // Mobilde modal her açıldığında sade başlasın:
+    // tüm kategoriler kapalı; kullanıcı yalnız ihtiyaç duyduğu başlığı açar.
+    KONTROL_EKIPMAN_KATALOG.forEach(k => { kontrolEkipmanKatAcik[k.id] = false; });
+  } else {
+    KONTROL_EKIPMAN_KATALOG.forEach(k => {
+      if (kontrolEkipmanKatAcik[k.id] === undefined) kontrolEkipmanKatAcik[k.id] = true;
+    });
+  }
+
   const s = document.getElementById('kem-search');
   if (s) s.value = '';
+
   document.getElementById('kontrol-ekipman-bg').classList.add('on');
   kontrolEkipmanRender();
+
+  // Liste her açılışta en baştan başlasın.
+  requestAnimationFrame(() => {
+    const body = document.getElementById('kem-body');
+    if (body) body.scrollTop = 0;
+  });
 }
 function kontrolEkipmanClose() {
   document.getElementById('kontrol-ekipman-bg').classList.remove('on');
   kontrolEkipmanYeniSecim.clear();
 }
 function kontrolEkipmanToggleKat(id) {
-  kontrolEkipmanKatAcik[id] = !kontrolEkipmanKatAcik[id];
+  const yeniDurum = !kontrolEkipmanKatAcik[id];
+
+  if (kontrolEkipmanMobilMi() && yeniDurum) {
+    // Mobilde aynı anda sadece bir kategori açık kalır.
+    KONTROL_EKIPMAN_KATALOG.forEach(k => { kontrolEkipmanKatAcik[k.id] = false; });
+  }
+
+  kontrolEkipmanKatAcik[id] = yeniDurum;
   kontrolEkipmanRender();
+
+  // Açılan başlığı görünür alana taşı; footer/header sabit kalırken
+  // yalnız orta liste kayar.
+  if (yeniDurum) {
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`.kem-cat[data-kem-cat="${id}"]`);
+      const body = document.getElementById('kem-body');
+      if (el && body) {
+        const top = el.offsetTop - body.offsetTop - 6;
+        body.scrollTo({ top: Math.max(0, top), behavior:'smooth' });
+      }
+    });
+  }
 }
 function kontrolEkipmanToggle(key, checked) {
   if (checked) kontrolEkipmanYeniSecim.add(key);
@@ -6761,7 +7697,7 @@ function kontrolEkipmanRender() {
     if (!eslesen.length) return '';
     const acik = q ? true : kontrolEkipmanKatAcik[kat.id] !== false;
     const takipte = eslesen.filter(i => kontrolEkipmanTakipte(i[0],i[1])).length;
-    return `<section class="kem-cat">
+    return `<section class="kem-cat" data-kem-cat="${kat.id}">
       <div class="kem-cat-head" onclick="kontrolEkipmanToggleKat('${kat.id}')">
         <span>${acik?'▾':'▸'}</span>
         <span style="font-size:15px;">${kat.ikon}</span>
@@ -6801,6 +7737,8 @@ function kontrolEkipmanAddSelected() {
       lastDate:'',
       periodVal:'1',
       periodUnit:'year',
+      firm:'',
+      result:'bekliyor',
       note:''
     });
     eklendi++;
@@ -6813,6 +7751,432 @@ function kontrolEkipmanAddSelected() {
     toast(eklendi + ' kontrol tipi takip listesine eklendi');
   }
   kontrolEkipmanClose();
+}
+
+
+// ── AŞAMA 5: Makine/Ekipman toplu kontrol güncelleme ────────
+let kontrolTopluSecili = new Set();
+let kontrolTopluGorunenIdler = [];
+
+function kontrolTopluAdaylar() {
+  let adaylar = kontrolItems.filter(it => kontrolGrupId(it) === 'makine');
+
+  // Aktif fabrika filtresi varsa sadece o fabrikaya ait kayıtlar.
+  if (kontrolFabFilter) {
+    adaylar = adaylar.filter(it => {
+      const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
+      return fabs.includes(kontrolFabFilter);
+    });
+  }
+
+  return adaylar.sort((a,b) => {
+    const ga = kontrolEkipmanAnaGrupAdi(a);
+    const gb = kontrolEkipmanAnaGrupAdi(b);
+    const cg = ga.localeCompare(gb, 'tr');
+    if (cg !== 0) return cg;
+    return (a.name||'').localeCompare(b.name||'', 'tr');
+  });
+}
+
+function kontrolTopluOpen() {
+  const adaylar = kontrolTopluAdaylar();
+  if (!adaylar.length) {
+    alert(kontrolFabFilter
+      ? `${kontrolFabFilter} için toplu güncellenebilecek Makine/Ekipman kaydı yok.`
+      : 'Toplu güncellenebilecek Makine/Ekipman kaydı yok.');
+    return;
+  }
+
+  kontrolTopluSecili.clear();
+  kontrolTopluGorunenIdler = adaylar.map(x => x.id);
+
+  const date = document.getElementById('ktp-date');
+  if (date) {
+    const d = new Date();
+    date.value = [
+      d.getFullYear(),
+      String(d.getMonth()+1).padStart(2,'0'),
+      String(d.getDate()).padStart(2,'0')
+    ].join('-');
+  }
+  document.getElementById('ktp-firm').value = '';
+  document.getElementById('ktp-result').value = 'uygun';
+  document.getElementById('ktp-note').value = '';
+
+  const lbl = document.getElementById('ktp-filter-label');
+  if (lbl) lbl.textContent = kontrolFabFilter ? `Fabrika: ${kontrolFabFilter}` : 'Tüm Fabrikalar';
+
+  document.getElementById('kontrol-toplu-bg').classList.add('on');
+  kontrolTopluRender();
+
+  requestAnimationFrame(() => {
+    const liste = document.getElementById('ktp-list');
+    if (liste) liste.scrollTop = 0;
+  });
+}
+
+function kontrolTopluClose() {
+  document.getElementById('kontrol-toplu-bg').classList.remove('on');
+  kontrolTopluSecili.clear();
+  kontrolTopluGorunenIdler = [];
+}
+
+function kontrolTopluToggle(id, checked) {
+  if (checked) kontrolTopluSecili.add(id);
+  else kontrolTopluSecili.delete(id);
+  kontrolTopluSecimDurumu();
+}
+
+function kontrolTopluTumunuSec() {
+  kontrolTopluGorunenIdler.forEach(id => kontrolTopluSecili.add(id));
+  kontrolTopluRender();
+}
+
+function kontrolTopluSecimiTemizle() {
+  kontrolTopluSecili.clear();
+  kontrolTopluRender();
+}
+
+function kontrolTopluSecimDurumu() {
+  const n = kontrolTopluSecili.size;
+  const count = document.getElementById('ktp-selected-count');
+  const btn = document.getElementById('ktp-save-btn');
+
+  if (count) {
+    count.textContent = n
+      ? `${n} kayıt seçildi`
+      : '0 kayıt seçildi';
+  }
+  if (btn) btn.disabled = n === 0;
+}
+
+function kontrolTopluRender() {
+  const liste = document.getElementById('ktp-list');
+  if (!liste) return;
+
+  const adaylar = kontrolTopluAdaylar();
+  kontrolTopluGorunenIdler = adaylar.map(x => x.id);
+
+  if (!adaylar.length) {
+    liste.innerHTML = '<div style="text-align:center;padding:34px 10px;font-size:12px;color:var(--text3);">Kayıt bulunamadı.</div>';
+    kontrolTopluSecimDurumu();
+    return;
+  }
+
+  const gruplar = new Map();
+  adaylar.forEach(it => {
+    const ana = kontrolEkipmanAnaGrupAdi(it);
+    if (!gruplar.has(ana)) gruplar.set(ana, []);
+    gruplar.get(ana).push(it);
+  });
+
+  liste.innerHTML = [...gruplar.entries()].map(([ana, kayitlar]) => {
+    const seciliSayi = kayitlar.filter(it => kontrolTopluSecili.has(it.id)).length;
+    return `<section class="ktp-cat">
+      <div class="ktp-cat-head">
+        <span>⚙️</span>
+        <span>${esc(ana)}</span>
+        <span class="ktp-cat-count">${seciliSayi}/${kayitlar.length} seçili</span>
+      </div>
+      ${kayitlar.map(it => {
+        const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
+        const per = `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
+        const last = it.lastDate
+          ? new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'})
+          : 'Tarih yok';
+        const checked = kontrolTopluSecili.has(it.id);
+        return `<label class="ktp-item">
+          <input type="checkbox" ${checked?'checked':''}
+            onchange="kontrolTopluToggle('${it.id}',this.checked)">
+          <div class="ktp-item-main">
+            <div class="ktp-item-name">${esc(it.name||'')}</div>
+            <div class="ktp-item-meta">
+              <span>Son: ${esc(last)}</span>
+              ${fabs.length ? `<span>• ${fabs.map(esc).join(', ')}</span>` : ''}
+              ${it.firm ? `<span>• 🏢 ${esc(it.firm)}</span>` : ''}
+            </div>
+          </div>
+          <span class="ktp-item-period">⏱ ${esc(per)}</span>
+        </label>`;
+      }).join('')}
+    </section>`;
+  }).join('');
+
+  kontrolTopluSecimDurumu();
+}
+
+function kontrolTopluKaydet() {
+  if (!kontrolTopluSecili.size) {
+    alert('En az bir kayıt seçin.');
+    return;
+  }
+
+  const tarih = document.getElementById('ktp-date').value;
+  const firma = document.getElementById('ktp-firm').value.trim();
+  const sonuc = document.getElementById('ktp-result').value || 'uygun';
+  const not = document.getElementById('ktp-note').value.trim();
+
+  if (!tarih) {
+    alert('Kontrol tarihi zorunludur.');
+    document.getElementById('ktp-date').focus();
+    return;
+  }
+
+  const secilenler = kontrolItems.filter(it => kontrolTopluSecili.has(it.id));
+  if (!secilenler.length) return;
+
+  const onayMetni =
+    `${secilenler.length} makine/ekipman kaydı toplu güncellenecek.\n\n` +
+    `Kontrol tarihi: ${new Date(tarih+'T00:00:00').toLocaleDateString('tr-TR')}\n` +
+    `Firma: ${firma || 'Mevcut firma bilgileri korunacak'}\n` +
+    `Sonuç: ${kontrolSonucBilgi(sonuc).ad}\n\n` +
+    `Her kaydın kendi periyodu korunacak. Devam edilsin mi?`;
+
+  if (!confirm(onayMetni)) return;
+
+  secilenler.forEach(it => {
+    it.lastDate = tarih;
+
+    // Boş bırakılan ortak alanlar mevcut bilgiyi silmez.
+    if (firma) it.firm = firma;
+    it.result = sonuc;
+    if (not) it.note = not;
+  });
+
+  // Tek kayıt/save çağrısı: localStorage + Firebase bir kez güncellenir.
+  kontrolSave();
+  kontrolTopluClose();
+  kontrolRender();
+  if (typeof dashRender === 'function') dashRender();
+
+  toast(secilenler.length + ' kontrol kaydı toplu güncellendi');
+}
+
+
+// ── AŞAMA 6: Çevre süreçleri hazır takip kataloğu ───────────
+const KONTROL_CEVRE_KATALOG = [
+  {
+    id:'izin-belge', ad:'İzin, Belge ve Resmî Takipler', ikon:'📄',
+    items:[
+      ['cevre-izin','Çevre İzin / Lisans Belgesi Takibi'],
+      ['ced-sureci','ÇED / ÇED Gerekli Değildir Süreç Takibi'],
+      ['sifir-atik','Sıfır Atık Belgesi Takibi'],
+      ['kapasite-raporu','Kapasite Raporu Takibi'],
+      ['atik-yonetim-plani','Atık Yönetim Planı Takibi'],
+      ['resmi-yazi-taahhut','Çevre Resmî Yazı / Taahhüt Takibi']
+    ]
+  },
+  {
+    id:'atik', ad:'Atık Yönetimi', ikon:'♻️',
+    items:[
+      ['atik-beyani','Atık Beyanı Takibi'],
+      ['tehlikeli-atik-gonderim','Tehlikeli Atık Gönderim Takibi'],
+      ['atik-yag','Atık Yağ Gönderim Takibi'],
+      ['ambalaj-atigi','Ambalaj Atığı Takibi'],
+      ['gecici-atik-depo','Geçici Atık Depolama Alanı Kontrolü'],
+      ['atik-tasima-kayit','Atık Taşıma / Teslim Kayıt Takibi']
+    ]
+  },
+  {
+    id:'atiksu-drenaj', ad:'Atıksu ve Drenaj Süreçleri', ikon:'💧',
+    items:[
+      ['atiksu-analizi','Atıksu Analizi Takibi'],
+      ['atiksu-drenaj','Atıksu Drenaj Hattı Kontrolü'],
+      ['yagmursuyu-drenaj','Yağmur Suyu Drenaj Kontrolü'],
+      ['desarj-baglanti','Deşarj / Kanal Bağlantı Süreç Takibi'],
+      ['aritma-isletme','Atıksu Arıtma Tesisi İşletme Kontrolü'],
+      ['yag-tutucu','Yağ Tutucu / Separatör Kontrolü']
+    ]
+  },
+  {
+    id:'emisyon-hava', ad:'Emisyon ve Hava Kalitesi', ikon:'🌬️',
+    items:[
+      ['emisyon-olcumu','Emisyon Ölçümü Takibi'],
+      ['baca-gazi','Baca Gazı Ölçümü Takibi'],
+      ['voc-olcumu','VOC Ölçümü Takibi'],
+      ['toz-emisyon','Toz Emisyonu Ölçüm Takibi'],
+      ['filtre-baca-kontrol','Filtre / Baca Sistem Kontrolü']
+    ]
+  },
+  {
+    id:'cevre-olcum', ad:'Çevresel Ölçüm ve İzleme', ikon:'📊',
+    items:[
+      ['cevre-gurultu','Çevresel Gürültü Ölçümü'],
+      ['toprak-kirlilik','Toprak / Saha Kirliliği İzleme'],
+      ['koku-izleme','Koku / Çevresel Etki İzleme'],
+      ['enerji-kaynak-takip','Kaynak / Tüketim Çevre Takibi']
+    ]
+  },
+  {
+    id:'beyan-rapor', ad:'Beyan ve Periyodik Raporlama', ikon:'🗂️',
+    items:[
+      ['yillik-cevre-beyan','Yıllık Çevre Beyanları Takibi'],
+      ['atik-raporlama','Atık Raporlama / Kayıt Kontrolü'],
+      ['emisyon-raporlama','Emisyon Raporlama Takibi'],
+      ['cevre-performans','Çevre Performans Raporu Takibi'],
+      ['resmi-bildirim','Resmî Çevre Bildirim / Beyan Takibi']
+    ]
+  }
+];
+
+let kontrolCevreYeniSecim = new Set();
+let kontrolCevreKatAcik = {};
+
+function kontrolCevreBul(key) {
+  for (const kat of KONTROL_CEVRE_KATALOG) {
+    const x = kat.items.find(i => i[0] === key);
+    if (x) return { key:x[0], ad:x[1], katId:kat.id, katAd:kat.ad };
+  }
+  return null;
+}
+function kontrolCevreTakipte(key, ad) {
+  return kontrolItems.some(it =>
+    kontrolGrupId(it)==='cevre' &&
+    (it.environmentKey === key ||
+      (!it.environmentKey && (it.name||'').toLocaleLowerCase('tr-TR') === ad.toLocaleLowerCase('tr-TR')))
+  );
+}
+function kontrolCevreOpen() {
+  kontrolCevreYeniSecim.clear();
+
+  if (kontrolEkipmanMobilMi()) {
+    KONTROL_CEVRE_KATALOG.forEach(k => { kontrolCevreKatAcik[k.id] = false; });
+  } else {
+    KONTROL_CEVRE_KATALOG.forEach(k => {
+      if (kontrolCevreKatAcik[k.id] === undefined) kontrolCevreKatAcik[k.id] = true;
+    });
+  }
+
+  const s = document.getElementById('kcv-search');
+  if (s) s.value = '';
+  document.getElementById('kontrol-cevre-bg').classList.add('on');
+  kontrolCevreRender();
+
+  requestAnimationFrame(() => {
+    const body = document.getElementById('kcv-body');
+    if (body) body.scrollTop = 0;
+  });
+}
+function kontrolCevreClose() {
+  document.getElementById('kontrol-cevre-bg').classList.remove('on');
+  kontrolCevreYeniSecim.clear();
+}
+function kontrolCevreToggleKat(id) {
+  const yeni = !kontrolCevreKatAcik[id];
+
+  if (kontrolEkipmanMobilMi() && yeni) {
+    KONTROL_CEVRE_KATALOG.forEach(k => { kontrolCevreKatAcik[k.id] = false; });
+  }
+  kontrolCevreKatAcik[id] = yeni;
+  kontrolCevreRender();
+
+  if (yeni) {
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`.kem-cat[data-kcv-cat="${id}"]`);
+      const body = document.getElementById('kcv-body');
+      if (el && body) {
+        body.scrollTo({top:Math.max(0,el.offsetTop-body.offsetTop-6),behavior:'smooth'});
+      }
+    });
+  }
+}
+function kontrolCevreToggle(key, checked) {
+  if (checked) kontrolCevreYeniSecim.add(key);
+  else kontrolCevreYeniSecim.delete(key);
+  kontrolCevreSecimDurum();
+}
+function kontrolCevreSecimDurum() {
+  const n = kontrolCevreYeniSecim.size;
+  const c = document.getElementById('kcv-selected-count');
+  const b = document.getElementById('kcv-add-btn');
+  if (c) c.textContent = n ? `${n} yeni çevre süreci seçildi` : 'Yeni seçim yok';
+  if (b) b.disabled = n === 0;
+}
+function kontrolCevreRender() {
+  const body = document.getElementById('kcv-body');
+  if (!body) return;
+
+  const q = (document.getElementById('kcv-search')?.value || '').trim().toLocaleLowerCase('tr-TR');
+
+  body.innerHTML = KONTROL_CEVRE_KATALOG.map(kat => {
+    const eslesen = kat.items.filter(i =>
+      !q ||
+      i[1].toLocaleLowerCase('tr-TR').includes(q) ||
+      kat.ad.toLocaleLowerCase('tr-TR').includes(q)
+    );
+    if (!eslesen.length) return '';
+
+    const acik = q ? true : kontrolCevreKatAcik[kat.id] !== false;
+    const takipte = eslesen.filter(i => kontrolCevreTakipte(i[0],i[1])).length;
+
+    return `<section class="kem-cat" data-kcv-cat="${kat.id}">
+      <div class="kem-cat-head" onclick="kontrolCevreToggleKat('${kat.id}')">
+        <span>${acik?'▾':'▸'}</span>
+        <span style="font-size:15px;">${kat.ikon}</span>
+        <strong>${esc(kat.ad)}</strong>
+        <span class="kem-cat-count">${takipte}/${eslesen.length} takipte</span>
+      </div>
+      ${acik ? `<div class="kem-cat-body">${eslesen.map(i => {
+        const varMi = kontrolCevreTakipte(i[0],i[1]);
+        const secili = kontrolCevreYeniSecim.has(i[0]);
+        return `<label class="kem-item${varMi?' track':''}">
+          <input type="checkbox" ${varMi?'checked disabled':(secili?'checked':'')}
+            onchange="kontrolCevreToggle('${i[0]}',this.checked)">
+          <span>${esc(i[1])}</span>
+          ${varMi?'<span class="kem-status">TAKİPTE</span>':''}
+        </label>`;
+      }).join('')}</div>` : ''}
+    </section>`;
+  }).join('') || '<div style="text-align:center;padding:28px 10px;color:var(--text3);font-size:12px;">Aramayla eşleşen çevre süreci bulunamadı.</div>';
+
+  kontrolCevreSecimDurum();
+}
+function kontrolCevreAddSelected() {
+  if (!kontrolCevreYeniSecim.size) return;
+
+  let eklendi = 0;
+  [...kontrolCevreYeniSecim].forEach(key => {
+    const e = kontrolCevreBul(key);
+    if (!e || kontrolCevreTakipte(e.key,e.ad)) return;
+
+    kontrolItems.push({
+      id:Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      grup:'cevre',
+      environmentKey:e.key,
+      environmentCategory:e.katId,
+      name:e.ad,
+      fabs:[],
+      fab:'',
+      lastDate:'',
+      periodVal:'1',
+      periodUnit:'year',
+      firm:'',
+      result:'bekliyor',
+      note:''
+    });
+    eklendi++;
+  });
+
+  if (eklendi) {
+    kontrolGrupAcik.cevre = true;
+    kontrolSave();
+    kontrolRender();
+    if (typeof dashRender === 'function') dashRender();
+    toast(eklendi + ' çevre süreci takip listesine eklendi');
+  }
+  kontrolCevreClose();
+}
+
+function kontrolCevreAnaGrupAdi(it) {
+  if (it && it.environmentCategory) {
+    const kat = KONTROL_CEVRE_KATALOG.find(k => k.id === it.environmentCategory);
+    if (kat) return kat.ad;
+  }
+  if (it && it.environmentKey) {
+    const bulunan = kontrolCevreBul(it.environmentKey);
+    if (bulunan && bulunan.katAd) return bulunan.katAd;
+  }
+  return 'Diğer Çevre Süreçleri';
 }
 
 let kontrolItems = [];
@@ -6882,29 +8246,75 @@ function kontrolSetFabFilter(fab) {
   kontrolRender();
 }
 
+
+
+function kontrolEkipmanAnaGrupAdi(it) {
+  // Katalogdan eklenen kayıt: doğrudan ekipman kategori bilgisini kullan.
+  if (it && it.equipmentCategory) {
+    const kat = KONTROL_EKIPMAN_KATALOG.find(k => k.id === it.equipmentCategory);
+    if (kat) return kat.ad;
+  }
+  // Eski katalog kayıtlarında sadece equipmentKey varsa kategoriyi geriye dönük bul.
+  if (it && it.equipmentKey) {
+    const bulunan = kontrolEkipmanBul(it.equipmentKey);
+    if (bulunan && bulunan.katAd) return bulunan.katAd;
+  }
+  // Makine/Ekipman dışındaki manuel kontrol grupları raporda kendi ana başlığıyla görünür.
+  const gid = kontrolGrupId(it || {});
+  return KONTROL_GRUPLAR[gid]?.ad || 'Diğer';
+}
+
+function kontrolSonucBilgi(v) {
+  const map = {
+    'uygun':       { cls:'uygun',       ikon:'✓',  ad:'Uygun' },
+    'sartli':      { cls:'sartli',      ikon:'!',  ad:'Takip Gerekli' },
+    'uygun-degil': { cls:'uygun-degil', ikon:'×',  ad:'Uygun Değil' },
+    'bekliyor':    { cls:'bekliyor',    ikon:'○',  ad:'Bekliyor' }
+  };
+  return map[v] || map.bekliyor;
+}
+
 function kontrolKartHtml(it) {
   const dl = it.daysLeft;
   const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
   const periodStr = `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
+  const sonuc = kontrolSonucBilgi(it.result || 'bekliyor');
+  const firma = (it.firm || '').trim();
 
-  // Katalogdan yeni eklenen kayıt henüz kontrol tarihi almamış olabilir.
+  // Katalogdan eklenen fakat henüz tarih/fabrika bilgisi tamamlanmamış kayıt.
   if (dl === null || !it.lastDate || !it.nextDate) {
     return `<div class="kontrol-card kontrol-nodate">
-      <div style="display:flex;align-items:flex-start;gap:8px;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(it.name||'')}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
-            ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
-            <span style="font-size:10px;color:var(--text3);">⏱ Varsayılan periyot: ${esc(periodStr)}</span>
-            ${it.equipmentKey?'<span style="font-size:9.5px;font-weight:700;color:#4f7f16;background:#EAF3DE;padding:1px 6px;border-radius:99px;">Katalog</span>':''}
+      <div class="kc-layout">
+        <div>
+          <div class="kc-title-row">
+            <div class="kc-title">${esc(it.name||'')}</div>
+            ${(it.equipmentKey||it.environmentKey)?'<span style="font-size:9px;font-weight:700;color:#4f7f16;background:#EAF3DE;padding:2px 6px;border-radius:99px;">KATALOG</span>':''}
           </div>
-          <div style="font-size:11px;font-weight:600;color:var(--text2);">Kontrol tarihi girilmedi</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Düzenle düğmesiyle fabrika, son kontrol tarihi ve periyodu girin.</div>
+          <div class="kc-tags">
+            ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
+            <span class="kc-period">⏱ ${esc(periodStr)}</span>
+          </div>
+          <div class="kc-dategrid">
+            <div class="kc-datebox">
+              <span class="kc-lbl">Son Kontrol</span>
+              <span class="kc-val">Tarih girilmedi</span>
+            </div>
+            <div class="kc-datebox">
+              <span class="kc-lbl">Sonraki Kontrol</span>
+              <span class="kc-val">—</span>
+            </div>
+          </div>
+          <div class="kc-bottom">
+            ${firma?`<span class="kc-firm">🏢 ${esc(firma)}</span>`:''}
+            <span class="kc-result ${sonuc.cls}">${sonuc.ikon} ${sonuc.ad}</span>
+            ${it.note?`<div class="kc-note">📝 ${esc(it.note)}</div>`:''}
+          </div>
+          <div class="kc-status-line" style="color:#888780;">Kontrol bilgileri bekleniyor</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;">
+        <div class="kc-actions">
           <div class="kontrol-nodate-badge">Tarih Bekliyor</div>
-          <button onclick="kontrolEdit('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);">✏️</button>
-          <button onclick="kontrolDel('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid #fde8e8;border-radius:4px;background:transparent;cursor:pointer;color:#D4537E;">🗑</button>
+          <button class="kc-icon-btn" onclick="kontrolEdit('${it.id}')" title="Düzenle">✏️</button>
+          <button class="kc-icon-btn danger" onclick="kontrolDel('${it.id}')" title="Sil">🗑</button>
         </div>
       </div>
     </div>`;
@@ -6912,36 +8322,76 @@ function kontrolKartHtml(it) {
 
   let urgCls='', urgTxt='', urgColor='var(--text3)', badgeBg='#639922';
   if (dl < 0) {
-    urgCls='kontrol-overdue'; urgTxt=`${Math.abs(dl)} gün gecikti`; urgColor='#D4537E'; badgeBg='#D4537E';
+    urgCls='kontrol-overdue';
+    urgTxt=`${Math.abs(dl)} gün gecikti`;
+    urgColor='#D4537E';
+    badgeBg='#D4537E';
   } else if (dl === 0) {
-    urgCls='kontrol-today'; urgTxt='Bugün!'; urgColor='#E09000'; badgeBg='#E09000';
+    urgCls='kontrol-today';
+    urgTxt='Bugün';
+    urgColor='#EA580C';
+    badgeBg='#F97316';
   } else if (dl <= 30) {
-    urgCls='kontrol-soon'; urgTxt=`${dl} gün kaldı`; urgColor='#E09000'; badgeBg='#E09000';
+    // 0–30 gün: belirgin turuncu — kritik yaklaşma dönemi
+    urgCls='kontrol-soon';
+    urgTxt=`${dl} gün kaldı`;
+    urgColor='#EA580C';
+    badgeBg='#F97316';
   } else if (dl <= 90) {
-    urgTxt=`${dl} gün kaldı`; urgColor='#BA7517'; badgeBg='#BA7517';
+    // 31–90 gün: gerçek sarı — ön uyarı dönemi
+    urgCls='kontrol-medium';
+    urgTxt=`${dl} gün kaldı`;
+    urgColor='#8A6500';
+    badgeBg='#FACC15';
   } else {
-    urgTxt=`${dl} gün kaldı`; urgColor='#4f7f16'; badgeBg='#639922';
+    urgCls='kontrol-ok';
+    urgTxt=`${dl} gün kaldı`;
+    urgColor='#4f7f16';
+    badgeBg='#639922';
   }
 
-  const nextStr = it.nextDate.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
-  const lastStr = new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+  const nextStr = it.nextDate.toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
+  const lastStr = new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
 
   return `<div class="kontrol-card ${urgCls}">
-    <div style="display:flex;align-items:flex-start;gap:8px;">
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(it.name||'')}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
-          ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
-          <span style="font-size:10px;color:var(--text3);">⏱ ${esc(periodStr)}</span>
-          ${it.note?`<span style="font-size:10px;color:var(--text3);">📝 ${esc(it.note)}</span>`:''}
+    <div class="kc-layout">
+      <div>
+        <div class="kc-title-row">
+          <div class="kc-title">${esc(it.name||'')}</div>
         </div>
-        <div style="font-size:11px;color:var(--text2);">Son: ${lastStr}</div>
-        <div style="font-size:11px;font-weight:600;color:${urgColor};">Sonraki: ${nextStr} — ${urgTxt}</div>
+
+        <div class="kc-tags">
+          ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
+          <span class="kc-period">⏱ ${esc(periodStr)}</span>
+        </div>
+
+        <div class="kc-dategrid">
+          <div class="kc-datebox">
+            <span class="kc-lbl">Son Kontrol</span>
+            <span class="kc-val">${lastStr}</span>
+          </div>
+          <div class="kc-datebox">
+            <span class="kc-lbl">Sonraki Kontrol</span>
+            <span class="kc-val" style="color:${urgColor};">${nextStr}</span>
+          </div>
+        </div>
+
+        <div class="kc-bottom">
+          ${firma?`<span class="kc-firm">🏢 ${esc(firma)}</span>`:'<span class="kc-firm" style="opacity:.65;">🏢 Firma girilmedi</span>'}
+          <span class="kc-result ${sonuc.cls}">${sonuc.ikon} ${sonuc.ad}</span>
+          ${it.note?`<div class="kc-note">📝 ${esc(it.note)}</div>`:''}
+        </div>
+
+        <div class="kc-status-line" style="color:${urgColor};">${urgTxt}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;">
-        <div class="kontrol-days-badge" style="background:${badgeBg};">${dl<0?Math.abs(dl)+' Gün Gecikti':dl===0?'Bugün':dl+' Gün Kaldı'}</div>
-        <button onclick="kontrolEdit('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);">✏️</button>
-        <button onclick="kontrolDel('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid #fde8e8;border-radius:4px;background:transparent;cursor:pointer;color:#D4537E;">🗑</button>
+
+      <div class="kc-actions">
+        <div class="kontrol-days-badge"
+             style="background:${badgeBg};color:${(dl>30 && dl<=90)?'#4A3A00':'#fff'};">
+          ${dl<0?Math.abs(dl)+' Gün Gecikti':dl===0?'Bugün':dl+' Gün Kaldı'}
+        </div>
+        <button class="kc-icon-btn" onclick="kontrolEdit('${it.id}')" title="Düzenle">✏️</button>
+        <button class="kc-icon-btn danger" onclick="kontrolDel('${it.id}')" title="Sil">🗑</button>
       </div>
     </div>
   </div>`;
@@ -6984,7 +8434,12 @@ function kontrolRender() {
       <div class="kontrol-grup-body">
         ${id==='makine' ? `<div class="kontrol-ekipman-toolbar">
           <button onclick="event.stopPropagation();kontrolEkipmanOpen()">☑ Ekipmanları Yönet</button>
-          <span>İşyerinizde bulunan ekipman türlerini seçin; seçilen her tür takip listesine tek kayıt olarak eklenir.</span>
+          <button class="kbulk-btn" onclick="event.stopPropagation();kontrolTopluOpen()">↻ Toplu Güncelle</button>
+          <span>Seçili ekipmanları tek seferde tarih, firma ve sonuç bilgisiyle güncelleyebilirsiniz.</span>
+        </div>` : ''}
+        ${id==='cevre' ? `<div class="kontrol-cevre-toolbar">
+          <button onclick="event.stopPropagation();kontrolCevreOpen()">☑ Çevre Süreçlerini Yönet</button>
+          <span>Hazır listeden çevre izin, belge, atık, atıksu, emisyon ve raporlama süreçlerini takip listesine ekleyebilirsiniz.</span>
         </div>` : ''}
         ${grupItems.length ? grupItems.map(kontrolKartHtml).join('') : '<div style="text-align:center;padding:18px 8px;font-size:12px;color:var(--text3);">Bu grupta kayıt yok.</div>'}
       </div>
@@ -6996,12 +8451,16 @@ function kontrolRender() {
 function kontrolOpenAdd(editId) {
   kontrolEditId = editId || null;
   const it = editId ? kontrolItems.find(x=>x.id===editId) : null;
-  document.getElementById('kontrol-modal-h').textContent = it ? 'Kaydı Düzenle' : 'Kontrol Ekle';
+  document.getElementById('kontrol-modal-h').textContent = it
+    ? ((it.equipmentKey ? 'Ekipman Kontrolünü Düzenle' : 'Kaydı Düzenle'))
+    : 'Kontrol Ekle';
   document.getElementById('km-grup').value       = it ? kontrolGrupId(it) : 'makine';
   document.getElementById('km-name').value        = it ? it.name       : '';
   document.getElementById('km-lastdate').value    = it ? it.lastDate   : '';
   document.getElementById('km-period-val').value  = it ? it.periodVal  : '1';
   document.getElementById('km-period-unit').value = it ? it.periodUnit : 'year';
+  document.getElementById('km-firm').value        = it ? (it.firm||'') : '';
+  document.getElementById('km-result').value      = it ? (it.result||'bekliyor') : 'bekliyor';
   document.getElementById('km-note').value        = it ? (it.note||'') : '';
   // Seçili fabrikalar — eski kayıtlarda string, yenilerde array
   const selFabs = it ? (Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : [])) : [];
@@ -7029,6 +8488,8 @@ function kontrolSubmit() {
   const lastDate = document.getElementById('km-lastdate').value;
   const pVal     = document.getElementById('km-period-val').value;
   const pUnit    = document.getElementById('km-period-unit').value;
+  const firm     = document.getElementById('km-firm').value.trim();
+  const result   = document.getElementById('km-result').value || 'bekliyor';
   const note     = document.getElementById('km-note').value.trim();
   const fabs     = Array.from(document.querySelectorAll('.km-fab-chk:checked')).map(c=>c.value);
   if (!KONTROL_GRUPLAR[grup]) { alert('Kontrol grubu seçin.'); return; }
@@ -7037,9 +8498,17 @@ function kontrolSubmit() {
 
   if (kontrolEditId) {
     const it = kontrolItems.find(x=>x.id===kontrolEditId);
-    if (it) { it.grup=grup; it.name=name; it.fabs=fabs; it.fab=fabs[0]; it.lastDate=lastDate; it.periodVal=pVal; it.periodUnit=pUnit; it.note=note; }
+    if (it) {
+      it.grup=grup; it.name=name; it.fabs=fabs; it.fab=fabs[0];
+      it.lastDate=lastDate; it.periodVal=pVal; it.periodUnit=pUnit;
+      it.firm=firm; it.result=result; it.note=note;
+    }
   } else {
-    kontrolItems.push({ id:Date.now()+'', grup, name, fabs, fab:fabs[0], lastDate, periodVal:pVal, periodUnit:pUnit, note });
+    kontrolItems.push({
+      id:Date.now()+'', grup, name, fabs, fab:fabs[0],
+      lastDate, periodVal:pVal, periodUnit:pUnit,
+      firm, result, note
+    });
   }
   kontrolGrupAcik[grup] = true;
   kontrolSave();
@@ -7094,44 +8563,265 @@ function kontrolDelFab(i) {
   toast(ad + ' silindi');
 }
 // ── Kontroller modülü PDF raporu ──
-function kontrolPrint() {
-  let items = kontrolFabFilter
-    ? kontrolItems.filter(it => (Array.isArray(it.fabs) ? it.fabs : [it.fab]).filter(Boolean).includes(kontrolFabFilter))
+const LS_KONTROL_RAPOR_SECIM = 'yeni_isg_kontrol_rapor_secim_v1';
+let kontrolRaporSecim = ['su','makine','cevre'];
+
+function kontrolRaporSecimYukle() {
+  try {
+    const x = JSON.parse(localStorage.getItem(LS_KONTROL_RAPOR_SECIM) || 'null');
+    if (Array.isArray(x) && x.length) {
+      kontrolRaporSecim = x.filter(id => KONTROL_GRUPLAR[id]);
+    }
+  } catch(e) {}
+  if (!kontrolRaporSecim.length) kontrolRaporSecim = ['su','makine','cevre'];
+}
+function kontrolRaporSecimKaydet() {
+  try { localStorage.setItem(LS_KONTROL_RAPOR_SECIM, JSON.stringify(kontrolRaporSecim)); } catch(e) {}
+}
+function kontrolRaporFiltreliItems() {
+  const items = kontrolFabFilter
+    ? kontrolItems.filter(it =>
+        (Array.isArray(it.fabs) ? it.fabs : [it.fab]).filter(Boolean).includes(kontrolFabFilter))
     : [...kontrolItems];
-  items = items.map(it => {
+
+  return items.map(it => {
     const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
-    return { ...it, grup:kontrolGrupId(it), nextDate, daysLeft: kontrolDaysLeft(nextDate) };
-  }).sort((a,b) => {
-    const ga = Object.keys(KONTROL_GRUPLAR).indexOf(a.grup), gb = Object.keys(KONTROL_GRUPLAR).indexOf(b.grup);
-    if (ga !== gb) return ga-gb;
-    if (a.daysLeft === null && b.daysLeft === null) return (a.name||'').localeCompare(b.name||'','tr');
-    if (a.daysLeft === null) return 1;
-    if (b.daysLeft === null) return -1;
-    return a.daysLeft-b.daysLeft;
+    return {
+      ...it,
+      grup:kontrolGrupId(it),
+      nextDate,
+      daysLeft:kontrolDaysLeft(nextDate)
+    };
   });
-  const simdi = new Date().toLocaleString('tr-TR');
-  let el = document.getElementById('modul-print');
-  if (!el) { el = document.createElement('div'); el.id = 'modul-print'; document.body.appendChild(el); }
-  el.innerHTML = `
-    <h1>Periyodik Kontroller Raporu</h1>
-    <div class="mp-meta">${items.length} kayıt · Kapsam: ${esc(kontrolFabFilter || 'Tüm fabrikalar')} · Rapor tarihi: ${esc(simdi)}</div>
+}
+function kontrolRaporOpen() {
+  kontrolRaporSecimYukle();
+
+  const items = kontrolRaporFiltreliItems();
+  const counts = {
+    su:items.filter(x=>x.grup==='su').length,
+    makine:items.filter(x=>x.grup==='makine').length,
+    cevre:items.filter(x=>x.grup==='cevre').length
+  };
+
+  // Hiç kayıt olmayan grupları otomatik seçimden çıkar.
+  kontrolRaporSecim = kontrolRaporSecim.filter(id => counts[id] > 0);
+  if (!kontrolRaporSecim.length) {
+    const ilk = ['su','makine','cevre'].find(id => counts[id] > 0);
+    if (ilk) kontrolRaporSecim = [ilk];
+  }
+
+  const opts = document.getElementById('krp-options');
+  opts.innerHTML = Object.entries(KONTROL_GRUPLAR).map(([id,g]) => {
+    const n = counts[id] || 0;
+    const checked = kontrolRaporSecim.includes(id);
+    const aciklama =
+      id==='su' ? 'Su analiz kayıtları' :
+      id==='makine' ? 'Makine, ekipman ve tesisat periyodik kontrolleri' :
+      'Çevre izin, belge, atık, atıksu ve emisyon süreçleri';
+
+    return `<label class="krp-option${n===0?' disabled':''}">
+      <input type="checkbox" value="${id}" ${checked?'checked':''} ${n===0?'disabled':''}
+        onchange="kontrolRaporToggle('${id}',this.checked)">
+      <span class="krp-option-icon">${g.ikon}</span>
+      <span class="krp-option-main">
+        <strong>${esc(g.ad)}</strong>
+        <span>${esc(aciklama)}</span>
+      </span>
+      <span class="krp-count">${n} kayıt</span>
+    </label>`;
+  }).join('');
+
+  document.getElementById('kontrol-rapor-bg').classList.add('on');
+  kontrolRaporDurum();
+}
+function kontrolRaporClose() {
+  document.getElementById('kontrol-rapor-bg').classList.remove('on');
+}
+function kontrolRaporToggle(id, checked) {
+  if (checked && !kontrolRaporSecim.includes(id)) kontrolRaporSecim.push(id);
+  if (!checked) kontrolRaporSecim = kontrolRaporSecim.filter(x => x !== id);
+  kontrolRaporDurum();
+}
+function kontrolRaporDurum() {
+  const n = kontrolRaporSecim.length;
+  const info = document.getElementById('krp-selected-info');
+  const btn = document.getElementById('krp-print-btn');
+  if (info) info.textContent = n ? `${n} bölüm seçildi` : 'Bölüm seçilmedi';
+  if (btn) btn.disabled = n === 0;
+}
+
+function kontrolPeriyotYazi(it) {
+  return (it.periodVal||1) + ' ' +
+    (it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta');
+}
+function kontrolTarihYazi(v) {
+  return v ? new Date(v+'T00:00:00').toLocaleDateString('tr-TR') : '-';
+}
+function kontrolSonrakiTarihYazi(it) {
+  return it.nextDate ? it.nextDate.toLocaleDateString('tr-TR') : '-';
+}
+
+function kontrolRaporMakine(items) {
+  items = items.slice().sort((a,b) => {
+    const ga = kontrolEkipmanAnaGrupAdi(a);
+    const gb = kontrolEkipmanAnaGrupAdi(b);
+    const c = ga.localeCompare(gb,'tr');
+    return c || (a.name||'').localeCompare(b.name||'','tr');
+  });
+
+  return `<section class="mp-section">
+    <h2>⚙️ Makine Ekipman Kontrolleri</h2>
+    <div class="mp-section-meta">${items.length} kayıt</div>
     <table>
-      <thead><tr><th style="width:24px">#</th><th>Grup</th><th>Kontrol Tipi</th><th>Fabrika(lar)</th>
-        <th style="width:52px">Periyot</th><th style="width:62px">Son yapılma</th>
-        <th style="width:62px">Sonraki</th><th style="width:60px">Durum</th><th>Not</th></tr></thead>
+      <thead><tr>
+        <th style="width:24px">#</th>
+        <th style="width:16%">Ekipman Ana Grubu</th>
+        <th style="width:17%">Ekipman Adı</th>
+        <th style="width:7%">Periyot</th>
+        <th style="width:10%">Son Kontrol</th>
+        <th style="width:10%">Sonraki Kontrol</th>
+        <th style="width:18%">Kontrol Firması / Yetkili</th>
+        <th style="width:8%">Sonuç</th>
+        <th style="width:14%">Not</th>
+      </tr></thead>
       <tbody>${items.map((it,i) => {
-        const dl = it.daysLeft;
-        const durum = dl === null ? 'Tarih girilmedi' : dl < 0 ? Math.abs(dl)+' gün gecikti' : dl === 0 ? 'Bugün' : dl+' gün kaldı';
-        const per = (it.periodVal||1) + ' ' + (it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta');
-        const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
-        const son = it.lastDate ? new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR') : '-';
-        const sonraki = it.nextDate ? it.nextDate.toLocaleDateString('tr-TR') : '-';
-        return `<tr><td>${i+1}</td><td>${esc(KONTROL_GRUPLAR[it.grup].ad)}</td><td>${esc(it.name||'')}</td>
-          <td>${esc(fabs.join(', ')||'-')}</td><td>${esc(per)}</td>
-          <td>${son}</td><td>${sonraki}</td>
-          <td>${esc(durum)}</td><td>${esc(it.note||'-')}</td></tr>`;
+        const sonuc = kontrolSonucBilgi(it.result||'bekliyor').ad;
+        return `<tr>
+          <td>${i+1}</td>
+          <td>${esc(kontrolEkipmanAnaGrupAdi(it))}</td>
+          <td>${esc(it.name||'')}</td>
+          <td>${esc(kontrolPeriyotYazi(it))}</td>
+          <td>${kontrolTarihYazi(it.lastDate)}</td>
+          <td>${kontrolSonrakiTarihYazi(it)}</td>
+          <td>${esc(it.firm||'-')}</td>
+          <td>${esc(sonuc)}</td>
+          <td>${esc(it.note||'-')}</td>
+        </tr>`;
       }).join('') || '<tr><td colspan="9">Kayıt yok</td></tr>'}</tbody>
-    </table>`;
+    </table>
+  </section>`;
+}
+
+function kontrolRaporSu(items) {
+  items = items.slice().sort((a,b) => (a.name||'').localeCompare(b.name||'','tr'));
+
+  return `<section class="mp-section">
+    <h2>💧 Su Analiz Kontrolleri</h2>
+    <div class="mp-section-meta">${items.length} kayıt</div>
+    <table>
+      <thead><tr>
+        <th style="width:24px">#</th>
+        <th style="width:22%">Analiz Adı</th>
+        <th style="width:8%">Periyot</th>
+        <th style="width:11%">Son Analiz</th>
+        <th style="width:11%">Sonraki Analiz</th>
+        <th style="width:20%">Laboratuvar / Yetkili</th>
+        <th style="width:10%">Sonuç</th>
+        <th style="width:18%">Not</th>
+      </tr></thead>
+      <tbody>${items.map((it,i) => {
+        const sonuc = kontrolSonucBilgi(it.result||'bekliyor').ad;
+        return `<tr>
+          <td>${i+1}</td>
+          <td>${esc(it.name||'')}</td>
+          <td>${esc(kontrolPeriyotYazi(it))}</td>
+          <td>${kontrolTarihYazi(it.lastDate)}</td>
+          <td>${kontrolSonrakiTarihYazi(it)}</td>
+          <td>${esc(it.firm||'-')}</td>
+          <td>${esc(sonuc)}</td>
+          <td>${esc(it.note||'-')}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="8">Kayıt yok</td></tr>'}</tbody>
+    </table>
+  </section>`;
+}
+
+function kontrolRaporCevre(items) {
+  items = items.slice().sort((a,b) => {
+    const ga = kontrolCevreAnaGrupAdi(a);
+    const gb = kontrolCevreAnaGrupAdi(b);
+    const c = ga.localeCompare(gb,'tr');
+    return c || (a.name||'').localeCompare(b.name||'','tr');
+  });
+
+  return `<section class="mp-section">
+    <h2>🌿 Çevre Süreçleri</h2>
+    <div class="mp-section-meta">${items.length} kayıt</div>
+    <table>
+      <thead><tr>
+        <th style="width:24px">#</th>
+        <th style="width:17%">Çevre Süreç Grubu</th>
+        <th style="width:19%">Süreç / Belge Adı</th>
+        <th style="width:8%">Takip Periyodu</th>
+        <th style="width:11%">Son İşlem / Kontrol</th>
+        <th style="width:11%">Sonraki Takip / Yenileme</th>
+        <th style="width:18%">Firma / Kurum / Yetkili</th>
+        <th style="width:7%">Durum</th>
+        <th style="width:9%">Not</th>
+      </tr></thead>
+      <tbody>${items.map((it,i) => {
+        const sonuc = kontrolSonucBilgi(it.result||'bekliyor').ad;
+        return `<tr>
+          <td>${i+1}</td>
+          <td>${esc(kontrolCevreAnaGrupAdi(it))}</td>
+          <td>${esc(it.name||'')}</td>
+          <td>${esc(kontrolPeriyotYazi(it))}</td>
+          <td>${kontrolTarihYazi(it.lastDate)}</td>
+          <td>${kontrolSonrakiTarihYazi(it)}</td>
+          <td>${esc(it.firm||'-')}</td>
+          <td>${esc(sonuc)}</td>
+          <td>${esc(it.note||'-')}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="9">Kayıt yok</td></tr>'}</tbody>
+    </table>
+  </section>`;
+}
+
+// Üstteki mevcut Rapor butonunun çağırdığı fonksiyon artık önce bölüm seçimini açar.
+function kontrolPrint() {
+  kontrolRaporOpen();
+}
+
+function kontrolPrintRun() {
+  if (!kontrolRaporSecim.length) {
+    alert('En az bir rapor bölümü seçin.');
+    return;
+  }
+
+  kontrolRaporSecimKaydet();
+
+  const items = kontrolRaporFiltreliItems();
+  const simdi = new Date().toLocaleString('tr-TR');
+  const fab = kontrolFabFilter || 'Tüm Fabrikalar';
+
+  const parcalar = [];
+  if (kontrolRaporSecim.includes('su')) {
+    parcalar.push(kontrolRaporSu(items.filter(x=>x.grup==='su')));
+  }
+  if (kontrolRaporSecim.includes('makine')) {
+    parcalar.push(kontrolRaporMakine(items.filter(x=>x.grup==='makine')));
+  }
+  if (kontrolRaporSecim.includes('cevre')) {
+    parcalar.push(kontrolRaporCevre(items.filter(x=>x.grup==='cevre')));
+  }
+
+  let el = document.getElementById('modul-print');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'modul-print';
+    document.body.appendChild(el);
+  }
+
+  el.innerHTML = `
+    <h1>Kontrol ve Takip Raporu</h1>
+    <div class="mp-meta">
+      Fabrika: ${esc(fab)} · Seçilen bölüm: ${kontrolRaporSecim.length} · Rapor tarihi: ${esc(simdi)}
+    </div>
+    ${parcalar.join('')}
+  `;
+
+  kontrolRaporClose();
   document.body.classList.add('print-modul');
   window.print();
   setTimeout(() => document.body.classList.remove('print-modul'), 800);
