@@ -1535,6 +1535,27 @@ html[data-tema="gokkusagi"] #topbar::after {
 
 <style id="kontrol-styles">
 /* Kontrol modülü */
+.kontrol-grup {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--rl); overflow:hidden; box-shadow:var(--sh);
+}
+.kontrol-grup-hd {
+  display:flex; align-items:center; gap:9px; padding:10px 12px;
+  background:var(--surface2); cursor:pointer; user-select:none;
+  border-bottom:1px solid transparent;
+}
+.kontrol-grup-hd:hover { filter:brightness(.98); }
+.kontrol-grup.acik .kontrol-grup-hd { border-bottom-color:var(--border); }
+.kontrol-grup-ok { font-size:13px; width:16px; text-align:center; color:var(--text2); flex-shrink:0; }
+.kontrol-grup-ad { font-size:13px; font-weight:700; color:var(--text); }
+.kontrol-grup-aciklama { font-size:10px; color:var(--text3); margin-top:2px; }
+.kontrol-grup-sayi {
+  margin-left:auto; min-width:24px; text-align:center; font-size:10px; font-weight:700;
+  padding:2px 7px; border-radius:99px; background:var(--surface); color:var(--text2);
+  border:1px solid var(--border);
+}
+.kontrol-grup-body { display:none; flex-direction:column; gap:6px; padding:8px; }
+.kontrol-grup.acik .kontrol-grup-body { display:flex; }
 .kontrol-card {
   background:var(--surface); border:1px solid var(--border);
   border-radius:var(--r); padding:10px 12px; box-shadow:var(--sh);
@@ -1558,6 +1579,11 @@ html[data-tema="gokkusagi"] #topbar::after {
 }
 .kontrol-fab-chip.active {
   background:#378ADD; color:#fff; border-color:#378ADD;
+}
+@media (max-width:899px) {
+  .kontrol-grup-hd { padding:11px 10px; }
+  .kontrol-grup-body { padding:6px; }
+  .kontrol-card { padding:10px; }
 }
 /* future-day: handled below via :not selectors */
 </style>
@@ -1894,8 +1920,16 @@ html[data-tema="gokkusagi"] #topbar::after {
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Kontrol Adı *</label>
-        <input id="km-name" placeholder="örn. Gürültü Ölçümü, Toz Analizi..." style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;"/>
+        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Ana Kontrol Grubu *</label>
+        <select id="km-grup" style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;">
+          <option value="su">Su Analiz Kontrolleri</option>
+          <option value="makine">Makine Ekipman Kontrolleri</option>
+          <option value="cevre">Çevre Süreçleri</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Kontrol Tipi *</label>
+        <input id="km-name" placeholder="örn. Basınçlı kap kontrolü, Gürültü ölçümü, Su analizi..." style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;"/>
       </div>
       <div>
         <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Fabrika *</label>
@@ -6377,12 +6411,28 @@ function perToast(m) {
 const LS_KONTROL_ITEMS = 'yeni_isg_kontrol_items_v1';
 const LS_KONTROL_FABS  = 'yeni_isg_kontrol_fabs_v1';
 
+const KONTROL_GRUPLAR = {
+  su: {
+    ad:'Su Analiz Kontrolleri', ikon:'💧',
+    aciklama:'İçme-kullanma suyu, mikrobiyolojik ve ilgili su analiz kayıtları'
+  },
+  makine: {
+    ad:'Makine Ekipman Kontrolleri', ikon:'⚙️',
+    aciklama:'Periyodik makine, ekipman ve tesisat kontrol tipleri'
+  },
+  cevre: {
+    ad:'Çevre Süreçleri', ikon:'🌿',
+    aciklama:'Çevre ölçüm, analiz, izin ve periyodik takip süreçleri'
+  }
+};
+
 let kontrolItems = [];
 let kontrolFabs  = [
   'Fabrika 1','Fabrika 2','Fabrika 3'
 ];
 let kontrolEditId   = null;
 let kontrolFabFilter = null; // null = tümü
+let kontrolGrupAcik = { su:true, makine:true, cevre:true };
 
 function kontrolLoad() {
   try { kontrolItems = JSON.parse(localStorage.getItem(LS_KONTROL_ITEMS)||'[]'); } catch(e){kontrolItems=[];}
@@ -6396,6 +6446,17 @@ window._kontrolReady = window._kontrolReady || false;
 function kontrolInit() {
   if (!window._kontrolReady) { kontrolLoad(); window._kontrolReady = true; }
   kontrolRenderFabFilter();
+  kontrolRender();
+}
+
+// Eski kayıtlarda grup alanı yoktur. Veri kaybı olmaması için bu kayıtlar
+// varsayılan olarak Makine Ekipman Kontrolleri altında gösterilir.
+function kontrolGrupId(it) {
+  return it && KONTROL_GRUPLAR[it.grup] ? it.grup : 'makine';
+}
+function kontrolToggleGrup(id) {
+  if (!KONTROL_GRUPLAR[id]) return;
+  kontrolGrupAcik[id] = !kontrolGrupAcik[id];
   kontrolRender();
 }
 
@@ -6421,7 +6482,7 @@ function kontrolRenderFabFilter() {
   el.innerHTML = `<span class="kontrol-fab-chip${kontrolFabFilter===null?' active':''}"
     onclick="kontrolSetFabFilter(null)">Tümü</span>` +
     kontrolFabs.map(f => `<span class="kontrol-fab-chip${kontrolFabFilter===f?' active':''}"
-      onclick="kontrolSetFabFilter('${f.replace(/'/g,"\'")}')">${f}</span>`).join('');
+      onclick="kontrolSetFabFilter('${String(f).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">${esc(f)}</span>`).join('');
 }
 function kontrolSetFabFilter(fab) {
   kontrolFabFilter = fab;
@@ -6429,67 +6490,80 @@ function kontrolSetFabFilter(fab) {
   kontrolRender();
 }
 
-// ── Ana render ──────────────────────────────────────────────
+function kontrolKartHtml(it) {
+  const dl = it.daysLeft;
+  let urgCls='', urgTxt='', urgColor='var(--text3)';
+  if (dl < 0) {
+    urgCls='kontrol-overdue'; urgTxt=`${Math.abs(dl)} gün gecikti`; urgColor='#D4537E';
+  } else if (dl === 0) {
+    urgCls='kontrol-today';   urgTxt='Bugün!'; urgColor='#E09000';
+  } else if (dl <= 14) {
+    urgCls='kontrol-soon';    urgTxt=`${dl} gün kaldı`; urgColor='#E09000';
+  } else if (dl <= 30) {
+    urgTxt=`${dl} gün kaldı`; urgColor='#BA7517';
+  } else {
+    urgTxt=`${dl} gün kaldı`; urgColor='var(--text3)';
+  }
+
+  const nextStr = it.nextDate.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+  const lastStr = new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+  const periodStr = `${it.periodVal} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
+  const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
+
+  return `<div class="kontrol-card ${urgCls}">
+    <div style="display:flex;align-items:flex-start;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(it.name||'')}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
+          ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
+          <span style="font-size:10px;color:var(--text3);">⏱ ${esc(periodStr)}</span>
+          ${it.note?`<span style="font-size:10px;color:var(--text3);">📝 ${esc(it.note)}</span>`:''}
+        </div>
+        <div style="font-size:11px;color:var(--text2);">Son: ${lastStr}</div>
+        <div style="font-size:11px;font-weight:600;color:${urgColor};">Sonraki: ${nextStr} — ${urgTxt}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;">
+        <div class="kontrol-days-badge" style="background:${dl<0?'#D4537E':dl<=14?'#E09000':'#639922'};">${dl<0?'⚠ Gecikti':dl===0?'Bugün!':dl+'g'}</div>
+        <button onclick="kontrolEdit('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);">✏️</button>
+        <button onclick="kontrolDel('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid #fde8e8;border-radius:4px;background:transparent;cursor:pointer;color:#D4537E;">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Ana render: 3 ana grup / akordeon ─────────────────────
 function kontrolRender() {
   const body = document.getElementById('kontrol-body');
   if (!body) return;
 
   let items = kontrolFabFilter
-    ? kontrolItems.filter(it => (it.fabs||[it.fab]).includes(kontrolFabFilter))
+    ? kontrolItems.filter(it => (Array.isArray(it.fabs) ? it.fabs : [it.fab]).filter(Boolean).includes(kontrolFabFilter))
     : [...kontrolItems];
-
-  if (!items.length) {
-    body.innerHTML = '<div style="text-align:center;padding:48px;font-size:13px;color:var(--text3);">Henüz kayıt yok.<br>+ Ekle ile başlayın.</div>';
-    return;
-  }
 
   // Sonraki tarih hesapla + sırala (en yakın önce)
   items = items.map(it => {
     const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
     const daysLeft = kontrolDaysLeft(nextDate);
-    return { ...it, nextDate, daysLeft };
+    return { ...it, nextDate, daysLeft, grup:kontrolGrupId(it) };
   }).sort((a,b) => a.daysLeft - b.daysLeft);
 
-  const PERIOD_LBL = { year:'Yıllık', month:'Aylık', week:'Haftalık' };
-
-  body.innerHTML = items.map(it => {
-    const dl = it.daysLeft;
-    let urgCls='', urgTxt='', urgColor='var(--text3)';
-    if (dl < 0) {
-      urgCls='kontrol-overdue'; urgTxt=`${Math.abs(dl)} gün gecikti`; urgColor='#D4537E';
-    } else if (dl === 0) {
-      urgCls='kontrol-today';   urgTxt='Bugün!';                       urgColor='#E09000';
-    } else if (dl <= 14) {
-      urgCls='kontrol-soon';    urgTxt=`${dl} gün kaldı`;              urgColor='#E09000';
-    } else if (dl <= 30) {
-      urgTxt=`${dl} gün kaldı`; urgColor='#BA7517';
-    } else {
-      urgTxt=`${dl} gün kaldı`; urgColor='var(--text3)';
-    }
-
-    const nextStr = it.nextDate.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
-    const lastStr = new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
-    const periodStr = `${it.periodVal} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
-
-    return `<div class="kontrol-card ${urgCls}">
-      <div style="display:flex;align-items:flex-start;gap:8px;">
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${it.name}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
-            ${(it.fabs||[it.fab]).map(f=>`<span class="kontrol-fab-tag">${f}</span>`).join('')}
-            <span style="font-size:10px;color:var(--text3);">⏱ ${periodStr}</span>
-            ${it.note?`<span style="font-size:10px;color:var(--text3);">📝 ${it.note}</span>`:''}
-          </div>
-          <div style="font-size:11px;color:var(--text2);">Son: ${lastStr}</div>
-          <div style="font-size:11px;font-weight:600;color:${urgColor};">Sonraki: ${nextStr} — ${urgTxt}</div>
+  body.innerHTML = Object.entries(KONTROL_GRUPLAR).map(([id,g]) => {
+    const grupItems = items.filter(it => it.grup === id);
+    const acik = kontrolGrupAcik[id] !== false;
+    return `<section class="kontrol-grup${acik?' acik':''}">
+      <div class="kontrol-grup-hd" onclick="kontrolToggleGrup('${id}')" role="button" aria-expanded="${acik?'true':'false'}">
+        <span class="kontrol-grup-ok">${acik?'▾':'▸'}</span>
+        <span style="font-size:16px;flex-shrink:0;">${g.ikon}</span>
+        <div style="min-width:0;">
+          <div class="kontrol-grup-ad">${g.ad}</div>
+          <div class="kontrol-grup-aciklama">${g.aciklama}</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;">
-          <div class="kontrol-days-badge" style="background:${dl<0?'#D4537E':dl<=14?'#E09000':'#639922'};">${dl<0?'⚠ Gecikti':dl===0?'Bugün!':dl+'g'}</div>
-          <button onclick="kontrolEdit('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);">✏️</button>
-          <button onclick="kontrolDel('${it.id}')" style="font-size:11px;padding:3px 8px;border:1px solid #fde8e8;border-radius:4px;background:transparent;cursor:pointer;color:#D4537E;">🗑</button>
-        </div>
+        <span class="kontrol-grup-sayi">${grupItems.length}</span>
       </div>
-    </div>`;
+      <div class="kontrol-grup-body">
+        ${grupItems.length ? grupItems.map(kontrolKartHtml).join('') : '<div style="text-align:center;padding:18px 8px;font-size:12px;color:var(--text3);">Bu grupta kayıt yok.</div>'}
+      </div>
+    </section>`;
   }).join('');
 }
 
@@ -6498,6 +6572,7 @@ function kontrolOpenAdd(editId) {
   kontrolEditId = editId || null;
   const it = editId ? kontrolItems.find(x=>x.id===editId) : null;
   document.getElementById('kontrol-modal-h').textContent = it ? 'Kaydı Düzenle' : 'Kontrol Ekle';
+  document.getElementById('km-grup').value       = it ? kontrolGrupId(it) : 'makine';
   document.getElementById('km-name').value        = it ? it.name       : '';
   document.getElementById('km-lastdate').value    = it ? it.lastDate   : '';
   document.getElementById('km-period-val').value  = it ? it.periodVal  : '1';
@@ -6509,11 +6584,11 @@ function kontrolOpenAdd(editId) {
   const list = document.getElementById('km-fab-list');
   list.innerHTML = kontrolFabs.map(f => `
     <label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);user-select:none;">
-      <input type="checkbox" class="km-fab-chk" value="${f}" ${selFabs.includes(f)?'checked':''} style="accent-color:#378ADD;width:12px;height:12px;"> ${f}
+      <input type="checkbox" class="km-fab-chk" value="${esc(f)}" ${selFabs.includes(f)?'checked':''} style="accent-color:#378ADD;width:12px;height:12px;"> ${esc(f)}
     </label>`).join('');
   // Tümünü seç checkbox sync
   const allChk = document.getElementById('km-fab-all');
-  if (allChk) allChk.checked = selFabs.length === kontrolFabs.length;
+  if (allChk) allChk.checked = selFabs.length === kontrolFabs.length && kontrolFabs.length > 0;
   document.getElementById('kontrol-modal-bg').style.display = 'flex';
   setTimeout(()=>document.getElementById('km-name').focus(),80);
 }
@@ -6524,21 +6599,24 @@ function kontrolCloseAdd() {
   document.getElementById('kontrol-modal-bg').style.display = 'none';
 }
 function kontrolSubmit() {
+  const grup     = document.getElementById('km-grup').value;
   const name     = document.getElementById('km-name').value.trim();
   const lastDate = document.getElementById('km-lastdate').value;
   const pVal     = document.getElementById('km-period-val').value;
   const pUnit    = document.getElementById('km-period-unit').value;
   const note     = document.getElementById('km-note').value.trim();
   const fabs     = Array.from(document.querySelectorAll('.km-fab-chk:checked')).map(c=>c.value);
-  if (!name||!lastDate)    { alert('Ad ve tarih zorunludur.');      return; }
-  if (!fabs.length)        { alert('En az bir fabrika seçin.');     return; }
+  if (!KONTROL_GRUPLAR[grup]) { alert('Kontrol grubu seçin.'); return; }
+  if (!name||!lastDate)       { alert('Kontrol tipi ve tarih zorunludur.'); return; }
+  if (!fabs.length)           { alert('En az bir fabrika seçin.'); return; }
 
   if (kontrolEditId) {
     const it = kontrolItems.find(x=>x.id===kontrolEditId);
-    if (it) { it.name=name; it.fabs=fabs; it.fab=fabs[0]; it.lastDate=lastDate; it.periodVal=pVal; it.periodUnit=pUnit; it.note=note; }
+    if (it) { it.grup=grup; it.name=name; it.fabs=fabs; it.fab=fabs[0]; it.lastDate=lastDate; it.periodVal=pVal; it.periodUnit=pUnit; it.note=note; }
   } else {
-    kontrolItems.push({ id:Date.now()+'', name, fabs, fab:fabs[0], lastDate, periodVal:pVal, periodUnit:pUnit, note });
+    kontrolItems.push({ id:Date.now()+'', grup, name, fabs, fab:fabs[0], lastDate, periodVal:pVal, periodUnit:pUnit, note });
   }
+  kontrolGrupAcik[grup] = true;
   kontrolSave();
   kontrolCloseAdd();
   kontrolRender();
@@ -6563,7 +6641,7 @@ function kontrolRenderFabList() {
   const el = document.getElementById('kontrol-fab-list');
   el.innerHTML = kontrolFabs.map((f,i)=>`
     <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border-radius:var(--r);">
-      <span style="flex:1;font-size:12px;color:var(--text);">🏭 ${f}</span>
+      <span style="flex:1;font-size:12px;color:var(--text);">🏭 ${esc(f)}</span>
       <span onclick="kontrolDelFab(${i})" style="cursor:pointer;color:var(--text3);font-size:16px;padding:0 4px;" title="Sil">×</span>
     </div>`).join('') || '<div style="font-size:12px;color:var(--text3);">Fabrika yok</div>';
 }
@@ -6593,12 +6671,15 @@ function kontrolDelFab(i) {
 // ── Kontroller modülü PDF raporu ──
 function kontrolPrint() {
   let items = kontrolFabFilter
-    ? kontrolItems.filter(it => (it.fabs||[it.fab]).includes(kontrolFabFilter))
+    ? kontrolItems.filter(it => (Array.isArray(it.fabs) ? it.fabs : [it.fab]).filter(Boolean).includes(kontrolFabFilter))
     : [...kontrolItems];
   items = items.map(it => {
     const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
-    return { ...it, nextDate, daysLeft: kontrolDaysLeft(nextDate) };
-  }).sort((a,b) => a.daysLeft - b.daysLeft);
+    return { ...it, grup:kontrolGrupId(it), nextDate, daysLeft: kontrolDaysLeft(nextDate) };
+  }).sort((a,b) => {
+    const ga = Object.keys(KONTROL_GRUPLAR).indexOf(a.grup), gb = Object.keys(KONTROL_GRUPLAR).indexOf(b.grup);
+    return ga === gb ? a.daysLeft-b.daysLeft : ga-gb;
+  });
   const simdi = new Date().toLocaleString('tr-TR');
   let el = document.getElementById('modul-print');
   if (!el) { el = document.createElement('div'); el.id = 'modul-print'; document.body.appendChild(el); }
@@ -6606,24 +6687,26 @@ function kontrolPrint() {
     <h1>Periyodik Kontroller Raporu</h1>
     <div class="mp-meta">${items.length} kayıt · Kapsam: ${esc(kontrolFabFilter || 'Tüm fabrikalar')} · Rapor tarihi: ${esc(simdi)}</div>
     <table>
-      <thead><tr><th style="width:24px">#</th><th>Kontrol</th><th>Fabrika(lar)</th>
+      <thead><tr><th style="width:24px">#</th><th>Grup</th><th>Kontrol Tipi</th><th>Fabrika(lar)</th>
         <th style="width:52px">Periyot</th><th style="width:62px">Son yapılma</th>
         <th style="width:62px">Sonraki</th><th style="width:60px">Durum</th><th>Not</th></tr></thead>
       <tbody>${items.map((it,i) => {
         const dl = it.daysLeft;
         const durum = dl < 0 ? Math.abs(dl)+' gün gecikti' : dl === 0 ? 'Bugün' : dl+' gün kaldı';
         const per = it.periodVal + ' ' + (it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta');
-        return `<tr><td>${i+1}</td><td>${esc(it.name)}</td>
-          <td>${esc((it.fabs||[it.fab]).join(', '))}</td><td>${esc(per)}</td>
+        const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
+        return `<tr><td>${i+1}</td><td>${esc(KONTROL_GRUPLAR[it.grup].ad)}</td><td>${esc(it.name||'')}</td>
+          <td>${esc(fabs.join(', '))}</td><td>${esc(per)}</td>
           <td>${new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR')}</td>
           <td>${it.nextDate.toLocaleDateString('tr-TR')}</td>
-          <td>${durum}</td><td>${esc(it.note||'-')}</td></tr>`;
-      }).join('') || '<tr><td colspan="8">Kayıt yok</td></tr>'}</tbody>
+          <td>${esc(durum)}</td><td>${esc(it.note||'-')}</td></tr>`;
+      }).join('') || '<tr><td colspan="9">Kayıt yok</td></tr>'}</tbody>
     </table>`;
   document.body.classList.add('print-modul');
   window.print();
   setTimeout(() => document.body.classList.remove('print-modul'), 800);
 }
+
 // ── End Kontrol Modülü ──
 
 // ── DASHBOARD ────────────────────────────────────────────────
