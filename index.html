@@ -2671,6 +2671,385 @@ html[data-tema="gokkusagi"] #topbar::after {
   }
 }
 
+
+/* FINAL V3: kapalı ana kartlar + sabit toplu güncelle alt çubuğu */
+@media(max-width:899px){
+  #kontrol-toplu-modal{
+    display:flex !important;
+    flex-direction:column !important;
+    height:95dvh !important;
+    max-height:95dvh !important;
+    overflow:hidden !important;
+  }
+  .ktp-head,.ktp-controls{
+    flex:0 0 auto !important;
+    flex-shrink:0 !important;
+  }
+  #ktp-list{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+  }
+  .ktp-update-wrap{
+    flex:0 0 auto !important;
+    flex-shrink:0 !important;
+    max-height:48dvh;
+    overflow-y:auto;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+  }
+  .ktp-foot{
+    position:relative !important;
+    bottom:auto !important;
+    flex:0 0 auto !important;
+    flex-shrink:0 !important;
+    z-index:20;
+    width:100%;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    box-shadow:0 -4px 14px rgba(0,0,0,.10);
+    padding-bottom:max(10px,env(safe-area-inset-bottom));
+  }
+}
+
+
+/* ── PARETO FINAL: dinamik ölçek + otomatik yorum ── */
+.ks-pareto-insights{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
+  gap:10px;
+  margin-top:10px;
+}
+.ks-pareto-box{
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 11px;
+  background:var(--surface2);
+  min-width:0;
+}
+.ks-pareto-box.yorum{
+  border-color:#B5D4F4;
+  background:rgba(55,138,221,.055);
+}
+.ks-pareto-box.oncelik{
+  border-color:#B7D58B;
+  background:rgba(99,153,34,.055);
+}
+.ks-pareto-box-title{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:7px;
+  font-size:11.5px;
+  font-weight:800;
+  color:var(--text);
+}
+.ks-pareto-text{
+  font-size:10.5px;
+  line-height:1.5;
+  color:var(--text2);
+}
+.ks-pareto-meta{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:4px 8px;
+  margin-top:8px;
+  padding-top:7px;
+  border-top:1px solid var(--border);
+  font-size:9.5px;
+  color:var(--text3);
+}
+.ks-pareto-priority{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.ks-pareto-priority-row{
+  display:grid;
+  grid-template-columns:22px minmax(0,1fr) 42px 48px;
+  gap:5px;
+  align-items:center;
+  padding:4px 5px;
+  border-bottom:1px solid var(--border);
+  font-size:9.5px;
+  color:var(--text2);
+}
+.ks-pareto-priority-row:last-child{border-bottom:none;}
+.ks-pareto-rank{
+  width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#639922;color:#fff;font-size:9px;font-weight:800;
+}
+.ks-pareto-priority-row .ay{
+  font-weight:700;
+  color:var(--text);
+  min-width:0;
+}
+.ks-pareto-priority-row .adet,
+.ks-pareto-priority-row .pct{
+  text-align:right;
+  font-weight:700;
+}
+.ks-pareto-priority-row.cross .pct{color:#C0392B;}
+.ks-pareto-summary{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 42px 48px;
+  gap:5px;
+  padding:6px 5px 0;
+  margin-top:3px;
+  border-top:1.5px solid #8DBF58;
+  font-size:9.5px;
+  font-weight:800;
+  color:var(--text);
+}
+.ks-pareto-summary span:nth-child(2),
+.ks-pareto-summary span:nth-child(3){text-align:right;}
+.ks-pareto-empty{
+  font-size:10px;color:var(--text3);padding:4px 0;
+}
+@media(max-width:899px){
+  .ks-pareto-insights{grid-template-columns:1fr;}
+  .ks-pareto-meta{grid-template-columns:1fr;}
+  .ks-pareto-priority-row{grid-template-columns:22px minmax(0,1fr) 38px 44px;}
+}
+
+
+/* ── PARETO FINAL V2: üç analiz için özel yorum + genel özet ── */
+.ks-pareto-insights.type-tur .ks-pareto-box.yorum{
+  border-color:#C9B8F0;
+  background:rgba(127,119,221,.055);
+}
+.ks-pareto-insights.type-kok .ks-pareto-box.yorum{
+  border-color:#F0C5B8;
+  background:rgba(192,57,43,.045);
+}
+.ks-pareto-general{
+  margin-top:12px;
+  border:1px solid #B5D4F4;
+  border-radius:11px;
+  overflow:hidden;
+  background:var(--surface);
+}
+.ks-pareto-general-head{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:9px 11px;
+  background:rgba(55,138,221,.07);
+  border-bottom:1px solid #B5D4F4;
+  font-size:12px;
+  font-weight:850;
+  color:var(--text);
+}
+.ks-pareto-general-body{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  padding:9px;
+}
+.ks-pareto-general-item{
+  min-width:0;
+  padding:8px 9px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--surface2);
+}
+.ks-pareto-general-item strong{
+  display:block;
+  font-size:10.5px;
+  color:var(--text);
+  margin-bottom:3px;
+}
+.ks-pareto-general-item span{
+  display:block;
+  font-size:9.5px;
+  color:var(--text2);
+  line-height:1.45;
+  overflow-wrap:anywhere;
+}
+.ks-pareto-note{
+  padding:0 10px 9px;
+  font-size:9px;
+  line-height:1.4;
+  color:var(--text3);
+}
+@media(max-width:899px){
+  .ks-pareto-general-body{grid-template-columns:1fr;}
+}
+
+
+/* ── KAZA RAPOR FINAL: alttan açılan grafik / Pareto seçim paneli ── */
+#kaza-print-opts-bg{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:70;
+  background:rgba(0,0,0,.48);
+  align-items:flex-end;
+  justify-content:center;
+}
+#kaza-print-opts-bg.on{display:flex;}
+.kp-sheet{
+  width:620px;
+  max-width:96vw;
+  max-height:90vh;
+  background:var(--surface);
+  border-radius:16px 16px 0 0;
+  box-shadow:0 -8px 30px rgba(0,0,0,.25);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.kp-sheet-head{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:12px 14px;
+  border-bottom:1px solid var(--border);
+}
+.kp-sheet-head h3{
+  flex:1;
+  font-size:14px;
+  font-weight:800;
+  color:var(--text);
+}
+.kp-sheet-close{
+  width:32px;height:32px;border:none;border-radius:7px;
+  background:transparent;color:var(--text3);font-size:20px;cursor:pointer;
+}
+.kp-sheet-close:hover{background:var(--surface2);color:var(--text);}
+.kp-sheet-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:10px 13px;
+}
+#kaza-print-opts-meta{
+  font-size:10.5px;
+  color:var(--text2);
+  background:var(--surface2);
+  border:1px solid var(--border);
+  padding:7px 9px;
+  border-radius:8px;
+  line-height:1.45;
+  margin-bottom:9px;
+}
+.kp-section-title{
+  font-size:10.5px;
+  font-weight:800;
+  color:var(--text2);
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  margin:2px 0 7px;
+}
+.kp-select-grid{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.kp-select-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(110px,.62fr);
+  gap:6px;
+}
+.kp-check{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  min-height:43px;
+  padding:7px 9px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--surface);
+  color:var(--text2);
+  font-size:11px;
+  line-height:1.25;
+  cursor:pointer;
+  user-select:none;
+}
+.kp-check:hover{background:var(--surface2);border-color:var(--border2);}
+.kp-check input{
+  width:15px;height:15px;flex:0 0 auto;
+  accent-color:#378ADD;
+  cursor:pointer;
+}
+.kp-check.pareto{
+  border-color:#D4CFF2;
+  background:rgba(127,119,221,.035);
+}
+.kp-check.pareto input{accent-color:#7F77DD;}
+.kp-check span{min-width:0;}
+.kp-sheet-hint{
+  margin-top:8px;
+  padding:7px 9px;
+  border-radius:7px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  font-size:9.5px;
+  color:var(--text3);
+  line-height:1.4;
+}
+.kp-sheet-foot{
+  flex:0 0 auto;
+  display:flex;
+  gap:8px;
+  padding:10px 13px max(10px,env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);
+  background:var(--surface);
+  box-shadow:0 -3px 10px rgba(0,0,0,.06);
+}
+.kp-sheet-foot button{
+  min-height:42px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.kp-cancel{flex:.8;border:1px solid var(--border2);background:var(--surface2);color:var(--text);}
+.kp-print-btn{flex:1.5;border:none;background:#378ADD;color:#fff;}
+
+@media(max-width:899px){
+  .kp-sheet{
+    width:100vw;
+    max-width:100vw;
+    max-height:88dvh;
+    border-radius:18px 18px 0 0;
+  }
+  .kp-select-row{
+    grid-template-columns:minmax(0,1fr) minmax(102px,.62fr);
+  }
+  .kp-check{
+    min-height:46px;
+    font-size:10.5px;
+    padding:7px 8px;
+  }
+}
+
+/* Yazdırılan Pareto analizi */
+body.print-kaza #kaza-print .kp-pareto-comment{
+  margin-top:7px;
+  border:1px solid #bbb;
+  border-radius:5px;
+  padding:6px 8px;
+  font-size:8.8px;
+  line-height:1.4;
+  color:#222;
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+body.print-kaza #kaza-print .kp-pareto-comment b{font-weight:700;}
+body.print-kaza #kaza-print .kp-pareto-priority{
+  margin-top:4px;
+  font-size:8.5px;
+  color:#444;
+}
+
 /* future-day: handled below via :not selectors */
 </style>
 
@@ -2981,7 +3360,7 @@ html[data-tema="gokkusagi"] #topbar::after {
 
   <!-- PERSONEL SEKMESİ -->
   
-<!-- KONTROL SEKMESİ — FİNAL V2 AKORDEON TOPLU GÜNCELLEME -->
+<!-- KONTROL SEKMESİ — FİNAL V3 KAPALI ANA KARTLAR + SABİT ALT ÇUBUK -->
 <div id="kontrol-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg);">
   <!-- Topbar -->
   <div style="flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 14px;">
@@ -3577,33 +3956,64 @@ html[data-tema="gokkusagi"] #topbar::after {
   </div>
 </div>
 
-<!-- ── Kaza Rapor Yazdırma Seçenekleri (grafik ekleme) ── -->
-<div id="kaza-print-opts-bg" onclick="if(event.target===this)kazaPrintOptsClose()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:12px;padding:20px;width:380px;max-width:95vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <h3 style="font-size:14px;font-weight:700;color:#222;">🖨 Rapor Seçenekleri</h3>
-      <button onclick="kazaPrintOptsClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">×</button>
+<!-- ── Kaza Rapor Yazdırma Seçenekleri — Bottom Sheet + Pareto ── -->
+<div id="kaza-print-opts-bg" onclick="if(event.target===this)kazaPrintOptsClose()">
+  <div class="kp-sheet">
+    <div class="kp-sheet-head">
+      <span style="font-size:19px;">🖨️</span>
+      <h3>Rapor Seçenekleri</h3>
+      <button class="kp-sheet-close" onclick="kazaPrintOptsClose()" title="Kapat">×</button>
     </div>
-    <div id="kaza-print-opts-meta" style="font-size:11px;color:#666;background:#f7f7f8;padding:8px 10px;border-radius:8px;line-height:1.5;"></div>
-    <div style="font-size:11.5px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;">
-      Rapora eklenecek grafikler <span style="font-weight:400;text-transform:none;color:#999;">(opsiyonel)</span>
+
+    <div class="kp-sheet-body">
+      <div id="kaza-print-opts-meta"></div>
+
+      <div class="kp-section-title">Rapora Eklenecek Analizler <span style="font-weight:400;text-transform:none;color:var(--text3);">(opsiyonel)</span></div>
+
+      <div class="kp-select-grid">
+        <div class="kp-select-row">
+          <label class="kp-check">
+            <input type="checkbox" id="kp-opt-tur">
+            <span>Kaza/Hasar Türü Grafiği</span>
+          </label>
+          <label class="kp-check pareto">
+            <input type="checkbox" id="kp-opt-tur-pareto">
+            <span>Pareto Analizi</span>
+          </label>
+        </div>
+
+        <div class="kp-select-row">
+          <label class="kp-check">
+            <input type="checkbox" id="kp-opt-ay">
+            <span>Aylar Grafiği</span>
+          </label>
+          <label class="kp-check pareto">
+            <input type="checkbox" id="kp-opt-ay-pareto">
+            <span>Pareto Analizi</span>
+          </label>
+        </div>
+
+        <div class="kp-select-row">
+          <label class="kp-check">
+            <input type="checkbox" id="kp-opt-kok">
+            <span>Kök Neden Grafiği</span>
+          </label>
+          <label class="kp-check pareto">
+            <input type="checkbox" id="kp-opt-kok-pareto">
+            <span>Pareto Analizi</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="kp-sheet-hint">
+        Hiçbir seçenek işaretlenmezse rapor yalnızca özet ve olay tablosu olarak yazdırılır.
+        <b>Pareto Analizi</b> seçildiğinde ilgili Pareto grafiği ile kısa otomatik yorum ve %80 öncelik bilgisi rapora eklenir.
+      </div>
     </div>
-    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#333;cursor:pointer;padding:8px 10px;border:1px solid #e2e2e5;border-radius:8px;">
-      <input type="checkbox" id="kp-opt-tur" style="width:15px;height:15px;accent-color:#378ADD;cursor:pointer;">
-      Kaza / Hasar Türüne Göre Grafik
-    </label>
-    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#333;cursor:pointer;padding:8px 10px;border:1px solid #e2e2e5;border-radius:8px;">
-      <input type="checkbox" id="kp-opt-ay" style="width:15px;height:15px;accent-color:#378ADD;cursor:pointer;">
-      Aylara Göre Grafik
-    </label>
-    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#333;cursor:pointer;padding:8px 10px;border:1px solid #e2e2e5;border-radius:8px;">
-      <input type="checkbox" id="kp-opt-kok" style="width:15px;height:15px;accent-color:#378ADD;cursor:pointer;">
-      Kök Nedene Göre Grafik
-    </label>
-    <div style="font-size:10.5px;color:#999;">Hiçbiri işaretlenmezse rapor sadece tablo olarak yazdırılır.</div>
-    <div style="display:flex;gap:8px;margin-top:4px;">
-      <button onclick="kazaPrintOptsClose()" style="flex:1;padding:9px;background:#f0f0f2;color:#333;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">İptal</button>
-      <button onclick="kazaPrint()" style="flex:2;padding:9px;background:#378ADD;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">🖨 Yazdır</button>
+
+    <div class="kp-sheet-foot">
+      <button class="kp-cancel" onclick="kazaPrintOptsClose()">İptal</button>
+      <button class="kp-print-btn" onclick="kazaPrint()">🖨 Yazdır</button>
     </div>
   </div>
 </div>
@@ -8699,7 +9109,7 @@ let kontrolFabs  = [
 ];
 let kontrolEditId   = null;
 let kontrolFabFilter = null; // null = tümü
-let kontrolGrupAcik = { su:true, makine:true, cevre:true };
+let kontrolGrupAcik = { su:false, makine:false, cevre:false };
 
 function kontrolLoad() {
   try { kontrolItems = JSON.parse(localStorage.getItem(LS_KONTROL_ITEMS)||'[]'); } catch(e){kontrolItems=[];}
@@ -10330,26 +10740,55 @@ function kazaImportIsle(satirlar) {
   toast(yeniKayitlar.length + ' kaza kaydı içe aktarıldı' + (yeniFab ? ' (' + yeniFab + ' yeni fabrika)' : ''));
 }
 
-// ── Yazdırma / PDF ──────────────────────────────────────────
+// ── Yazdırma / PDF — BOTTOM SHEET + NORMAL/PARETO SEÇİM ─────
+
+function kazaPrintParetoYorum(data, tip) {
+  const p = ksParetoOncelik(data);
+  if (!p.items.length) return '';
+
+  const pct = Math.round(p.pct);
+  const liste = p.items.map(x=>x.label).join(', ');
+  const isim = tip==='ay'
+    ? 'Dönemsel Pareto'
+    : tip==='tur'
+      ? 'Kaza / Hasar Türü Pareto'
+      : 'Kök Neden Pareto';
+
+  const cum = p.items.map((x,i)=>`${i+1}. ${x.label} (${x.val} olay, %${Math.round(x.kumPct)})`).join(' · ');
+
+  return `<div class="kp-pareto-comment">
+    <b>${isim} Yorumu:</b>
+    Toplam ${p.toplam} olayın <b>%${pct}</b>'i ilk ${p.items.length} öncelikli kategoride toplanmaktadır.
+    Öncelikli alanlar: <b>${esc(liste)}</b>.
+    <div class="kp-pareto-priority">${esc(cum)}</div>
+  </div>`;
+}
+
+
 function kazaPrintOpen() {
   const yil = document.getElementById('kaza-f-yil')?.value || 'Tüm yıllar';
   const fab = document.getElementById('kaza-f-fab')?.value || 'Tüm fabrikalar';
   const liste = kazaFiltreli();
+
   document.getElementById('kaza-print-opts-meta').innerHTML =
-    `<b>Dönem:</b> ${esc(yil)} &nbsp;·&nbsp; <b>Kapsam:</b> ${esc(fab)} &nbsp;·&nbsp; <b>Kayıt sayısı:</b> ${liste.length}`;
-  document.getElementById('kp-opt-tur').checked = false;
-  document.getElementById('kp-opt-ay').checked  = false;
-  document.getElementById('kp-opt-kok').checked = false;
-  document.getElementById('kaza-print-opts-bg').style.display = 'flex';
+    `<b>Dönem:</b> ${esc(yil)} &nbsp;·&nbsp; <b>Kapsam:</b> ${esc(fab)} &nbsp;·&nbsp; <b>Kayıt:</b> ${liste.length}`;
+
+  ['kp-opt-tur','kp-opt-tur-pareto','kp-opt-ay','kp-opt-ay-pareto','kp-opt-kok','kp-opt-kok-pareto']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.checked=false; });
+
+  document.getElementById('kaza-print-opts-bg').classList.add('on');
 }
 function kazaPrintOptsClose() {
-  document.getElementById('kaza-print-opts-bg').style.display = 'none';
+  document.getElementById('kaza-print-opts-bg').classList.remove('on');
 }
 
 function kazaPrint() {
-  const grafikTur = document.getElementById('kp-opt-tur')?.checked;
-  const grafikAy  = document.getElementById('kp-opt-ay')?.checked;
-  const grafikKok = document.getElementById('kp-opt-kok')?.checked;
+  const grafikTur    = document.getElementById('kp-opt-tur')?.checked;
+  const paretoTur    = document.getElementById('kp-opt-tur-pareto')?.checked;
+  const grafikAy     = document.getElementById('kp-opt-ay')?.checked;
+  const paretoAy     = document.getElementById('kp-opt-ay-pareto')?.checked;
+  const grafikKok    = document.getElementById('kp-opt-kok')?.checked;
+  const paretoKok    = document.getElementById('kp-opt-kok-pareto')?.checked;
 
   const liste = kazaFiltreli().sort((a,b) => (a.tarih||'').localeCompare(b.tarih||''));
   const yil   = document.getElementById('kaza-f-yil')?.value || 'Tüm yıllar';
@@ -10361,6 +10800,30 @@ function kazaPrint() {
   const siklik   = saat > 0 ? (kazaSay  * 1000000 / saat).toFixed(1) : '—';
   const agirlik  = saat > 0 ? (kayipGun * 1000000 / saat).toFixed(1) : '—';
   const simdi    = new Date().toLocaleString('tr-TR');
+
+  // Rapor için tek toplam seri Pareto verileri
+  const kpTurMap = {};
+  liste.forEach(k => {
+    const v=(k.yaralanma||'').trim()||'Belirtilmemiş';
+    kpTurMap[v]=(kpTurMap[v]||0)+1;
+  });
+  const kpTurParetoData = ksParetoVerisi(Object.entries(kpTurMap));
+
+  const kpAyMap = new Array(12).fill(0);
+  liste.forEach(k => {
+    if(k.tarih){
+      const m=+k.tarih.slice(5,7)-1;
+      if(m>=0&&m<12) kpAyMap[m]++;
+    }
+  });
+  const kpAyParetoData = ksParetoVerisi(KS_AY_ISIM.map((ad,i)=>[ad,kpAyMap[i]]));
+
+  const kpKokMap = {};
+  liste.forEach(k => {
+    const v=(k.kokNeden||'').trim()||'Belirtilmemiş';
+    kpKokMap[v]=(kpKokMap[v]||0)+1;
+  });
+  const kpKokParetoData = ksParetoVerisi(Object.entries(kpKokMap));
 
   let el = document.getElementById('kaza-print');
   if (!el) { el = document.createElement('div'); el.id = 'kaza-print'; document.body.appendChild(el); }
@@ -10403,10 +10866,15 @@ function kazaPrint() {
         }).join('') || '<tr><td colspan="9">Kayıt yok</td></tr>'}
       </tbody>
     </table>
-    ${(grafikTur || grafikAy || grafikKok) && liste.length ? `<div class="kp-charts">
-      ${grafikTur ? `<div class="kp-chart-block"><h3>Kaza / Hasar Türüne Göre Dağılım</h3><canvas id="kp-canvas-tur" width="900" height="360"></canvas></div>` : ''}
-      ${grafikAy  ? `<div class="kp-chart-block"><h3>Aylara Göre Kaza / Olay Dağılımı</h3><canvas id="kp-canvas-ay" width="900" height="360"></canvas></div>` : ''}
-      ${grafikKok ? `<div class="kp-chart-block"><h3>Kök Nedene Göre Dağılım</h3><canvas id="kp-canvas-kok" width="900" height="360"></canvas></div>` : ''}
+    ${(grafikTur || paretoTur || grafikAy || paretoAy || grafikKok || paretoKok) && liste.length ? `<div class="kp-charts">
+      ${grafikTur ? `<div class="kp-chart-block"><h3>Kaza / Hasar Türü Grafiği</h3><canvas id="kp-canvas-tur" width="900" height="360"></canvas></div>` : ''}
+      ${paretoTur ? `<div class="kp-chart-block"><h3>Kaza / Hasar Türü — Pareto Analizi</h3><canvas id="kp-canvas-tur-pareto" width="900" height="360"></canvas>${kazaPrintParetoYorum(kpTurParetoData,'tur')}</div>` : ''}
+
+      ${grafikAy ? `<div class="kp-chart-block"><h3>Aylar Grafiği</h3><canvas id="kp-canvas-ay" width="900" height="360"></canvas></div>` : ''}
+      ${paretoAy ? `<div class="kp-chart-block"><h3>Aylar — Pareto Analizi</h3><canvas id="kp-canvas-ay-pareto" width="900" height="360"></canvas>${kazaPrintParetoYorum(kpAyParetoData,'ay')}</div>` : ''}
+
+      ${grafikKok ? `<div class="kp-chart-block"><h3>Kök Neden Grafiği</h3><canvas id="kp-canvas-kok" width="900" height="360"></canvas></div>` : ''}
+      ${paretoKok ? `<div class="kp-chart-block"><h3>Kök Neden — Pareto Analizi</h3><canvas id="kp-canvas-kok-pareto" width="900" height="360"></canvas>${kazaPrintParetoYorum(kpKokParetoData,'kok')}</div>` : ''}
     </div>` : ''}`;
 
   kazaPrintOptsClose();
@@ -10422,6 +10890,11 @@ function kazaPrint() {
         options:{ ...ksBarOptions(turTumDegerler, !turVeri.tekYil), responsive:false, animation:false }
       });
     }
+    if (paretoTur && liste.length && kpTurParetoData.length) {
+      const cfg = ksParetoConfig(kpTurParetoData);
+      cfg.options = {...cfg.options, responsive:false, animation:false};
+      new Chart(document.getElementById('kp-canvas-tur-pareto').getContext('2d'), cfg);
+    }
     if (grafikAy && liste.length) {
       const yilFiltre = document.getElementById('kaza-f-yil')?.value || 'tumu';
       const ayVeri = ksAylikVeriHesapla(liste, yilFiltre);
@@ -10431,6 +10904,11 @@ function kazaPrint() {
         data:{ labels: ayVeri.labels, datasets: ayVeri.datasets },
         options:{ ...ksBarOptions(ayTumDegerler, !ayVeri.tekYil), responsive:false, animation:false }
       });
+    }
+    if (paretoAy && liste.length && kpAyParetoData.length) {
+      const cfg = ksParetoConfig(kpAyParetoData);
+      cfg.options = {...cfg.options, responsive:false, animation:false};
+      new Chart(document.getElementById('kp-canvas-ay-pareto').getContext('2d'), cfg);
     }
     if (grafikKok && liste.length) {
       const yilFiltreKok = document.getElementById('kaza-f-yil')?.value || 'tumu';
@@ -10442,6 +10920,11 @@ function kazaPrint() {
         options:{ ...ksBarOptions(kokTumDegerler, !kokVeri.tekYil), responsive:false, animation:false }
       });
     }
+    if (paretoKok && liste.length && kpKokParetoData.length) {
+      const cfg = ksParetoConfig(kpKokParetoData);
+      cfg.options = {...cfg.options, responsive:false, animation:false};
+      new Chart(document.getElementById('kp-canvas-kok-pareto').getContext('2d'), cfg);
+    }
     document.body.classList.add('print-kaza');
     // Grafiklerin canvas'a çizilmesi için bir sonraki kareyi bekle, sonra yazdır
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -10452,7 +10935,7 @@ function kazaPrint() {
   cizVeYazdir();
 }
 
-// ── Kaza & Ramak Kala İstatistik Paneli ──────────────────────
+// ── Kaza & Ramak Kala İstatistik Paneli — PARETO FINAL V2 ────
 const KS_AY_ISIM = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 let ksFTur = null;     // null = tüm türler
 let ksCharts = {};     // canvas id -> Chart.js örneği (yeniden çizmeden önce yok edilir)
@@ -10538,6 +11021,74 @@ const ksDataLabelPlugin = {
 };
 if (typeof Chart !== 'undefined') Chart.register(ksDataLabelPlugin);
 
+// Pareto grafiklerine %80 referans çizgisi ve kümülatif yüzde etiketleri ekler.
+const ksParetoGuidePlugin = {
+  id:'ksParetoGuide',
+  afterDraw(chart) {
+    const opt = chart.options?.plugins?.ksParetoGuide;
+    if (!opt || !opt.enabled) return;
+
+    const {ctx, chartArea, scales} = chart;
+    const y1 = scales.y1;
+    if (!chartArea || !y1) return;
+
+    ctx.save();
+
+    // %80 referans çizgisi — bütün Pareto grafiklerinde sabit ve görünür.
+    const y80 = y1.getPixelForValue(80);
+    ctx.strokeStyle = '#D64545';
+    ctx.lineWidth = 1.6;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    ctx.moveTo(chartArea.left, y80);
+    ctx.lineTo(chartArea.right, y80);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Etiketin çizginin üzerinde okunabilmesi için küçük arka plan.
+    const refText = '%80 Pareto Sınırı';
+    ctx.font = 'bold 9px Arial, sans-serif';
+    const tw = ctx.measureText(refText).width;
+    const tx = chartArea.right - 5;
+    const ty = y80 - 5;
+    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    ctx.fillRect(tx - tw - 6, ty - 10, tw + 8, 13);
+    ctx.fillStyle = '#C0392B';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(refText, tx, ty);
+
+    // Kümülatif yüzde etiketleri.
+    const dsIndex = chart.data.datasets.findIndex(d => d.yAxisID === 'y1');
+    if (dsIndex >= 0) {
+      const meta = chart.getDatasetMeta(dsIndex);
+      const ds = chart.data.datasets[dsIndex];
+      meta.data.forEach((pt,i) => {
+        const val = Number(ds.data[i]);
+        if (!Number.isFinite(val)) return;
+
+        // %100 noktaları üst kenarda kesilmesin: etiketi noktanın altına al.
+        const below = val >= 96;
+        const labelY = below ? pt.y + 13 : pt.y - 7;
+
+        ctx.font = 'bold 8.5px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = below ? 'top' : 'bottom';
+        const label = Math.round(val) + '%';
+        const lw = ctx.measureText(label).width;
+
+        ctx.fillStyle = 'rgba(255,255,255,.88)';
+        ctx.fillRect(pt.x - lw/2 - 3, below ? labelY-1 : labelY-10, lw+6, 12);
+        ctx.fillStyle = '#8B2A1D';
+        ctx.fillText(label, pt.x, labelY);
+      });
+    }
+    ctx.restore();
+  }
+};
+if (typeof Chart !== 'undefined') Chart.register(ksParetoGuidePlugin);
+
+
 // Yıl renkleri (Tüm Yıllar karşılaştırmasında her yıla ayrı renk)
 const KS_YIL_RENKLERI = ['#378ADD','#C0392B','#27AE60','#E09000','#7F77DD','#16A085','#D4527E','#8E44AD'];
 
@@ -10609,16 +11160,35 @@ function ksAylikVeriHesapla(liste, yilFiltre) {
 
 // Değerleri azalan sırayla kümülatif yüzdeye çevirir (Pareto analizi için)
 function ksParetoVerisi(entries) {
-  const siraliVeAzalan = entries.slice().sort((a,b) => b[1]-a[1]);
+  // Pareto yalnız gerçekleşmiş olay kategorilerini gösterir.
+  // 0 değerli kategoriler normal dağılım grafiklerinde kalır ama Pareto'ya taşınmaz.
+  const siraliVeAzalan = entries
+    .filter(([,v]) => Number(v) > 0)
+    .slice()
+    .sort((a,b) => b[1]-a[1]);
+
   const toplam = siraliVeAzalan.reduce((s,[,v]) => s+v, 0) || 1;
   let kum = 0;
-  return siraliVeAzalan.map(([label,val]) => { kum += val; return { label, val, kumPct: Math.round(kum/toplam*1000)/10 }; });
+  return siraliVeAzalan.map(([label,val]) => {
+    kum += val;
+    return { label, val, kumPct: Math.round(kum/toplam*1000)/10 };
+  });
 }
 
 // Y ekseni tavanını her zaman 5'in katına yuvarlar (min 5), ama aralık işaretleri 1'er birim kalır
 function ksYEksenMax(vals) {
   const maxVal = vals && vals.length ? Math.max(...vals) : 0;
   return Math.max(5, Math.ceil(maxVal / 5) * 5);
+}
+
+// Pareto grafiğinde sütunları gereksiz yere basık göstermemek için ayrı ölçek.
+// En yüksek değerin yaklaşık %20 üzerinde, tam sayı bir tavan oluşturur.
+// Örn. max=3 → 4, max=6 → 8. Normal aylık grafik bu fonksiyonu kullanmaz.
+function ksParetoYEksenMax(vals) {
+  const maxVal = vals && vals.length ? Math.max(...vals) : 0;
+  if (maxVal <= 0) return 1;
+  const headroom = Math.ceil(maxVal * 1.20);
+  return Math.max(maxVal + 1, headroom);
 }
 
 function ksBarOptions(vals, legendOn) {
@@ -10635,26 +11205,253 @@ function ksBarOptions(vals, legendOn) {
   };
 }
 
+function ksChartLabelWrap(label, maxChars=18) {
+  const s = String(label ?? '');
+  if (s.length <= maxChars) return s;
+
+  const words = s.split(/\s+/);
+  const lines = [];
+  let line = '';
+  words.forEach(w => {
+    const candidate = line ? line + ' ' + w : w;
+    if (candidate.length > maxChars && line) {
+      lines.push(line);
+      line = w;
+    } else {
+      line = candidate;
+    }
+  });
+  if (line) lines.push(line);
+  return lines.slice(0,3);
+}
+
 function ksParetoConfig(data) {
   const vals = data.map(d => d.val);
   return {
-    data: {
-      labels: data.map(d => d.label),
-      datasets: [
-        { type:'bar',  label:'Adet',         data: data.map(d => d.val),    backgroundColor:'#7F77DD', borderRadius:4, order:2, yAxisID:'y' },
-        { type:'line', label:'Kümülatif %',  data: data.map(d => d.kumPct), borderColor:'#C0392B', backgroundColor:'#C0392B', pointRadius:3, tension:0.25, order:1, yAxisID:'y1' }
+    data:{
+      labels:data.map(d=>ksChartLabelWrap(d.label, 16)),
+      datasets:[
+        {
+          type:'bar',
+          label:'Adet',
+          data:data.map(d=>d.val),
+          backgroundColor:'#7F77DD',
+          borderRadius:4,
+          order:2,
+          yAxisID:'y'
+        },
+        {
+          type:'line',
+          label:'Kümülatif %',
+          data:data.map(d=>d.kumPct),
+          borderColor:'#C0392B',
+          backgroundColor:'#C0392B',
+          pointBackgroundColor:'#C0392B',
+          pointBorderColor:'#C0392B',
+          pointRadius:3.5,
+          pointHoverRadius:4.5,
+          borderWidth:2,
+          tension:0.18,
+          order:1,
+          yAxisID:'y1'
+        }
       ]
     },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:true, position:'bottom', labels:{ color:'#444', font:{ size:10 }, boxWidth:12 } } },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      layout:{padding:{top:20,right:4}},
+      plugins:{
+        legend:{
+          display:true,
+          position:'bottom',
+          labels:{color:'#444',font:{size:10},boxWidth:12}
+        },
+        ksParetoGuide:{enabled:true}
+      },
       scales:{
-        x:  { ticks:{ color:'#444', font:{ size:10 } }, grid:{ display:false } },
-        y:  { beginAtZero:true, min:0, max: ksYEksenMax(vals), position:'left',  ticks:{ color:'#444', stepSize:1, precision:0 }, grid:{ color:'#eee' } },
-        y1: { beginAtZero:true, max:100, position:'right', ticks:{ color:'#444', callback:v=>v+'%' }, grid:{ drawOnChartArea:false } }
+        x:{
+          ticks:{
+            color:'#444',
+            font:{size:9.5},
+            maxRotation:42,
+            minRotation:0,
+            autoSkip:false
+          },
+          grid:{display:false}
+        },
+        y:{
+          beginAtZero:true,
+          min:0,
+          max:ksParetoYEksenMax(vals),
+          position:'left',
+          ticks:{color:'#444',stepSize:1,precision:0},
+          grid:{color:'#eee'}
+        },
+        y1:{
+          beginAtZero:true,
+          min:0,
+          max:100,
+          position:'right',
+          ticks:{
+            color:'#444',
+            stepSize:20,
+            callback:v=>v+'%'
+          },
+          grid:{drawOnChartArea:false}
+        }
       }
     }
   };
+}
+
+
+function ksParetoFiltreEtiketi() {
+  const yil = document.getElementById('ks-f-yil')?.value || 'tumu';
+  const fab = document.getElementById('ks-f-fab')?.value || 'tumu';
+  const tur = ksFTur
+    ? (KAZA_TURLER.find(t=>t.id===ksFTur)?.ad || ksFTur)
+    : 'Tümü';
+
+  return {
+    yil: yil === 'tumu' ? 'Tüm Yıllar' : yil,
+    fab: fab === 'tumu' ? 'Tüm fabrikalar' : fab,
+    tur
+  };
+}
+
+function ksParetoOncelik(data) {
+  const pozitif = data.filter(d => d.val > 0);
+  if (!pozitif.length) return {items:[], adet:0, pct:0, toplam:0};
+
+  const toplam = pozitif.reduce((s,d)=>s+d.val,0);
+  let esikIndex = pozitif.findIndex(d => d.kumPct >= 80);
+  if (esikIndex < 0) esikIndex = pozitif.length - 1;
+
+  const items = pozitif.slice(0, esikIndex + 1);
+  const adet = items.reduce((s,d)=>s+d.val,0);
+  const pct = items.length ? items[items.length-1].kumPct : 0;
+  return {items, adet, pct, toplam};
+}
+
+function ksParetoYorumHTML(data, tip='ay') {
+  const p = ksParetoOncelik(data);
+  const f = ksParetoFiltreEtiketi();
+
+  const sozluk = {
+    ay:{
+      css:'type-ay',
+      yorumBaslik:'💡 DÖNEMSEL PARETO YORUMU',
+      oncelikBaslik:'🎯 ÖNCELİKLİ DÖNEMLER (%80 EŞİĞİ)',
+      kategoriBaslik:'Ay / Dönem',
+      yorum:(p,liste,yuzde) =>
+        `Toplam <b>${p.toplam}</b> olayın <b>%${yuzde}</b>'i ilk <b>${p.items.length} dönem</b> içinde gerçekleşmiştir. ` +
+        `Dönemsel yoğunluk açısından öncelikle <b>${esc(liste)}</b> incelenmelidir.`,
+      genelEtiket:'Dönem'
+    },
+    tur:{
+      css:'type-tur',
+      yorumBaslik:'💡 KAZA / HASAR TÜRÜ PARETO YORUMU',
+      oncelikBaslik:'🎯 ÖNCELİKLİ KAZA / HASAR TÜRLERİ',
+      kategoriBaslik:'Kaza / Hasar Türü',
+      yorum:(p,liste,yuzde) =>
+        `Toplam <b>${p.toplam}</b> olayın <b>%${yuzde}</b>'i ilk <b>${p.items.length} kaza/hasar türünde</b> yoğunlaşmaktadır. ` +
+        `Önleyici çalışmaların öncelikle <b>${esc(liste)}</b> kategorilerine odaklanması önerilir.`,
+      genelEtiket:'Tür'
+    },
+    kok:{
+      css:'type-kok',
+      yorumBaslik:'💡 KÖK NEDEN PARETO YORUMU',
+      oncelikBaslik:'🎯 ÖNCELİKLİ KÖK NEDENLER',
+      kategoriBaslik:'Kök Neden',
+      yorum:(p,liste,yuzde) =>
+        `Toplam <b>${p.toplam}</b> olayın <b>%${yuzde}</b>'i ilk <b>${p.items.length} kök neden grubuyla</b> ilişkilidir. ` +
+        `Düzeltici ve önleyici faaliyetlerde öncelikle <b>${esc(liste)}</b> nedenleri değerlendirilmelidir.`,
+      genelEtiket:'Kök neden'
+    }
+  };
+  const z = sozluk[tip] || sozluk.ay;
+
+  if (!p.items.length) {
+    return `<div class="ks-pareto-insights ${z.css}">
+      <div class="ks-pareto-box yorum">
+        <div class="ks-pareto-box-title">${z.yorumBaslik}</div>
+        <div class="ks-pareto-empty">Seçili filtrelerde yorumlanacak olay kaydı bulunmuyor.</div>
+      </div>
+    </div>`;
+  }
+
+  const yuzde = Math.round(p.pct);
+  const liste = p.items.map(x=>x.label).join(', ');
+
+  const rows = p.items.map((x,i) => `
+    <div class="ks-pareto-priority-row ${i===p.items.length-1?'cross':''}">
+      <span class="ks-pareto-rank">${i+1}</span>
+      <span class="ay">${esc(x.label)}</span>
+      <span class="adet">${x.val}</span>
+      <span class="pct">%${Math.round(x.kumPct)}</span>
+    </div>`).join('');
+
+  return `<div class="ks-pareto-insights ${z.css}">
+    <div class="ks-pareto-box yorum">
+      <div class="ks-pareto-box-title">${z.yorumBaslik}</div>
+      <div class="ks-pareto-text">${z.yorum(p,liste,yuzde)}</div>
+      <div class="ks-pareto-meta">
+        <span>📅 Analiz Yılı: <b>${esc(f.yil)}</b></span>
+        <span>🏭 Fabrika: <b>${esc(f.fab)}</b></span>
+        <span>📋 Olay Türü: <b>${esc(f.tur)}</b></span>
+        <span>Σ Toplam Olay: <b>${p.toplam}</b></span>
+      </div>
+    </div>
+
+    <div class="ks-pareto-box oncelik">
+      <div class="ks-pareto-box-title">${z.oncelikBaslik}</div>
+      <div class="ks-pareto-priority">
+        <div class="ks-pareto-priority-row" style="font-weight:800;">
+          <span></span><span class="ay">${z.kategoriBaslik}</span><span class="adet">Adet</span><span class="pct">Küm.%</span>
+        </div>
+        ${rows}
+        <div class="ks-pareto-summary">
+          <span>İlk ${p.items.length} ${z.genelEtiket.toLocaleLowerCase('tr-TR')} toplamı</span>
+          <span>${p.adet}</span>
+          <span>%${yuzde}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function ksParetoKisaOzet(data, tip) {
+  const p = ksParetoOncelik(data);
+  if (!p.items.length) return 'Veri yok';
+  const liste = p.items.map(x=>x.label).join(', ');
+  const pct = Math.round(p.pct);
+  if (tip==='ay') return `%${pct} eşik kapsamı: ${liste}`;
+  if (tip==='tur') return `%${pct} yoğunlaşma: ${liste}`;
+  return `%${pct} kök neden kapsamı: ${liste}`;
+}
+
+function ksParetoGenelHTML(ayData, turData, kokData) {
+  return `<div class="ks-pareto-general">
+    <div class="ks-pareto-general-head">🧭 GENEL PARETO ÖZETİ</div>
+    <div class="ks-pareto-general-body">
+      <div class="ks-pareto-general-item">
+        <strong>📅 Dönemsel Öncelik</strong>
+        <span>${esc(ksParetoKisaOzet(ayData,'ay'))}</span>
+      </div>
+      <div class="ks-pareto-general-item">
+        <strong>🩹 Kaza / Hasar Türü Önceliği</strong>
+        <span>${esc(ksParetoKisaOzet(turData,'tur'))}</span>
+      </div>
+      <div class="ks-pareto-general-item">
+        <strong>🔎 Kök Neden Önceliği</strong>
+        <span>${esc(ksParetoKisaOzet(kokData,'kok'))}</span>
+      </div>
+    </div>
+    <div class="ks-pareto-note">
+      Not: Pareto özeti olay sıklığına göre önceliklendirme sağlar; tek başına nedensellik veya risk büyüklüğü değerlendirmesi değildir.
+    </div>
+  </div>`;
 }
 
 function kazaStatsRender() {
@@ -10683,6 +11480,7 @@ function kazaStatsRender() {
       <div class="ks-chart-card">
         <div class="ks-chart-title">Kaza / Hasar Türü — Pareto Analizi</div>
         <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-tur-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+        ${liste.length ? '<div id="ks-tur-pareto-yorum"></div>' : ''}
       </div>
     </div>
     <div class="ks-chart-row">
@@ -10693,6 +11491,7 @@ function kazaStatsRender() {
       <div class="ks-chart-card">
         <div class="ks-chart-title">Kök Neden — Pareto Analizi</div>
         <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-kok-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+        ${liste.length ? '<div id="ks-kok-pareto-yorum"></div>' : ''}
       </div>
     </div>
     <div class="ks-chart-row">
@@ -10703,8 +11502,10 @@ function kazaStatsRender() {
       <div class="ks-chart-card">
         <div class="ks-chart-title">Aylara Göre — Pareto Analizi</div>
         <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-ay-pareto"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+        ${liste.length ? '<div id="ks-ay-pareto-yorum"></div>' : ''}
       </div>
-    </div>`;
+    </div>
+    ${liste.length ? '<div id="ks-pareto-genel"></div>' : ''}`;
 
   if (!liste.length) return;
 
@@ -10729,7 +11530,10 @@ function kazaStatsRender() {
     data:{ labels: ksTurVeri.labels, datasets: ksTurVeri.datasets },
     options: ksBarOptions(ksTurTumDegerler, !ksTurVeri.tekYil)
   });
-  ksMakeChart('ks-canvas-tur-pareto', ksParetoConfig(ksParetoVerisi(turEntries)));
+  const ksTurParetoData = ksParetoVerisi(turEntries);
+  ksMakeChart('ks-canvas-tur-pareto', ksParetoConfig(ksTurParetoData));
+  const ksTurYorum = document.getElementById('ks-tur-pareto-yorum');
+  if (ksTurYorum) ksTurYorum.innerHTML = ksParetoYorumHTML(ksTurParetoData,'tur');
 
   // Aylara göre sütun grafiği — "Tüm Yıllar" seçiliyse her yıl ayrı renkli seri olarak gösterilir
   const ksAyVeri = ksAylikVeriHesapla(liste, ksYilFiltre);
@@ -10739,7 +11543,10 @@ function kazaStatsRender() {
     data:{ labels: ksAyVeri.labels, datasets: ksAyVeri.datasets },
     options: ksBarOptions(ksAyTumDegerler, !ksAyVeri.tekYil)
   });
-  ksMakeChart('ks-canvas-ay-pareto', ksParetoConfig(ksParetoVerisi(ayEntries)));
+  const ksAyParetoData = ksParetoVerisi(ayEntries);
+  ksMakeChart('ks-canvas-ay-pareto', ksParetoConfig(ksAyParetoData));
+  const ksAyYorum = document.getElementById('ks-ay-pareto-yorum');
+  if (ksAyYorum) ksAyYorum.innerHTML = ksParetoYorumHTML(ksAyParetoData,'ay');
 
   // Kök Nedene göre sayım (Pareto için tek toplam seri) + yıl-bazlı sütun grafiği
   const kokMap = {};
@@ -10752,7 +11559,13 @@ function kazaStatsRender() {
     data:{ labels: ksKokVeri.labels, datasets: ksKokVeri.datasets },
     options: ksBarOptions(ksKokTumDegerler, !ksKokVeri.tekYil)
   });
-  ksMakeChart('ks-canvas-kok-pareto', ksParetoConfig(ksParetoVerisi(kokEntries)));
+  const ksKokParetoData = ksParetoVerisi(kokEntries);
+  ksMakeChart('ks-canvas-kok-pareto', ksParetoConfig(ksKokParetoData));
+  const ksKokYorum = document.getElementById('ks-kok-pareto-yorum');
+  if (ksKokYorum) ksKokYorum.innerHTML = ksParetoYorumHTML(ksKokParetoData,'kok');
+
+  const ksGenelPareto = document.getElementById('ks-pareto-genel');
+  if (ksGenelPareto) ksGenelPareto.innerHTML = ksParetoGenelHTML(ksAyParetoData,ksTurParetoData,ksKokParetoData);
 }
 // ── End Kaza Modülü ──
 </script>
