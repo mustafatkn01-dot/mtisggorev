@@ -1989,6 +1989,20 @@ html[data-tema="gokkusagi"] #topbar::after {
   cursor:pointer;
 }
 .ktp-selectbar button:hover { background:var(--surface); }
+
+.ktp-fab-filter{display:flex;align-items:center;gap:5px;flex-wrap:wrap;width:100%;padding-top:2px;}
+.ktp-fab-chip{padding:5px 9px;font-size:10.5px;font-weight:650;border:1px solid var(--border2);border-radius:99px;background:var(--surface2);color:var(--text2);cursor:pointer;white-space:nowrap;}
+.ktp-fab-chip.active{background:#378ADD;border-color:#378ADD;color:#fff;}
+.ktp-factory-section{flex:0 0 auto;border:2px solid var(--border);border-radius:11px;overflow:hidden;background:var(--surface);}
+.ktp-factory-head{display:flex;align-items:center;gap:7px;padding:9px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;font-weight:800;color:var(--text);}
+.ktp-factory-count{margin-left:auto;font-size:9.5px;font-weight:700;color:var(--text2);padding:2px 7px;border-radius:99px;background:var(--surface);border:1px solid var(--border);}
+.ktp-fab-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:99px;background:#E6F1FB;border:1px solid #B5D4F4;color:#185FA5;font-size:9.5px;font-weight:750;}
+.ktp-fab-badge.unassigned{background:#FFF3CD;border-color:#E7C55D;color:#765800;}
+@media(prefers-color-scheme:dark){
+  .ktp-fab-badge{background:#0c3560;border-color:#1C6BB8;color:#BEDCFA;}
+  .ktp-fab-badge.unassigned{background:#4a3800;border-color:#765d10;color:#ffd966;}
+}
+
 #ktp-filter-label {
   margin-left:auto;
   font-size:10px;
@@ -2468,6 +2482,195 @@ html[data-tema="gokkusagi"] #topbar::after {
   }
 }
 
+
+/* ── AŞAMA 6.1: Fabrika bazlı katalog takibi ── */
+.katalog-fab-box{flex:0 0 auto;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface);}
+.katalog-fab-title{font-size:10px;font-weight:750;color:var(--text2);margin-bottom:5px;}
+.katalog-fab-hint{font-size:9.5px;color:var(--text3);line-height:1.4;margin-bottom:6px;}
+.katalog-fab-list{display:flex;flex-wrap:wrap;gap:5px;}
+.katalog-fab-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:4px 8px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);color:var(--text2);cursor:pointer;user-select:none;}
+.katalog-fab-chip input{width:13px;height:13px;accent-color:#378ADD;}
+.katalog-fab-chip.locked{border-color:#378ADD;background:#E6F1FB;color:#185FA5;cursor:default;}
+.katalog-fab-warning{margin-top:6px;padding:6px 8px;border-radius:7px;background:#FFF3CD;border:1px solid #E7C55D;color:#765800;font-size:9.5px;line-height:1.4;}
+.kontrol-unassigned-tag{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:99px;background:#FFF3CD;color:#765800;border:1px solid #E7C55D;}
+@media(prefers-color-scheme:dark){
+  .katalog-fab-chip.locked{background:#0c3560;color:#BEDCFA;border-color:#1C6BB8;}
+  .katalog-fab-warning,.kontrol-unassigned-tag{background:#4a3800;color:#ffd966;border-color:#765d10;}
+}
+
+/* FINAL: Toplu aktarım */
+.ktp-target-box{padding:9px 13px;border-top:1px solid var(--border);background:var(--surface);}
+.ktp-target-title{font-size:10.5px;font-weight:800;color:var(--text2);margin-bottom:5px;}
+.ktp-target-hint{font-size:9.5px;color:var(--text3);line-height:1.4;margin-bottom:6px;}
+.ktp-target-list{display:flex;flex-wrap:wrap;gap:5px;}
+.ktp-target-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--border2);border-radius:99px;background:var(--surface2);color:var(--text2);font-size:10.5px;font-weight:650;cursor:pointer;}
+.ktp-target-chip input{width:13px;height:13px;accent-color:#639922;}
+.ktp-transfer-info{margin-top:6px;padding:6px 8px;border-radius:7px;background:#EAF3DE;border:1px solid #B7D58B;color:#27500A;font-size:9.5px;line-height:1.4;}
+@media(max-width:899px){
+#kontrol-toplu-modal{height:95dvh;max-height:95dvh;overflow-y:auto!important;overflow-x:hidden;display:block;}
+#ktp-list{min-height:260px;max-height:none!important;overflow:visible!important;display:block;}
+.ktp-factory-section{margin-bottom:10px;}
+.ktp-foot{position:sticky;bottom:0;z-index:6;background:var(--surface);box-shadow:0 -4px 12px rgba(0,0,0,.08);}
+}
+
+/* ── FİNAL V2: Toplu güncelleme akordeon + kompakt seçim ── */
+.ktp-cat {
+  flex:0 0 auto;
+  flex-shrink:0;
+  min-height:max-content;
+}
+.ktp-cat-head {
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:7px;
+  cursor:pointer;
+  user-select:none;
+  min-height:42px;
+}
+.ktp-cat-head .ktp-cat-arrow {
+  width:18px;
+  text-align:center;
+  font-size:12px;
+  color:var(--text3);
+  transition:transform .15s ease;
+}
+.ktp-cat.open .ktp-cat-arrow { transform:rotate(90deg); }
+
+.ktp-cat-selectall {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 6px;
+  border:1px solid var(--border2);
+  border-radius:99px;
+  background:var(--surface);
+  color:var(--text2);
+  font-size:9px;
+  font-weight:750;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.ktp-cat-selectall input {
+  width:12px;
+  height:12px;
+  accent-color:#378ADD;
+  margin:0;
+}
+.ktp-cat-selectall:hover { background:var(--surface2); }
+
+.ktp-cat-body {
+  display:none;
+  overflow:visible;
+  max-height:none;
+}
+.ktp-cat.open .ktp-cat-body { display:block; }
+
+.ktp-factory-section {
+  flex:0 0 auto;
+  flex-shrink:0;
+  min-height:max-content;
+}
+.ktp-factory-head {
+  cursor:pointer;
+  user-select:none;
+}
+.ktp-factory-arrow {
+  width:18px;
+  text-align:center;
+  font-size:12px;
+  color:var(--text3);
+  transition:transform .15s ease;
+}
+.ktp-factory-section.open .ktp-factory-arrow { transform:rotate(90deg); }
+.ktp-factory-body { display:none; }
+.ktp-factory-section.open .ktp-factory-body { display:block; }
+
+.ktp-update-toggle {
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:9px 12px;
+  border:none;
+  border-top:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text2);
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+  text-align:left;
+}
+.ktp-update-toggle span:first-child {
+  width:18px;
+  text-align:center;
+  transition:transform .15s ease;
+}
+.ktp-update-wrap.open .ktp-update-toggle span:first-child {
+  transform:rotate(90deg);
+}
+.ktp-update-content { display:none; }
+.ktp-update-wrap.open .ktp-update-content { display:block; }
+
+@media(max-width:899px){
+  #kontrol-toplu-modal{
+    height:95dvh;
+    max-height:95dvh;
+    display:flex !important;
+    flex-direction:column;
+    overflow:hidden !important;
+  }
+  .ktp-head,.ktp-controls{
+    flex:0 0 auto;
+    flex-shrink:0;
+  }
+  #ktp-list{
+    flex:1 1 auto;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:9px 11px 12px;
+  }
+  .ktp-factory-section,
+  .ktp-cat{
+    flex:0 0 auto !important;
+    flex-shrink:0 !important;
+    min-height:max-content;
+  }
+  .ktp-cat-head{
+    min-height:46px;
+    grid-template-columns:18px minmax(0,1fr) auto auto;
+    padding:8px 9px;
+  }
+  .ktp-cat-selectall{
+    font-size:8.5px;
+    padding:3px 5px;
+  }
+  .ktp-item{
+    min-height:52px;
+  }
+  .ktp-update-wrap{
+    flex:0 0 auto;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    max-height:52vh;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .ktp-foot{
+    position:relative !important;
+    flex:0 0 auto;
+    box-shadow:0 -4px 12px rgba(0,0,0,.08);
+  }
+}
+
 /* future-day: handled below via :not selectors */
 </style>
 
@@ -2778,7 +2981,7 @@ html[data-tema="gokkusagi"] #topbar::after {
 
   <!-- PERSONEL SEKMESİ -->
   
-<!-- KONTROL SEKMESİ — AŞAMA 6 ÇEVRE KATALOĞU + SEÇİMLİ RAPORLAMA -->
+<!-- KONTROL SEKMESİ — FİNAL V2 AKORDEON TOPLU GÜNCELLEME -->
 <div id="kontrol-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg);">
   <!-- Topbar -->
   <div style="flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 14px;">
@@ -2879,6 +3082,11 @@ html[data-tema="gokkusagi"] #topbar::after {
       </div>
       <button class="kem-close" onclick="kontrolEkipmanClose()" title="Kapat">×</button>
     </div>
+    <div id="kem-fab-box" class="katalog-fab-box">
+      <div class="katalog-fab-title">Hedef Fabrika *</div>
+      <div id="kem-fab-hint" class="katalog-fab-hint"></div>
+      <div id="kem-fab-list" class="katalog-fab-list"></div>
+    </div>
     <div class="kem-search">
       <input id="kem-search" placeholder="Ekipman ara... örn. forklift, hava tankı, topraklama"
              oninput="kontrolEkipmanRender()"/>
@@ -2911,14 +3119,27 @@ html[data-tema="gokkusagi"] #topbar::after {
 
     <div class="ktp-controls">
       <div class="ktp-selectbar">
-        <button type="button" onclick="kontrolTopluTumunuSec()">✓ Tümünü Seç</button>
+        <button type="button" onclick="kontrolTopluTumunuSec()">✓ Görünenlerin Tümünü Seç</button>
         <button type="button" onclick="kontrolTopluSecimiTemizle()">Seçimi Temizle</button>
         <span id="ktp-filter-label"></span>
       </div>
+      <div id="ktp-fab-filter" class="ktp-fab-filter"></div>
     </div>
 
     <div id="ktp-list"></div>
-
+    <div id="ktp-update-wrap" class="ktp-update-wrap">
+      <button type="button" class="ktp-update-toggle" onclick="kontrolTopluBilgiToggle()">
+        <span>›</span>
+        <span>Güncelleme Bilgileri</span>
+        <span id="ktp-update-summary" style="margin-left:auto;font-size:9.5px;font-weight:650;color:var(--text3);">0 kayıt seçildi</span>
+      </button>
+      <div class="ktp-update-content">
+    <div class="ktp-target-box">
+      <div class="ktp-target-title">🏭 Hedef Fabrika(lar)</div>
+      <div class="ktp-target-hint">Hedef fabrika seçerseniz seçili kayıtlar o fabrikalarda yoksa oluşturulur, varsa mevcut kayıt güncellenir. Hedef seçmezseniz yalnız mevcut seçili kayıtlar güncellenir.</div>
+      <div id="ktp-target-list" class="ktp-target-list"></div>
+      <div id="ktp-transfer-info" class="ktp-transfer-info" style="display:none;"></div>
+    </div>
     <div class="ktp-form">
       <div class="ktp-field">
         <label>Kontrol Tarihi *</label>
@@ -2947,12 +3168,14 @@ html[data-tema="gokkusagi"] #topbar::after {
         <div class="ktp-hint">Boş bırakırsanız mevcut notlar korunur. Metin girerseniz seçili kayıtların not alanı bu metinle güncellenir.</div>
       </div>
     </div>
+      </div>
+    </div>
 
     <div class="ktp-foot">
       <span id="ktp-selected-count">0 kayıt seçildi</span>
       <button class="ktp-cancel" onclick="kontrolTopluClose()">İptal</button>
       <button class="ktp-save" id="ktp-save-btn" onclick="kontrolTopluKaydet()" disabled>
-        Seçili Kayıtları Güncelle
+        Kayıtları Uygula
       </button>
     </div>
   </div>
@@ -2971,6 +3194,11 @@ html[data-tema="gokkusagi"] #topbar::after {
         </div>
       </div>
       <button class="kem-close" onclick="kontrolCevreClose()" title="Kapat">×</button>
+    </div>
+    <div id="kcv-fab-box" class="katalog-fab-box">
+      <div class="katalog-fab-title">Hedef Fabrika *</div>
+      <div id="kcv-fab-hint" class="katalog-fab-hint"></div>
+      <div id="kcv-fab-list" class="katalog-fab-list"></div>
     </div>
     <div class="kem-search">
       <input id="kcv-search" placeholder="Çevre süreci ara... örn. kapasite raporu, atıksu, emisyon"
@@ -7475,6 +7703,55 @@ const KONTROL_GRUPLAR = {
 // ── AŞAMA 2: EK-III esaslı Makine/Ekipman seçim kataloğu ─────
 // Bu katalog uygulama içindeki takip başlıklarını oluşturur.
 // Aynı ekipman türü birden fazla fiziksel ekipman olsa dahi tek takip satırı olarak tutulur.
+
+// ── AŞAMA 6.1: Fabrika bazlı katalog ortak yardımcıları ─────
+function kontrolKayitFabrikalari(it) {
+  if (!it) return [];
+  if (Array.isArray(it.fabs)) return it.fabs.filter(Boolean);
+  return it.fab ? [it.fab] : [];
+}
+function kontrolKatalogHedefFabrikalar(selectedSet) {
+  return [...selectedSet].filter(Boolean);
+}
+function kontrolKatalogFabSecimRender(containerId, hintId, selectedSet, onChangeFn) {
+  const box = document.getElementById(containerId);
+  const hint = document.getElementById(hintId);
+  if (!box) return;
+
+  if (kontrolFabFilter) {
+    selectedSet.clear();
+    selectedSet.add(kontrolFabFilter);
+    box.innerHTML = `<label class="katalog-fab-chip locked">
+      <input type="checkbox" checked disabled>
+      <span>${esc(kontrolFabFilter)}</span>
+    </label>`;
+    if (hint) hint.textContent = 'Aktif fabrika filtresi hedef fabrika olarak otomatik seçildi.';
+    return;
+  }
+
+  const mevcut = (kontrolFabs && kontrolFabs.length)
+    ? kontrolFabs
+    : fabrikalar.map(f => f.name);
+
+  box.innerHTML = mevcut.map(f => `
+    <label class="katalog-fab-chip">
+      <input type="checkbox" value="${esc(f)}"
+        ${selectedSet.has(f)?'checked':''}
+        onchange="${onChangeFn}('${String(f).replace(/'/g,"\\'")}',this.checked)">
+      <span>${esc(f)}</span>
+    </label>`).join('');
+
+  if (hint) {
+    hint.innerHTML = selectedSet.size
+      ? `${selectedSet.size} hedef fabrika seçildi. Seçilen süreç/ekipman her fabrika için <b>ayrı kayıt</b> oluşturur.`
+      : 'Tüm Fabrikalar görünümündesiniz. Kayıt eklemek için en az bir hedef fabrika seçin.';
+  }
+}
+function kontrolKayitHedefFabrikadaMi(it, fab) {
+  if (!fab) return false;
+  return kontrolKayitFabrikalari(it).includes(fab);
+}
+
 const KONTROL_EKIPMAN_KATALOG = [
   {
     id:'basinc', ad:'Basınçlı Kap ve Tesisatlar', ikon:'🧯',
@@ -7605,6 +7882,7 @@ const KONTROL_EKIPMAN_KATALOG = [
 
 let kontrolEkipmanYeniSecim = new Set();
 let kontrolEkipmanKatAcik = {};
+let kontrolEkipmanHedefFabs = new Set();
 
 function kontrolEkipmanBul(key) {
   for (const kat of KONTROL_EKIPMAN_KATALOG) {
@@ -7613,10 +7891,13 @@ function kontrolEkipmanBul(key) {
   }
   return null;
 }
-function kontrolEkipmanTakipte(key, ad) {
+function kontrolEkipmanTakipte(key, ad, fab) {
+  if (!fab) return false;
   return kontrolItems.some(it =>
     kontrolGrupId(it)==='makine' &&
-    (it.equipmentKey === key || (!it.equipmentKey && (it.name||'').toLocaleLowerCase('tr-TR') === ad.toLocaleLowerCase('tr-TR')))
+    kontrolKayitHedefFabrikadaMi(it, fab) &&
+    (it.equipmentKey === key ||
+      (!it.equipmentKey && (it.name||'').toLocaleLowerCase('tr-TR') === ad.toLocaleLowerCase('tr-TR')))
   );
 }
 function kontrolEkipmanMobilMi() {
@@ -7635,6 +7916,10 @@ function kontrolEkipmanOpen() {
     });
   }
 
+  kontrolEkipmanHedefFabs.clear();
+  if (kontrolFabFilter) kontrolEkipmanHedefFabs.add(kontrolFabFilter);
+  kontrolKatalogFabSecimRender('kem-fab-list','kem-fab-hint',kontrolEkipmanHedefFabs,'kontrolEkipmanFabToggle');
+
   const s = document.getElementById('kem-search');
   if (s) s.value = '';
 
@@ -7646,6 +7931,13 @@ function kontrolEkipmanOpen() {
     const body = document.getElementById('kem-body');
     if (body) body.scrollTop = 0;
   });
+}
+function kontrolEkipmanFabToggle(fab, checked) {
+  if (kontrolFabFilter) return;
+  if (checked) kontrolEkipmanHedefFabs.add(fab);
+  else kontrolEkipmanHedefFabs.delete(fab);
+  kontrolKatalogFabSecimRender('kem-fab-list','kem-fab-hint',kontrolEkipmanHedefFabs,'kontrolEkipmanFabToggle');
+  kontrolEkipmanRender();
 }
 function kontrolEkipmanClose() {
   document.getElementById('kontrol-ekipman-bg').classList.remove('on');
@@ -7696,7 +7988,10 @@ function kontrolEkipmanRender() {
     const eslesen = kat.items.filter(i => !q || i[1].toLocaleLowerCase('tr-TR').includes(q) || kat.ad.toLocaleLowerCase('tr-TR').includes(q));
     if (!eslesen.length) return '';
     const acik = q ? true : kontrolEkipmanKatAcik[kat.id] !== false;
-    const takipte = eslesen.filter(i => kontrolEkipmanTakipte(i[0],i[1])).length;
+    const hedefler = kontrolKatalogHedefFabrikalar(kontrolEkipmanHedefFabs);
+    const takipte = eslesen.filter(i =>
+      hedefler.length > 0 && hedefler.every(fab => kontrolEkipmanTakipte(i[0],i[1],fab))
+    ).length;
     return `<section class="kem-cat" data-kem-cat="${kat.id}">
       <div class="kem-cat-head" onclick="kontrolEkipmanToggleKat('${kat.id}')">
         <span>${acik?'▾':'▸'}</span>
@@ -7705,13 +8000,15 @@ function kontrolEkipmanRender() {
         <span class="kem-cat-count">${takipte}/${eslesen.length} takipte</span>
       </div>
       ${acik ? `<div class="kem-cat-body">${eslesen.map(i => {
-        const varMi = kontrolEkipmanTakipte(i[0],i[1]);
+        const hedefler = kontrolKatalogHedefFabrikalar(kontrolEkipmanHedefFabs);
+        const varMi = hedefler.length > 0 && hedefler.every(fab => kontrolEkipmanTakipte(i[0],i[1],fab));
+        const kismenVar = hedefler.length > 1 && hedefler.some(fab => kontrolEkipmanTakipte(i[0],i[1],fab)) && !varMi;
         const secili = kontrolEkipmanYeniSecim.has(i[0]);
         return `<label class="kem-item${varMi?' track':''}">
           <input type="checkbox" ${varMi?'checked disabled':(secili?'checked':'')}
             onchange="kontrolEkipmanToggle('${i[0]}',this.checked)">
           <span>${esc(i[1])}</span>
-          ${varMi?'<span class="kem-status">TAKİPTE</span>':''}
+          ${varMi?'<span class="kem-status">TAKİPTE</span>':(kismenVar?'<span class="kem-status" style="color:#BA7517;">KISMEN TAKİPTE</span>':'')}
         </label>`;
       }).join('')}</div>` : ''}
     </section>`;
@@ -7722,73 +8019,203 @@ function kontrolEkipmanRender() {
 }
 function kontrolEkipmanAddSelected() {
   if (!kontrolEkipmanYeniSecim.size) return;
+
+  const hedefFabs = kontrolKatalogHedefFabrikalar(kontrolEkipmanHedefFabs);
+  if (!hedefFabs.length) {
+    alert('En az bir hedef fabrika seçin.');
+    return;
+  }
+
   let eklendi = 0;
   [...kontrolEkipmanYeniSecim].forEach(key => {
     const e = kontrolEkipmanBul(key);
-    if (!e || kontrolEkipmanTakipte(e.key,e.ad)) return;
-    kontrolItems.push({
-      id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
-      grup:'makine',
-      equipmentKey:e.key,
-      equipmentCategory:e.katId,
-      name:e.ad,
-      fabs:[],
-      fab:'',
-      lastDate:'',
-      periodVal:'1',
-      periodUnit:'year',
-      firm:'',
-      result:'bekliyor',
-      note:''
+    if (!e) return;
+
+    hedefFabs.forEach(fab => {
+      if (kontrolEkipmanTakipte(e.key,e.ad,fab)) return;
+
+      kontrolItems.push({
+        id:Date.now() + '-' + Math.random().toString(36).slice(2,8),
+        grup:'makine',
+        equipmentKey:e.key,
+        equipmentCategory:e.katId,
+        name:e.ad,
+        fabs:[fab],
+        fab:fab,
+        lastDate:'',
+        periodVal:'1',
+        periodUnit:'year',
+        firm:'',
+        result:'bekliyor',
+        note:''
+      });
+      eklendi++;
     });
-    eklendi++;
   });
+
   if (eklendi) {
     kontrolGrupAcik.makine = true;
     kontrolSave();
     kontrolRender();
     if (typeof dashRender === 'function') dashRender();
-    toast(eklendi + ' kontrol tipi takip listesine eklendi');
+    toast(eklendi + ' fabrika-ekipman kaydı takip listesine eklendi');
   }
   kontrolEkipmanClose();
 }
-
-
-// ── AŞAMA 5: Makine/Ekipman toplu kontrol güncelleme ────────
+// ── AŞAMA 6.2: Toplu güncelleme kritik state + fabrika filtresi ──
 let kontrolTopluSecili = new Set();
 let kontrolTopluGorunenIdler = [];
+let kontrolTopluFabFilter = 'all';
+let kontrolTopluHedefFabs = new Set();
+let kontrolTopluAcikKategori = null;
+let kontrolTopluAcikFabrika = null;
+let kontrolTopluBilgiAcik = false;
 
-function kontrolTopluAdaylar() {
-  let adaylar = kontrolItems.filter(it => kontrolGrupId(it) === 'makine');
 
-  // Aktif fabrika filtresi varsa sadece o fabrikaya ait kayıtlar.
-  if (kontrolFabFilter) {
-    adaylar = adaylar.filter(it => {
-      const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
-      return fabs.includes(kontrolFabFilter);
+function kontrolTopluMobilMi(){
+  return window.matchMedia && window.matchMedia('(max-width:899px)').matches;
+}
+function kontrolTopluFabrikaToggle(fabKey){
+  if (kontrolTopluAcikFabrika === fabKey) kontrolTopluAcikFabrika = null;
+  else {
+    kontrolTopluAcikFabrika = fabKey;
+    if (kontrolTopluMobilMi()) kontrolTopluAcikKategori = null;
+  }
+  kontrolTopluRender();
+}
+function kontrolTopluKategoriToggle(fabKey, katKey){
+  const key = fabKey + '||' + katKey;
+  if (kontrolTopluAcikKategori === key) kontrolTopluAcikKategori = null;
+  else kontrolTopluAcikKategori = key;
+  kontrolTopluRender();
+
+  if (kontrolTopluAcikKategori === key) {
+    requestAnimationFrame(()=>{
+      const el=document.querySelector(`[data-ktp-cat="${CSS.escape(key)}"]`);
+      const list=document.getElementById('ktp-list');
+      if(el && list){
+        const top=el.offsetTop-list.offsetTop-6;
+        list.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+      }
     });
   }
-
-  return adaylar.sort((a,b) => {
-    const ga = kontrolEkipmanAnaGrupAdi(a);
-    const gb = kontrolEkipmanAnaGrupAdi(b);
-    const cg = ga.localeCompare(gb, 'tr');
-    if (cg !== 0) return cg;
-    return (a.name||'').localeCompare(b.name||'', 'tr');
+}
+function kontrolTopluKategoriTumunuSec(fabKey, katKey, checked){
+  const adaylar=kontrolTopluAdaylar().filter(it=>{
+    const fab=kontrolKayitFabrikalari(it)[0] || '⚠ Fabrika Atanmamış';
+    return fab===fabKey && kontrolEkipmanAnaGrupAdi(it)===katKey;
   });
+  adaylar.forEach(it=>{
+    if(checked) kontrolTopluSecili.add(it.id);
+    else kontrolTopluSecili.delete(it.id);
+  });
+  kontrolTopluRender();
+}
+function kontrolTopluBilgiToggle(force){
+  kontrolTopluBilgiAcik = typeof force==='boolean' ? force : !kontrolTopluBilgiAcik;
+  const wrap=document.getElementById('ktp-update-wrap');
+  if(wrap) wrap.classList.toggle('open',kontrolTopluBilgiAcik);
+}
+function kontrolTopluBilgiDurum(){
+  const s=document.getElementById('ktp-update-summary');
+  if(s) s.textContent = `${kontrolTopluSecili.size} kayıt seçildi`;
 }
 
+function kontrolTopluHedefRender(){
+  const el=document.getElementById('ktp-target-list');
+  const info=document.getElementById('ktp-transfer-info');
+  if(!el)return;
+  const fabs=(kontrolFabs&&kontrolFabs.length)?[...kontrolFabs]:fabrikalar.map(f=>f.name);
+  el.innerHTML=fabs.map(f=>`<label class="ktp-target-chip"><input type="checkbox" ${kontrolTopluHedefFabs.has(f)?'checked':''} onchange="kontrolTopluHedefToggle('${String(f).replace(/'/g,"\\'")}',this.checked)"><span>${esc(f)}</span></label>`).join('');
+  if(info){
+    info.style.display=kontrolTopluHedefFabs.size?'block':'none';
+    info.textContent=kontrolTopluHedefFabs.size?`${kontrolTopluHedefFabs.size} hedef fabrika seçildi. Seçili kayıtlar bu fabrikalarda oluşturulacak veya güncellenecek.`:'';
+  }
+}
+function kontrolTopluHedefToggle(fab,checked){
+  if(checked)kontrolTopluHedefFabs.add(fab); else kontrolTopluHedefFabs.delete(fab);
+  kontrolTopluHedefRender();
+}
+function kontrolKayitAyniTakipMi(source,target,targetFab){
+  if(!source||!target)return false;
+  if(kontrolGrupId(source)!=='makine'||kontrolGrupId(target)!=='makine')return false;
+  if(!kontrolKayitHedefFabrikadaMi(target,targetFab))return false;
+  if(source.equipmentKey)return target.equipmentKey===source.equipmentKey;
+  return (target.name||'').toLocaleLowerCase('tr-TR')===(source.name||'').toLocaleLowerCase('tr-TR');
+}
+function kontrolHedefKayitBul(source,targetFab){
+  return kontrolItems.find(it=>kontrolKayitAyniTakipMi(source,it,targetFab))||null;
+}
+
+function kontrolTopluTumAdaylar() {
+  return kontrolItems
+    .filter(it => kontrolGrupId(it) === 'makine')
+    .sort((a,b) => {
+      const fa = kontrolKayitFabrikalari(a)[0] || 'zzzz';
+      const fb = kontrolKayitFabrikalari(b)[0] || 'zzzz';
+      const cf = fa.localeCompare(fb,'tr');
+      if (cf !== 0) return cf;
+      const ga = kontrolEkipmanAnaGrupAdi(a);
+      const gb = kontrolEkipmanAnaGrupAdi(b);
+      const cg = ga.localeCompare(gb,'tr');
+      if (cg !== 0) return cg;
+      return (a.name||'').localeCompare(b.name||'','tr');
+    });
+}
+
+function kontrolTopluAdaylar() {
+  const tumu = kontrolTopluTumAdaylar();
+  if (kontrolTopluFabFilter === 'all') return tumu;
+  if (kontrolTopluFabFilter === '__unassigned__') {
+    return tumu.filter(it => kontrolKayitFabrikalari(it).length === 0);
+  }
+  return tumu.filter(it => kontrolKayitFabrikalari(it).includes(kontrolTopluFabFilter));
+}
+
+function kontrolTopluFabFiltreRender() {
+  const el = document.getElementById('ktp-fab-filter');
+  if (!el) return;
+
+  const tumu = kontrolTopluTumAdaylar();
+  const fabs = [...new Set(tumu.flatMap(it => kontrolKayitFabrikalari(it)))]
+    .sort((a,b)=>a.localeCompare(b,'tr'));
+  const unassigned = tumu.some(it => kontrolKayitFabrikalari(it).length===0);
+
+  const opts = [
+    {id:'all', ad:'Tüm Fabrikalar'},
+    ...fabs.map(f => ({id:f, ad:f})),
+    ...(unassigned ? [{id:'__unassigned__', ad:'⚠ Atanmamış'}] : [])
+  ];
+
+  el.innerHTML = opts.map(o => `
+    <button type="button"
+      class="ktp-fab-chip${kontrolTopluFabFilter===o.id?' active':''}"
+      onclick="kontrolTopluFabFiltreSec('${String(o.id).replace(/'/g,"\\'")}')">
+      ${esc(o.ad)}
+    </button>`).join('');
+}
+
+function kontrolTopluFabFiltreSec(fab) {
+  kontrolTopluFabFilter = fab;
+  kontrolTopluSecili.clear();
+  kontrolTopluRender();
+}
 function kontrolTopluOpen() {
-  const adaylar = kontrolTopluAdaylar();
-  if (!adaylar.length) {
-    alert(kontrolFabFilter
-      ? `${kontrolFabFilter} için toplu güncellenebilecek Makine/Ekipman kaydı yok.`
-      : 'Toplu güncellenebilecek Makine/Ekipman kaydı yok.');
+  const tumAdaylar = kontrolTopluTumAdaylar();
+  if (!tumAdaylar.length) {
+    alert('Toplu güncellenebilecek Makine/Ekipman kaydı yok.');
     return;
   }
 
   kontrolTopluSecili.clear();
-  kontrolTopluGorunenIdler = adaylar.map(x => x.id);
+  kontrolTopluHedefFabs.clear();
+  kontrolTopluAcikKategori = null;
+  kontrolTopluAcikFabrika = null;
+  kontrolTopluBilgiAcik = false;
+
+  // Ana ekranda fabrika seçiliyse modal o fabrikayla açılır;
+  // kullanıcı isterse içeriden "Tüm Fabrikalar"a geçebilir.
+  kontrolTopluFabFilter = kontrolFabFilter || 'all';
 
   const date = document.getElementById('ktp-date');
   if (date) {
@@ -7803,21 +8230,20 @@ function kontrolTopluOpen() {
   document.getElementById('ktp-result').value = 'uygun';
   document.getElementById('ktp-note').value = '';
 
-  const lbl = document.getElementById('ktp-filter-label');
-  if (lbl) lbl.textContent = kontrolFabFilter ? `Fabrika: ${kontrolFabFilter}` : 'Tüm Fabrikalar';
-
   document.getElementById('kontrol-toplu-bg').classList.add('on');
+  kontrolTopluHedefRender();
   kontrolTopluRender();
+  kontrolTopluBilgiToggle(false);
 
   requestAnimationFrame(() => {
     const liste = document.getElementById('ktp-list');
     if (liste) liste.scrollTop = 0;
   });
 }
-
 function kontrolTopluClose() {
   document.getElementById('kontrol-toplu-bg').classList.remove('on');
   kontrolTopluSecili.clear();
+  kontrolTopluHedefFabs.clear();
   kontrolTopluGorunenIdler = [];
 }
 
@@ -7848,108 +8274,168 @@ function kontrolTopluSecimDurumu() {
       : '0 kayıt seçildi';
   }
   if (btn) btn.disabled = n === 0;
+  kontrolTopluBilgiDurum();
 }
 
 function kontrolTopluRender() {
-  const liste = document.getElementById('ktp-list');
-  if (!liste) return;
+  const liste=document.getElementById('ktp-list');
+  if(!liste)return;
 
-  const adaylar = kontrolTopluAdaylar();
-  kontrolTopluGorunenIdler = adaylar.map(x => x.id);
+  kontrolTopluFabFiltreRender();
+  const adaylar=kontrolTopluAdaylar();
+  kontrolTopluGorunenIdler=adaylar.map(x=>x.id);
 
-  if (!adaylar.length) {
-    liste.innerHTML = '<div style="text-align:center;padding:34px 10px;font-size:12px;color:var(--text3);">Kayıt bulunamadı.</div>';
+  const lbl=document.getElementById('ktp-filter-label');
+  if(lbl){
+    lbl.textContent=
+      kontrolTopluFabFilter==='all'?'Tüm Fabrikalar':
+      kontrolTopluFabFilter==='__unassigned__'?'Fabrika Atanmamış':
+      `Fabrika: ${kontrolTopluFabFilter}`;
+  }
+
+  if(!adaylar.length){
+    liste.innerHTML='<div style="text-align:center;padding:34px 10px;font-size:12px;color:var(--text3);">Bu fabrika filtresinde kayıt bulunamadı.</div>';
     kontrolTopluSecimDurumu();
     return;
   }
 
-  const gruplar = new Map();
-  adaylar.forEach(it => {
-    const ana = kontrolEkipmanAnaGrupAdi(it);
-    if (!gruplar.has(ana)) gruplar.set(ana, []);
-    gruplar.get(ana).push(it);
+  const fabrikalarMap=new Map();
+  adaylar.forEach(it=>{
+    const fab=kontrolKayitFabrikalari(it)[0]||'⚠ Fabrika Atanmamış';
+    if(!fabrikalarMap.has(fab))fabrikalarMap.set(fab,[]);
+    fabrikalarMap.get(fab).push(it);
   });
 
-  liste.innerHTML = [...gruplar.entries()].map(([ana, kayitlar]) => {
-    const seciliSayi = kayitlar.filter(it => kontrolTopluSecili.has(it.id)).length;
-    return `<section class="ktp-cat">
-      <div class="ktp-cat-head">
-        <span>⚙️</span>
-        <span>${esc(ana)}</span>
-        <span class="ktp-cat-count">${seciliSayi}/${kayitlar.length} seçili</span>
+  // Tek fabrika filtresi seçiliyse fabrika gövdesini otomatik açık tut.
+  if(kontrolTopluFabFilter!=='all' && kontrolTopluFabFilter!=='__unassigned__'){
+    kontrolTopluAcikFabrika=kontrolTopluFabFilter;
+  }
+
+  liste.innerHTML=[...fabrikalarMap.entries()].map(([fab,fabKayitlari])=>{
+    const fabKey=fab;
+    const fabOpen = kontrolTopluFabFilter!=='all' || kontrolTopluAcikFabrika===fabKey;
+    const fabSecili=fabKayitlari.filter(it=>kontrolTopluSecili.has(it.id)).length;
+
+    const kategoriMap=new Map();
+    fabKayitlari.forEach(it=>{
+      const ana=kontrolEkipmanAnaGrupAdi(it);
+      if(!kategoriMap.has(ana))kategoriMap.set(ana,[]);
+      kategoriMap.get(ana).push(it);
+    });
+
+    const fabBody=[...kategoriMap.entries()].map(([ana,kayitlar])=>{
+      const catKey=fabKey+'||'+ana;
+      const catOpen=kontrolTopluAcikKategori===catKey;
+      const seciliSayi=kayitlar.filter(it=>kontrolTopluSecili.has(it.id)).length;
+      const allChecked=kayitlar.length>0 && seciliSayi===kayitlar.length;
+
+      return `<div class="ktp-cat${catOpen?' open':''}" data-ktp-cat="${esc(catKey)}">
+        <div class="ktp-cat-head" onclick="kontrolTopluKategoriToggle('${String(fabKey).replace(/'/g,"\\'")}','${String(ana).replace(/'/g,"\\'")}')">
+          <span class="ktp-cat-arrow">›</span>
+          <span style="font-size:11px;font-weight:750;color:var(--text2);">${esc(ana)}</span>
+          <span class="ktp-cat-count">${seciliSayi}/${kayitlar.length}</span>
+          <label class="ktp-cat-selectall" onclick="event.stopPropagation()">
+            <input type="checkbox" ${allChecked?'checked':''}
+              onchange="kontrolTopluKategoriTumunuSec('${String(fabKey).replace(/'/g,"\\'")}','${String(ana).replace(/'/g,"\\'")}',this.checked)">
+            <span>Tümünü Seç</span>
+          </label>
+        </div>
+        <div class="ktp-cat-body">
+          ${kayitlar.map(it=>{
+            const fabs=kontrolKayitFabrikalari(it);
+            const fabAdi=fabs[0]||'Fabrika Atanmamış';
+            const per=`${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
+            const last=it.lastDate
+              ?new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'})
+              :'Tarih yok';
+            const checked=kontrolTopluSecili.has(it.id);
+            return `<label class="ktp-item">
+              <input type="checkbox" ${checked?'checked':''}
+                onchange="kontrolTopluToggle('${it.id}',this.checked)">
+              <div class="ktp-item-main">
+                <div class="ktp-item-name">${esc(it.name||'')}</div>
+                <div class="ktp-item-meta">
+                  <span class="ktp-fab-badge${fabs.length?'':' unassigned'}">🏭 ${esc(fabAdi)}</span>
+                  <span>Son: ${esc(last)}</span>
+                  ${it.firm?`<span>• 🏢 ${esc(it.firm)}</span>`:''}
+                </div>
+              </div>
+              <span class="ktp-item-period">⏱ ${esc(per)}</span>
+            </label>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<section class="ktp-factory-section${fabOpen?' open':''}">
+      <div class="ktp-factory-head" onclick="kontrolTopluFabrikaToggle('${String(fabKey).replace(/'/g,"\\'")}')">
+        <span class="ktp-factory-arrow">›</span>
+        <span>🏭</span>
+        <span>${esc(fab)}</span>
+        <span class="ktp-factory-count">${fabSecili}/${fabKayitlari.length} seçili</span>
       </div>
-      ${kayitlar.map(it => {
-        const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
-        const per = `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
-        const last = it.lastDate
-          ? new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'})
-          : 'Tarih yok';
-        const checked = kontrolTopluSecili.has(it.id);
-        return `<label class="ktp-item">
-          <input type="checkbox" ${checked?'checked':''}
-            onchange="kontrolTopluToggle('${it.id}',this.checked)">
-          <div class="ktp-item-main">
-            <div class="ktp-item-name">${esc(it.name||'')}</div>
-            <div class="ktp-item-meta">
-              <span>Son: ${esc(last)}</span>
-              ${fabs.length ? `<span>• ${fabs.map(esc).join(', ')}</span>` : ''}
-              ${it.firm ? `<span>• 🏢 ${esc(it.firm)}</span>` : ''}
-            </div>
-          </div>
-          <span class="ktp-item-period">⏱ ${esc(per)}</span>
-        </label>`;
-      }).join('')}
+      <div class="ktp-factory-body">${fabBody}</div>
     </section>`;
   }).join('');
 
   kontrolTopluSecimDurumu();
+  kontrolTopluBilgiToggle(kontrolTopluBilgiAcik);
 }
+function kontrolTopluKaydet(){
+  if(!kontrolTopluSecili.size){alert('En az bir kaynak kayıt seçin.');return;}
+  const tarih=document.getElementById('ktp-date').value;
+  const firma=document.getElementById('ktp-firm').value.trim();
+  const sonuc=document.getElementById('ktp-result').value||'uygun';
+  const not=document.getElementById('ktp-note').value.trim();
+  if(!tarih){alert('Kontrol tarihi zorunludur.');return;}
 
-function kontrolTopluKaydet() {
-  if (!kontrolTopluSecili.size) {
-    alert('En az bir kayıt seçin.');
-    return;
+  const kaynaklar=kontrolItems.filter(it=>kontrolTopluSecili.has(it.id));
+  const hedefFabs=[...kontrolTopluHedefFabs];
+  if(!kaynaklar.length)return;
+
+  let yeni=0,guncel=0;
+  let msg=`${kaynaklar.length} kaynak kayıt seçildi.\n`;
+  if(hedefFabs.length) msg+=`Hedef fabrikalar: ${hedefFabs.join(', ')}\n`;
+  else msg+='Hedef fabrika seçilmedi; yalnız mevcut seçili kayıtlar güncellenecek.\n';
+  msg+=`Kontrol tarihi: ${new Date(tarih+'T00:00:00').toLocaleDateString('tr-TR')}\nKaynak kayıtlar silinmeyecek. Devam edilsin mi?`;
+  if(!confirm(msg))return;
+
+  if(!hedefFabs.length){
+    kaynaklar.forEach(it=>{
+      it.lastDate=tarih;
+      if(firma)it.firm=firma;
+      it.result=sonuc;
+      if(not)it.note=not;
+      guncel++;
+    });
+  } else {
+    kaynaklar.forEach(source=>{
+      hedefFabs.forEach(fab=>{
+        let target=kontrolHedefKayitBul(source,fab);
+        if(!target){
+          target={...source,id:Date.now()+'-'+Math.random().toString(36).slice(2,9),fabs:[fab],fab:fab};
+          kontrolItems.push(target); yeni++;
+        } else guncel++;
+
+        target.lastDate=tarih;
+        target.firm=firma||target.firm||source.firm||'';
+        target.result=sonuc;
+        target.note=not||target.note||source.note||'';
+        target.periodVal=source.periodVal||target.periodVal||'1';
+        target.periodUnit=source.periodUnit||target.periodUnit||'year';
+        target.name=source.name;
+        target.grup='makine';
+        if(source.equipmentKey)target.equipmentKey=source.equipmentKey;
+        if(source.equipmentCategory)target.equipmentCategory=source.equipmentCategory;
+      });
+    });
   }
 
-  const tarih = document.getElementById('ktp-date').value;
-  const firma = document.getElementById('ktp-firm').value.trim();
-  const sonuc = document.getElementById('ktp-result').value || 'uygun';
-  const not = document.getElementById('ktp-note').value.trim();
-
-  if (!tarih) {
-    alert('Kontrol tarihi zorunludur.');
-    document.getElementById('ktp-date').focus();
-    return;
-  }
-
-  const secilenler = kontrolItems.filter(it => kontrolTopluSecili.has(it.id));
-  if (!secilenler.length) return;
-
-  const onayMetni =
-    `${secilenler.length} makine/ekipman kaydı toplu güncellenecek.\n\n` +
-    `Kontrol tarihi: ${new Date(tarih+'T00:00:00').toLocaleDateString('tr-TR')}\n` +
-    `Firma: ${firma || 'Mevcut firma bilgileri korunacak'}\n` +
-    `Sonuç: ${kontrolSonucBilgi(sonuc).ad}\n\n` +
-    `Her kaydın kendi periyodu korunacak. Devam edilsin mi?`;
-
-  if (!confirm(onayMetni)) return;
-
-  secilenler.forEach(it => {
-    it.lastDate = tarih;
-
-    // Boş bırakılan ortak alanlar mevcut bilgiyi silmez.
-    if (firma) it.firm = firma;
-    it.result = sonuc;
-    if (not) it.note = not;
-  });
-
-  // Tek kayıt/save çağrısı: localStorage + Firebase bir kez güncellenir.
   kontrolSave();
   kontrolTopluClose();
   kontrolRender();
-  if (typeof dashRender === 'function') dashRender();
-
-  toast(secilenler.length + ' kontrol kaydı toplu güncellendi');
+  if(typeof dashRender==='function')dashRender();
+  toast(hedefFabs.length?`${yeni} yeni kayıt oluşturuldu, ${guncel} kayıt güncellendi`:`${guncel} kontrol kaydı güncellendi`);
 }
 
 
@@ -8021,6 +8507,7 @@ const KONTROL_CEVRE_KATALOG = [
 
 let kontrolCevreYeniSecim = new Set();
 let kontrolCevreKatAcik = {};
+let kontrolCevreHedefFabs = new Set();
 
 function kontrolCevreBul(key) {
   for (const kat of KONTROL_CEVRE_KATALOG) {
@@ -8029,9 +8516,11 @@ function kontrolCevreBul(key) {
   }
   return null;
 }
-function kontrolCevreTakipte(key, ad) {
+function kontrolCevreTakipte(key, ad, fab) {
+  if (!fab) return false;
   return kontrolItems.some(it =>
     kontrolGrupId(it)==='cevre' &&
+    kontrolKayitHedefFabrikadaMi(it, fab) &&
     (it.environmentKey === key ||
       (!it.environmentKey && (it.name||'').toLocaleLowerCase('tr-TR') === ad.toLocaleLowerCase('tr-TR')))
   );
@@ -8047,6 +8536,10 @@ function kontrolCevreOpen() {
     });
   }
 
+  kontrolCevreHedefFabs.clear();
+  if (kontrolFabFilter) kontrolCevreHedefFabs.add(kontrolFabFilter);
+  kontrolKatalogFabSecimRender('kcv-fab-list','kcv-fab-hint',kontrolCevreHedefFabs,'kontrolCevreFabToggle');
+
   const s = document.getElementById('kcv-search');
   if (s) s.value = '';
   document.getElementById('kontrol-cevre-bg').classList.add('on');
@@ -8056,6 +8549,13 @@ function kontrolCevreOpen() {
     const body = document.getElementById('kcv-body');
     if (body) body.scrollTop = 0;
   });
+}
+function kontrolCevreFabToggle(fab, checked) {
+  if (kontrolFabFilter) return;
+  if (checked) kontrolCevreHedefFabs.add(fab);
+  else kontrolCevreHedefFabs.delete(fab);
+  kontrolKatalogFabSecimRender('kcv-fab-list','kcv-fab-hint',kontrolCevreHedefFabs,'kontrolCevreFabToggle');
+  kontrolCevreRender();
 }
 function kontrolCevreClose() {
   document.getElementById('kontrol-cevre-bg').classList.remove('on');
@@ -8107,7 +8607,10 @@ function kontrolCevreRender() {
     if (!eslesen.length) return '';
 
     const acik = q ? true : kontrolCevreKatAcik[kat.id] !== false;
-    const takipte = eslesen.filter(i => kontrolCevreTakipte(i[0],i[1])).length;
+    const hedefler = kontrolKatalogHedefFabrikalar(kontrolCevreHedefFabs);
+    const takipte = eslesen.filter(i =>
+      hedefler.length > 0 && hedefler.every(fab => kontrolCevreTakipte(i[0],i[1],fab))
+    ).length;
 
     return `<section class="kem-cat" data-kcv-cat="${kat.id}">
       <div class="kem-cat-head" onclick="kontrolCevreToggleKat('${kat.id}')">
@@ -8117,13 +8620,15 @@ function kontrolCevreRender() {
         <span class="kem-cat-count">${takipte}/${eslesen.length} takipte</span>
       </div>
       ${acik ? `<div class="kem-cat-body">${eslesen.map(i => {
-        const varMi = kontrolCevreTakipte(i[0],i[1]);
+        const hedefler = kontrolKatalogHedefFabrikalar(kontrolCevreHedefFabs);
+        const varMi = hedefler.length > 0 && hedefler.every(fab => kontrolCevreTakipte(i[0],i[1],fab));
+        const kismenVar = hedefler.length > 1 && hedefler.some(fab => kontrolCevreTakipte(i[0],i[1],fab)) && !varMi;
         const secili = kontrolCevreYeniSecim.has(i[0]);
         return `<label class="kem-item${varMi?' track':''}">
           <input type="checkbox" ${varMi?'checked disabled':(secili?'checked':'')}
             onchange="kontrolCevreToggle('${i[0]}',this.checked)">
           <span>${esc(i[1])}</span>
-          ${varMi?'<span class="kem-status">TAKİPTE</span>':''}
+          ${varMi?'<span class="kem-status">TAKİPTE</span>':(kismenVar?'<span class="kem-status" style="color:#BA7517;">KISMEN TAKİPTE</span>':'')}
         </label>`;
       }).join('')}</div>` : ''}
     </section>`;
@@ -8134,27 +8639,37 @@ function kontrolCevreRender() {
 function kontrolCevreAddSelected() {
   if (!kontrolCevreYeniSecim.size) return;
 
+  const hedefFabs = kontrolKatalogHedefFabrikalar(kontrolCevreHedefFabs);
+  if (!hedefFabs.length) {
+    alert('En az bir hedef fabrika seçin.');
+    return;
+  }
+
   let eklendi = 0;
   [...kontrolCevreYeniSecim].forEach(key => {
     const e = kontrolCevreBul(key);
-    if (!e || kontrolCevreTakipte(e.key,e.ad)) return;
+    if (!e) return;
 
-    kontrolItems.push({
-      id:Date.now() + '-' + Math.random().toString(36).slice(2,7),
-      grup:'cevre',
-      environmentKey:e.key,
-      environmentCategory:e.katId,
-      name:e.ad,
-      fabs:[],
-      fab:'',
-      lastDate:'',
-      periodVal:'1',
-      periodUnit:'year',
-      firm:'',
-      result:'bekliyor',
-      note:''
+    hedefFabs.forEach(fab => {
+      if (kontrolCevreTakipte(e.key,e.ad,fab)) return;
+
+      kontrolItems.push({
+        id:Date.now() + '-' + Math.random().toString(36).slice(2,8),
+        grup:'cevre',
+        environmentKey:e.key,
+        environmentCategory:e.katId,
+        name:e.ad,
+        fabs:[fab],
+        fab:fab,
+        lastDate:'',
+        periodVal:'1',
+        periodUnit:'year',
+        firm:'',
+        result:'bekliyor',
+        note:''
+      });
+      eklendi++;
     });
-    eklendi++;
   });
 
   if (eklendi) {
@@ -8162,11 +8677,10 @@ function kontrolCevreAddSelected() {
     kontrolSave();
     kontrolRender();
     if (typeof dashRender === 'function') dashRender();
-    toast(eklendi + ' çevre süreci takip listesine eklendi');
+    toast(eklendi + ' fabrika-çevre süreci kaydı takip listesine eklendi');
   }
   kontrolCevreClose();
 }
-
 function kontrolCevreAnaGrupAdi(it) {
   if (it && it.environmentCategory) {
     const kat = KONTROL_CEVRE_KATALOG.find(k => k.id === it.environmentCategory);
@@ -8274,6 +8788,10 @@ function kontrolSonucBilgi(v) {
   return map[v] || map.bekliyor;
 }
 
+function kontrolFabrikaAtanmamisMi(it) {
+  return (it?.equipmentKey || it?.environmentKey) && kontrolKayitFabrikalari(it).length === 0;
+}
+
 function kontrolKartHtml(it) {
   const dl = it.daysLeft;
   const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
@@ -8292,6 +8810,7 @@ function kontrolKartHtml(it) {
           </div>
           <div class="kc-tags">
             ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
+            ${kontrolFabrikaAtanmamisMi(it)?'<span class="kontrol-unassigned-tag">⚠ Fabrika Atanmamış</span>':''}
             <span class="kc-period">⏱ ${esc(periodStr)}</span>
           </div>
           <div class="kc-dategrid">
@@ -8362,6 +8881,7 @@ function kontrolKartHtml(it) {
 
         <div class="kc-tags">
           ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
+          ${kontrolFabrikaAtanmamisMi(it)?'<span class="kontrol-unassigned-tag">⚠ Fabrika Atanmamış</span>':''}
           <span class="kc-period">⏱ ${esc(periodStr)}</span>
         </div>
 
