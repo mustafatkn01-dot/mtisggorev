@@ -12480,9 +12480,139 @@ window.addEventListener('resize', calMobInit);
   window.addEventListener('pointercancel', bitir);
 })();
 </script>
-<!-- ── FIREBASE BULUT SENKRONİZASYONU ───────────────────────── -->
+
+<!-- ── FIREBASE AUTH TEST V1 — Güvenli giriş katmanı ─────────── -->
+<style id="firebase-auth-ui-style">
+#fb-auth-gate{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:rgba(15,23,42,.58);
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  backdrop-filter:blur(4px);
+}
+#fb-auth-gate.on{display:flex;}
+.fb-auth-card{
+  width:390px;
+  max-width:100%;
+  background:var(--surface,#fff);
+  color:var(--text,#111827);
+  border:1px solid var(--border,#e5e7eb);
+  border-radius:16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
+  overflow:hidden;
+}
+.fb-auth-head{
+  padding:17px 18px 13px;
+  border-bottom:1px solid var(--border,#e5e7eb);
+}
+.fb-auth-title{
+  font-size:17px;
+  font-weight:800;
+  margin:0 0 4px;
+}
+.fb-auth-sub{
+  font-size:11px;
+  line-height:1.45;
+  color:var(--text3,#6b7280);
+}
+.fb-auth-body{padding:15px 18px 18px;}
+.fb-auth-field{margin-bottom:10px;}
+.fb-auth-field label{
+  display:block;
+  font-size:10.5px;
+  font-weight:700;
+  margin-bottom:4px;
+  color:var(--text2,#374151);
+}
+.fb-auth-field input{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 11px;
+  font-size:13px;
+  border:1px solid var(--border2,#cbd5e1);
+  border-radius:8px;
+  background:var(--bg,#f8fafc);
+  color:var(--text,#111827);
+  outline:none;
+}
+.fb-auth-field input:focus{border-color:#378ADD;}
+#fb-auth-submit{
+  width:100%;
+  min-height:42px;
+  border:none;
+  border-radius:8px;
+  background:#378ADD;
+  color:#fff;
+  font-size:13px;
+  font-weight:750;
+  cursor:pointer;
+}
+#fb-auth-submit:disabled{opacity:.55;cursor:wait;}
+#fb-auth-msg{
+  min-height:18px;
+  margin-top:8px;
+  font-size:10.5px;
+  line-height:1.4;
+  color:#c0392b;
+}
+.fb-auth-note{
+  margin-top:10px;
+  padding:7px 8px;
+  border-radius:7px;
+  background:var(--surface2,#f3f4f6);
+  font-size:9.5px;
+  line-height:1.4;
+  color:var(--text3,#6b7280);
+}
+@media(max-width:600px){
+  #fb-auth-gate{align-items:flex-end;padding:0;}
+  .fb-auth-card{
+    width:100%;
+    max-width:100%;
+    border-radius:18px 18px 0 0;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+}
+</style>
+
+<div id="fb-auth-gate" aria-hidden="true">
+  <div class="fb-auth-card">
+    <div class="fb-auth-head">
+      <div class="fb-auth-title">🔐 İSG Takip — Güvenli Giriş</div>
+      <div class="fb-auth-sub">
+        Bulut verilerine erişmek için yetkili Firebase hesabınızla giriş yapın.
+        Oturum bu cihazda güvenli biçimde hatırlanır.
+      </div>
+    </div>
+    <div class="fb-auth-body">
+      <form id="fb-auth-form" autocomplete="on">
+        <div class="fb-auth-field">
+          <label for="fb-auth-email">E-posta</label>
+          <input id="fb-auth-email" type="email" autocomplete="username" required>
+        </div>
+        <div class="fb-auth-field">
+          <label for="fb-auth-password">Parola</label>
+          <input id="fb-auth-password" type="password" autocomplete="current-password" required>
+        </div>
+        <button id="fb-auth-submit" type="submit">Giriş Yap</button>
+        <div id="fb-auth-msg"></div>
+      </form>
+      <div class="fb-auth-note">
+        Parola index.html dosyasına kaydedilmez. Firebase Authentication oturumu
+        tarayıcı tarafından saklanır; sonraki açılışlarda tekrar giriş gerekmeyebilir.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FIREBASE BULUT SENKRONİZASYONU — AUTH TEST V1 ────────── -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -12501,6 +12631,44 @@ window.addEventListener('resize', calMobInit);
 
   firebase.initializeApp(firebaseConfig);
   const ROOT = firebase.database().ref('isg');
+  const AUTH = firebase.auth();
+
+  // AUTH TEST V1 — yalnız bu Firebase Authentication kullanıcısı kabul edilir.
+  // Bu UID gizli parola değildir; asıl güvenlik bir sonraki aşamada Database Rules ile sağlanacaktır.
+  const AUTHORIZED_UID = "NLti4KcFDQY162PEySDtNunJ1qH2";
+
+  let firebaseSyncBasladi = false;
+
+  function authGateGoster(mesaj) {
+    const gate = document.getElementById('fb-auth-gate');
+    const msg = document.getElementById('fb-auth-msg');
+    if (msg) msg.textContent = mesaj || '';
+    if (gate) {
+      gate.classList.add('on');
+      gate.setAttribute('aria-hidden','false');
+    }
+  }
+
+  function authGateGizle() {
+    const gate = document.getElementById('fb-auth-gate');
+    const msg = document.getElementById('fb-auth-msg');
+    if (msg) msg.textContent = '';
+    if (gate) {
+      gate.classList.remove('on');
+      gate.setAttribute('aria-hidden','true');
+    }
+  }
+
+  function authHataMesaji(err) {
+    const code = err && err.code ? err.code : '';
+    if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found')
+      return 'E-posta veya parola hatalı.';
+    if (code === 'auth/too-many-requests')
+      return 'Çok fazla başarısız deneme yapıldı. Bir süre sonra tekrar deneyin.';
+    if (code === 'auth/network-request-failed')
+      return 'Ağ bağlantısı kurulamadı.';
+    return 'Giriş yapılamadı: ' + (err && err.message ? err.message : 'Bilinmeyen hata');
+  }
 
   let hazir   = false;   // ilk bulut okuması bitmeden yazma yapma
   let cevrimici = false;
@@ -12673,7 +12841,11 @@ window.addEventListener('resize', calMobInit);
   // (once yerine on kullanıyoruz — bağlantı açık kaldığı sürece Firebase
   //  kendisi push ediyor, sayfa yenilemeye ya da sekme değişimine gerek yok)
   let ilkOkumaBitti = false;
-  window.addEventListener('DOMContentLoaded', () => {
+
+  function firebaseSyncBaslat() {
+    if (firebaseSyncBasladi) return;
+    firebaseSyncBasladi = true;
+
     ROOT.on('value', (snap) => {
       const d = snap.val();
       if (d && Object.keys(d).length) {
@@ -12684,10 +12856,66 @@ window.addEventListener('resize', calMobInit);
         ilkYukleme();          // bulut boş → yerel veriyi yukarı taşı (sadece ilk seferde)
       }
       ilkOkumaBitti = true;
-      nokta(true);
+      nokta(true, 'Bulut bağlantısı aktif ve kimlik doğrulandı ✓');
     }, (err) => {
       console.error('Firebase okuma hatası:', err);
-      nokta(false, 'Bulut bağlantısı yok — veriler yalnızca bu cihazda');
+      nokta(false, 'Bulut erişimi reddedildi veya bağlantı yok');
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('fb-auth-form');
+    const emailEl = document.getElementById('fb-auth-email');
+    const passEl = document.getElementById('fb-auth-password');
+    const submitEl = document.getElementById('fb-auth-submit');
+
+    if (form) {
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const email = (emailEl?.value || '').trim();
+        const password = passEl?.value || '';
+        if (!email || !password) return;
+
+        if (submitEl) {
+          submitEl.disabled = true;
+          submitEl.textContent = 'Giriş yapılıyor…';
+        }
+
+        try {
+          await AUTH.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+          const cred = await AUTH.signInWithEmailAndPassword(email, password);
+
+          if (!cred.user || cred.user.uid !== AUTHORIZED_UID) {
+            await AUTH.signOut();
+            authGateGoster('Bu kullanıcı bu uygulama için yetkili değil.');
+          }
+        } catch (err) {
+          console.error('Firebase Auth giriş hatası:', err);
+          authGateGoster(authHataMesaji(err));
+        } finally {
+          if (passEl) passEl.value = '';
+          if (submitEl) {
+            submitEl.disabled = false;
+            submitEl.textContent = 'Giriş Yap';
+          }
+        }
+      });
+    }
+
+    AUTH.onAuthStateChanged(async (user) => {
+      if (user && user.uid === AUTHORIZED_UID) {
+        authGateGizle();
+        firebaseSyncBaslat();
+      } else {
+        hazir = false;
+        nokta(false, 'Firebase oturumu gerekli');
+        if (user) {
+          try { await AUTH.signOut(); } catch (e) {}
+          authGateGoster('Bu kullanıcı bu uygulama için yetkili değil.');
+        } else {
+          authGateGoster('');
+        }
+      }
     });
   });
 
@@ -12695,7 +12923,8 @@ window.addEventListener('resize', calMobInit);
   // (mobil tarayıcılar uzun süre arka plandayken soketi kapatabiliyor;
   //  öne gelince anlık tutarlılık için ek güvence)
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState !== 'visible' || !hazir) return;
+    const user = AUTH.currentUser;
+    if (document.visibilityState !== 'visible' || !hazir || !user || user.uid !== AUTHORIZED_UID) return;
     ROOT.once('value').then(snap => {
       const d = snap.val();
       if (d && Object.keys(d).length) { uygula(d); yenidenCiz(); }
