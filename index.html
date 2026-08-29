@@ -4307,6 +4307,97 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 }
 </style>
 
+
+<style id="patch-v8-1">
+/* V8.1 — görev FAB modül kapsamı */
+@media(max-width:899px){
+  #mob-fab{display:none!important}
+  body.mob-task-fab-visible #mob-fab{display:flex!important}
+}
+.dn-compact-status i.amber{background:#d89a19}
+</style>
+
+
+<style id="patch-v8-2-fab">
+@media(max-width:899px){
+  #mob-fab{
+    display:none!important;
+  }
+  body.mob-task-fab-visible #mob-fab{
+    display:flex!important;
+  }
+}
+</style>
+
+
+<style id="patch-v8-3">
+/* V8.3 — Kaza/Olay alt aksiyon butonları aynı görsel dil */
+.kaza-secondary-actions .ui-btn{
+  background:rgba(255,255,255,.12)!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.26)!important;
+}
+.kaza-secondary-actions .ui-btn:hover{
+  background:rgba(255,255,255,.20)!important;
+}
+.kaza-secondary-actions .kaza-hse-btn{
+  background:rgba(255,255,255,.12)!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.26)!important;
+  font-weight:800!important;
+}
+.kaza-secondary-actions .kaza-hse-btn::first-letter{
+  color:#fff!important;
+}
+/* Emoji ikonların koyu zeminde baskın görünmesi için hafif parlaklık */
+.kaza-secondary-actions .ui-btn{
+  text-shadow:0 1px 1px rgba(0,0,0,.18);
+}
+
+/* HSE çalışma alanı: üst mavi başlık + ana sekmeler sabit */
+#ks-workspace{
+  position:relative!important;
+}
+#kaza-stats-topbar.ks-proto-hero{
+  position:sticky!important;
+  top:0!important;
+  z-index:30!important;
+}
+.ks-nav{
+  position:sticky!important;
+  top:156px!important;
+  z-index:29!important;
+  background:#f3f6f8!important;
+  padding-top:10px!important;
+  padding-bottom:8px!important;
+  margin-left:-2px!important;
+  margin-right:-2px!important;
+  box-shadow:0 6px 10px -10px rgba(13,43,70,.35)!important;
+}
+/* Filtre satırı içerikle birlikte kayar; yalnız başlık + sekmeler sabit */
+.ks-filter-strip{
+  position:relative!important;
+  z-index:1!important;
+}
+
+/* Mobil sticky offset: mavi başlık yüksekliği daha uzun olabildiği için CSS değişkeni yaklaşımı */
+@media(max-width:620px){
+  #kaza-stats-topbar.ks-proto-hero{
+    top:0!important;
+  }
+  .ks-nav{
+    top:252px!important;
+    padding-top:10px!important;
+    background:#f3f6f8!important;
+  }
+}
+
+/* Daha kısa ekranlarda başlık alanı biraz sıkışır */
+@media(max-width:420px){
+  .ks-nav{top:246px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="app">
@@ -4971,7 +5062,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
     <div class="kaza-secondary-actions">
       <button onclick="kazaImportAc()" class="ui-btn ui-btn-light compact">📥 Excel / CSV</button>
       <button onclick="kazaPrintOpen()" class="ui-btn ui-btn-light compact">🖨 Olay Raporu</button>
-      <button onclick="kazaOpenStats()" title="İSG Performans Değerlendirme" class="ui-btn ui-btn-light compact strong">📊 İstatistik / HSE</button>
+      <button onclick="kazaOpenStats()" title="İSG Performans Değerlendirme" class="ui-btn ui-btn-light compact kaza-hse-btn">📊 İstatistik / HSE</button>
     </div>
   </div>
   <!-- Gövde: filtreler + istatistik kartları + aylık grafik + liste — tümü birlikte kaydırılır,
@@ -7601,6 +7692,9 @@ function switchTab(tab) {
   if (mbp) mbp.style.display = tab === 'board' ? '' : 'none';
   const msb = document.getElementById('mob-stats-btn');
   if (msb) msb.style.display = tab === 'board' ? '' : 'none';
+  // Sağ alt + düğmesi yalnız görev Board ekranına aittir.
+  // Denetim/Kontrol/Kaza/Personel/Özet gibi modüllerde kendi ana aksiyonları kullanılır.
+  document.body.classList.toggle('mob-task-fab-visible', tab === 'board');
   const kw = document.getElementById('kontrol-wrap');
   if (kw) kw.style.display = tab === 'kontrol' ? 'flex' : 'none';
   const zw = document.getElementById('kaza-wrap');
@@ -12240,6 +12334,8 @@ function kazaOpenStats() {
   kazaStatsRender();
   document.getElementById('kaza-stats-panel-wrap').classList.add('on');
   ksSwitchView('hse');
+  requestAnimationFrame(syncHseStickyOffset);
+  setTimeout(syncHseStickyOffset, 60);
 }
 function kazaCloseStats() {
   document.getElementById('kaza-stats-panel-wrap').classList.remove('on');
@@ -13060,6 +13156,7 @@ function ksSwitchView(id) {
   document.querySelectorAll('.ks-nav-btn').forEach(b => b.classList.toggle('on', b.dataset.ksview === id));
   const panel = document.getElementById('kaza-stats-panel-wrap');
   if (panel) panel.dataset.view = id;
+  requestAnimationFrame(syncHseStickyOffset);
   if (id === 'analysis') setTimeout(()=>Object.values(ksCharts||{}).forEach(c=>{ try{ c.resize(); }catch(e){} }), 60);
 }
 
@@ -13407,6 +13504,46 @@ function ksPrintEventList(){
     ${ksEventTableHTML(liste,'Olay Kayıtları')}<script>window.onload=()=>window.print()<\/script></body></html>`);
   w.document.close();
 }
+
+// ── V8.2: Mobil görev FAB kesin görünürlük kontrolü ─────────────
+// Sağ alt + butonu yalnız Board sekmesinde görünür.
+// Diğer modüllerde (Özet, Takvim, Personel, Kontroller, Denetimler, Kaza/Olay) kesin gizlenir.
+function syncMobileTaskFab(){
+  const fab = document.getElementById('mob-fab');
+  if (!fab) return;
+  const boardActive =
+    document.getElementById('tab-board')?.classList.contains('active') ||
+    document.getElementById('mob-tab-board')?.classList.contains('active') ||
+    document.getElementById('board-wrap')?.style.display === 'flex';
+  fab.style.setProperty('display', boardActive ? 'flex' : 'none', 'important');
+  document.body.classList.toggle('mob-task-fab-visible', !!boardActive);
+}
+
+// switchTab çalıştıktan sonra FAB durumunu her durumda tekrar doğrula.
+const _origSwitchTabV82 = switchTab;
+switchTab = function(tab){
+  const out = _origSwitchTabV82.apply(this, arguments);
+  requestAnimationFrame(syncMobileTaskFab);
+  setTimeout(syncMobileTaskFab, 50);
+  return out;
+};
+
+// Sayfa ilk açıldığında ve görünürlük değiştiğinde de kontrol et.
+document.addEventListener('DOMContentLoaded', syncMobileTaskFab);
+window.addEventListener('pageshow', syncMobileTaskFab);
+
+
+// ── V8.3: HSE sabit başlık/sekme konumu ───────────────────────
+function syncHseStickyOffset(){
+  const head = document.getElementById('kaza-stats-topbar');
+  const nav = document.querySelector('#ks-workspace .ks-nav');
+  if (!head || !nav) return;
+  const h = Math.ceil(head.getBoundingClientRect().height);
+  nav.style.setProperty('top', h + 'px', 'important');
+}
+window.addEventListener('resize', syncHseStickyOffset);
+window.addEventListener('orientationchange', ()=>setTimeout(syncHseStickyOffset,100));
+
 // ── End Kaza Modülü ──
 </script>
 
@@ -13531,9 +13668,12 @@ function denetimRender() {
 
   const liste  = dnFiltreliBulgular();
   const bugun  = new Date(); bugun.setHours(0,0,0,0);
-  const acik   = liste.filter(b => b.durum === 'acik').length;
-  const devam  = liste.filter(b => b.durum === 'devam').length;
-  const kapali = liste.filter(b => b.durum === 'kapali').length;
+  const acikSaf = liste.filter(b => b.durum === 'acik').length;
+  const devam   = liste.filter(b => b.durum === 'devam').length;
+  const kapali  = liste.filter(b => b.durum === 'kapali').length;
+  // Ana "Açık Bulgu" kartı kapanmamış tüm bulguları ifade eder.
+  // Böylece denetim kartındaki "12 açık" bilgisiyle birebir tutarlı kalır.
+  const acik    = acikSaf + devam;
   const gecik  = liste.filter(b => b.durum !== 'kapali' && b.termin && new Date(b.termin+'T00:00:00') < bugun).length;
   const oran   = liste.length ? Math.round(kapali / liste.length * 100) : 0;
 
@@ -13543,6 +13683,7 @@ function denetimRender() {
     <div class="dn-main-stat warn"><b>${acik}</b><span>Açık Bulgu</span></div>
     <div class="dn-main-stat good"><b>%${oran}</b><span>Kapanma Oranı</span></div>
     <div class="dn-compact-status">
+      <span><i class="amber"></i>Açık <b>${acikSaf}</b></span>
       <span><i class="blue"></i>Devam Ediyor <b>${devam}</b></span>
       <span><i class="green"></i>Kapalı <b>${kapali}</b></span>
       <span><i class="red"></i>Termini Geçmiş <b>${gecik}</b></span>
