@@ -4070,6 +4070,98 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 }
 </style>
 
+
+<style id="summary-approved-ui-v7">
+.ks-summary-card{position:relative!important}
+.ks-summary-head{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  flex-wrap:nowrap!important;
+  margin-bottom:14px!important;
+}
+.ks-summary-title{
+  display:inline-flex!important;
+  align-items:center!important;
+  background:linear-gradient(90deg,#7167c7,#4285d4)!important;
+  color:#fff!important;
+  padding:7px 10px!important;
+  border-radius:999px!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+.ks-summary-actions{
+  display:flex!important;
+  gap:6px!important;
+  margin-left:auto!important;
+  margin-top:0!important;
+  align-items:center!important;
+  white-space:nowrap!important;
+}
+.ks-summary-btn{
+  border:1px solid #dfe6ec!important;
+  background:#fff!important;
+  color:#0d2b46!important;
+  border-radius:10px!important;
+  padding:8px 10px!important;
+  font-weight:800!important;
+  cursor:pointer!important;
+}
+.ks-summary-btn.regen{
+  background:#0d2b46!important;
+  color:#fff!important;
+  border-color:#0d2b46!important;
+  font-size:11px!important;
+}
+.ks-summary-btn.icon{
+  width:38px!important;
+  height:38px!important;
+  padding:0!important;
+  font-size:18px!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.ks-summary-btn.edit{
+  border:2px solid #d94c4c!important;
+  color:#d94c4c!important;
+  background:#fff!important;
+}
+.ks-summary-btn.approve{
+  border:2px solid #1fa16d!important;
+  color:#1fa16d!important;
+  background:#fff!important;
+}
+.ks-summary-btn.save{background:#0d2b46!important;color:#fff!important;border-color:#0d2b46!important}
+.ks-summary-btn.cancel{background:#fff!important;color:#53616e!important}
+.ks-summary p{margin:0 0 12px!important}
+.ks-summary p:last-child{margin-bottom:0!important}
+.ks-summary-edit textarea{
+  width:100%!important;
+  min-height:210px!important;
+  border:1px solid #dfe6ec!important;
+  border-radius:12px!important;
+  padding:12px!important;
+  line-height:1.55!important;
+  font:inherit!important;
+  color:#152334!important;
+  background:#fff!important;
+}
+.ks-summary-edit-actions{display:flex!important;gap:7px!important;margin-top:8px!important}
+.ks-summary-status{
+  font-size:11px!important;
+  color:#99a2aa!important;
+  margin-top:13px!important;
+}
+@media(max-width:620px){
+  .ks-summary-head{gap:5px!important}
+  .ks-summary-title{font-size:10px!important;padding:6px 8px!important}
+  .ks-summary-actions{gap:4px!important}
+  .ks-summary-btn.regen{font-size:8.5px!important;padding:7px 6px!important}
+  .ks-summary-btn.icon{width:34px!important;height:34px!important;font-size:16px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="app">
@@ -12677,6 +12769,82 @@ function kazaAnalizUygula(hasar,kok){
   if(k&&kok) k.value=kok;
 }
 
+
+// ── Durum Özeti kullanıcı kontrolü ──────────────────────────────
+// Görünür arayüzde herhangi bir sağlayıcı/AI adı kullanılmaz.
+// Canlı üretim servisi bağlandığında "Yeniden Oluştur" aynı arayüzü kullanacaktır.
+let ksSummaryOverride = '';
+let ksSummaryGenerated = '';
+let ksSummaryApproved = false;
+let ksSummaryState = 'Taslak · kullanıcı onayı bekleniyor';
+
+function ksSummaryHTML(generatedHtml){
+  if (!ksSummaryGenerated) ksSummaryGenerated = String(generatedHtml || '').trim();
+  const html = ksSummaryOverride || ksSummaryGenerated || String(generatedHtml || '').trim();
+  return html;
+}
+function ksSummaryStripHtml(html){
+  const d = document.createElement('div');
+  d.innerHTML = html || '';
+  return (d.innerText || d.textContent || '').replace(/\s+/g,' ').trim();
+}
+function ksSummaryPlainText(){
+  return ksSummaryStripHtml(ksSummaryOverride || ksSummaryGenerated);
+}
+function ksSummaryStatusText(){
+  return 'Durum: ' + ksSummaryState;
+}
+function ksSummaryEdit(){
+  const view=document.getElementById('ks-summary-view');
+  const edit=document.getElementById('ks-summary-edit');
+  const ta=document.getElementById('ks-summary-text');
+  if(!view||!edit||!ta) return;
+  ta.value=ksSummaryPlainText();
+  view.style.display='none';
+  edit.style.display='block';
+  ksSummaryState='Düzenleme modunda';
+  ksSummaryRefreshStatus();
+}
+function ksSummarySave(){
+  const ta=document.getElementById('ks-summary-text');
+  if(!ta) return;
+  const txt=ta.value.trim();
+  if(!txt) return;
+  const paras=txt.split(/\n{2,}|\n/).map(x=>x.trim()).filter(Boolean);
+  ksSummaryOverride=paras.map(p=>`<p>${ksEsc(p)}</p>`).join('');
+  ksSummaryApproved=false;
+  ksSummaryState='Kullanıcı tarafından düzenlendi · onay bekleniyor';
+  const view=document.getElementById('ks-summary-view');
+  const edit=document.getElementById('ks-summary-edit');
+  if(view){view.innerHTML=ksSummaryOverride;view.style.display='block';}
+  if(edit) edit.style.display='none';
+  ksSummaryRefreshStatus();
+}
+function ksSummaryCancel(){
+  const view=document.getElementById('ks-summary-view');
+  const edit=document.getElementById('ks-summary-edit');
+  if(view) view.style.display='block';
+  if(edit) edit.style.display='none';
+  ksSummaryState=ksSummaryApproved?'✓ Onaylandı':'Taslak · kullanıcı onayı bekleniyor';
+  ksSummaryRefreshStatus();
+}
+function ksSummaryApprove(){
+  ksSummaryApproved=true;
+  ksSummaryState='✓ Onaylandı';
+  ksSummaryRefreshStatus();
+}
+function ksSummaryRegenerate(){
+  ksSummaryOverride='';
+  ksSummaryGenerated='';
+  ksSummaryApproved=false;
+  ksSummaryState='Yeni taslak oluşturuldu · kullanıcı onayı bekleniyor';
+  ksRenderISO45004(kazaStatsFiltrele());
+}
+function ksSummaryRefreshStatus(){
+  const st=document.getElementById('ks-summary-status');
+  if(st) st.textContent=ksSummaryStatusText();
+}
+
 // ── ISO 45004 / HSE Performans entegrasyonu ─────────────────────
 // Bu katman mevcut olay, görev ve denetim verilerini yalnızca okur.
 // Firebase/Auth/Realtime sync fonksiyonları değiştirilmez.
@@ -12724,6 +12892,7 @@ function ksRootMain(kok) {
 
 function ksRenderISO45004(liste) {
   liste = Array.isArray(liste) ? liste : [];
+  if (!ksSummaryOverride) ksSummaryGenerated = '';
   const hseTasks = ksHseTasks();
   const openTasks = hseTasks.filter(t=>!ksIsDone(t));
   const overdue = openTasks.filter(ksIsOverdue);
@@ -12783,14 +12952,30 @@ function ksRenderISO45004(liste) {
           </div>
           <p class="ks-note">Bu profil seçili dönemin gerçek olay dağılımıdır; hedef veya “ideal oran” değildir.</p>
         </section>
-        <section class="ks-panel-card">
-          <div class="ks-section-title">Durum Özeti</div>
-          <div class="ks-summary">
-            Seçili dönemde <b>${kazaSay} iş kazası</b>, <b>${ramakSay} ramak kala</b> ve <b>${kayip} kayıp gün</b> kaydı bulunmaktadır.
-            ${kökMesaj} ${görevMesaj}
-            ${denPct!==null ? `Denetim bulgularının kapanma oranı <b>%${denPct}</b>.` : ''}
+        <section class="ks-panel-card ks-summary-card">
+          <div class="ks-summary-head">
+            <span class="ks-summary-title">✦ Durum Özeti</span>
+            <div class="ks-summary-actions">
+              <button class="ks-summary-btn regen" onclick="ksSummaryRegenerate()" title="Yeniden oluştur">↻ Yeniden Oluştur</button>
+              <button class="ks-summary-btn icon edit" onclick="ksSummaryEdit()" title="Düzenle">✎</button>
+              <button class="ks-summary-btn icon approve" onclick="ksSummaryApprove()" title="Onayla">✓</button>
+            </div>
           </div>
-          <div class="ks-summary-actions"><button onclick="ksRenderISO45004(kazaStatsFiltrele())">↻ Yenile</button></div>
+          <div id="ks-summary-view" class="ks-summary">
+            ${ksSummaryHTML(`
+              Seçili dönemde <b>${kazaSay} iş kazası</b>, <b>${ramakSay} ramak kala</b> ve <b>${kayip} kayıp gün</b> kaydı bulunmaktadır.
+              ${kökMesaj} ${görevMesaj}
+              ${denPct!==null ? `Denetim bulgularının kapanma oranı <b>%${denPct}</b>.` : ''}
+            `)}
+          </div>
+          <div id="ks-summary-edit" class="ks-summary-edit" style="display:none">
+            <textarea id="ks-summary-text">${ksEsc(ksSummaryPlainText())}</textarea>
+            <div class="ks-summary-edit-actions">
+              <button class="ks-summary-btn save" onclick="ksSummarySave()">Kaydet</button>
+              <button class="ks-summary-btn cancel" onclick="ksSummaryCancel()">İptal</button>
+            </div>
+          </div>
+          <div id="ks-summary-status" class="ks-summary-status">${ksSummaryStatusText()}</div>
         </section>
       </div>
       <section class="ks-panel-card">
