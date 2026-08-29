@@ -3159,6 +3159,749 @@ body.print-kaza #kaza-print .kp-pareto-priority{
 .mob-col-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 </style>
 
+
+<style id="iso45004-production-theme">
+:root{
+  --hse-navy:#18364D; --hse-blue:#378ADD; --hse-orange:#E58A18;
+  --hse-green:#2F8F62; --hse-red:#C84949; --hse-violet:#7465C4;
+}
+html,body{max-width:100%;overflow-x:hidden}
+#topbar{padding:9px 14px;border-bottom-color:var(--border);box-shadow:0 1px 10px rgba(24,54,77,.04)}
+#topbar h1{font-weight:800;letter-spacing:-.01em;color:var(--text)}
+#topbar button,.ikon-btn,.mob-icon-btn{border-radius:9px!important}
+#main-tabs{background:var(--surface2)!important;border-radius:11px!important;padding:3px!important}
+.main-tab{border-radius:8px!important;font-weight:650!important}
+.main-tab.active,.main-tab.on{box-shadow:0 1px 5px rgba(24,54,77,.08)}
+.card,.kaza-card,.dn-card,.per-card,.kontrol-card{border-radius:11px!important;box-shadow:0 2px 10px rgba(24,54,77,.045)!important}
+.col{border-radius:12px!important}
+.col-hd{padding-top:9px}
+.mfield input,.mfield select,.mfield textarea{border-radius:8px!important}
+#add-modal,#settings-panel,#palette-modal,#note-modal{border-radius:14px}
+.modal-footer{background:var(--surface2)}
+.hse-module-title{display:flex;flex-direction:column;gap:1px;font-size:13px;font-weight:800;color:var(--text)}
+.hse-module-title small{font-size:9px;font-weight:500;color:var(--text3)}
+.hse-btn{padding:6px 12px;font-size:11.5px;font-weight:700;border-radius:8px;border:1px solid var(--border2);cursor:pointer;white-space:nowrap}
+.hse-btn-primary{background:var(--hse-navy);color:#fff;border-color:var(--hse-navy)}
+.hse-btn-danger{background:var(--hse-red);color:#fff;border-color:var(--hse-red)}
+.hse-btn-success{background:var(--hse-green);color:#fff;border-color:var(--hse-green)}
+.hse-btn-ghost{background:transparent;color:var(--text)}
+.hse-task-layer{margin-top:8px;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--surface2)}
+.hse-task-layer-head{display:flex;align-items:center;margin-bottom:9px}
+.hse-task-layer-head b{display:block;font-size:11px;color:var(--text)}
+.hse-task-layer-head span{display:block;font-size:9px;color:var(--text3);margin-top:2px}
+.hse-task-extra{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+
+/* İSG Performans çalışma alanı */
+#kaza-stats-panel-wrap{background:var(--bg)!important;z-index:56}
+#kaza-stats-topbar{background:var(--surface)!important;border-bottom:1px solid var(--border)!important;padding:9px 14px!important;gap:10px!important}
+.ks-back{padding:7px 10px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text2);font-size:10.5px;font-weight:700;cursor:pointer}
+.ks-title-block{min-width:220px}
+#kaza-stats-topbar .ks-title-block h2{font-size:14px!important;color:var(--text)!important;margin:0!important}
+.ks-title-block span{font-size:8.5px;color:var(--text3)}
+.ks-top-filters{display:flex;gap:6px;margin-left:auto}
+.ks-top-filters select{padding:6px 9px;font-size:10.5px;border:1px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--text);outline:none}
+#ks-workspace{flex:1;min-height:0;overflow-y:auto;padding:0 14px 80px;background:var(--bg)}
+.ks-nav{position:sticky;top:0;z-index:3;display:flex;gap:4px;overflow-x:auto;padding:8px 0 6px;background:var(--bg);scrollbar-width:none}
+.ks-nav::-webkit-scrollbar{display:none}
+.ks-nav-btn{border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:10px;font-weight:800;padding:7px 10px;border-radius:8px;white-space:nowrap;cursor:pointer}
+.ks-nav-btn.on{background:var(--hse-navy);color:#fff;border-color:var(--hse-navy)}
+.ks-filter-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0 9px;border-bottom:1px solid var(--border);font-size:9px;color:var(--text3)}
+#ks-f-tur{display:flex;gap:5px;flex-wrap:wrap}
+#ks-f-tur .stat-filter-btn{border-color:var(--border2);color:var(--text2)}
+#ks-f-tur .stat-filter-btn.on{background:var(--hse-blue);border-color:var(--hse-blue);color:#fff}
+.ks-view{display:none;padding-top:12px}.ks-view.on{display:block}
+#kaza-stats-body{padding:0!important;background:transparent!important;display:flex!important;gap:12px!important}
+.ks-stat-row{grid-template-columns:repeat(6,minmax(105px,1fr));gap:8px}
+.ks-stat-box{background:var(--surface)!important;border-color:var(--border)!important;border-radius:10px;padding:10px}
+.ks-stat-box .sb-lbl{color:var(--text3)!important}
+.ks-chart-row{gap:12px}
+.ks-chart-card{background:var(--surface)!important;border-color:var(--border)!important;border-radius:11px;min-height:270px}
+.ks-chart-title{color:var(--text2)!important}
+.ks-kpi-grid{display:grid;grid-template-columns:repeat(7,minmax(105px,1fr));gap:8px;overflow-x:auto;padding-bottom:3px}
+.ks-kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;min-width:105px}
+.ks-kpi span{display:block;font-size:8.5px;color:var(--text3);font-weight:700}.ks-kpi b{display:block;font-size:20px;color:var(--hse-navy);margin-top:2px}
+.ks-hse-grid,.ks-score-grid,.ks-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.ks-panel-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px;box-shadow:0 2px 10px rgba(24,54,77,.035);margin-bottom:12px}
+.ks-section-title{font-size:11px;font-weight:900;color:var(--text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px}
+.ks-pyramid{display:flex;flex-direction:column;align-items:center;gap:5px}.ks-pyramid>div{border-radius:7px;padding:7px 10px;color:#fff;display:flex;justify-content:space-between;font-size:9.5px}
+.ks-note{font-size:9px;line-height:1.5;color:var(--text3);margin-top:8px}
+.ks-summary{background:color-mix(in srgb,var(--hse-orange) 9%,var(--surface));border-left:4px solid var(--hse-orange);border-radius:8px;padding:11px;font-size:10px;line-height:1.65;color:var(--text2)}
+.ks-summary-actions{display:flex;justify-content:flex-end;margin-top:7px}.ks-summary-actions button{border:1px solid var(--border);border-radius:7px;background:var(--surface);padding:5px 9px;color:var(--text2);font-size:9px}
+.ks-priority-list{display:grid;gap:7px}.ks-priority-item{display:grid;grid-template-columns:auto 1fr;gap:9px;border:1px solid var(--border);border-radius:9px;padding:9px;background:var(--surface)}
+.ks-priority-item b{display:block;font-size:9px;color:var(--text3)}.ks-priority-item strong{display:block;font-size:10.5px;margin:2px 0}.ks-priority-item small{font-size:8.5px;color:var(--text3)}
+.ks-risk-badge{height:max-content;padding:4px 7px;border-radius:99px;background:#e7eef4;color:#455767;font-size:8px;font-weight:900}.ks-risk-badge.high{background:#fff0dc;color:#9a6618}.ks-risk-badge.crit{background:#fdeaea;color:#a63d3d}
+.ks-empty-state{padding:18px;text-align:center;color:var(--text3);font-size:9.5px;border:1px dashed var(--border2);border-radius:8px}
+.ks-score-list{display:grid}.ks-score-list>div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:10px}.ks-score-list>div:last-child{border-bottom:0}.ks-score-list b{color:var(--hse-navy)}.ks-score-list b.bad{color:var(--hse-red)}
+.ks-eval-box,.ks-iso-note{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--hse-blue);border-radius:9px;padding:11px;font-size:10px;line-height:1.6;color:var(--text2)}
+.ks-risk-info{padding:11px;background:var(--surface2);border-radius:9px}.ks-risk-info b{font-size:10.5px}.ks-risk-info p{font-size:9.5px;color:var(--text2);line-height:1.55;margin-top:5px}
+.ks-root-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.ks-root-grid>div{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--border);border-radius:9px;padding:9px}.ks-root-grid span{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);font-size:9px;font-weight:900}.ks-root-grid b{font-size:9.5px}.ks-root-grid strong{font-size:9px;color:var(--text3)}
+.ks-critical-tasks{margin-top:12px}.ks-critical-tasks>b{display:block;font-size:10px;margin-bottom:5px}.ks-critical-tasks>div{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--border);padding:7px 0;font-size:9px}.ks-critical-tasks span{font-weight:900;color:var(--hse-red)}
+.ks-workflow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.ks-workflow>div{text-align:center;border:1px solid var(--border);border-radius:9px;padding:9px 5px;background:var(--surface2)}.ks-workflow b{display:block;font-size:15px;color:var(--hse-blue)}.ks-workflow span{font-size:8.5px;font-weight:800}.ks-iso-note{margin-top:10px}
+.ks-report-grid p{font-size:9.5px;line-height:1.55;color:var(--text2);margin-bottom:10px}
+
+/* Mevcut Pareto açıklamalarını kurumsal panel içine uyarla */
+.ks-pareto-insights,.ks-pareto-general{max-width:100%}
+.ks-pareto-general{display:none!important} /* uzun tekrar özet yerine Durum Özeti kullanılır */
+
+@media(max-width:899px){
+  #kaza-stats-topbar{align-items:flex-start!important}.ks-title-block{order:1;flex:1}.ks-back{order:0}.ks-top-filters{order:2;width:100%;margin-left:0}.ks-top-filters select{flex:1;min-width:0}
+  #ks-workspace{padding:0 10px 90px}.ks-stat-row{grid-template-columns:repeat(2,1fr)}.ks-chart-row,.ks-hse-grid,.ks-score-grid,.ks-report-grid{grid-template-columns:1fr}
+  .ks-kpi-grid{grid-template-columns:repeat(7,108px)}.ks-root-grid{grid-template-columns:1fr}.ks-workflow{grid-template-columns:repeat(3,1fr)}
+  .hse-task-extra{grid-template-columns:1fr}
+}
+@media(max-width:520px){.ks-workflow{grid-template-columns:repeat(2,1fr)}.hse-module-title small{display:none}.hse-btn{padding:6px 9px}}
+</style>
+
+
+<style id="ui-polish-v2">
+:root{
+  --corp-navy:#0D2B46;--corp-navy2:#153D5E;--corp-blue:#378ADD;
+  --corp-blue-soft:#E6EDF2;--corp-orange:#F07A24;
+  --corp-green:#1FA16D;--corp-red:#D9534F;--corp-violet:#7167C7;
+}
+
+/* Genel ana başlık: gri yerine daha güçlü mavi kurumsal doku */
+#topbar{
+  background:linear-gradient(135deg,var(--corp-navy),var(--corp-navy2))!important;
+  border-bottom:0!important;
+  box-shadow:0 8px 22px rgba(13,43,70,.16)!important;
+}
+#topbar h1,#topbar #hdr-date{color:#fff!important}
+#topbar #sync-dot{box-shadow:0 0 0 3px rgba(255,255,255,.14)}
+#topbar #main-tabs{
+  background:rgba(255,255,255,.10)!important;
+  border-color:rgba(255,255,255,.16)!important;
+}
+#topbar .main-tab{color:#DCE8F0!important;background:transparent!important}
+#topbar .main-tab.active{
+  background:#fff!important;color:var(--corp-navy)!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.12)!important;
+}
+#topbar .ikon-btn{background:rgba(255,255,255,.10)!important;color:#fff!important;border-color:rgba(255,255,255,.22)!important}
+#topbar .tb-yan>button:first-of-type{background:#fff!important;color:var(--corp-navy)!important}
+
+/* Modül alt ana başlıkları */
+.module-hero{
+  flex-shrink:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:10px 14px 0;padding:12px 14px;border-radius:16px;
+  background:linear-gradient(135deg,var(--corp-navy),var(--corp-navy2));color:#fff;
+  box-shadow:0 8px 22px rgba(13,43,70,.12);
+}
+.module-hero-compact{margin-bottom:6px}
+.module-hero-title{display:flex;align-items:center;gap:9px;min-width:0}
+.module-hero-title b{display:block;font-size:14px;line-height:1.2}
+.module-hero-title small{display:block;color:#D6E4ED;font-size:9.5px;margin-top:3px}
+.module-hero-icon{font-size:19px}
+.module-hero-actions,.kaza-primary-actions,.kaza-secondary-actions{display:flex;align-items:center;gap:6px}
+.module-hero-actions{margin-left:auto}
+.ui-btn,.ui-icon-light{
+  border-radius:9px;border:1px solid rgba(255,255,255,.25);font-weight:750;cursor:pointer;
+}
+.ui-btn{padding:6px 10px;font-size:10.5px}
+.ui-btn-light,.ui-icon-light{background:rgba(255,255,255,.12);color:#fff}
+.ui-btn-light:hover,.ui-icon-light:hover{background:rgba(255,255,255,.20)}
+.ui-btn-accent{background:var(--corp-blue);border-color:var(--corp-blue);color:#fff}
+.ui-icon-light{width:31px;height:31px;display:grid;place-items:center;font-size:14px}
+.ui-btn.compact{padding:6px 9px;font-size:9.7px}
+.ui-btn.strong{background:#fff;color:var(--corp-navy);border-color:#fff}
+.module-filter-strip{
+  flex-shrink:0;display:flex;gap:6px;padding:7px 14px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);background:var(--surface);
+}
+
+/* Kontroller — 4 bilgi kartı + kapalı grup özetleri */
+.kontrol-summary-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:2px 0 8px;
+}
+.kontrol-summary-card{
+  position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:12px 13px;min-height:82px;box-shadow:0 3px 12px rgba(13,43,70,.04);
+}
+.kontrol-summary-card:after{
+  content:"";position:absolute;right:-14px;bottom:-18px;width:58px;height:58px;border-radius:50%;
+  background:rgba(13,43,70,.055)
+}
+.kontrol-summary-card b{display:block;font-size:26px;line-height:1;color:var(--corp-navy)}
+.kontrol-summary-card span{display:block;margin-top:9px;font-size:10px;color:var(--text3);font-weight:650}
+.kontrol-summary-card.current b{color:var(--corp-green)}
+.kontrol-summary-card.upcoming b{color:#D89A19}
+.kontrol-summary-card.overdue b{color:var(--corp-red)}
+.kontrol-grup{border-radius:14px!important;overflow:hidden}
+.kontrol-grup-hd{padding:11px 12px!important;background:var(--surface)!important}
+.kontrol-grup-icon{font-size:17px;flex-shrink:0}
+.kontrol-grup-copy{min-width:0;flex:1}
+.kontrol-grup-ad{color:var(--corp-navy)!important;font-weight:800!important}
+.kontrol-grup-mini{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.kontrol-grup-mini span{font-size:8.5px;font-weight:800;border-radius:999px;padding:3px 6px}
+.kontrol-grup-mini .ok{background:#E8F5EE;color:#26734F}
+.kontrol-grup-mini .warn{background:#FFF2DC;color:#9B6917}
+.kontrol-grup-mini .bad{background:#FDEAEA;color:#A63D3D}
+.kontrol-grup-sayi{background:var(--corp-blue-soft)!important;color:var(--corp-navy)!important}
+
+/* Kaza & Olay kayıt ekranı */
+.kaza-hero{align-items:flex-start}
+.kaza-hero .module-hero-title{flex:1 1 320px}
+.kaza-primary-actions{margin-left:auto}
+.kaza-secondary-actions{width:100%;justify-content:flex-end;border-top:1px solid rgba(255,255,255,.14);padding-top:8px}
+.kaza-filter-panel{
+  margin:10px 0 8px;padding:11px;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;box-shadow:0 3px 12px rgba(13,43,70,.035);
+}
+.kaza-filter-top{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kaza-filter-field{display:flex;flex-direction:column;gap:4px}
+.kaza-filter-field label,.kaza-filter-type-title{font-size:8.5px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.kaza-filter-field select{
+  width:100%;min-width:0;padding:8px 10px;border:1px solid var(--border2);border-radius:9px;
+  background:var(--bg);color:var(--text);font-size:11px;outline:none;
+}
+.kaza-filter-type-title{margin:9px 0 6px}
+.kaza-type-cards{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px!important;flex-wrap:nowrap!important}
+.kaza-type-cards .kaza-chip{
+  margin:0!important;display:flex!important;justify-content:center;align-items:center;min-height:38px;
+  border-radius:10px!important;padding:7px 6px!important;font-size:9.5px!important;font-weight:800!important;
+  background:var(--surface2)!important;color:var(--text2)!important;border:1px solid var(--border)!important;
+  white-space:nowrap;
+}
+.kaza-type-cards .kaza-chip.active{color:#fff!important;box-shadow:0 3px 9px rgba(13,43,70,.10)}
+.kaza-type-cards .kaza-type-all.active{background:var(--corp-blue)!important;border-color:var(--corp-blue)!important}
+.kaza-type-cards .kaza-chip:not(.kaza-type-all).active{background:var(--chip-color, var(--corp-blue))!important}
+#kaza-body .kaza-card{
+  border-radius:13px!important;border-color:var(--border)!important;
+  box-shadow:0 3px 11px rgba(13,43,70,.035)!important;
+}
+
+/* HSE tam ekran — Final V4.1 prototip dili */
+#kaza-stats-panel-wrap{
+  background:#F3F6F8!important;z-index:70!important;
+  align-items:stretch!important;overflow:hidden!important;
+}
+#ks-workspace{
+  width:100%;max-width:1240px;margin:0 auto!important;padding:14px 14px 75px!important;
+  background:#F3F6F8!important;overflow-y:auto!important;
+}
+#kaza-stats-topbar.ks-proto-hero{
+  position:relative!important;display:block!important;
+  background:linear-gradient(135deg,#0D2B46,#153D5E)!important;color:#fff!important;
+  border:0!important;border-radius:22px!important;padding:18px 20px!important;
+  box-shadow:0 12px 30px rgba(13,43,70,.14)!important;margin:0!important;
+}
+.ks-hero-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+#kaza-stats-topbar .ks-title-block{min-width:0;flex:1}
+#kaza-stats-topbar .ks-title-block h2{
+  color:#fff!important;font-size:24px!important;line-height:1.15!important;margin:0 0 5px!important;
+}
+#kaza-stats-topbar .ks-title-block span{color:#DBE8F0!important;font-size:12px!important;line-height:1.4}
+.ks-top-filters{display:flex!important;gap:8px!important;flex-wrap:wrap!important;margin-left:0!important}
+.ks-top-filters select{
+  border:1px solid rgba(255,255,255,.20)!important;background:rgba(255,255,255,.09)!important;
+  color:#fff!important;padding:9px 12px!important;border-radius:12px!important;font-size:11px!important;
+}
+.ks-top-filters select option{color:#111}
+.ks-close-x{
+  position:absolute;right:12px;top:10px;width:32px;height:32px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);color:#fff;
+  display:grid;place-items:center;font-size:22px;line-height:1;cursor:pointer;z-index:2;
+}
+.ks-close-x:hover{background:rgba(255,255,255,.19)}
+.ks-nav{
+  position:static!important;display:flex!important;gap:7px!important;overflow-x:auto!important;
+  padding:13px 2px 4px!important;background:transparent!important;scrollbar-width:none!important;
+}
+.ks-nav-btn{
+  border:0!important;background:#E6EDF2!important;color:#0D2B46!important;
+  padding:10px 13px!important;border-radius:12px!important;font-weight:800!important;
+  white-space:nowrap!important;font-size:10.5px!important;
+}
+.ks-nav-btn.on{background:#0D2B46!important;color:#fff!important}
+.ks-filter-strip{
+  margin-top:7px;padding:9px 2px 11px!important;border-bottom:1px solid #DFE6EC!important;
+  color:#6F7C89!important;font-size:9.5px!important;
+}
+#ks-f-tur .stat-filter-btn{
+  border-radius:999px!important;padding:7px 10px!important;background:#fff!important;
+  border:1px solid #DFE6EC!important;color:#53616E!important;
+}
+#ks-f-tur .stat-filter-btn.on{background:#4285D4!important;color:#fff!important;border-color:#4285D4!important}
+.ks-view{padding-top:0!important}
+.ks-section-heading{display:flex;align-items:center;gap:9px;margin:18px 2px 10px}
+.ks-section-heading i{width:6px;height:30px;background:#F07A24;border-radius:8px;flex-shrink:0}
+.ks-section-heading h3{font-size:20px;margin:0;color:#152334}
+.ks-section-heading span{font-size:10.5px;color:#6F7C89}
+.ks-kpi-grid{gap:12px!important}
+.ks-kpi{
+  border:1px solid #DFE6EC!important;border-radius:19px!important;padding:16px!important;
+  min-height:104px!important;background:#fff!important;box-shadow:0 5px 18px rgba(27,52,73,.045)!important;
+}
+.ks-kpi span{font-size:11px!important;color:#53616E!important;font-weight:800!important}
+.ks-kpi b{font-size:29px!important;color:#152334!important;margin-top:11px!important}
+.ks-hse-grid,.ks-score-grid,.ks-report-grid{gap:12px!important}
+.ks-panel-card{
+  border:1px solid #DFE6EC!important;border-radius:19px!important;padding:16px!important;
+  background:#fff!important;box-shadow:0 5px 18px rgba(27,52,73,.045)!important;
+}
+.ks-section-title{font-size:15px!important;color:#152334!important;text-transform:none!important;letter-spacing:0!important;margin-bottom:11px!important}
+.ks-pyramid{gap:9px!important}
+.ks-pyramid>div{
+  border-radius:12px!important;padding:11px 13px!important;font-size:11px!important;font-weight:800!important;
+  box-shadow:inset 0 -1px 0 rgba(0,0,0,.06);
+}
+.ks-note{
+  margin-top:11px!important;background:#EFF6F4!important;border-left:5px solid #1FA16D!important;
+  color:#546570!important;padding:11px 12px!important;border-radius:12px!important;font-size:10px!important;
+}
+.ks-summary{
+  background:#FFF6EC!important;border-left:5px solid #F07A24!important;
+  border-radius:13px!important;padding:13px!important;font-size:11px!important;line-height:1.62!important;color:#465763!important;
+}
+.ks-priority-item{border-radius:13px!important;padding:12px!important}
+.ks-workflow>div{border-radius:13px!important;padding:11px 7px!important}
+.ks-workflow b{color:#0D2B46!important}
+.ks-eval-box,.ks-iso-note{border-left-color:#F07A24!important;border-radius:13px!important}
+
+/* Mevcut Genel Analiz/Pareto kartları da aynı görsel dil */
+#kaza-stats-body .ks-stat-box,#kaza-stats-body .ks-chart-card{
+  background:#fff!important;border:1px solid #DFE6EC!important;border-radius:19px!important;
+  box-shadow:0 5px 18px rgba(27,52,73,.04)!important;
+}
+#kaza-stats-body .ks-chart-title{color:#0D2B46!important;font-weight:900!important}
+
+@media(max-width:899px){
+  #topbar{padding:8px 10px!important}
+  .module-hero{margin:8px 10px 0;padding:11px 12px}
+  .kontrol-summary-grid{grid-template-columns:repeat(2,1fr)}
+  .kaza-secondary-actions{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .kaza-secondary-actions::-webkit-scrollbar{display:none}
+  .kaza-primary-actions{margin-left:0}
+  .kaza-type-cards{grid-template-columns:repeat(5,minmax(96px,1fr));overflow-x:auto;scrollbar-width:none}
+  .kaza-type-cards::-webkit-scrollbar{display:none}
+  #ks-workspace{padding:10px 10px 80px!important}
+  #kaza-stats-topbar.ks-proto-hero{padding:17px 15px!important;border-radius:18px!important}
+  #kaza-stats-topbar .ks-title-block h2{font-size:20px!important;padding-right:28px}
+  #kaza-stats-topbar .ks-title-block span{font-size:10.5px!important;padding-right:20px;display:block}
+  .ks-top-filters{width:100%!important}
+  .ks-top-filters select{flex:1;min-width:0!important}
+  .ks-kpi-grid{grid-template-columns:repeat(7,118px)!important}
+}
+@media(max-width:520px){
+  .module-hero-title{flex:1 1 100%}
+  .module-hero-actions{margin-left:0}
+  .kaza-hero .module-hero-title{flex-basis:100%}
+  .kaza-primary-actions{width:100%}
+  .kaza-primary-actions .ui-btn-accent{flex:1}
+  .kaza-secondary-actions .ui-btn{flex:0 0 auto}
+  .kontrol-summary-card{min-height:76px;padding:11px}
+  .kontrol-summary-card b{font-size:24px}
+  .ks-section-heading h3{font-size:18px}
+}
+</style>
+
+
+<style id="kaza-polish-v3">
+.kaza-hero-sade{padding:10px 12px!important}
+.kaza-hero-sade .module-hero-title{flex:1 1 auto!important}
+.kaza-hero-sade .module-hero-title b{font-size:13.5px!important}
+.kaza-add-mini{padding:6px 10px!important;font-size:10px!important;white-space:nowrap}
+.kaza-hero-sade .kaza-primary-actions{margin-left:auto!important}
+.kaza-hero-sade .kaza-secondary-actions{padding-top:7px!important}
+.kaza-hero-sade .kaza-secondary-actions .ui-btn{font-size:9px!important;padding:6px 8px!important}
+
+/* 5 filtre kartı: kaydırma yok, 3 + 2 */
+.kaza-type-cards{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:6px!important;overflow:visible!important}
+.kaza-type-cards .kaza-chip{min-width:0!important;width:100%!important;white-space:normal!important;text-align:center!important;font-size:9px!important;padding:7px 4px!important}
+.kaza-type-cards .kaza-type-all{grid-column:span 2}
+.kaza-type-cards .kaza-chip:nth-child(2),.kaza-type-cards .kaza-chip:nth-child(3){grid-column:span 2}
+.kaza-type-cards .kaza-chip:nth-child(4),.kaza-type-cards .kaza-chip:nth-child(5){grid-column:span 3}
+
+/* Modern kayıt modalı */
+.kaza-modal-bg{backdrop-filter:blur(3px)}
+.kaza-modal-box{
+  border-radius:20px!important;padding:0!important;width:560px!important;max-width:96vw!important;
+  gap:0!important;background:#F7F9FB!important;overflow:hidden!important;
+  box-shadow:0 24px 64px rgba(13,43,70,.24)!important;
+}
+.kaza-modal-head{
+  background:linear-gradient(135deg,#0D2B46,#153D5E)!important;
+  padding:14px 16px!important;margin:0!important
+}
+.kaza-modal-head h3{color:#fff!important;font-size:15px!important}
+.kaza-modal-head button{color:#fff!important}
+.kaza-modal-box>div:not(.kaza-modal-head),
+.kaza-modal-box>.mrow2,.kaza-modal-box>.mrow3,.kaza-modal-box>.mfield,
+.kaza-modal-box>label{margin-left:14px!important;margin-right:14px!important}
+.kaza-modal-box>div:nth-child(2){margin-top:13px!important}
+.kaza-modal-box .mfield input,.kaza-modal-box .mfield select,.kaza-modal-box .mfield textarea{
+  background:#fff!important;border:1px solid #D8E1E8!important;border-radius:11px!important;
+}
+.kaza-modal-box .mfield label,.kaza-modal-box .kz-lbl{color:#50606D!important;font-size:9.5px!important;font-weight:800!important}
+.kaza-modal-box>div:last-child{margin:0!important;padding:11px 14px!important;background:#fff!important;border-top:1px solid #E1E7EC!important}
+
+/* Classification support */
+.kaza-ai-assist{margin:0 14px!important;border:1px solid #CFE0EE;background:#F0F7FC;border-radius:14px;padding:11px}
+.kaza-ai-head{display:flex;align-items:center;gap:8px}
+.kaza-ai-head>div{flex:1;min-width:0}.kaza-ai-head b{display:block;color:#0D2B46;font-size:10.5px}
+.kaza-ai-head span{display:block;color:#6A7A87;font-size:8.7px;margin-top:2px;line-height:1.4}
+.kaza-ai-btn{border:0;border-radius:9px;padding:7px 10px;background:#378ADD;color:#fff;font-size:9.5px;font-weight:800;white-space:nowrap;cursor:pointer}
+.kaza-ai-result{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}
+.kaza-ai-result>div{background:#fff;border:1px solid #D8E6F0;border-radius:10px;padding:8px;min-width:0}
+.kaza-ai-result span{display:block;font-size:7.8px;color:#74818C;font-weight:800;margin-bottom:3px}
+.kaza-ai-result b{display:block;font-size:9.3px;color:#233747;line-height:1.35;word-break:break-word}
+.kaza-ai-note{margin-top:7px;background:#fff;border-left:4px solid #F07A24;border-radius:9px;padding:8px 9px;color:#5F6E79;font-size:8.8px;line-height:1.45}
+.kaza-ai-apply{margin-left:6px;border:0;border-radius:7px;background:#0D2B46;color:#fff;padding:5px 7px;font-size:8.5px;font-weight:800;cursor:pointer}
+.kaza-onlem-ai-btn{margin-left:auto;padding:5px 9px;border:0;border-radius:8px;background:#378ADD;color:#fff;font-size:9.2px;font-weight:800;cursor:pointer}
+
+@media(max-width:520px){
+  .kaza-hero-sade{display:grid!important;grid-template-columns:1fr auto!important;gap:8px!important}
+  .kaza-hero-sade .module-hero-title{grid-column:1}.kaza-hero-sade .kaza-primary-actions{grid-column:2;margin-left:0!important}
+  .kaza-hero-sade .kaza-secondary-actions{grid-column:1/-1;width:100%!important;justify-content:space-between!important;overflow:visible!important}
+  .kaza-hero-sade .kaza-secondary-actions .ui-btn{flex:1 1 0!important;min-width:0!important;text-align:center!important}
+  .kaza-ai-result{grid-template-columns:1fr!important}
+}
+</style>
+
+
+<style id="kaza-select-order-v4">
+/* Olay anlatımı → iki standart seçim → sınıflandırma desteği */
+.kaza-classification-row{
+  align-items:end!important;
+}
+.kaza-modal-box #kaza-m-yaralanma,
+.kaza-modal-box #kaza-m-koknedan{
+  width:100%!important;
+  min-height:42px!important;
+  appearance:auto!important;
+  -webkit-appearance:menulist!important;
+  background:#fff!important;
+  color:#17212B!important;
+  cursor:pointer!important;
+}
+
+/* Android native select açıldığında seçenekler dikey sistem listesi olarak gösterilir.
+   Datalist/yatay klavye önerisi artık kayıt formunda kullanılmaz. */
+.kaza-modal-box{
+  max-height:calc(100dvh - 18px)!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  padding-bottom:max(0px, env(safe-area-inset-bottom))!important;
+}
+.kaza-modal-box>div:last-child{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:3!important;
+  padding-bottom:max(11px, env(safe-area-inset-bottom))!important;
+  box-shadow:0 -6px 15px rgba(13,43,70,.055)!important;
+}
+
+@media(max-width:520px){
+  .kaza-classification-row{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+  }
+  .kaza-classification-row .mfield{min-width:0!important}
+  .kaza-classification-row select{
+    font-size:10.5px!important;
+    padding:9px 8px!important;
+  }
+  .kaza-ai-assist{margin-top:2px!important}
+}
+</style>
+
+
+<style id="hse-final-reference-v5">
+/* HSE Performance — reference: HSE_Analytics_ISO45004_Final_Taslak_V4_1.html */
+#kaza-stats-panel-wrap{
+  background:#f3f6f8!important;
+  color:#152334!important;
+}
+#ks-workspace{
+  max-width:1240px!important;
+  margin:auto!important;
+  padding:14px 14px 70px!important;
+  background:#f3f6f8!important;
+}
+#kaza-stats-topbar.ks-proto-hero{
+  background:linear-gradient(135deg,#0d2b46,#153d5e)!important;
+  color:#fff!important;
+  border-radius:22px!important;
+  padding:18px 20px!important;
+  box-shadow:0 12px 30px rgba(13,43,70,.13)!important;
+  margin:0!important;
+}
+#kaza-stats-topbar .ks-title-block h2{
+  font-size:24px!important;
+  margin:0 0 5px!important;
+  color:#fff!important;
+  font-weight:900!important;
+}
+#kaza-stats-topbar .ks-title-block span{
+  color:#dbe8f0!important;
+  font-size:13px!important;
+}
+.ks-top-filters{
+  display:flex!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+}
+.ks-top-filters select{
+  border:1px solid rgba(255,255,255,.20)!important;
+  background:rgba(255,255,255,.07)!important;
+  color:#fff!important;
+  padding:9px 12px!important;
+  border-radius:12px!important;
+  outline:none!important;
+  font-size:11px!important;
+}
+.ks-close-x{
+  width:38px!important;height:38px!important;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.10)!important;
+  border:1px solid rgba(255,255,255,.20)!important;
+  color:#fff!important;font-size:22px!important;
+}
+.ks-nav{
+  display:flex!important;
+  gap:7px!important;
+  overflow:auto!important;
+  padding:13px 2px 4px!important;
+  scrollbar-width:none!important;
+  background:transparent!important;
+}
+.ks-nav::-webkit-scrollbar{display:none!important}
+.ks-nav-btn{
+  border:0!important;
+  background:#e6edf2!important;
+  color:#0d2b46!important;
+  padding:10px 13px!important;
+  border-radius:12px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  font-size:11px!important;
+}
+.ks-nav-btn.on{background:#0d2b46!important;color:#fff!important}
+.ks-filter-strip{
+  margin-top:13px!important;
+  padding:0 2px 12px!important;
+  border-bottom:1px solid #dfe6ec!important;
+  color:#6f7c89!important;
+  font-size:11px!important;
+}
+#ks-f-tur{display:flex!important;gap:7px!important;flex-wrap:wrap!important}
+#ks-f-tur .stat-filter-btn{
+  border:1px solid #dfe6ec!important;
+  background:#fff!important;
+  color:#53616e!important;
+  border-radius:999px!important;
+  padding:8px 11px!important;
+  font-size:11px!important;
+}
+#ks-f-tur .stat-filter-btn.on{background:#4285d4!important;border-color:#4285d4!important;color:#fff!important}
+
+.ks-section-heading{
+  display:flex!important;align-items:center!important;gap:9px!important;
+  margin:18px 2px 10px!important;
+}
+.ks-section-heading i{
+  width:6px!important;height:30px!important;background:#f07a24!important;border-radius:8px!important;flex:0 0 auto!important;
+}
+.ks-section-heading h3{
+  font-size:20px!important;margin:0!important;color:#152334!important;font-weight:900!important;
+}
+.ks-section-heading span{font-size:12px!important;color:#6f7c89!important;font-weight:500!important}
+
+/* Yönetim panosu: mobilde yatay kaydırma YOK, referanstaki 2 sütun */
+.ks-kpi-grid{
+  display:grid!important;
+  grid-template-columns:repeat(7,1fr)!important;
+  gap:12px!important;
+  overflow:visible!important;
+}
+.ks-kpi{
+  background:#fff!important;
+  border:1px solid #dfe6ec!important;
+  border-radius:19px!important;
+  padding:16px!important;
+  min-height:120px!important;
+  box-shadow:0 5px 18px rgba(27,52,73,.04)!important;
+  position:relative!important;
+  overflow:hidden!important;
+}
+.ks-kpi:after{
+  content:""!important;
+  position:absolute!important;
+  right:-12px!important;bottom:-18px!important;
+  width:64px!important;height:64px!important;border-radius:50%!important;
+  background:rgba(13,43,70,.03)!important;
+}
+.ks-kpi span{
+  font-weight:800!important;font-size:12px!important;color:#53616e!important;
+}
+.ks-kpi b{
+  display:block!important;
+  font-size:31px!important;font-weight:900!important;margin-top:12px!important;color:#152334!important;
+}
+.ks-kpi .delta{
+  display:block!important;
+  font-size:11px!important;
+  margin-top:7px!important;
+  font-weight:700!important;
+}
+.ks-kpi .delta.good{color:#1fa16d!important}
+.ks-kpi .delta.bad{color:#d94c4c!important}
+.ks-kpi .delta.warn{color:#d89a19!important}
+
+.ks-hse-grid{
+  display:grid!important;
+  grid-template-columns:1fr 1.15fr!important;
+  gap:12px!important;
+  margin-top:0!important;
+}
+.ks-panel-card{
+  background:#fff!important;
+  border:1px solid #dfe6ec!important;
+  border-radius:19px!important;
+  padding:16px!important;
+  box-shadow:0 5px 18px rgba(27,52,73,.04)!important;
+}
+.ks-section-title{
+  margin:0 0 11px!important;
+  font-size:16px!important;
+  color:#152334!important;
+  font-weight:900!important;
+  text-transform:none!important;
+}
+.ks-pyramid{display:grid!important;gap:9px!important}
+.ks-pyramid>div{
+  margin-left:auto!important;margin-right:auto!important;
+  border-radius:12px!important;
+  padding:11px 13px!important;
+  color:#fff!important;
+  font-weight:800!important;
+  font-size:12px!important;
+  display:flex!important;justify-content:space-between!important;
+}
+.ks-note{
+  margin-top:11px!important;
+  background:#eff6f4!important;
+  border-left:5px solid #1fa16d!important;
+  padding:13px!important;
+  border-radius:13px!important;
+  line-height:1.55!important;
+  font-size:13px!important;
+  color:#53616e!important;
+}
+.ks-summary{
+  font-size:15px!important;
+  line-height:1.75!important;
+  margin-top:0!important;
+  background:transparent!important;
+  border:0!important;
+  padding:0!important;
+  color:#152334!important;
+}
+.ks-summary-actions{margin-top:13px!important}
+.ks-summary-actions button{
+  border:1px solid #dfe6ec!important;
+  background:#0d2b46!important;
+  color:#fff!important;
+  border-radius:10px!important;
+  padding:8px 10px!important;
+  font-weight:800!important;
+}
+
+/* Priorities */
+.ks-priority-list{display:grid!important;gap:8px!important}
+.ks-priority-item{
+  border:1px solid #dfe6ec!important;
+  border-radius:13px!important;
+  padding:12px!important;
+  display:grid!important;
+  grid-template-columns:auto 1fr!important;
+  gap:10px!important;
+  align-items:center!important;
+  background:#fff!important;
+}
+.ks-risk-badge{
+  font-size:10px!important;border-radius:999px!important;padding:5px 8px!important;font-weight:800!important;
+}
+
+/* General Analysis charts — same reference card look */
+#kaza-stats-body{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:12px!important;
+  background:transparent!important;
+  padding:0!important;
+}
+#kaza-stats-body .ks-stat-row{display:none!important}
+#kaza-stats-body .ks-chart-card{
+  background:#fff!important;border:1px solid #dfe6ec!important;
+  border-radius:19px!important;padding:16px!important;
+  box-shadow:0 5px 18px rgba(27,52,73,.04)!important;
+  min-height:0!important;
+}
+#kaza-stats-body .ks-chart-title{
+  margin:0 0 11px!important;
+  font-size:16px!important;
+  color:#152334!important;
+  font-weight:900!important;
+}
+#kaza-stats-body canvas{max-height:310px!important}
+
+/* Other HSE sections inherit the prototype visual language */
+.ks-score-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important}
+.ks-score-list>div{
+  display:grid!important;grid-template-columns:1fr auto!important;gap:8px!important;
+  padding:10px 0!important;border-bottom:1px dashed #dfe6ec!important;font-size:12px!important;
+}
+.ks-score-list>div:last-child{border-bottom:0!important}
+.ks-eval-box,.ks-iso-note{
+  margin-top:11px!important;background:#eff6f4!important;border-left:5px solid #1fa16d!important;
+  padding:13px!important;border-radius:13px!important;line-height:1.55!important;font-size:13px!important;color:#53616e!important;
+}
+.ks-workflow{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:7px!important}
+.ks-workflow>div{
+  background:#fff!important;border:1px solid #dfe6ec!important;border-radius:13px!important;padding:10px!important;text-align:center!important;
+}
+.ks-workflow b{display:block!important;font-size:11px!important;color:#0d2b46!important}
+.ks-workflow span{font-size:10px!important;color:#6f7c89!important}
+.ks-report-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important}
+
+@media(max-width:980px){
+  .ks-kpi-grid{grid-template-columns:repeat(4,1fr)!important}
+  .ks-hse-grid{grid-template-columns:1fr!important}
+  #kaza-stats-body{grid-template-columns:1fr!important}
+  .ks-score-grid{grid-template-columns:1fr!important}
+  .ks-workflow{grid-template-columns:repeat(3,1fr)!important}
+}
+@media(max-width:620px){
+  #ks-workspace{padding:8px 10px 60px!important}
+  #kaza-stats-topbar.ks-proto-hero{
+    border-radius:0!important;
+    margin:-8px -10px 0!important;
+    padding:16px 13px!important;
+  }
+  #kaza-stats-topbar .ks-title-block h2{font-size:19px!important}
+  #kaza-stats-topbar .ks-title-block span{font-size:11px!important}
+  .ks-top-filters{width:100%!important}
+  .ks-top-filters select{flex:1!important;min-width:0!important;font-size:11px!important;padding:8px!important}
+  .ks-nav-btn{font-size:10px!important;padding:10px 13px!important}
+  .ks-section-heading h3{font-size:18px!important}
+  .ks-section-heading span{font-size:11px!important}
+  .ks-kpi-grid{
+    grid-template-columns:repeat(2,1fr)!important;
+    overflow:visible!important;
+  }
+  .ks-kpi{
+    min-height:100px!important;
+    padding:13px!important;
+  }
+  .ks-kpi b{font-size:26px!important}
+  .ks-kpi span{font-size:11px!important}
+  .ks-hse-grid,#kaza-stats-body,.ks-score-grid,.ks-report-grid{grid-template-columns:1fr!important}
+  .ks-workflow{grid-template-columns:repeat(2,1fr)!important}
+}
+</style>
+
 </head>
 <body>
 <div id="app">
@@ -3177,7 +3920,7 @@ body.print-kaza #kaza-print .kp-pareto-priority{
         <button class="main-tab"        id="tab-per"     onclick="switchTab('per')">👥 Personel</button>
         <button class="main-tab"        id="tab-kontrol" onclick="switchTab('kontrol')">🔬 Kontroller</button>
         <button class="main-tab"        id="tab-denetim" onclick="switchTab('denetim')">🔍 Denetimler</button>
-        <button class="main-tab"        id="tab-kaza"    onclick="switchTab('kaza')">🚨 Kaza</button>
+        <button class="main-tab"        id="tab-kaza"    onclick="switchTab('kaza')">🚨 Kaza / Olay</button>
       </div>
     </div>
     <!-- SAĞ: notlar, rapor, istatistik, ayarlar -->
@@ -3363,15 +4106,19 @@ body.print-kaza #kaza-print .kp-pareto-priority{
 <!-- KONTROL SEKMESİ — FİNAL V3 KAPALI ANA KARTLAR + SABİT ALT ÇUBUK -->
 <div id="kontrol-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg);">
   <!-- Topbar -->
-  <div style="flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 14px;">
-    <span style="font-size:13px;font-weight:700;color:var(--text);">🔬 Periyodik Kontroller</span>
-    <div style="flex:1"></div>
-    <button onclick="kontrolOpenAdd()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">+ Ekle</button>
-    <button onclick="kontrolPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
-    <button onclick="kontrolOpenSettings()" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;" title="Ayarlar">⚙️</button>
+  <div class="module-hero module-hero-compact">
+    <div class="module-hero-title">
+      <span class="module-hero-icon">🔬</span>
+      <div><b>Periyodik Kontroller</b><small>Su analizi · makine/ekipman · çevre süreçleri</small></div>
+    </div>
+    <div class="module-hero-actions">
+      <button onclick="kontrolOpenAdd()" class="ui-btn ui-btn-light">+ Ekle</button>
+      <button onclick="kontrolPrint()" class="ui-btn ui-btn-light">🖨 Rapor</button>
+      <button onclick="kontrolOpenSettings()" class="ui-icon-light" title="Ayarlar">⚙️</button>
+    </div>
   </div>
   <!-- Fabrika filtre chips -->
-  <div id="kontrol-fab-filter" style="flex-shrink:0;display:flex;gap:6px;padding:6px 14px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface);"></div>
+  <div id="kontrol-fab-filter" class="module-filter-strip"></div>
   <!-- Liste -->
   <div id="kontrol-body" style="flex:1;overflow-y:auto;padding:8px 14px 80px;display:flex;flex-direction:column;gap:6px;"></div>
 </div>
@@ -3637,7 +4384,7 @@ body.print-kaza #kaza-print .kp-pareto-priority{
     <span style="font-size:13px;font-weight:700;color:var(--text);">🔍 Denetimler & Uygunsuzluklar</span>
     <div style="flex:1"></div>
     <button onclick="denetimOpenAdd()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">+ Denetim</button>
-    <button onclick="topluOpen()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">📋 Toplu Bulgu Yapıştır</button>
+    <button onclick="topluOpen()" class="hse-btn hse-btn-success">📥 Excel / Toplu Yükle</button>
     <button onclick="denetimPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
   </div>
   <!-- Gövde: filtreler + istatistik kartları + liste — tümü birlikte kaydırılır -->
@@ -3707,7 +4454,7 @@ body.print-kaza #kaza-print .kp-pareto-priority{
     <div class="mfield">
       <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Öneri / Düzeltici Faaliyet
         <button type="button" onclick="aiDenetimOneri(this)" title="Tespit içeriğine göre yapay zeka önerisi üret"
-          style="padding:3px 10px;font-size:11px;font-weight:600;border:none;border-radius:6px;background:#378ADD;color:#fff;cursor:pointer;">✨ Öneri Oluştur</button>
+          class="kaza-onlem-ai-btn">✨ Öneri Oluştur</button>
       </label>
       <textarea id="bg-m-oneri" placeholder="Ne yapılmalı?" style="min-height:50px"></textarea>
     </div>
@@ -3806,36 +4553,45 @@ body.print-kaza #kaza-print .kp-pareto-priority{
 
 <!-- KAZA / RAMAK KALA SEKMESİ -->
 <div id="kaza-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg);">
-  <div style="flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 14px;flex-wrap:wrap;">
-    <span style="font-size:13px;font-weight:700;color:var(--text);">🚨 Kaza & Ramak Kala Kayıtları</span>
-    <div style="flex:1"></div>
-    <button onclick="kazaOpenAdd()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#C0392B;color:#fff;cursor:pointer;">+ Olay Ekle</button>
-    <button onclick="kazaImportAc()" style="padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">📥 Excel/CSV Yükle</button>
-    <button onclick="kazaPrintOpen()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
-    <button onclick="kazaOpenStats()" title="İstatistik" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;">📊</button>
-    <button onclick="kazaOpenSettings()" title="Çalışma saati ayarı" style="padding:5px 10px;font-size:14px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;cursor:pointer;">⚙️</button>
+  <div class="module-hero kaza-hero kaza-hero-sade">
+    <div class="module-hero-title">
+      <span class="module-hero-icon">🚨</span>
+      <div><b>Kaza &amp; Olay Kayıtları</b></div>
+    </div>
+    <div class="kaza-primary-actions">
+      <button onclick="kazaOpenAdd()" class="ui-btn ui-btn-accent kaza-add-mini">+ Olay Ekle</button>
+      <button onclick="kazaOpenSettings()" title="Çalışma saati ayarı" class="ui-icon-light">⚙️</button>
+    </div>
+    <div class="kaza-secondary-actions">
+      <button onclick="kazaImportAc()" class="ui-btn ui-btn-light compact">📥 Excel / CSV</button>
+      <button onclick="kazaPrintOpen()" class="ui-btn ui-btn-light compact">🖨 Olay Raporu</button>
+      <button onclick="kazaOpenStats()" title="İSG Performans Değerlendirme" class="ui-btn ui-btn-light compact strong">📊 İstatistik / HSE</button>
+    </div>
   </div>
   <!-- Gövde: filtreler + istatistik kartları + aylık grafik + liste — tümü birlikte kaydırılır,
        sadece yukarıdaki başlık/buton satırı sabit kalır -->
   <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 80px;">
     <!-- Filtreler -->
-    <div style="display:flex;gap:6px;padding:6px 0;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);background:var(--bg);">
-      <select id="kaza-f-yil" onchange="kazaRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
-      <div id="kaza-f-tur" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-      <select id="kaza-f-fab" onchange="kazaRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
+    <div class="kaza-filter-panel">
+      <div class="kaza-filter-top">
+        <div class="kaza-filter-field"><label>Yıl</label><select id="kaza-f-yil" onchange="kazaRender()"></select></div>
+        <div class="kaza-filter-field"><label>Fabrika</label><select id="kaza-f-fab" onchange="kazaRender()"></select></div>
+      </div>
+      <div class="kaza-filter-type-title">Olay Türü</div>
+      <div id="kaza-f-tur" class="kaza-type-cards"></div>
     </div>
     <!-- İstatistik kartları -->
-    <div id="kaza-stats" style="display:grid;gap:8px;padding:8px 0;"></div>
-    <div id="kaza-chart" style="margin-bottom:12px;"></div>
+    <div id="kaza-stats" style="display:none;"></div>
+    <div id="kaza-chart" style="display:none;"></div>
     <div id="kaza-body" style="display:flex;flex-direction:column;gap:6px;"></div>
   </div>
 </div>
 
 <!-- Olay Ekle / Düzenle Modal -->
-<div id="kaza-modal-bg" onclick="if(event.target===this)kazaCloseAdd()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border-radius:12px;padding:20px;width:520px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <h3 id="kaza-modal-h" style="font-size:14px;font-weight:700;color:var(--text);">Olay Kaydı</h3>
+<div id="kaza-modal-bg" class="kaza-modal-bg" onclick="if(event.target===this)kazaCloseAdd()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center;">
+  <div class="kaza-modal-box" style="background:var(--surface);border-radius:12px;padding:20px;width:520px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
+    <div class="kaza-modal-head" style="display:flex;align-items:center;justify-content:space-between;">
+      <h3 id="kaza-modal-h" style="font-size:14px;font-weight:700;color:var(--text);">Yeni Kaza / Olay Kaydı</h3>
       <button onclick="kazaCloseAdd()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
     </div>
     <div>
@@ -3851,22 +4607,43 @@ body.print-kaza #kaza-print .kp-pareto-priority{
       <div class="mfield"><label>Fabrika *</label><select id="kaza-m-fab"></select></div>
       <div class="mfield"><label>Bölüm / Birim</label><input id="kaza-m-bolum" placeholder="örn: Presler, Depo"/></div>
     </div>
-    <div class="mrow2">
-      <div class="mfield">
-        <label>Kişi <span style="color:var(--text3);font-weight:400">(zorunlu değil)</span></label>
-        <input id="kaza-m-kisi" placeholder="baş harf yeterli — örn: A.Y."/>
-      </div>
-      <div class="mfield">
-        <label>Yaralanma / Hasar Türü</label>
-        <input id="kaza-m-yaralanma" list="kaza-yaralanma-list" placeholder="Listeden seç ya da yeni yaz (örn: Kesik, Düşme, Ezilme)" autocomplete="off"/>
-        <datalist id="kaza-yaralanma-list"></datalist>
-      </div>
+    <div class="mfield">
+      <label>Kişi <span style="color:var(--text3);font-weight:400">(zorunlu değil)</span></label>
+      <input id="kaza-m-kisi" placeholder="baş harf yeterli — örn: A.Y."/>
     </div>
     <div class="mfield"><label>Olayın Anlatımı *</label><textarea id="kaza-m-aciklama" placeholder="Ne oldu, nasıl oldu?"></textarea></div>
-    <div class="mfield">
-      <label>Kök Neden</label>
-      <input id="kaza-m-koknedan" list="kaza-kokneden-list" placeholder="Listeden seç ya da yeni yaz (örn: KKD Kullanmamak)" autocomplete="off"/>
-      <datalist id="kaza-kokneden-list"></datalist>
+
+    <div class="mrow2 kaza-classification-row">
+      <div class="mfield">
+        <label>Yaralanma / Hasar Türü</label>
+        <select id="kaza-m-yaralanma">
+          <option value="">Seçiniz</option>
+        </select>
+        <datalist id="kaza-yaralanma-list"></datalist>
+      </div>
+      <div class="mfield">
+        <label>Kök Neden</label>
+        <select id="kaza-m-koknedan">
+          <option value="">Seçiniz</option>
+        </select>
+        <datalist id="kaza-kokneden-list"></datalist>
+      </div>
+    </div>
+
+    <div class="kaza-ai-assist">
+      <div class="kaza-ai-head">
+        <div>
+          <b>Kayıt Sınıflandırma Desteği</b>
+          <span>Yukarıdaki alanları seçmediyseniz olay anlatımına göre standart listelerden öneri oluşturur.</span>
+        </div>
+        <button type="button" onclick="kazaAnalizEt()" class="kaza-ai-btn">✨ Analiz Et</button>
+      </div>
+      <div id="kaza-ai-result" class="kaza-ai-result">
+        <div><span>Yaralanma / Hasar Türü</span><b>—</b></div>
+        <div><span>Kök Neden</span><b>—</b></div>
+        <div><span>Ana Kök Neden</span><b>—</b></div>
+      </div>
+      <div id="kaza-ai-note" class="kaza-ai-note">Henüz analiz edilmedi.</div>
     </div>
     <div class="mfield">
       <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Alınan / Alınacak Önlem
@@ -3880,7 +4657,7 @@ body.print-kaza #kaza-print .kp-pareto-priority{
     </label>
     <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:10px;">
       <button class="mbtn-cancel" onclick="kazaCloseAdd()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
-      <button onclick="kazaSubmit()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#C0392B;color:#fff;cursor:pointer;">Kaydet</button>
+      <button onclick="kazaSubmit()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">Kaydet</button>
     </div>
   </div>
 </div>
@@ -4161,6 +4938,51 @@ body.print-kaza #kaza-print .kp-pareto-priority{
         <label>Fabrika(lar)</label>
         <div id="m-fab-checks" style="display:flex;flex-wrap:wrap;gap:6px;padding:6px 0"></div>
       </div>
+      <div class="hse-task-layer">
+        <div class="hse-task-layer-head">
+          <div>
+            <b>HSE Performans Bağlantısı</b>
+            <span>Yalnız İSG ile ilişkili görevlerde kullanılır; normal görev akışını değiştirmez.</span>
+          </div>
+        </div>
+        <div class="mfield">
+          <label>İSG / HSE İlişkisi</label>
+          <select id="m-hse-iliski" onchange="hseTaskToggle()">
+            <option value="">İSG ilişkisi yok</option>
+            <option>Makine / Ekipman Güvenliği</option>
+            <option>KKD</option>
+            <option>Forklift / Araç / Yaya Güvenliği</option>
+            <option>Kimyasal Güvenlik</option>
+            <option>Yangın / Acil Durum</option>
+            <option>Elektrik Güvenliği</option>
+            <option>EKED / LOTO</option>
+            <option>Yüksekte Çalışma</option>
+            <option>Çalışma Ortamı</option>
+            <option>Eğitim / Yetkinlik</option>
+            <option>Periyodik Kontrol / Bakım</option>
+            <option>Ergonomi</option>
+            <option>Diğer İSG</option>
+          </select>
+        </div>
+        <div id="m-hse-extra" class="hse-task-extra">
+          <div class="mfield">
+            <label>İSG Kritikliği</label>
+            <select id="m-hse-kritik"><option>Düşük</option><option>Orta</option><option>Yüksek</option><option>Kritik</option></select>
+          </div>
+          <div class="mfield">
+            <label>Kontrol / Tedbir Türü</label>
+            <select id="m-hse-tedbir">
+              <option>Tehlikenin Ortadan Kaldırılması</option><option>İkame</option>
+              <option>Mühendislik Kontrolü</option><option>İdari / Organizasyonel Kontrol</option>
+              <option>KKD</option><option>İzleme / Ölçüm</option><option>Eğitim / Yetkinlik</option><option>Diğer</option>
+            </select>
+          </div>
+          <div class="mfield">
+            <label>İlişkili Kök Neden <span style="font-weight:400;color:var(--text3)">(opsiyonel)</span></label>
+            <input id="m-hse-kok" list="kaza-kokneden-list" placeholder="Standart kök nedenlerden seç"/>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="mbtn-cancel" onclick="closeAddModal()">İptal</button>
@@ -4308,19 +5130,44 @@ body.print-kaza #kaza-print .kp-pareto-priority{
   <div id="stats-body"></div>
 </div>
 
-<!-- ── Kaza & Ramak Kala İstatistik Paneli ──────────────────────
-     Arka plan kasıtlı olarak sabit/opak (#fff) — hangi tema aktif
-     olursa olsun (Gökkuşağı dahil) grafiklerin okunabilirliği
-     hiçbir zaman etkilenmesin. -->
+<!-- İSG PERFORMANS DEĞERLENDİRME — mevcut Kaza/Ramak istatistik ikonundan açılır.
+     Kayıt ekranından bağımsızdır; mevcut Pareto/Chart.js motoru Genel Analiz sekmesinde korunur. -->
 <div id="kaza-stats-panel-wrap">
-  <div id="kaza-stats-topbar">
-    <h2>📊 Kaza & Ramak Kala İstatistikleri</h2>
-    <select id="ks-f-yil" onchange="kazaStatsRender()" style="padding:5px 10px;font-size:12px;border:1px solid #d8d8dc;border-radius:6px;background:#fff;color:#222;outline:none;"></select>
-    <div id="ks-f-tur" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-    <select id="ks-f-fab" onchange="kazaStatsRender()" style="padding:5px 10px;font-size:12px;border:1px solid #d8d8dc;border-radius:6px;background:#fff;color:#222;outline:none;"></select>
-    <button onclick="kazaCloseStats()" style="padding:6px 14px;font-size:12px;border:1px solid #d8d8dc;border-radius:6px;background:transparent;color:#222;cursor:pointer;margin-left:auto;">× Kapat</button>
+  <div id="ks-workspace">
+    <header id="kaza-stats-topbar" class="ks-proto-hero">
+      <button onclick="kazaCloseStats()" class="ks-close-x" title="Kaza & Olay Kayıtlarına Dön">×</button>
+      <div class="ks-hero-row">
+        <div class="ks-title-block">
+          <h2>İSG Performans Değerlendirme</h2>
+          <span>ISO 45004:2024 performans değerlendirme yaklaşımı esas alınarak tasarlanan HSE analiz yapısı</span>
+        </div>
+        <div class="ks-top-filters">
+          <select id="ks-f-yil" onchange="kazaStatsRender()"></select>
+          <select id="ks-f-fab" onchange="kazaStatsRender()"></select>
+        </div>
+      </div>
+    </header>
+    <div class="ks-nav">
+      <button class="ks-nav-btn on" data-ksview="hse" onclick="ksSwitchView('hse')">HSE Performans</button>
+      <button class="ks-nav-btn" data-ksview="analysis" onclick="ksSwitchView('analysis')">Genel Analiz</button>
+      <button class="ks-nav-btn" data-ksview="risk" onclick="ksSwitchView('risk')">Kritik Riskler</button>
+      <button class="ks-nav-btn" data-ksview="leading" onclick="ksSwitchView('leading')">Leading / Lagging</button>
+      <button class="ks-nav-btn" data-ksview="iso" onclick="ksSwitchView('iso')">ISO 45004 Değerlendirme</button>
+      <button class="ks-nav-btn" data-ksview="report" onclick="ksSwitchView('report')">Kurumsal Rapor</button>
+    </div>
+    <div class="ks-filter-strip">
+      <span>Olay türü:</span><div id="ks-f-tur"></div>
+    </div>
+    <div id="ks-view-hse" class="ks-view on"><div id="ks-hse-body"></div></div>
+    <div id="ks-view-analysis" class="ks-view">
+      <div class="ks-section-heading"><i></i><div><h3>Mevcut İstatistikler ile Genel Analiz</h3><span>Detay inceleme katmanı</span></div></div>
+      <div id="kaza-stats-body"></div>
+    </div>
+    <div id="ks-view-risk" class="ks-view"><div id="ks-risk-body"></div></div>
+    <div id="ks-view-leading" class="ks-view"><div id="ks-leading-body"></div></div>
+    <div id="ks-view-iso" class="ks-view"><div id="ks-iso-body"></div></div>
+    <div id="ks-view-report" class="ks-view"><div id="ks-report-body"></div></div>
   </div>
-  <div id="kaza-stats-body"></div>
 </div>
 <div id="toast"></div>
 <div id="loading-msg" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:200;flex-direction:column;gap:14px">
@@ -4397,6 +5244,11 @@ function fillTaskModal(t) {
   document.getElementById('m-termin').value  = t ? (t.termin || '') : '';
   document.getElementById('m-talep').value   = t ? (t.talep || '') : '';
   document.getElementById('m-note').value    = t ? (t.note || '') : '';
+  document.getElementById('m-hse-iliski').value = t ? (t.hseIliski || '') : '';
+  document.getElementById('m-hse-kritik').value = t ? (t.hseKritik || 'Orta') : 'Orta';
+  document.getElementById('m-hse-tedbir').value = t ? (t.hseTedbir || 'İdari / Organizasyonel Kontrol') : 'İdari / Organizasyonel Kontrol';
+  document.getElementById('m-hse-kok').value = t ? (t.hseKok || '') : '';
+  hseTaskToggle();
 
   // Fabrika checkboxları — düzenlemede mevcut seçimler işaretli gelir
   const sel = t ? (t.fabs && t.fabs.length ? t.fabs
@@ -4450,13 +5302,17 @@ function submitAdd() {
   const makine  = document.getElementById('m-makine').value.trim();
   const acilis  = document.getElementById('m-acilis').value;
   const prio    = document.getElementById('m-prio').value || 'normal';
+  const hseIliski = document.getElementById('m-hse-iliski')?.value || '';
+  const hseKritik = hseIliski ? (document.getElementById('m-hse-kritik')?.value || 'Orta') : '';
+  const hseTedbir = hseIliski ? (document.getElementById('m-hse-tedbir')?.value || '') : '';
+  const hseKok    = hseIliski ? (document.getElementById('m-hse-kok')?.value || '').trim() : '';
 
   if (_editTaskId) {
     const t = tasks.find(x => x.id === _editTaskId);
     if (t) {
       const wasDone = t.status === 'tamam';
       Object.assign(t, { text, status, prio, sorumlu, makine, acilis: acilis||'', termin: termin||'', talep, note,
-                         fab: fabs.join(', '), fabs });
+                         fab: fabs.join(', '), fabs, hseIliski, hseKritik, hseTedbir, hseKok });
       if (status === 'tamam' && !wasDone) t.doneAt = Date.now();
       if (status !== 'tamam') t.doneAt = null;
       if (window._fbUpdate) window._fbUpdate(t);
@@ -4474,6 +5330,7 @@ function submitAdd() {
     talep, note,
     fab: fabs.join(', '),
     fabs,
+    hseIliski, hseKritik, hseTedbir, hseKok,
     date: td(),
     addedAt: Date.now(),
     doneAt: status === 'tamam' ? Date.now() : null
@@ -5889,11 +6746,11 @@ function renderTicker() {
 // ── Tema sistemi ─────────────────────────────────────────────────
 const TEMALAR = [
   {
-    id:'varsayilan', name:'Varsayılan',
-    dots:['#f0efeb','#378ADD','#639922'],
-    vars:{ '--bg':'#f0efeb','--surface':'#ffffff','--surface2':'#e8e7e3',
-           '--border':'rgba(0,0,0,0.1)','--border2':'rgba(0,0,0,0.2)',
-           '--text':'#1a1a18','--text2':'#5f5e5a','--text3':'#9a9994' }
+    id:'varsayilan', name:'HSE Kurumsal',
+    dots:['#F3F5F7','#18364D','#E58A18'],
+    vars:{ '--bg':'#F3F5F7','--surface':'#FFFFFF','--surface2':'#EAF0F4',
+           '--border':'rgba(24,54,77,0.12)','--border2':'rgba(24,54,77,0.24)',
+           '--text':'#17212B','--text2':'#5D6B78','--text3':'#87939E' }
   },
   {
     id:'gece', name:'Gece',
@@ -9348,16 +10205,36 @@ function kontrolRender() {
     return a.daysLeft - b.daysLeft;
   });
 
-  body.innerHTML = Object.entries(KONTROL_GRUPLAR).map(([id,g]) => {
+  const total = items.length;
+  const gecikmis = items.filter(it => it.daysLeft !== null && it.daysLeft < 0).length;
+  const yaklasan = items.filter(it => it.daysLeft !== null && it.daysLeft >= 0 && it.daysLeft <= 90).length;
+  const guncel = items.filter(it => it.daysLeft !== null && it.daysLeft > 90).length;
+
+  const summaryHtml = `<div class="kontrol-summary-grid">
+    <div class="kontrol-summary-card total"><b>${total}</b><span>Aktif Kontrol</span></div>
+    <div class="kontrol-summary-card current"><b>${guncel}</b><span>Güncel</span></div>
+    <div class="kontrol-summary-card upcoming"><b>${yaklasan}</b><span>Yaklaşıyor</span></div>
+    <div class="kontrol-summary-card overdue"><b>${gecikmis}</b><span>Gecikmiş</span></div>
+  </div>`;
+
+  body.innerHTML = summaryHtml + Object.entries(KONTROL_GRUPLAR).map(([id,g]) => {
     const grupItems = items.filter(it => it.grup === id);
+    const gGec = grupItems.filter(it => it.daysLeft !== null && it.daysLeft < 0).length;
+    const gYak = grupItems.filter(it => it.daysLeft !== null && it.daysLeft >= 0 && it.daysLeft <= 90).length;
+    const gGun = grupItems.filter(it => it.daysLeft !== null && it.daysLeft > 90).length;
     const acik = kontrolGrupAcik[id] !== false;
     return `<section class="kontrol-grup${acik?' acik':''}">
       <div class="kontrol-grup-hd" onclick="kontrolToggleGrup('${id}')" role="button" aria-expanded="${acik?'true':'false'}">
         <span class="kontrol-grup-ok">${acik?'▾':'▸'}</span>
-        <span style="font-size:16px;flex-shrink:0;">${g.ikon}</span>
-        <div style="min-width:0;">
+        <span class="kontrol-grup-icon">${g.ikon}</span>
+        <div class="kontrol-grup-copy">
           <div class="kontrol-grup-ad">${g.ad}</div>
           <div class="kontrol-grup-aciklama">${g.aciklama}</div>
+          <div class="kontrol-grup-mini">
+            <span class="ok">${gGun} güncel</span>
+            <span class="warn">${gYak} yaklaşıyor</span>
+            <span class="bad">${gGec} gecikmiş</span>
+          </div>
         </div>
         <span class="kontrol-grup-sayi">${grupItems.length}</span>
       </div>
@@ -9996,6 +10873,8 @@ const KAZA_YARALANMA_VARSAYILAN = [
   'Ani Sağlık Problemi / Biyolojik Hal',
   'Kimyasal Madde Sıçraması / Teması',
   'Kas-İskelet Sistemi Zorlanması',
+  'Çarpma / Cisim Çarpması',
+  'Sıcak Sıvı / Buhar Teması',
 ];
 // Kullanıcının serbest yazdığı yeni değerler de buraya eklenip kalıcı hale gelir
 let kazaYaralanmaListesi = [];
@@ -10021,12 +10900,16 @@ function kazaYaralanmaKaydet(deger) {
   }
 }
 function kazaRenderYaralanmaListesi() {
+  const sirali = kazaYaralanmaListesi.slice().sort((a,b) => a.localeCompare(b, 'tr'));
   const dl = document.getElementById('kaza-yaralanma-list');
-  if (!dl) return;
-  dl.innerHTML = kazaYaralanmaListesi
-    .slice()
-    .sort((a,b) => a.localeCompare(b, 'tr'))
-    .map(v => `<option value="${esc(v)}">`).join('');
+  if (dl) dl.innerHTML = sirali.map(v => `<option value="${esc(v)}">`).join('');
+  const sel = document.getElementById('kaza-m-yaralanma');
+  if (sel) {
+    const mevcut = sel.value || '';
+    sel.innerHTML = `<option value="">Seçiniz</option>` +
+      sirali.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    if (mevcut && sirali.includes(mevcut)) sel.value = mevcut;
+  }
 }
 
 // Kök Neden için varsayılan liste ("İŞ KAZASI OLAY VERİ KÜTÜPHANESİ.xlsx" →
@@ -10103,12 +10986,16 @@ function kazaKokNedenKaydet(deger) {
   }
 }
 function kazaRenderKokNedenListesi() {
+  const sirali = kazaKokNedenListesi.slice().sort((a,b) => a.localeCompare(b, 'tr'));
   const dl = document.getElementById('kaza-kokneden-list');
-  if (!dl) return;
-  dl.innerHTML = kazaKokNedenListesi
-    .slice()
-    .sort((a,b) => a.localeCompare(b, 'tr'))
-    .map(v => `<option value="${esc(v)}">`).join('');
+  if (dl) dl.innerHTML = sirali.map(v => `<option value="${esc(v)}">`).join('');
+  const sel = document.getElementById('kaza-m-koknedan');
+  if (sel) {
+    const mevcut = sel.value || '';
+    sel.innerHTML = `<option value="">Seçiniz</option>` +
+      sirali.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    if (mevcut && sirali.includes(mevcut)) sel.value = mevcut;
+  }
 }
 // Bir kök neden başlığı için kategori döner — sadece yerleşik (Excel kaynaklı) başlıklarda bulunur;
 // kullanıcı serbest yazdıysa (kategorisi bilinmiyorsa) boş döner.
@@ -10117,10 +11004,10 @@ function kazaKokNedenKategori(baslik) {
 }
 
 const KAZA_TURLER = [
-  { id:'kaza',      ad:'İş Kazası',   ikon:'🚑', renk:'#C0392B' },
-  { id:'ramak',     ad:'Ramak Kala',  ikon:'⚠️', renk:'#E09000' },
-  { id:'ilkyardim', ad:'İlk Yardım',  ikon:'🩹', renk:'#BA7517' },
-  { id:'maddi',     ad:'Maddi Hasar', ikon:'🔧', renk:'#7F77DD' },
+  { id:'kaza',      ad:'İş Kazası',   ikon:'🚑', renk:'#D9534F' },
+  { id:'ramak',     ad:'Ramak Kala',  ikon:'⚠️', renk:'#1FA16D' },
+  { id:'ilkyardim', ad:'İlk Yardım',  ikon:'🩹', renk:'#EB9E3D' },
+  { id:'maddi',     ad:'Maddi Hasar', ikon:'🔧', renk:'#7167C7' },
 ];
 const kazaTur = id => KAZA_TURLER.find(t => t.id === id) || KAZA_TURLER[0];
 
@@ -10178,11 +11065,10 @@ function kazaRenderFiltreler() {
   }
   const turEl = document.getElementById('kaza-f-tur');
   if (turEl) {
-    turEl.innerHTML = `<span class="kaza-chip${kazaFTur===null?' active':''}"
-      style="${kazaFTur===null?'background:#5D6D7E;border-color:#5D6D7E':''}"
+    turEl.innerHTML = `<span class="kaza-chip kaza-type-all${kazaFTur===null?' active':''}"
       onclick="kazaSetTurFiltre(null)">Tümü</span>` +
       KAZA_TURLER.map(t => `<span class="kaza-chip${kazaFTur===t.id?' active':''}"
-        style="${kazaFTur===t.id?'background:'+t.renk+';border-color:'+t.renk:''}"
+        style="--chip-color:${t.renk};${kazaFTur===t.id?'background:'+t.renk+'!important;border-color:'+t.renk+'!important':''}"
         onclick="kazaSetTurFiltre('${t.id}')">${t.ikon} ${t.ad}</span>`).join('');
   }
   const fabSel = document.getElementById('kaza-f-fab');
@@ -10342,9 +11228,7 @@ function kazaOpenAdd(editId) {
   document.getElementById('kaza-m-kayip').value      = k ? (k.kayip||0) : 0;
   document.getElementById('kaza-m-bolum').value      = k ? (k.bolum||'') : '';
   document.getElementById('kaza-m-kisi').value       = k ? (k.kisi||'') : '';
-  document.getElementById('kaza-m-yaralanma').value  = k ? (k.yaralanma||'') : '';
   document.getElementById('kaza-m-aciklama').value   = k ? (k.aciklama||'') : '';
-  document.getElementById('kaza-m-koknedan').value   = k ? (k.kokNeden||'') : '';
   document.getElementById('kaza-m-onlem').value      = k ? (k.onlem||'') : '';
   document.getElementById('kaza-m-onlem-tamam').checked = k ? !!k.onlemTamam : false;
 
@@ -10354,6 +11238,13 @@ function kazaOpenAdd(editId) {
 
   kazaRenderYaralanmaListesi();
   kazaRenderKokNedenListesi();
+  document.getElementById('kaza-m-yaralanma').value = k ? (k.yaralanma||'') : '';
+  document.getElementById('kaza-m-koknedan').value  = k ? (k.kokNeden||'') : '';
+
+  const _kar = document.getElementById('kaza-ai-result');
+  if (_kar) _kar.innerHTML = '<div><span>Yaralanma / Hasar Türü</span><b>—</b></div><div><span>Kök Neden</span><b>—</b></div><div><span>Ana Kök Neden</span><b>—</b></div>';
+  const _kan = document.getElementById('kaza-ai-note');
+  if (_kan) _kan.textContent = 'Henüz analiz edilmedi.';
 
   document.getElementById('kaza-modal-bg').style.display = 'flex';
   setTimeout(() => document.getElementById('kaza-m-aciklama').focus(), 80);
@@ -10396,8 +11287,6 @@ function kazaSubmit() {
   } else {
     kazaItems.unshift({ id: Date.now()+'', ...veri, createdAt: Date.now() });
   }
-  kazaYaralanmaKaydet(veri.yaralanma);
-  kazaKokNedenKaydet(veri.kokNeden);
   kazaSave(); kazaCloseAdd(); kazaRenderFiltreler(); kazaRender();
   toast(kazaEditId ? 'Kayıt güncellendi' : 'Olay kaydedildi');
 }
@@ -10432,6 +11321,10 @@ function kazaOnlemGorev(id) {
     termin: '',
     talep: '',
     note: `Olay tarihi: ${k.tarih}${k.fab ? ' — '+k.fab : ''}\nOlay: ${k.aciklama}`,
+    hseIliski: 'Diğer İSG',
+    hseKritik: k.tur === 'kaza' ? 'Yüksek' : 'Orta',
+    hseTedbir: 'Diğer',
+    hseKok: k.kokNeden || '',
     fab: k.fab || '',
     fabs: k.fab ? [k.fab] : [],
     date: td(),
@@ -10944,6 +11837,7 @@ function kazaOpenStats() {
   kazaStatsRenderFiltreler();
   kazaStatsRender();
   document.getElementById('kaza-stats-panel-wrap').classList.add('on');
+  ksSwitchView('hse');
 }
 function kazaCloseStats() {
   document.getElementById('kaza-stats-panel-wrap').classList.remove('on');
@@ -11507,7 +12401,7 @@ function kazaStatsRender() {
     </div>
     ${liste.length ? '<div id="ks-pareto-genel"></div>' : ''}`;
 
-  if (!liste.length) return;
+  if (!liste.length) { ksRenderISO45004(liste); return; }
 
   // Kaza/Hasar Türüne göre sayım (Pareto için tek toplam seri her zaman gerekir)
   const turMap = {};
@@ -11566,7 +12460,276 @@ function kazaStatsRender() {
 
   const ksGenelPareto = document.getElementById('ks-pareto-genel');
   if (ksGenelPareto) ksGenelPareto.innerHTML = ksParetoGenelHTML(ksAyParetoData,ksTurParetoData,ksKokParetoData);
+  ksRenderISO45004(liste);
 }
+
+
+// ── Kaza/Olay kayıt sınıflandırma desteği ──────────────────────
+function kazaAnalizEt(){
+  const metin = (document.getElementById('kaza-m-aciklama')?.value || '').trim();
+  const res = document.getElementById('kaza-ai-result');
+  const note = document.getElementById('kaza-ai-note');
+  if (!metin){ if(note) note.textContent='Öneri için önce olay anlatımını yazın.'; return; }
+  const t = metin.toLocaleLowerCase('tr-TR');
+  let hasar='', kok='', msg='';
+
+  if (/(sıkış|ezil|pres|hareketli bölüm|iki parça arasında)/.test(t)){
+    hasar='Doku Ezilmesi / Sıkışma';
+    kok=/(durdurmadan|çalışırken|makine çalış)/.test(t)?'Makineyi Durdurmadan Müdahale Yapmak':'Makine Koruyucularının Yetersiz Olması';
+    msg='Sıkışma/ezilme mekanizması güçlü görünüyor. Kök neden önerisini saha bilgisiyle doğrulayın.';
+  } else if (/(buhar|sıcak su|kaynar|sıcak sıvı)/.test(t)){
+    hasar='Sıcak Sıvı / Buhar Teması'; kok='İş Yöntemi / Prosedür Yetersizliği';
+    msg='Termal maruziyet açık. İş yöntemi, proses kontrolü ve KKD şartlarını ayrıca doğrulayın.';
+  } else if (/(çarp|cisim düşt|parça çarpt|malzeme çarpt)/.test(t)){
+    hasar='Çarpma / Cisim Çarpması'; kok='İş Yöntemi / Prosedür Yetersizliği';
+    msg='Çarpma mekanizması belirgin. Daha temel ekipman/istif nedenini biliyorsanız onu seçin.';
+  } else if (/(kes|sac kenarı|levha kenarı|delin)/.test(t)){
+    hasar='Kesilme / Delinme';
+    kok=/eldiven/.test(t)?"KKD'nin Yetersiz / Uygunsuz Olması":'İş Yöntemi / Prosedür Yetersizliği';
+    msg='Kesilme/delinme etkisi yüksek güvenle önerildi. KKD ve iş yöntemi birlikte doğrulanmalıdır.';
+  } else if (/(düş|kay|takıl|denge)/.test(t)){
+    hasar=/yüksekten|merdiven|platform/.test(t)?'Yüksekten Düşme':'Kayma / Takılma / Aynı Seviyede Düşme';
+    kok='Düşme ve Denge Kaybı';
+    msg='Zemin, korkuluk veya davranış gibi daha temel neden biliniyorsa o neden tercih edilmelidir.';
+  } else if (/(kimyasal|asit|alkali|tiner|solvent|sıçra)/.test(t)){
+    hasar='Kimyasal Madde Sıçraması / Teması'; kok='Kimyasal Kontrol / Havalandırma Yetersizliği';
+    msg='Kimyasal maruziyet olasılığı yüksek. SDS, proses kontrolü ve KKD şartlarını doğrulayın.';
+  } else {
+    msg='Hasar türü veya kök neden için yeterli açık ifade bulunamadı. Olay anlatımını biraz daha ayrıntılandırın.';
+  }
+
+  const ana = kok && typeof kazaKokNedenKategori==='function'
+    ? (kazaKokNedenKategori(kok)||'Standart ana kategori eşleştirmesi') : '—';
+
+  if(res) res.innerHTML=`
+    <div><span>Yaralanma / Hasar Türü</span><b>${hasar||'Belirsiz'}</b></div>
+    <div><span>Kök Neden</span><b>${kok||'Yeterli bilgi yok'}</b></div>
+    <div><span>Ana Kök Neden</span><b>${ana}</b></div>`;
+  if(note) note.innerHTML = msg + ((hasar||kok)
+    ? ` <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygula('${(hasar||'').replaceAll("'","\\'")}','${(kok||'').replaceAll("'","\\'")}')">Öneriyi Uygula</button>`:'');
+}
+function kazaAnalizUygula(hasar,kok){
+  const h=document.getElementById('kaza-m-yaralanma');
+  const k=document.getElementById('kaza-m-koknedan');
+  if(h&&hasar) h.value=hasar;
+  if(k&&kok) k.value=kok;
+}
+
+// ── ISO 45004 / HSE Performans entegrasyonu ─────────────────────
+// Bu katman mevcut olay, görev ve denetim verilerini yalnızca okur.
+// Firebase/Auth/Realtime sync fonksiyonları değiştirilmez.
+function hseTaskToggle() {
+  const iliski = document.getElementById('m-hse-iliski')?.value || '';
+  const extra = document.getElementById('m-hse-extra');
+  if (extra) extra.style.display = iliski ? 'grid' : 'none';
+}
+
+function ksSwitchView(id) {
+  document.querySelectorAll('.ks-view').forEach(v => v.classList.toggle('on', v.id === 'ks-view-'+id));
+  document.querySelectorAll('.ks-nav-btn').forEach(b => b.classList.toggle('on', b.dataset.ksview === id));
+  const panel = document.getElementById('kaza-stats-panel-wrap');
+  if (panel) panel.dataset.view = id;
+  if (id === 'analysis') setTimeout(()=>Object.values(ksCharts||{}).forEach(c=>{ try{ c.resize(); }catch(e){} }), 60);
+}
+
+function ksPct(n,d) { return d > 0 ? Math.round(n*100/d) : null; }
+function ksFmtRate(v) { return Number.isFinite(v) ? v.toFixed(2) : '—'; }
+function ksEsc(v){ return typeof esc==='function' ? esc(String(v??'')) : String(v??''); }
+
+function ksHseTasks() {
+  const fab = document.getElementById('ks-f-fab')?.value || 'tumu';
+  return (Array.isArray(tasks) ? tasks : []).filter(t => {
+    if (!t.hseIliski) return false;
+    if (fab === 'tumu') return true;
+    const tf = Array.isArray(t.fabs) ? t.fabs : String(t.fab||'').split(',').map(x=>x.trim()).filter(Boolean);
+    return tf.length===0 || tf.includes(fab);
+  });
+}
+function ksIsDone(t){ return t.status === 'tamam'; }
+function ksIsOverdue(t){
+  if (ksIsDone(t) || !t.termin) return false;
+  const d = new Date(t.termin+'T23:59:59');
+  return d < new Date();
+}
+function ksTaskOnTime(t){
+  if (!ksIsDone(t) || !t.termin || !t.doneAt) return null;
+  return t.doneAt <= new Date(t.termin+'T23:59:59').getTime();
+}
+
+function ksRootMain(kok) {
+  return (typeof kazaKokNedenKategori === 'function' && kazaKokNedenKategori(kok)) || 'Kategori eşleşmesi yok';
+}
+
+function ksRenderISO45004(liste) {
+  liste = Array.isArray(liste) ? liste : [];
+  const hseTasks = ksHseTasks();
+  const openTasks = hseTasks.filter(t=>!ksIsDone(t));
+  const overdue = openTasks.filter(ksIsOverdue);
+  const criticalOverdue = overdue.filter(t=>['Yüksek','Kritik'].includes(t.hseKritik));
+  const completed = hseTasks.filter(ksIsDone);
+  const onTimeKnown = completed.map(ksTaskOnTime).filter(v=>v!==null);
+  const onTimeCount = onTimeKnown.filter(Boolean).length;
+  const hseOnTimePct = ksPct(onTimeCount,onTimeKnown.length);
+
+  const kazaSay = liste.filter(k=>k.tur==='kaza').length;
+  const ramakSay = liste.filter(k=>k.tur==='ramak').length;
+  const ilkSay = liste.filter(k=>k.tur==='ilkyardim').length;
+  const maddiSay = liste.filter(k=>k.tur==='maddi').length;
+  const kayip = liste.reduce((s,k)=>s+(parseInt(k.kayip)||0),0);
+  const yilSel = document.getElementById('ks-f-yil')?.value || '';
+  const saat = typeof kazaCalismaSaati==='function' ? kazaCalismaSaati(yilSel==='tumu'?'':yilSel) : 0;
+  const siklik = saat>0 ? kazaSay*1000000/saat : NaN;
+  const agirlik = saat>0 ? kayip*1000000/saat : NaN;
+
+  const rootCounts={};
+  liste.forEach(k=>{
+    const root=ksRootMain(k.kokNeden||'');
+    rootCounts[root]=(rootCounts[root]||0)+1;
+  });
+  const topRoots=Object.entries(rootCounts).filter(([k])=>k!=='Kategori eşleşmesi yok').sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  const denBul = (typeof bulgular!=='undefined' && Array.isArray(bulgular)) ? bulgular : [];
+  const denTotal=denBul.length, denClosed=denBul.filter(b=>b.durum==='kapali').length;
+  const denPct=ksPct(denClosed,denTotal);
+
+  const hse = document.getElementById('ks-hse-body');
+  if (hse) {
+    const görevMesaj = criticalOverdue.length
+      ? `<b>${criticalOverdue.length} gecikmiş yüksek/kritik HSE görevi</b> proaktif performans açısından öncelikli takip gerektiriyor.`
+      : 'Gecikmiş yüksek/kritik HSE görevi bulunmuyor.';
+    const kökMesaj = topRoots.length ? `Olaylarda en sık görülen ana kök neden grubu <b>${ksEsc(topRoots[0][0])}</b> (${topRoots[0][1]} kayıt).` : 'Kök neden dağılımı için yeterli sınıflandırılmış kayıt yok.';
+    hse.innerHTML = `
+      <div class="ks-section-heading"><i></i><div><h3>Yönetim Panosu</h3><span>Ölçme + değerlendirme</span></div></div>
+      <div class="ks-kpi-grid">
+        <div class="ks-kpi"><span>LTIFR</span><b>${ksFmtRate(siklik)}</b><em class="delta good">${Number.isFinite(siklik)?'Seçili dönem sıklık göstergesi':'Çalışma saati verisi gerekli'}</em></div>
+        <div class="ks-kpi"><span>TRIFR</span><b>${ksFmtRate(siklik)}</b><em class="delta good">${Number.isFinite(siklik)?'Seçili dönem toplam kayıt oranı':'Çalışma saati verisi gerekli'}</em></div>
+        <div class="ks-kpi"><span>İş Kazası</span><b>${kazaSay}</b><em class="delta good">Seçili dönem</em></div>
+        <div class="ks-kpi"><span>İlk Yardım</span><b>${ilkSay}</b><em class="delta good">Seçili dönem</em></div>
+        <div class="ks-kpi"><span>Ramak Kala</span><b>${ramakSay}</b><em class="delta good">Bildirim göstergesi</em></div>
+        <div class="ks-kpi"><span>Kayıp Gün</span><b>${kayip}</b><em class="delta ${kayip>0?'warn':'good'}">${kayip>0?'Takip edilmeli':'Kayıp gün yok'}</em></div>
+        <div class="ks-kpi"><span>Aksiyon Kapanma</span><b>${denPct===null?'—':'%'+denPct}</b><em class="delta ${denPct!==null&&denPct>=90?'good':'warn'}">${denPct===null?'Denetim verisi gerekli':'Denetim kapanma oranı'}</em></div>
+      </div>
+      <div class="ks-section-heading"><i></i><div><h3>Olay Profili &amp; Durum Özeti</h3></div></div>
+      <div class="ks-hse-grid">
+        <section class="ks-panel-card">
+          <div class="ks-section-title">Gerçek Olay Dağılımı</div>
+          <div class="ks-pyramid">
+            <div style="width:56%;background:#d9534f"><span>İş Kazası</span><b>${kazaSay}</b></div>
+            <div style="width:70%;background:#eb9e3d"><span>İlk Yardım</span><b>${ilkSay}</b></div>
+            <div style="width:84%;background:#7167c7"><span>Maddi Hasar</span><b>${maddiSay}</b></div>
+            <div style="width:100%;background:#1fa16d"><span>Ramak Kala</span><b>${ramakSay}</b></div>
+          </div>
+          <p class="ks-note">Bu profil seçili dönemin gerçek olay dağılımıdır; hedef veya “ideal oran” değildir.</p>
+        </section>
+        <section class="ks-panel-card">
+          <div class="ks-section-title">Durum Özeti</div>
+          <div class="ks-summary">
+            Seçili dönemde <b>${kazaSay} iş kazası</b>, <b>${ramakSay} ramak kala</b> ve <b>${kayip} kayıp gün</b> kaydı bulunmaktadır.
+            ${kökMesaj} ${görevMesaj}
+            ${denPct!==null ? `Denetim bulgularının kapanma oranı <b>%${denPct}</b>.` : ''}
+          </div>
+          <div class="ks-summary-actions"><button onclick="ksRenderISO45004(kazaStatsFiltrele())">↻ Yenile</button></div>
+        </section>
+      </div>
+      <section class="ks-panel-card">
+        <div class="ks-section-title">Öncelikli HSE Bulguları ve İlişkili Görevler</div>
+        <div class="ks-priority-list">
+          ${overdue.length ? overdue.slice(0,5).map(t=>`
+            <div class="ks-priority-item">
+              <span class="ks-risk-badge ${t.hseKritik==='Kritik'?'crit':t.hseKritik==='Yüksek'?'high':''}">${ksEsc(t.hseKritik||'HSE')}</span>
+              <div><b>${ksEsc(t.hseIliski)}</b><strong>${ksEsc(t.text)}</strong>
+              <small>${ksEsc(t.hseTedbir||'Tedbir türü belirtilmedi')} · Termin: ${ksEsc(t.termin||'—')}</small></div>
+            </div>`).join('') :
+            `<div class="ks-empty-state">HSE ile sınıflandırılmış gecikmiş görev bulunmuyor. Mevcut görevler düzenlendikçe bu alan gerçek verilerle dolacaktır.</div>`}
+        </div>
+      </section>`;
+  }
+
+  const leading = document.getElementById('ks-leading-body');
+  if (leading) leading.innerHTML = `
+    <div class="ks-score-grid">
+      <section class="ks-panel-card">
+        <div class="ks-section-title">Leading — Proaktif Göstergeler</div>
+        <div class="ks-score-list">
+          <div><span>HSE görevleri zamanında kapanma</span><b>${hseOnTimePct===null?'—':'%'+hseOnTimePct}</b></div>
+          <div><span>Açık HSE görevi</span><b>${openTasks.length}</b></div>
+          <div><span>Geciken yüksek/kritik HSE görevi</span><b class="${criticalOverdue.length?'bad':''}">${criticalOverdue.length}</b></div>
+          <div><span>Denetim bulgusu kapanma</span><b>${denPct===null?'—':'%'+denPct}</b></div>
+        </div>
+      </section>
+      <section class="ks-panel-card">
+        <div class="ks-section-title">Lagging — Sonuç Göstergeleri</div>
+        <div class="ks-score-list">
+          <div><span>İş Kazası</span><b>${kazaSay}</b></div>
+          <div><span>İlk Yardım</span><b>${ilkSay}</b></div>
+          <div><span>Kayıp Gün</span><b>${kayip}</b></div>
+          <div><span>Kaza Sıklık Oranı</span><b>${ksFmtRate(siklik)}</b></div>
+        </div>
+      </section>
+    </div>
+    <div class="ks-eval-box"><b>Dönem değerlendirmesi:</b> Proaktif göstergeler olay sonuçlarından ayrı izlenir. Ramak kala bildirimlerindeki artış tek başına olumsuz performans olarak değerlendirilmez; olay şiddeti, kök nedenler ve aksiyon kapanma performansı ile birlikte yorumlanır.</div>`;
+
+  const risk = document.getElementById('ks-risk-body');
+  if (risk) risk.innerHTML = `
+    <section class="ks-panel-card">
+      <div class="ks-section-title">Kritik Risk Görünümü</div>
+      <div class="ks-risk-info">
+        <b>Şiddet × Frekans değerlendirmesi için veri bütünlüğü kuralı</b>
+        <p>Mevcut olay kayıtlarında bağımsız “potansiyel şiddet” sınıfı tutulmadığından sistem otomatik olarak yapay bir 5×5 puan üretmez. Bu alan, yüksek potansiyelli olay sınıflandırması eklendiğinde gerçek veriden beslenecektir.</p>
+      </div>
+      <div class="ks-root-grid">
+        ${topRoots.length ? topRoots.map(([r,n],i)=>`<div><span>${i+1}</span><b>${ksEsc(r)}</b><strong>${n} olay</strong></div>`).join('') : '<div class="ks-empty-state">Sınıflandırılmış kök neden verisi yok.</div>'}
+      </div>
+      ${criticalOverdue.length ? `<div class="ks-critical-tasks"><b>Açık yüksek/kritik HSE görevleri</b>${criticalOverdue.map(t=>`<div>${ksEsc(t.hseIliski)} — ${ksEsc(t.text)} <span>${ksEsc(t.hseKritik)}</span></div>`).join('')}</div>`:''}
+    </section>`;
+
+  const iso = document.getElementById('ks-iso-body');
+  if (iso) iso.innerHTML = `
+    <section class="ks-panel-card">
+      <div class="ks-section-title">ISO 45004 Performans Değerlendirme Akışı</div>
+      <div class="ks-workflow">
+        <div><b>1</b><span>İzle</span></div><div><b>2</b><span>Ölç</span></div><div><b>3</b><span>Analiz Et</span></div>
+        <div><b>4</b><span>Değerlendir</span></div><div><b>5</b><span>Aksiyon Al</span></div><div><b>6</b><span>Gözden Geçir</span></div>
+      </div>
+      <div class="ks-iso-note">Performans değerlendirmesi yalnız geçmiş olay sayılarına dayanmaz. Olay sonuçları; ramak kala bildirimleri, görev/aksiyon kapanması ve denetim performansı gibi proaktif göstergelerle birlikte ele alınır.</div>
+    </section>`;
+
+  const report = document.getElementById('ks-report-body');
+  if (report) report.innerHTML = `
+    <div class="ks-report-grid">
+      <section class="ks-panel-card">
+        <div class="ks-section-title">HSE Performans Raporu</div>
+        <p>Yönetim özeti, seçili dönem KPI'ları, Genel Analiz, Leading/Lagging ve öncelikli HSE görevlerini tek rapor akışında değerlendirmek için ayrılmıştır.</p>
+        <button class="hse-btn hse-btn-primary" onclick="ksPrintHSE()">🖨 HSE Performans Özeti</button>
+      </section>
+      <section class="ks-panel-card">
+        <div class="ks-section-title">Kaza / Ramak Kala Olay Listesi</div>
+        <p>Mevcut ayrıntılı olay raporu ve Pareto seçim ekranı korunmuştur.</p>
+        <button class="hse-btn hse-btn-ghost" onclick="kazaPrintOpen()">🖨 Olay Raporu / Liste</button>
+      </section>
+    </div>`;
+}
+
+function ksPrintHSE(){
+  const liste = kazaStatsFiltrele();
+  const hseTasks = ksHseTasks();
+  const kazaSay = liste.filter(k=>k.tur==='kaza').length;
+  const ramakSay = liste.filter(k=>k.tur==='ramak').length;
+  const kayip = liste.reduce((s,k)=>s+(parseInt(k.kayip)||0),0);
+  const gecikmis = hseTasks.filter(ksIsOverdue);
+  const w=window.open('','_blank');
+  if(!w){ alert('Yazdırma penceresi açılamadı. Açılır pencere engelini kontrol edin.'); return; }
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>HSE Performans Özeti</title>
+  <style>body{font:12px Arial,sans-serif;color:#17212b;margin:28px}h1{font-size:20px;color:#18364d}h2{font-size:13px;border-bottom:1px solid #ccd5dd;padding-bottom:5px;margin-top:22px}.k{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.k div{border:1px solid #d7dee5;border-radius:8px;padding:10px}.k b{display:block;font-size:20px}.t{width:100%;border-collapse:collapse}.t th,.t td{border-bottom:1px solid #ddd;padding:7px;text-align:left;font-size:10px}.note{font-size:9px;color:#667;margin-top:16px}@media print{button{display:none}}</style></head><body>
+  <h1>İSG Performans Değerlendirme Özeti</h1><div>ISO 45004:2024 performans değerlendirme yaklaşımı esas alınarak hazırlanmıştır.</div>
+  <h2>Seçili Dönem</h2><div class="k"><div><b>${kazaSay}</b>İş Kazası</div><div><b>${ramakSay}</b>Ramak Kala</div><div><b>${kayip}</b>Kayıp Gün</div></div>
+  <h2>Öncelikli HSE Görevleri</h2><table class="t"><tr><th>Alan</th><th>Görev</th><th>Kritiklik</th><th>Termin</th></tr>
+  ${gecikmis.length?gecikmis.map(t=>`<tr><td>${ksEsc(t.hseIliski)}</td><td>${ksEsc(t.text)}</td><td>${ksEsc(t.hseKritik)}</td><td>${ksEsc(t.termin||'—')}</td></tr>`).join(''):'<tr><td colspan="4">Gecikmiş HSE görevi yok.</td></tr>'}</table>
+  <div class="note">Bu özet yönetim değerlendirmesi içindir; ayrıntılı olay kayıtları “Olay Raporu / Liste” üzerinden alınır.</div>
+  <script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+
 // ── End Kaza Modülü ──
 </script>
 
