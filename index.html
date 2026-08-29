@@ -3902,13 +3902,181 @@ html,body{max-width:100%;overflow-x:hidden}
 }
 </style>
 
+
+<style id="global-hse-platform-v6">
+:root{
+  --global-navy:#0d2b46;
+  --global-blue:#4285d4;
+  --global-bg:#f3f6f8;
+  --global-line:#dfe6ec;
+  --global-text:#152334;
+  --global-muted:#6f7c89;
+  --global-green:#1fa16d;
+  --global-red:#d94c4c;
+  --global-amber:#d89a19;
+}
+body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--global-bg)!important}
+
+/* Ana üst alan: beyaz, sade, kurumsal */
+#topbar{
+  background:#fff!important;
+  color:var(--global-text)!important;
+  border-bottom:1px solid var(--global-line)!important;
+  box-shadow:0 2px 12px rgba(27,52,73,.045)!important;
+}
+#topbar h1{color:var(--global-navy)!important;font-weight:900!important;font-size:18px!important;letter-spacing:-.02em!important}
+#topbar #hdr-date{color:var(--global-muted)!important}
+#topbar .ikon-btn{
+  background:#fff!important;color:var(--global-text)!important;border-color:var(--global-line)!important;
+}
+#topbar .tb-yan>button:first-of-type{
+  background:var(--global-blue)!important;color:#fff!important;border-color:var(--global-blue)!important;
+}
+
+/* Ana navigasyon: gri kapsayıcı yok */
+#main-tabs,#mob-main-tabs{
+  background:#fff!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:2px!important;
+  gap:4px!important;
+}
+.main-tab{
+  background:transparent!important;color:#687582!important;
+  border-radius:11px!important;font-weight:800!important;
+  border:0!important;box-shadow:none!important;
+}
+.main-tab.active{
+  background:#e7f1fb!important;
+  color:#185fa5!important;
+  box-shadow:0 2px 8px rgba(24,95,165,.06)!important;
+}
+#mob-ui{background:#fff!important;border-bottom:1px solid var(--global-line)!important}
+#mob-topbar{background:#fff!important}
+#mob-title{color:var(--global-navy)!important;font-weight:900!important;font-size:16px!important}
+#mob-main-tabs{width:max-content!important}
+#mob-ui>div:nth-child(2){background:#fff!important;border-bottom:1px solid var(--global-line)!important}
+
+/* Özet üst kartları */
+#dash-wrap{background:var(--global-bg)!important}
+.dash-stat-modern{
+  background:#fff;border:1px solid var(--global-line);border-radius:16px;
+  padding:14px 15px;min-height:90px;box-shadow:0 4px 16px rgba(27,52,73,.035);
+  position:relative;overflow:hidden;
+}
+.dash-stat-modern:after{
+  content:"";position:absolute;right:-12px;bottom:-20px;width:64px;height:64px;border-radius:50%;
+  background:rgba(13,43,70,.025)
+}
+.dash-stat-modern b{display:block;font-size:28px;line-height:1;font-weight:900;color:var(--global-navy)}
+.dash-stat-modern span{display:block;margin-top:10px;font-size:11px;color:var(--global-muted);font-weight:600}
+.dash-stat-modern.blue b{color:#185fa5}.dash-stat-modern.red b{color:var(--global-red)}.dash-stat-modern.green b{color:var(--global-green)}
+
+/* Özet accordion */
+.dash-acc{
+  background:#fff!important;border:1px solid var(--global-line)!important;border-radius:18px!important;
+  box-shadow:0 4px 16px rgba(27,52,73,.035)!important;overflow:hidden!important;
+}
+.dash-acc-head{padding:13px 15px!important}
+.dash-acc-head span:nth-child(2){font-size:13px!important;color:var(--global-text)!important;font-weight:900!important}
+.dash-acc-body{background:#fbfcfd!important;border-top:1px solid var(--global-line)!important;padding:10px 12px!important;gap:7px!important}
+.dash-task-modern{
+  display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--global-line);
+  border-radius:13px;padding:10px 11px;cursor:pointer;box-shadow:0 2px 8px rgba(27,52,73,.025)
+}
+.dash-task-copy{flex:1;min-width:0}
+.dash-task-copy b{display:block;font-size:11.5px;color:var(--global-text);font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-task-copy small{display:block;margin-top:3px;font-size:9.5px;color:var(--global-muted)}
+.dash-time-badge{
+  flex:0 0 auto;font-size:9.5px;font-weight:900;padding:5px 8px;border-radius:999px;
+  color:var(--dash-accent);background:color-mix(in srgb,var(--dash-accent) 11%,#fff);
+}
+
+/* Denetimler */
+.dn-module-head{
+  flex-shrink:0;display:grid;grid-template-columns:1fr auto;gap:9px 10px;align-items:center;
+  padding:12px 14px;background:#fff;border-bottom:1px solid var(--global-line)
+}
+.dn-module-title{display:flex;align-items:center;gap:8px;min-width:0}
+.dn-module-title>span{font-size:18px}
+.dn-module-title b{display:block;font-size:15px;color:var(--global-navy);font-weight:900}
+.dn-module-title small{display:block;margin-top:2px;font-size:9px;color:var(--global-muted)}
+.dn-primary{
+  border:0;border-radius:10px;background:var(--global-blue);color:#fff;padding:8px 13px;font-size:11px;font-weight:800;cursor:pointer
+}
+.dn-head-actions{grid-column:1/-1;display:flex;gap:7px}
+.dn-secondary{
+  border:1px solid var(--global-line);border-radius:9px;background:#fff;color:var(--global-text);
+  padding:7px 10px;font-size:10px;font-weight:750;cursor:pointer
+}
+.dn-scroll{
+  flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:10px 14px 80px;
+  display:flex;flex-direction:column;gap:10px;min-height:0
+}
+.dn-filter-card{
+  background:#fff;border:1px solid var(--global-line);border-radius:16px;padding:11px;
+  box-shadow:0 4px 16px rgba(27,52,73,.03)
+}
+.dn-filter-card>input{
+  width:100%;padding:9px 11px;font-size:11px;border:1px solid var(--global-line);
+  border-radius:10px;background:#fff;color:var(--global-text);outline:none;margin-bottom:8px
+}
+.dn-filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dn-filter-grid select{
+  width:100%;min-width:0;padding:9px 10px;font-size:10.5px;border:1px solid var(--global-line);
+  border-radius:10px;background:#f8fafb;color:var(--global-text);outline:none
+}
+.dn-stats-modern{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.dn-main-stat{
+  background:#fff;border:1px solid var(--global-line);border-radius:15px;padding:12px;
+  min-height:84px;box-shadow:0 4px 14px rgba(27,52,73,.03)
+}
+.dn-main-stat b{display:block;font-size:25px;color:var(--global-navy);font-weight:900}
+.dn-main-stat span{display:block;margin-top:7px;font-size:9.5px;color:var(--global-muted);font-weight:650}
+.dn-main-stat.warn b{color:var(--global-amber)}.dn-main-stat.good b{color:var(--global-green)}
+.dn-compact-status{
+  grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid var(--global-line);
+  border-radius:12px;padding:8px 10px;font-size:9px;color:var(--global-muted)
+}
+.dn-compact-status span{display:flex;align-items:center;gap:5px}
+.dn-compact-status i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dn-compact-status i.blue{background:#4285d4}.dn-compact-status i.green{background:#1fa16d}.dn-compact-status i.red{background:#d94c4c}
+.dn-compact-status b{color:var(--global-text)}
+
+.dn-grup{
+  background:#fff!important;border:1px solid var(--global-line)!important;border-radius:16px!important;
+  box-shadow:0 4px 16px rgba(27,52,73,.03)!important;overflow:hidden!important
+}
+.dn-grup-hd{
+  padding:12px 13px!important;background:#fff!important;gap:7px!important
+}
+.dn-grup-ad{font-size:12.5px!important;color:var(--global-text)!important;font-weight:900!important}
+.dn-grup-meta{font-size:9px!important;color:var(--global-muted)!important}
+.dn-grup-body{background:#f8fafb!important;border-top:1px solid var(--global-line)!important;padding:10px!important}
+.dn-bulgu-kart{
+  background:#fff!important;border:1px solid var(--global-line)!important;border-radius:13px!important;
+  box-shadow:0 2px 9px rgba(27,52,73,.025)!important
+}
+
+@media(max-width:899px){
+  #topbar{display:none!important}
+  #dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+  .dash-grid{grid-template-columns:1fr!important}
+  .dn-stats-modern{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:900px){
+  .dn-module-head{grid-template-columns:1fr auto auto}
+  .dn-head-actions{grid-column:auto}
+}
+</style>
+
 </head>
 <body>
 <div id="app">
   <div id="topbar" style="position:relative;">
     <!-- SOL: başlık + yeni görev — sağ bölmeyle eşit esner, sekmeler tam ortada kalır -->
     <div class="tb-yan" style="justify-content:flex-start;">
-      <h1>İSG Görev Takip</h1>
+      <h1>İSG Yönetim &amp; Performans</h1>
       <button onclick="openAddModal()" style="padding:6px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;flex-shrink:0;">+ Yeni Görev</button>
     </div>
     <!-- ORTA: modül sekmeleri -->
@@ -4380,24 +4548,25 @@ html,body{max-width:100%;overflow-x:hidden}
 
 <!-- DENETİMLER SEKMESİ -->
 <div id="denetim-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg);">
-  <div style="flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 14px;flex-wrap:wrap;">
-    <span style="font-size:13px;font-weight:700;color:var(--text);">🔍 Denetimler & Uygunsuzluklar</span>
-    <div style="flex:1"></div>
-    <button onclick="denetimOpenAdd()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">+ Denetim</button>
-    <button onclick="topluOpen()" class="hse-btn hse-btn-success">📥 Excel / Toplu Yükle</button>
-    <button onclick="denetimPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
-  </div>
-  <!-- Gövde: filtreler + istatistik kartları + liste — tümü birlikte kaydırılır -->
-  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 14px 80px;display:flex;flex-direction:column;gap:10px;min-height:0;">
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding-top:6px;">
-      <input id="dn-f-ara" placeholder="Bulgu ara..." oninput="denetimRender()"
-        style="flex:1;min-width:150px;padding:5px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"/>
-      <select id="dn-f-denetim" onchange="denetimRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;max-width:200px;"></select>
-      <select id="dn-f-fab" onchange="denetimRender()" style="padding:4px 8px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"></select>
-      <div id="dn-f-durum" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-      <div id="dn-f-onem" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+  <div class="dn-module-head">
+    <div class="dn-module-title"><span>🔍</span><div><b>Denetimler &amp; Uygunsuzluklar</b><small>Saha bulguları · aksiyon · görev bağlantıları</small></div></div>
+    <button onclick="denetimOpenAdd()" class="dn-primary">+ Denetim</button>
+    <div class="dn-head-actions">
+      <button onclick="topluOpen()" class="dn-secondary">📥 Excel / Toplu Yükle</button>
+      <button onclick="denetimPrint()" class="dn-secondary">🖨 Rapor</button>
     </div>
-    <div id="dn-stats" style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));"></div>
+  </div>
+  <div class="dn-scroll">
+    <div class="dn-filter-card">
+      <input id="dn-f-ara" placeholder="Bulgu ara..." oninput="denetimRender()"/>
+      <div class="dn-filter-grid">
+        <select id="dn-f-denetim" onchange="denetimRender()"></select>
+        <select id="dn-f-fab" onchange="denetimRender()"></select>
+        <select id="dn-f-durum" onchange="dnSetDurum(this.value||null)"></select>
+        <select id="dn-f-onem" onchange="dnSetOnem(this.value||null)"></select>
+      </div>
+    </div>
+    <div id="dn-stats" class="dn-stats-modern"></div>
     <div id="dn-body" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
 </div>
@@ -5481,7 +5650,7 @@ function printReport() {
                   String(now.getHours()).padStart(2,'0') + ':' +
                   String(now.getMinutes()).padStart(2,'0');
 
-  document.getElementById('print-header').textContent = 'İSG Görev Takip Raporu — ' + viewLabel;
+  document.getElementById('print-header').textContent = 'İSG Yönetim & Performans Raporu — ' + viewLabel;
   document.getElementById('print-meta').textContent = 'Rapor tarihi: ' + dateStr + '  |  Filtre: ' + viewLabel + '  |  Görünüm: ' + gorunumLabel;
 
   // Aktif görünüme göre yazdırma formatını seç (Durum Tablosu ↔ Liste)
@@ -7903,7 +8072,7 @@ function calTaskClick(id) {
     mobUI.id = 'mob-ui';
     mobUI.innerHTML = `
       <div id="mob-topbar">
-        <span id="mob-title">İSG Takip</span>
+        <span id="mob-title">İSG Yönetim &amp; Performans</span>
         <span id="sync-dot-mob" title="Yerel kayıt aktif ✓" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#639922;"></span>
         <div style="flex:1"></div>
         <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik">📊</button>
@@ -7919,7 +8088,7 @@ function calTaskClick(id) {
           <button class="main-tab"        id="mob-tab-per"     onclick="switchTab('per')"     style="padding:5px 9px;font-size:11px;white-space:nowrap;">👥 Personel</button>
           <button class="main-tab"        id="mob-tab-kontrol" onclick="switchTab('kontrol')" style="padding:5px 9px;font-size:11px;white-space:nowrap;">🔬 Kontroller</button>
           <button class="main-tab"        id="mob-tab-denetim" onclick="switchTab('denetim')" style="padding:5px 9px;font-size:11px;white-space:nowrap;">🔍 Denetimler</button>
-          <button class="main-tab"        id="mob-tab-kaza"    onclick="switchTab('kaza')"    style="padding:5px 9px;font-size:11px;white-space:nowrap;">🚨 Kaza/Ramak</button>
+          <button class="main-tab"        id="mob-tab-kaza"    onclick="switchTab('kaza')"    style="padding:5px 9px;font-size:11px;white-space:nowrap;">🚨 Kaza/Olay</button>
         </div>
       </div>
       <div id="mob-searchrow">
@@ -10650,15 +10819,11 @@ function dashRender() {
 
   const statsEl = document.getElementById('dash-stats');
   if (statsEl) statsEl.innerHTML = [
-    { n: total,            lbl: 'Toplam Görev',    color: 'var(--text)',  bg: 'var(--surface2)' },
-    { n: activeTasks.length, lbl: 'Aktif Görev',  color: '#185FA5',      bg: '#E6F1FB' },
-    { n: overdueTasks.length,lbl: 'Gecikmiş',     color: '#8B1A3A',      bg: '#FFE0ED' },
-    { n: doneTasks.length,  lbl: 'Tamamlanan',    color: '#27500A',      bg: '#EAF3DE' },
-  ].map(s => `
-    <div style="background:${s.bg};border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;">
-      <div style="font-size:24px;font-weight:700;color:${s.color};line-height:1;">${s.n}</div>
-      <div style="font-size:11px;color:${s.color};opacity:.8;">${s.lbl}</div>
-    </div>`).join('');
+    { n: total,              lbl:'Toplam Görev', c:'navy' },
+    { n: activeTasks.length, lbl:'Aktif Görev', c:'blue' },
+    { n: overdueTasks.length,lbl:'Gecikmiş',    c:'red' },
+    { n: doneTasks.length,   lbl:'Tamamlanan',  c:'green' },
+  ].map(x => `<div class="dash-stat-modern ${x.c}"><b>${x.n}</b><span>${x.lbl}</span></div>`).join('');
 
   // ── Gecikmiş görevler ────────────────────────────────────
   const overdueEl = document.getElementById('dash-overdue-list');
@@ -10712,12 +10877,9 @@ function dashRender() {
         if (diff < 0)     { col='#D4537E'; bg='#FFE0ED'; }
         else if (diff<=14){ col='#E09000'; bg='#FFF3CD'; }
         const fabList = Array.isArray(it.fabs) ? it.fabs : [it.fab];
-        return `<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;background:var(--surface2);border-radius:7px;cursor:pointer;" onclick="switchTab('kontrol')">
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(it.name)}</div>
-            <div style="font-size:10px;color:var(--text3);">${fabList.slice(0,2).map(f=>esc(f)).join(', ')}</div>
-          </div>
-          <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:${bg};color:${col};white-space:nowrap;">${diff<0?Math.abs(diff)+'g geç':diff===0?'Bugün':diff+'g'}</span>
+        return `<div class="dash-task-modern" onclick="switchTab('kontrol')">
+          <div class="dash-task-copy"><b>${esc(it.name)}</b><small>${fabList.slice(0,2).map(f=>esc(f)).join(', ')}</small></div>
+          <span class="dash-time-badge" style="--dash-accent:${col};">${diff<0?Math.abs(diff)+'g geç':diff===0?'Bugün':diff+'g'}</span>
         </div>`;
       }).join('');
     }
@@ -10802,12 +10964,12 @@ function dashTaskRow(t, today, accentColor) {
   const fabList = t.fabs && t.fabs.length ? t.fabs : (t.fab ? [t.fab] : []);
   const dateDisp = d.toLocaleDateString('tr-TR',{day:'numeric',month:'short'});
   const diffLbl  = diff < 0 ? `${Math.abs(diff)}g gecikti` : diff === 0 ? 'Bugün' : `${diff}g kaldı`;
-  return `<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;background:var(--surface2);border-left:3px solid ${colClr};border-radius:0 7px 7px 0;cursor:pointer;" onclick="dashGoToTask('${jsSafe(t.text)}')">
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:11px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(t.text)}</div>
-      <div style="font-size:10px;color:var(--text3);">${fabList.slice(0,2).map(f=>esc(f)).join(', ')} · ${dateDisp}</div>
+  return `<div class="dash-task-modern" onclick="dashGoToTask('${jsSafe(t.text)}')">
+    <div class="dash-task-copy">
+      <b>${esc(t.text)}</b>
+      <small>${fabList.slice(0,2).map(f=>esc(f)).join(', ')} · ${dateDisp}</small>
     </div>
-    <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px;background:${accentColor}22;color:${accentColor};white-space:nowrap;">${diffLbl}</span>
+    <span class="dash-time-badge" style="--dash-accent:${accentColor};">${diffLbl}</span>
   </div>`;
 }
 
@@ -12796,18 +12958,19 @@ function denetimFiltreKur() {
   }
   const du = document.getElementById('dn-f-durum');
   if (du) {
-    du.innerHTML = `<span class="dn-chip${dnFDurum===null?' active':''}" style="${dnFDurum===null?'background:#5D6D7E;border-color:#5D6D7E':''}" onclick="dnSetDurum(null)">Tüm durumlar</span>` +
-      Object.entries(BG_DURUM).map(([k,v]) =>
-        `<span class="dn-chip${dnFDurum===k?' active':''}" style="${dnFDurum===k?'background:#378ADD;border-color:#378ADD':''}" onclick="dnSetDurum('${k}')">${v}</span>`).join('');
+    du.innerHTML = `<option value="">Tüm durumlar</option>` +
+      Object.entries(BG_DURUM).map(([k,v]) => `<option value="${k}">${v}</option>`).join('');
+    du.value = dnFDurum || '';
   }
   const on = document.getElementById('dn-f-onem');
   if (on) {
-    on.innerHTML = Object.entries(BG_ONEM).map(([k,v]) =>
-      `<span class="dn-chip${dnFOnem===k?' active':''}" style="${dnFOnem===k?'background:'+v.renk+';border-color:'+v.renk:''}" onclick="dnSetOnem('${k}')">${v.ad}</span>`).join('');
+    on.innerHTML = `<option value="">Tüm öncelikler</option>` +
+      Object.entries(BG_ONEM).map(([k,v]) => `<option value="${k}">${v.ad}</option>`).join('');
+    on.value = dnFOnem || '';
   }
 }
-function dnSetDurum(v) { dnFDurum = v; denetimFiltreKur(); denetimRender(); }
-function dnSetOnem(v)  { dnFOnem = (dnFOnem === v ? null : v); denetimFiltreKur(); denetimRender(); }
+function dnSetDurum(v) { dnFDurum = v || null; denetimRender(); }
+function dnSetOnem(v)  { dnFOnem = v || null; denetimRender(); }
 
 function dnFiltreliBulgular() {
   const ara     = (document.getElementById('dn-f-ara')?.value || '').toLowerCase();
@@ -12859,15 +13022,16 @@ function denetimRender() {
   const gecik  = liste.filter(b => b.durum !== 'kapali' && b.termin && new Date(b.termin+'T00:00:00') < bugun).length;
   const oran   = liste.length ? Math.round(kapali / liste.length * 100) : 0;
 
-  stats.innerHTML = [
-    { v: denetimler.length, l:'Denetim',        c:'var(--text)' },
-    { v: liste.length,      l:'Bulgu',          c:'var(--text)' },
-    { v: acik,              l:'Açık',           c:'#8A6914' },
-    { v: devam,             l:'Devam ediyor',   c:'#185FA5' },
-    { v: kapali,            l:'Kapalı',         c:'#27682A' },
-    { v: gecik,             l:'Termini geçmiş', c: gecik ? '#C0392B' : 'var(--text3)' },
-    { v: '%'+oran,          l:'Kapanma oranı',  c:'#27682A' },
-  ].map(s => `<div class="dn-scard"><div class="dn-val" style="color:${s.c}">${s.v}</div><div class="dn-lbl">${s.l}</div></div>`).join('');
+  stats.innerHTML = `
+    <div class="dn-main-stat"><b>${denetimler.length}</b><span>Denetim</span></div>
+    <div class="dn-main-stat"><b>${liste.length}</b><span>Toplam Bulgu</span></div>
+    <div class="dn-main-stat warn"><b>${acik}</b><span>Açık Bulgu</span></div>
+    <div class="dn-main-stat good"><b>%${oran}</b><span>Kapanma Oranı</span></div>
+    <div class="dn-compact-status">
+      <span><i class="blue"></i>Devam Ediyor <b>${devam}</b></span>
+      <span><i class="green"></i>Kapalı <b>${kapali}</b></span>
+      <span><i class="red"></i>Termini Geçmiş <b>${gecik}</b></span>
+    </div>`;
 
   if (!denetimler.length) {
     body.innerHTML = `<div style="text-align:center;padding:48px;font-size:13px;color:var(--text3);">
@@ -12886,6 +13050,7 @@ function denetimRender() {
         document.getElementById('dn-f-denetim')?.value || document.getElementById('dn-f-fab')?.value)) return '';
     const dAcik = bl.filter(b => b.durum !== 'kapali').length;
     const tarihStr = d.tarih ? new Date(d.tarih+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '-';
+    if (!(d.id in dnKapali)) dnKapali[d.id] = true;
     const kapaliMi = dnKapali[d.id];
 
     const satirlar = bl.map((b, i) => {
@@ -13497,7 +13662,7 @@ window.addEventListener('resize', calMobInit);
     mobUI.id = 'mob-ui';
     mobUI.innerHTML = `
       <div id="mob-topbar">
-        <span id="mob-title">İSG Takip</span>
+        <span id="mob-title">İSG Yönetim &amp; Performans</span>
         <span id="sync-dot-mob" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#639922;margin-left:6px;"></span>
         <div style="flex:1"></div>
         <button class="mob-icon-btn" id="mob-stats-btn" onclick="openStatsPanel()" title="İstatistik">📊</button>
