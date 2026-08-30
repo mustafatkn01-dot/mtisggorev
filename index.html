@@ -14892,6 +14892,8 @@ window.addEventListener('resize', calMobInit);
         firebaseSyncBaslat();
       } else {
         hazir = false;
+        firebaseSyncBasladi = false;         // tekrar giriş yapılınca dinleyici yeniden başlasın
+        ROOT.off();                          // oturum kapanınca dinleyiciyi durdur
         nokta(false, 'Firebase oturumu gerekli');
         if (user) {
           try { await AUTH.signOut(); } catch (e) {}
