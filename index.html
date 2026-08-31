@@ -4398,6 +4398,970 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 }
 </style>
 
+\n<style id="hse-dash-reference-fix-stage1">\n/* HSE Performans — onaylı V4.1 dashboard ayrıntıları */\n.ks-hse-trend-card{\n  background:#fff!important;border:1px solid #dfe6ec!important;border-radius:19px!important;\n  padding:16px!important;box-shadow:0 5px 18px rgba(27,52,73,.04)!important;\n}\n.ks-hse-trend-wrap{height:310px!important;position:relative!important}\n.ks-priority-list.reference-priority{gap:8px!important}\n.ks-priority-item.reference-prio{\n  display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important;\n  border:1px solid #dfe6ec!important;border-radius:13px!important;padding:12px!important;background:#fff!important;\n}\n.ks-priority-rank{\n  width:30px!important;height:30px!important;border-radius:10px!important;display:grid!important;place-items:center!important;\n  background:#0d2b46!important;color:#fff!important;font-size:13px!important;font-weight:900!important;\n}\n.ks-priority-copy{min-width:0!important}\n.ks-priority-copy strong{\n  display:block!important;margin:0 0 4px!important;color:#152334!important;font-size:14.5px!important;line-height:1.25!important;font-weight:900!important;\n}\n.ks-priority-copy .ks-priority-task{\n  display:block!important;color:#53616e!important;font-size:11.5px!important;line-height:1.4!important;font-weight:650!important;\n}\n.ks-priority-copy small{\n  display:block!important;margin-top:5px!important;color:#6f7c89!important;font-size:10px!important;line-height:1.45!important;\n}\n.ks-priority-status{\n  align-self:center!important;font-size:10px!important;border-radius:999px!important;padding:5px 8px!important;font-weight:900!important;\n  background:#eef4f6!important;color:#455767!important;white-space:nowrap!important;\n}\n.ks-priority-status.high,.ks-priority-status.crit{background:#f7e7e7!important;color:#9a3232!important}\n.ks-priority-status.medium{background:#fff0d5!important;color:#8b630a!important}\n.ks-priority-status.low{backgroun
+d:#e9f5ef!important;color:#277454!important}\n@media(max-width:620px){\n  .ks-hse-trend-wrap{height:270px!important}\n  .ks-priority-item.reference-prio{grid-template-columns:34px minmax(0,1fr) auto!important;padding:11px!important}\n  .ks-priority-copy strong{font-size:13.5px!important}\n  .ks-priority-copy .ks-priority-task{font-size:10.5px!important}\n  .ks-priority-copy small{font-size:9.5px!important}\n}\n</style>\n
+
+<style id="general-analysis-chart-polish">
+#kaza-stats-body .ks-chart-subtitle{
+  margin:-5px 0 9px;
+  font-size:10px;
+  color:#99A2AA;
+  font-weight:500;
+}
+#kaza-stats-body .ks-kok-horizontal-wrap{
+  min-height:310px!important;
+}
+#kaza-stats-body .ks-chart-card{
+  overflow:hidden;
+}
+@media(max-width:620px){
+  #kaza-stats-body .ks-kok-horizontal-wrap{
+    min-height:330px!important;
+  }
+}
+</style>
+
+
+<style id="task-modal-global-hse">
+/* Board > Görev Ekle: Kaza/Olay kayıt modalı ile aynı kurumsal HSE dil */
+#add-modal-bg{
+  background:rgba(10,26,40,.52)!important;
+  backdrop-filter:blur(3px);
+}
+#add-modal{
+  width:560px!important;
+  max-width:96vw!important;
+  max-height:92vh!important;
+  border-radius:20px!important;
+  background:#F7F9FB!important;
+  box-shadow:0 24px 64px rgba(13,43,70,.24)!important;
+  overflow:hidden!important;
+}
+#add-modal h2{
+  margin:0!important;
+  padding:15px 17px!important;
+  border:0!important;
+  background:linear-gradient(135deg,#0D2B46,#153D5E)!important;
+  color:#fff!important;
+  font-size:16px!important;
+  font-weight:900!important;
+}
+#add-modal h2 span{color:#fff!important}
+#add-modal h2 button{
+  color:#fff!important;
+  width:32px!important;
+  height:32px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:9px!important;
+  font-size:21px!important;
+}
+#add-modal h2 button:hover{background:rgba(255,255,255,.12)!important}
+#add-modal .modal-body{
+  background:#F7F9FB!important;
+  padding:15px 16px!important;
+  gap:12px!important;
+  overflow-y:auto!important;
+}
+#add-modal .mfield label{
+  color:#50606D!important;
+  font-size:10px!important;
+  font-weight:800!important;
+}
+#add-modal .mfield input,
+#add-modal .mfield select,
+#add-modal .mfield textarea{
+  background:#fff!important;
+  color:#17212B!important;
+  border:1px solid #D8E1E8!important;
+  border-radius:11px!important;
+  padding:9px 11px!important;
+  font-size:12px!important;
+  box-shadow:0 1px 4px rgba(13,43,70,.02)!important;
+}
+#add-modal .mfield input:focus,
+#add-modal .mfield select:focus,
+#add-modal .mfield textarea:focus{
+  border-color:#378ADD!important;
+  box-shadow:0 0 0 2px rgba(55,138,221,.10)!important;
+}
+#add-modal #m-text{
+  min-height:92px!important;
+}
+#add-modal .hse-task-layer{
+  margin-top:3px!important;
+  padding:13px!important;
+  border:1px solid #CFE0EE!important;
+  border-radius:15px!important;
+  background:#F0F7FC!important;
+}
+#add-modal .hse-task-layer-head{
+  margin-bottom:11px!important;
+}
+#add-modal .hse-task-layer-head b{
+  color:#0D2B46!important;
+  font-size:11.5px!important;
+  font-weight:900!important;
+}
+#add-modal .hse-task-layer-head span{
+  color:#6A7A87!important;
+  font-size:9px!important;
+  line-height:1.45!important;
+}
+#add-modal .hse-task-extra{
+  gap:9px!important;
+}
+#add-modal .modal-footer{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:5!important;
+  padding:11px 16px max(11px,env(safe-area-inset-bottom))!important;
+  border-top:1px solid #E1E7EC!important;
+  background:#fff!important;
+  box-shadow:0 -6px 15px rgba(13,43,70,.05)!important;
+}
+#add-modal .modal-footer button{
+  min-width:86px!important;
+  padding:8px 16px!important;
+  border-radius:10px!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+#add-modal .mbtn-ok{
+  background:#378ADD!important;
+  border-color:#378ADD!important;
+  color:#fff!important;
+}
+#add-modal .mbtn-cancel{
+  background:#fff!important;
+  color:#53616E!important;
+  border-color:#D8E1E8!important;
+}
+
+/* Android: HSE kök neden gerçek select olduğu için yatay klavye önerisi yerine dikey native liste açılır. */
+#add-modal #m-hse-kok{
+  appearance:auto!important;
+  -webkit-appearance:menulist!important;
+  cursor:pointer!important;
+}
+
+@media(max-width:899px){
+  #add-modal-bg{
+    align-items:flex-end!important;
+  }
+  #add-modal{
+    width:100vw!important;
+    max-width:100vw!important;
+    max-height:calc(100dvh - 18px)!important;
+    border-radius:20px 20px 0 0!important;
+    bottom:0!important;
+  }
+  #add-modal .modal-body{
+    padding:14px!important;
+  }
+}
+@media(max-width:520px){
+  #add-modal .mrow2{
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+  }
+  #add-modal .hse-task-extra{
+    grid-template-columns:1fr!important;
+  }
+}
+</style>
+
+
+<style id="audit-modals-global-hse">
+.audit-modal-bg{
+  background:rgba(10,26,40,.52)!important;
+  backdrop-filter:blur(3px);
+}
+.audit-modal-box{
+  width:540px!important;
+  max-width:96vw!important;
+  max-height:92vh!important;
+  padding:0!important;
+  gap:0!important;
+  background:#F7F9FB!important;
+  border-radius:20px!important;
+  overflow:hidden!important;
+  box-shadow:0 24px 64px rgba(13,43,70,.24)!important;
+}
+.audit-finding-box{width:570px!important}
+.audit-modal-head{
+  background:linear-gradient(135deg,#0D2B46,#153D5E)!important;
+  padding:15px 17px!important;
+  margin:0!important;
+}
+.audit-modal-head h3{
+  color:#fff!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  margin:0!important;
+}
+.audit-modal-head button{
+  color:#fff!important;
+  width:32px!important;
+  height:32px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:9px!important;
+  font-size:21px!important;
+  line-height:1!important;
+}
+.audit-modal-head button:hover{background:rgba(255,255,255,.12)!important}
+
+/* Gövde alanlarını beyaz kontrollere dönüştür */
+.audit-modal-box > .mfield,
+.audit-modal-box > .mrow2,
+.audit-modal-box > .mrow3,
+.audit-modal-box > label{
+  margin-left:16px!important;
+  margin-right:16px!important;
+}
+.audit-modal-head + .mfield,
+.audit-modal-head + .mrow2{
+  margin-top:15px!important;
+}
+.audit-modal-box .mfield{
+  gap:5px!important;
+}
+.audit-modal-box .mfield label{
+  color:#50606D!important;
+  font-size:10px!important;
+  font-weight:800!important;
+}
+.audit-modal-box .mfield input,
+.audit-modal-box .mfield select,
+.audit-modal-box .mfield textarea{
+  width:100%!important;
+  background:#fff!important;
+  color:#17212B!important;
+  border:1px solid #D8E1E8!important;
+  border-radius:11px!important;
+  padding:9px 11px!important;
+  font-size:12px!important;
+  box-shadow:0 1px 4px rgba(13,43,70,.02)!important;
+}
+.audit-modal-box .mfield textarea{
+  min-height:82px!important;
+  line-height:1.45!important;
+}
+.audit-modal-box .mfield input:focus,
+.audit-modal-box .mfield select:focus,
+.audit-modal-box .mfield textarea:focus{
+  border-color:#378ADD!important;
+  box-shadow:0 0 0 2px rgba(55,138,221,.10)!important;
+  outline:none!important;
+}
+
+/* Denetim fabrika seçimleri */
+#audit-modal-box #dn-m-fab-list,
+#dn-m-fab-list{
+  background:#fff!important;
+  border:1px solid #D8E1E8!important;
+  border-radius:11px!important;
+  padding:8px!important;
+}
+#dn-m-fab-all{
+  accent-color:#378ADD!important;
+}
+
+/* Bulgu öneri butonu */
+.audit-finding-box .kaza-onlem-ai-btn{
+  margin-left:auto!important;
+  background:#378ADD!important;
+  color:#fff!important;
+  border:0!important;
+  border-radius:9px!important;
+  padding:7px 10px!important;
+  font-size:9.5px!important;
+  font-weight:800!important;
+}
+
+/* Tür / Önem / Durum üçlü alanı aynı modern grid dilinde */
+.audit-modal-box .mrow3{
+  gap:9px!important;
+}
+.audit-modal-footer{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:5!important;
+  display:flex!important;
+  gap:8px!important;
+  justify-content:flex-end!important;
+  margin-top:14px!important;
+  padding:11px 16px max(11px,env(safe-area-inset-bottom))!important;
+  border-top:1px solid #E1E7EC!important;
+  background:#fff!important;
+  box-shadow:0 -6px 15px rgba(13,43,70,.05)!important;
+}
+.audit-modal-footer button{
+  min-width:86px!important;
+  padding:8px 16px!important;
+  border-radius:10px!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  cursor:pointer!important;
+}
+.audit-modal-footer .mbtn-cancel{
+  background:#fff!important;
+  color:#53616E!important;
+  border:1px solid #D8E1E8!important;
+}
+.audit-save-btn{
+  border:1px solid #378ADD!important;
+  background:#378ADD!important;
+  color:#fff!important;
+}
+
+/* İçerik alt boşluğu: footer'a değmesin */
+.audit-modal-box > .mfield:last-of-type,
+.audit-modal-box > .mrow2:last-of-type,
+.audit-modal-box > .mrow3:last-of-type{
+  margin-bottom:2px!important;
+}
+
+@media(max-width:899px){
+  .audit-modal-bg{
+    align-items:flex-end!important;
+  }
+  .audit-modal-box{
+    width:100vw!important;
+    max-width:100vw!important;
+    max-height:calc(100dvh - 18px)!important;
+    border-radius:20px 20px 0 0!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+  }
+  .audit-modal-head{
+    position:sticky!important;
+    top:0!important;
+    z-index:6!important;
+  }
+}
+@media(max-width:520px){
+  .audit-modal-box .mrow2{
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+  }
+  .audit-modal-box .mrow3{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;
+  }
+  .audit-modal-box .mrow3 .mfield label{
+    font-size:9px!important;
+  }
+  .audit-modal-box .mrow3 select,
+  .audit-modal-box .mrow3 input{
+    font-size:10.5px!important;
+    padding:8px 7px!important;
+  }
+}
+</style>
+
+
+<style id="audit-hse-link-v1">
+.audit-hse-layer{margin:14px 16px 2px!important;background:#EEF3F7!important;border:1px solid #D7E1E8!important;border-radius:14px!important;padding:12px!important}
+.audit-hse-layer .hse-task-layer-head{margin-bottom:9px}
+.audit-hse-layer .hse-task-layer-head b{font-size:12px;color:#17324A}
+.audit-hse-layer .hse-task-layer-head span{display:block;font-size:9.5px;color:#74818D;margin-top:2px}
+.audit-hse-layer .hse-task-extra{display:none}
+.audit-hse-layer .hse-task-extra.show{display:block}
+.dnk-linked-badge{display:inline-flex;align-items:center;gap:4px;border:1px solid #B9D9CB;background:#EDF8F3;color:#257A5A;border-radius:99px;padding:4px 8px;font-size:9px;font-weight:800}
+</style>
+
+
+<style id="systematic-root-cause-reference">
+#ks-view-analysis .ks-root-class-heading{
+  margin:18px 2px 10px!important;
+}
+#ks-view-analysis .ks-root-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,1fr)!important;
+  gap:9px!important;
+}
+#ks-view-analysis .ks-root-card{
+  background:#fff!important;
+  border:1px solid #dfe6ec!important;
+  border-radius:14px!important;
+  padding:12px!important;
+  min-width:0!important;
+}
+#ks-view-analysis .ks-root-card b{
+  display:block!important;
+  margin-bottom:5px!important;
+  color:#152334!important;
+  font-size:13px!important;
+  line-height:1.35!important;
+  font-weight:900!important;
+}
+#ks-view-analysis .ks-root-card span{
+  display:block!important;
+  font-size:11px!important;
+  color:#6f7c89!important;
+  line-height:1.4!important;
+  font-weight:500!important;
+}
+@media(max-width:980px){
+  #ks-view-analysis .ks-root-grid{grid-template-columns:repeat(2,1fr)!important}
+}
+@media(max-width:620px){
+  #ks-view-analysis .ks-root-grid{grid-template-columns:1fr!important}
+  #ks-view-analysis .ks-root-card{
+    border-radius:14px!important;
+    padding:12px!important;
+  }
+  #ks-view-analysis .ks-root-card b{
+    font-size:13px!important;
+  }
+  #ks-view-analysis .ks-root-card span{
+    font-size:11px!important;
+    line-height:1.45!important;
+  }
+}
+</style>
+
+
+<style id="potential-severity-matrix-v1">
+.kaza-potential-field{
+  background:#F8FAFC!important;
+  border:1px solid #DCE5EC!important;
+  border-radius:12px!important;
+  padding:10px!important;
+}
+.kaza-potential-field small{
+  display:block!important;
+  margin-top:5px!important;
+  color:#74818C!important;
+  font-size:8.8px!important;
+  line-height:1.4!important;
+}
+.ks-matrix-axis-note{
+  margin:0 0 10px!important;
+  color:#6F7C89!important;
+  font-size:10px!important;
+}
+.ks-real-matrix{min-width:760px!important}
+.ks-real-matrix-head,.ks-real-matrix-row{
+  display:grid!important;
+  grid-template-columns:100px repeat(5,1fr)!important;
+  gap:6px!important;
+  margin-bottom:6px!important;
+}
+.ks-real-matrix-head>div{
+  padding:5px!important;
+  text-align:center!important;
+  color:#6F7C89!important;
+  font-size:10px!important;
+  font-weight:800!important;
+}
+.ks-real-y{
+  display:flex!important;
+  align-items:center!important;
+  color:#6F7C89!important;
+  font-size:10px!important;
+  font-weight:800!important;
+}
+.ks-real-cell{
+  min-height:88px!important;
+  padding:9px!important;
+  border-radius:10px!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+}
+.ks-real-cell.low{background:#E3F2EC!important}
+.ks-real-cell.warn{background:#FFF0C9!important}
+.ks-real-cell.crit{background:#FCE1E1!important}
+.ks-real-cell b{
+  display:block!important;
+  color:#152334!important;
+  font-size:9px!important;
+  margin-bottom:4px!important;
+}
+.ks-real-cell small{
+  display:block!important;
+  margin-top:5px!important;
+  color:#6F7C89!important;
+  font-size:8px!important;
+}
+</style>
+
+
+<style id="leading-iso-reference-final">
+/* Leading / Lagging — final referans görünümü */
+.ks-ref-score{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ks-ref-card{
+  background:#fff;border:1px solid #dfe6ec;border-radius:19px;padding:16px;
+  box-shadow:0 5px 18px rgba(27,52,73,.043);min-width:0
+}
+.ks-ref-card h3{margin:0 0 11px;font-size:16px;color:#152334;font-weight:900}
+.ks-ref-score-list{display:grid;gap:8px}
+.ks-ref-score-row{
+  display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 0;
+  border-bottom:1px dashed #dfe6ec;align-items:center
+}
+.ks-ref-score-row:last-child{border-bottom:0}
+.ks-ref-score-row span{font-size:12px;color:#465763;line-height:1.35;font-weight:500}
+.ks-ref-score-row strong{font-size:12px;color:#152334;font-weight:900}
+.ks-ref-score-row strong.bad{color:#b42318}
+.ks-ref-reading{
+  margin-top:11px;background:#eff6f4;border-left:5px solid #1fa16d;padding:13px;
+  border-radius:13px;line-height:1.55;font-size:13px;color:#152334
+}
+
+/* ISO 45004 — final referans görünümü */
+.ks-ref-section-title{display:flex;align-items:center;gap:9px;margin:18px 2px 10px}
+.ks-ref-section-title i{width:6px;height:30px;background:#f07a24;border-radius:8px;flex:0 0 auto}
+.ks-ref-section-title h2{font-size:20px;margin:0;color:#152334;font-weight:900}
+.ks-ref-section-title small{color:#6f7c89;font-weight:500;font-size:12px}
+.ks-ref-workflow{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.ks-ref-wf{background:#fff;border:1px solid #dfe6ec;border-radius:13px;padding:10px;text-align:center}
+.ks-ref-wf b{display:block;font-size:11px;color:#0d2b46;font-weight:900}
+.ks-ref-wf span{display:block;margin-top:3px;font-size:10px;color:#6f7c89;line-height:1.35}
+.ks-ref-yearline{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.ks-ref-yearbox{border:1px solid #dfe6ec;border-radius:12px;padding:10px;text-align:center;background:#fff}
+.ks-ref-yearbox b{font-size:18px;color:#152334;font-weight:900}
+.ks-ref-yearbox span{display:block;font-size:10px;color:#6f7c89;margin-top:3px;line-height:1.3}
+.ks-year-chart-wrap{height:280px;margin-top:15px}
+.ks-ref-table-wrap{overflow:auto;border-radius:14px;border:1px solid #dfe6ec}
+.ks-ref-table{width:100%;border-collapse:collapse;background:#fff;min-width:680px}
+.ks-ref-table th,.ks-ref-table td{padding:11px 12px;border-bottom:1px solid #dfe6ec;font-size:12px;text-align:left;vertical-align:middle}
+.ks-ref-table th{background:#eef3f7;color:#0d2b46;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+.ks-iso-rank{
+  width:30px;height:30px;border-radius:10px;display:grid;place-items:center;
+  background:#0d2b46;color:#fff;font-weight:900;font-size:12px
+}
+.ks-ref-btn{
+  border:1px solid #dfe6ec;background:#fff;color:#0d2b46;border-radius:10px;
+  padding:8px 10px;font-weight:800;font-size:10px;white-space:nowrap;cursor:pointer
+}
+
+@media(max-width:980px){
+  .ks-ref-workflow{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:620px){
+  .ks-ref-score{grid-template-columns:1fr}
+  .ks-ref-section-title h2{font-size:18px}
+  .ks-ref-workflow{grid-template-columns:repeat(2,1fr)}
+  .ks-ref-yearline{grid-template-columns:repeat(2,1fr)}
+  .ks-ref-score-row span,.ks-ref-score-row strong{font-size:11px}
+  .ks-ref-reading{font-size:12px}
+  .ks-year-chart-wrap{height:280px}
+}
+</style>
+
+
+<style id="board-list-global-hse">
+/* Board > Liste — global HSE kurumsal tablo dili */
+#list-view-wrap{
+  padding:10px 14px 16px!important;
+  background:#F3F6F8!important;
+}
+#list-table{
+  width:100%!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  background:#fff!important;
+  border:1px solid #DFE6EC!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  box-shadow:0 5px 18px rgba(27,52,73,.035)!important;
+  font-size:11px!important;
+}
+#list-table thead th{
+  top:0!important;
+  background:#EEF3F7!important;
+  color:#0D2B46!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  letter-spacing:.02em!important;
+  padding:10px 10px!important;
+  border-bottom:1px solid #D7E1E8!important;
+}
+#list-table tbody td{
+  padding:10px!important;
+  border-bottom:1px solid #E7EDF2!important;
+  color:#152334!important;
+  background:#fff!important;
+  vertical-align:middle!important;
+}
+#list-table tbody tr:last-child td{border-bottom:0!important}
+#list-table tbody tr:hover td{background:#F8FBFD!important}
+#list-table tbody tr.lv-overdue td:first-child{box-shadow:inset 4px 0 0 #D94C4C!important}
+#list-table tbody tr.lv-due-soon td:first-child{box-shadow:inset 4px 0 0 #D89A19!important}
+
+.lv-text{
+  min-width:230px!important;
+  max-width:390px!important;
+  line-height:1.45!important;
+  font-weight:700!important;
+  color:#152334!important;
+}
+.lv-sno{color:#87939D!important;font-size:10px!important;text-align:center!important}
+.lv-muted{color:#9AA4AD!important}
+.lv-nowrap{font-size:10.5px!important}
+.lv-status-badge,.lv-prio-badge{
+  font-size:9.5px!important;
+  font-weight:800!important;
+  padding:5px 8px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(13,43,70,.06)!important;
+}
+.lv-termin.overdue{color:#B42318!important;font-weight:800!important}
+.lv-termin.due-soon{color:#A66A00!important;font-weight:800!important}
+.lv-editable{
+  padding:3px 4px!important;
+  border-radius:8px!important;
+}
+.lv-editable:hover{background:#EEF5FA!important}
+.lv-edit-caret{color:#7990A0!important}
+.lv-btn{
+  width:28px!important;height:28px!important;
+  border:1px solid #D7E1E8!important;
+  background:#fff!important;
+  color:#53616E!important;
+  border-radius:8px!important;
+}
+.lv-btn:hover{background:#EEF5FA!important;color:#0D2B46!important}
+.lv-btn.lv-del:hover{background:#FFF2F2!important;color:#B42318!important;border-color:#F1C7C7!important}
+
+/* HSE / Denetim bağlantı rozetleri */
+.lv-hse-cell{min-width:180px!important;max-width:250px!important}
+.lv-hse-wrap{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.lv-hse-badge,.lv-hse-critical,.lv-audit-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  border-radius:999px;padding:4px 7px;
+  font-size:9px;font-weight:850;line-height:1.1;white-space:nowrap
+}
+.lv-hse-badge{background:#EAF3FA;color:#185FA5;border:1px solid #D2E5F4}
+.lv-hse-critical{background:#F4F6F8;color:#53616E;border:1px solid #DFE6EC}
+.lv-hse-critical.high{background:#FFF3E2;color:#98620C;border-color:#F3DBB3}
+.lv-hse-critical.crit{background:#FDECEC;color:#B42318;border-color:#F3CBCB}
+.lv-hse-critical.mid{background:#FFF8DF;color:#947000;border-color:#F1E2A7}
+.lv-hse-critical.low{background:#EDF8F3;color:#257A5A;border-color:#CFE8DC}
+.lv-audit-badge{background:#EDF8F3;color:#257A5A;border:1px solid #CFE8DC}
+
+/* Filtre menüleri de aynı HSE yüzey dili */
+.lf-dropdown{
+  background:#fff!important;
+  border:1px solid #D7E1E8!important;
+  border-radius:12px!important;
+  box-shadow:0 12px 28px rgba(13,43,70,.14)!important;
+}
+.lf-clear{color:#185FA5!important;border-bottom-color:#E7EDF2!important}
+.lf-option{font-size:11px!important;color:#354654!important}
+.lf-option:hover{background:#F1F6FA!important}
+.lf-icon.active,.lf-badge{color:#185FA5!important}
+.lf-badge{background:#DCECF8!important;color:#185FA5!important}
+
+/* Inline edit */
+.lv-cell-input,.lv-cell-textarea{
+  background:#fff!important;
+  border:1px solid #378ADD!important;
+  border-radius:9px!important;
+  color:#152334!important;
+  font-size:11px!important;
+  box-shadow:0 0 0 2px rgba(55,138,221,.08)!important;
+}
+
+/* Mobil: tablo veri yoğunluğunu korur, okunabilir yatay kaydırma */
+@media(max-width:899px){
+  #list-view-wrap{padding:8px 10px 14px!important}
+  #list-table{min-width:1180px!important}
+  #list-table thead th{font-size:9px!important;padding:8px!important}
+  #list-table tbody td{font-size:9.5px!important;padding:8px!important}
+  .lv-text{min-width:210px!important}
+  .lv-hse-cell{min-width:170px!important}
+}
+
+/* Yazdırmada HSE sütunu korunur; rozetler sadeleşir */
+@media print{
+  body.print-board-liste #list-table .lv-hse-badge,
+  body.print-board-liste #list-table .lv-hse-critical,
+  body.print-board-liste #list-table .lv-audit-badge{
+    background:#fff!important;color:#000!important;border:1px solid #888!important;
+  }
+}
+</style>
+
+
+<style id="hse-report-print-fix">
+#hse-print{display:none}
+@media print{
+  body.print-hse-report #app,
+  body.print-hse-report #toast,
+  body.print-hse-report #loading-msg,
+  body.print-hse-report #mob-fab,
+  body.print-hse-report #kaza-stats-panel-wrap{
+    display:none!important;
+  }
+  body.print-hse-report #hse-print{
+    display:block!important;
+    color:#152334!important;
+    background:#fff!important;
+    font-family:Inter,Arial,sans-serif!important;
+    font-size:10.5px!important;
+    line-height:1.45!important;
+  }
+  body.print-hse-report{overflow:visible!important;background:#fff!important}
+  @page{size:A4 portrait;margin:11mm 9mm 13mm}
+  #hse-print .hse-pr-cover{break-after:auto}
+  #hse-print h1{margin:0;color:#0d2b46;font-size:20px;letter-spacing:.01em}
+  #hse-print .hse-pr-meta{margin-top:5px;color:#6f7c89;font-size:9.5px;border-bottom:3px solid #0d2b46;padding-bottom:9px}
+  #hse-print .hse-pr-approach,#hse-print .hse-pr-note{
+    margin-top:10px;background:#f7f9fa;border-left:4px solid #f07a24;border-radius:7px;padding:8px;font-size:9.2px;line-height:1.5
+  }
+  #hse-print .hse-pr-section{margin-top:15px;break-inside:avoid}
+  #hse-print h2{margin:0 0 7px;color:#0d2b46;font-size:12.5px;border-bottom:1px solid #dfe6ec;padding-bottom:5px}
+  #hse-print h3{font-size:10.5px;color:#0d2b46;margin:0 0 5px}
+  #hse-print p{margin:0;line-height:1.55}
+  #hse-print table{width:100%;border-collapse:collapse;margin-top:5px}
+  #hse-print th,#hse-print td{border-bottom:1px solid #dfe6ec;padding:5px 6px;text-align:left;vertical-align:top;font-size:8.7px}
+  #hse-print th{background:#eef3f7;color:#0d2b46;font-weight:800}
+  #hse-print .hse-pr-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+  #hse-print .hse-pr-kpis>div{border:1px solid #dfe6ec;border-radius:8px;padding:7px}
+  #hse-print .hse-pr-kpis b{display:block;font-size:17px;color:#152334}
+  #hse-print .hse-pr-kpis span{display:block;margin-top:2px;font-size:8px;color:#6f7c89}
+  #hse-print .hse-pr-chart{display:block;width:100%;max-height:145mm;object-fit:contain;margin:5px auto 0}
+  #hse-print .hse-pr-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #hse-print .hse-pr-two>div{border:1px solid #dfe6ec;border-radius:9px;padding:8px}
+  #hse-print .hse-pr-flow{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+  #hse-print .hse-pr-flow>div{border:1px solid #dfe6ec;border-radius:8px;padding:7px;text-align:center}
+  #hse-print .hse-pr-flow b{display:block;color:#0d2b46;font-size:9px}
+  #hse-print .hse-pr-flow span{display:block;color:#6f7c89;font-size:7.7px;margin-top:2px}
+  #hse-print .hse-pr-rootgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  #hse-print .hse-pr-rootgrid>div{border:1px solid #dfe6ec;border-radius:9px;padding:7px}
+  #hse-print .hse-pr-rootgrid b{display:block;color:#152334;font-size:9px;margin-bottom:3px}
+  #hse-print .hse-pr-rootgrid span{display:block;color:#6f7c89;font-size:8px;line-height:1.4}
+  #hse-print .hse-pr-foot{margin-top:14px;color:#8a949d;font-size:8px}
+}
+</style>
+
+
+<style id="final-nav-and-pareto-layout-fix">
+/* ── FINAL 1: Ana modül sekmeleri — pasif durumda da yüksek okunabilirlik ── */
+#topbar .main-tab,
+#main-tabs .main-tab{
+  color:#43596A!important;
+  opacity:1!important;
+  font-weight:800!important;
+  background:transparent!important;
+  text-shadow:none!important;
+}
+#topbar .main-tab:hover:not(.active),
+#main-tabs .main-tab:hover:not(.active){
+  color:#0D2B46!important;
+  background:#F1F6FA!important;
+}
+#topbar .main-tab.active,
+#main-tabs .main-tab.active{
+  color:#185FA5!important;
+  background:#E7F1FB!important;
+  box-shadow:0 2px 8px rgba(24,95,165,.08)!important;
+}
+/* Mobil ana sekmeler aynı kontrast */
+#mob-main-tabs .main-tab{
+  color:#43596A!important;
+  opacity:1!important;
+}
+#mob-main-tabs .main-tab.active{
+  color:#185FA5!important;
+  background:#E7F1FB!important;
+}
+
+/* ── FINAL 2: Genel Analiz — grafik satırlarını yanlışlıkla 1/4 genişliğe sıkıştıran
+   üst grid kuralını kaldır. Her grafik satırı tam genişlikte, içinde 2 kart. ── */
+#kaza-stats-body{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:14px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#kaza-stats-body .ks-chart-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:14px!important;
+  width:100%!important;
+  min-width:0!important;
+  align-items:start!important;
+}
+#kaza-stats-body .ks-chart-card{
+  width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+  height:auto!important;
+  align-self:start!important;
+}
+#kaza-stats-body .ks-canvas-wrap{
+  width:100%!important;
+  min-width:0!important;
+  min-height:260px!important;
+  flex:0 0 auto!important;
+  position:relative!important;
+}
+#kaza-stats-body .ks-chart-card canvas{
+  width:100%!important;
+  max-width:100%!important;
+}
+
+/* Pareto öneri/yorum alanı: doğal yükseklik, dışarı taşma yok */
+#kaza-stats-body .ks-pareto-insights{
+  width:100%!important;
+  min-width:0!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.12fr)!important;
+  align-items:stretch!important;
+  gap:10px!important;
+  margin-top:12px!important;
+}
+#kaza-stats-body .ks-pareto-box{
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+  display:block!important;
+  box-sizing:border-box!important;
+}
+#kaza-stats-body .ks-pareto-box-title,
+#kaza-stats-body .ks-pareto-text,
+#kaza-stats-body .ks-pareto-meta span,
+#kaza-stats-body .ks-pareto-priority-row .ay,
+#kaza-stats-body .ks-pareto-summary span{
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  white-space:normal!important;
+}
+#kaza-stats-body .ks-pareto-text{
+  line-height:1.55!important;
+}
+#kaza-stats-body .ks-pareto-priority{
+  width:100%!important;
+  min-width:0!important;
+}
+#kaza-stats-body .ks-pareto-priority-row{
+  grid-template-columns:22px minmax(90px,1fr) 42px 48px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#kaza-stats-body .ks-pareto-summary{
+  grid-template-columns:minmax(110px,1fr) 42px 48px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+
+/* Genel Pareto özet kartları da doğal yüksekliğe genişlesin */
+#kaza-stats-body .ks-pareto-general,
+#kaza-stats-body .ks-pareto-general-body,
+#kaza-stats-body .ks-pareto-general-item{
+  min-width:0!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+#kaza-stats-body .ks-pareto-general-item span{
+  overflow-wrap:anywhere!important;
+  white-space:normal!important;
+}
+
+/* Tablet/mobil: grafikler ve yorum kutuları tek sütun */
+@media(max-width:899px){
+  #kaza-stats-body .ks-chart-row{
+    grid-template-columns:1fr!important;
+  }
+  #kaza-stats-body .ks-pareto-insights{
+    grid-template-columns:1fr!important;
+  }
+  #kaza-stats-body .ks-pareto-priority-row{
+    grid-template-columns:22px minmax(80px,1fr) 38px 44px!important;
+  }
+  #kaza-stats-body .ks-canvas-wrap{
+    min-height:250px!important;
+  }
+}
+
+/* Yazdırma güvenliği: grafik ve yorum blokları kutu dışına taşmasın */
+@media print{
+  body.print-kaza #kaza-print .kp-pareto-comment,
+  body.print-kaza #kaza-print .kp-pareto-priority,
+  body.print-hse-report #hse-print .hse-pr-section{
+    max-width:100%!important;
+    overflow:visible!important;
+    height:auto!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+    overflow-wrap:anywhere!important;
+  }
+  body.print-hse-report #hse-print .hse-pr-chart{
+    width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    object-fit:contain!important;
+  }
+}
+</style>
+
+
+<style id="v81-root-cause-mobile-fix">
+/* V8.1 mobile fix — Sistematik Kök Neden Sınıflandırması */
+.ks-root-grid{
+  width:100%!important;
+  min-width:0!important;
+}
+.ks-root-card{
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+.ks-root-card b,
+.ks-root-card span{
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+
+@media(max-width:899px){
+  .ks-root-grid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+    width:100%!important;
+  }
+  .ks-root-card{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    justify-content:flex-start!important;
+    gap:6px!important;
+    width:100%!important;
+    padding:14px 16px!important;
+    border-radius:14px!important;
+  }
+  .ks-root-card b{
+    display:block!important;
+    width:100%!important;
+    font-size:14px!important;
+    line-height:1.3!important;
+    margin:0!important;
+  }
+  .ks-root-card span{
+    display:block!important;
+    width:100%!important;
+    font-size:11px!important;
+    line-height:1.55!important;
+    color:#6F7C89!important;
+    margin:0!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="app">
@@ -4900,9 +5864,9 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 </div>
 
 <!-- Denetim Ekle / Düzenle -->
-<div id="denetim-modal-bg" onclick="if(event.target===this)denetimCloseAdd()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border-radius:12px;padding:20px;width:460px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
+<div id="denetim-modal-bg" class="audit-modal-bg" onclick="if(event.target===this)denetimCloseAdd()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center;">
+  <div class="audit-modal-box" style="background:var(--surface);border-radius:12px;padding:20px;width:460px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
+    <div class="audit-modal-head" style="display:flex;align-items:center;justify-content:space-between;">
       <h3 id="dn-modal-h" style="font-size:14px;font-weight:700;color:var(--text);">Yeni Denetim</h3>
       <button onclick="denetimCloseAdd()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
     </div>
@@ -4932,17 +5896,17 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
       <div class="mfield"><label>Denetçi</label><input id="dn-m-denetci" placeholder="örn: Ahmet Y."/></div>
     </div>
     <div class="mfield"><label>Not</label><textarea id="dn-m-not" placeholder="Kapsam, katılımcılar..." style="min-height:50px"></textarea></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:10px;">
-      <button class="mbtn-cancel" onclick="denetimCloseAdd()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
-      <button onclick="denetimSubmit()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">Kaydet</button>
+    <div class="audit-modal-footer">
+      <button class="mbtn-cancel" onclick="denetimCloseAdd()">İptal</button>
+      <button class="audit-save-btn" onclick="denetimSubmit()">Kaydet</button>
     </div>
   </div>
 </div>
 
 <!-- Tek Bulgu Ekle / Düzenle -->
-<div id="bulgu-modal-bg" onclick="if(event.target===this)bulguClose()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:61;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border-radius:12px;padding:20px;width:480px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
+<div id="bulgu-modal-bg" class="audit-modal-bg" onclick="if(event.target===this)bulguClose()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:61;align-items:center;justify-content:center;">
+  <div class="audit-modal-box audit-finding-box" style="background:var(--surface);border-radius:12px;padding:20px;width:480px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
+    <div class="audit-modal-head" style="display:flex;align-items:center;justify-content:space-between;">
       <h3 id="bg-modal-h" style="font-size:14px;font-weight:700;color:var(--text);">Bulgu</h3>
       <button onclick="bulguClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
     </div>
@@ -4983,9 +5947,39 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
       <div class="mfield"><label>Sorumlu</label><input id="bg-m-sorumlu" placeholder="örn: Ad Soyad"/></div>
       <div class="mfield"><label>Termin</label><input type="date" id="bg-m-termin"/></div>
     </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:10px;">
-      <button class="mbtn-cancel" onclick="bulguClose()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
-      <button onclick="bulguSubmit()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">Kaydet</button>
+    <div class="hse-task-layer audit-hse-layer">
+      <div class="hse-task-layer-head"><div>
+        <b>HSE Performans Bağlantısı</b>
+        <span>İSG ile ilişkili denetim bulgularını performans ve aksiyon takibine bağlar.</span>
+      </div></div>
+      <div class="mfield">
+        <label>İSG / HSE İlişkisi</label>
+        <select id="bg-m-hse-iliski" onchange="bulguHseToggle()">
+          <option value="">İSG ilişkisi yok</option>
+          <option>Makine / Ekipman Güvenliği</option><option>KKD</option>
+          <option>Forklift / Araç / Yaya Güvenliği</option><option>Kimyasal Güvenlik</option>
+          <option>Yangın / Acil Durum</option><option>Elektrik Güvenliği</option>
+          <option>EKED / LOTO</option><option>Yüksekte Çalışma</option>
+          <option>Çalışma Ortamı</option><option>Eğitim / Yetkinlik</option>
+          <option>Periyodik Kontrol / Bakım</option><option>Ergonomi</option><option>Diğer İSG</option>
+        </select>
+      </div>
+      <div id="bg-m-hse-extra" class="hse-task-extra">
+        <div class="mfield"><label>Kontrol / Tedbir Türü</label>
+          <select id="bg-m-hse-tedbir">
+            <option>Tehlikenin Ortadan Kaldırılması</option><option>İkame</option>
+            <option>Mühendislik Kontrolü</option><option>İdari / Organizasyonel Kontrol</option>
+            <option>KKD</option><option>İzleme / Ölçüm</option><option>Eğitim / Yetkinlik</option><option>Diğer</option>
+          </select>
+        </div>
+        <div class="mfield"><label>İlişkili Kök Neden <span style="font-weight:400;color:var(--text3)">(opsiyonel)</span></label>
+          <select id="bg-m-hse-kok"><option value="">Seçiniz</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="audit-modal-footer">
+      <button class="mbtn-cancel" onclick="bulguClose()">İptal</button>
+      <button class="audit-save-btn" onclick="bulguSubmit()">Kaydet</button>
     </div>
   </div>
 </div>
@@ -5126,6 +6120,18 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
         <datalist id="kaza-kokneden-list"></datalist>
       </div>
     </div>
+    <div class="mfield kaza-potential-field">
+      <label>Potansiyel Şiddet <span style="font-weight:400;color:var(--text3)">(makul en ciddi sonuç)</span></label>
+      <select id="kaza-m-potansiyel">
+        <option value="">Değerlendirilmedi</option>
+        <option value="1">Çok Düşük</option>
+        <option value="2">Düşük</option>
+        <option value="3">Orta</option>
+        <option value="4">Yüksek</option>
+        <option value="5">Çok Yüksek</option>
+      </select>
+      <small>Gerçekleşen sonucu değil, olayın makul en ciddi potansiyel sonucunu değerlendirin.</small>
+    </div>
 
     <div class="kaza-ai-assist">
       <div class="kaza-ai-head">
@@ -5139,6 +6145,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
         <div><span>Yaralanma / Hasar Türü</span><b>—</b></div>
         <div><span>Kök Neden</span><b>—</b></div>
         <div><span>Ana Kök Neden</span><b>—</b></div>
+        <div><span>Potansiyel Şiddet</span><b>—</b></div>
       </div>
       <div id="kaza-ai-note" class="kaza-ai-note">Henüz analiz edilmedi.</div>
     </div>
@@ -5476,7 +6483,9 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
           </div>
           <div class="mfield">
             <label>İlişkili Kök Neden <span style="font-weight:400;color:var(--text3)">(opsiyonel)</span></label>
-            <input id="m-hse-kok" list="kaza-kokneden-list" placeholder="Standart kök nedenlerden seç"/>
+            <select id="m-hse-kok">
+              <option value="">Seçiniz</option>
+            </select>
           </div>
         </div>
       </div>
@@ -5662,6 +6671,22 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
     <div id="ks-view-analysis" class="ks-view">
       <div class="ks-section-heading"><i></i><div><h3>Mevcut İstatistikler ile Genel Analiz</h3><span>Detay inceleme katmanı</span></div></div>
       <div id="kaza-stats-body"></div>
+
+      <div class="ks-section-heading ks-root-class-heading">
+        <i></i>
+        <div>
+          <h3>Sistematik Kök Neden Sınıflandırması</h3>
+          <span>Bir sonraki kayıt ekranı revizyonunun hedef yapısı</span>
+        </div>
+      </div>
+      <div class="ks-root-grid">
+        <div class="ks-root-card"><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, ergonomi, ekipman tasarımı, fiziksel izolasyon.</span></div>
+        <div class="ks-root-card"><b>İş Organizasyonu / Prosedür</b><span>İş yöntemi, EKED, görev planlama, vardiya, iş akışı ve prosedür eksiklikleri.</span></div>
+        <div class="ks-root-card"><b>Yetkinlik / Eğitim</b><span>Eğitim, işe uygunluk, yeterlilik, talimatın anlaşılması ve uygulama bilgisi.</span></div>
+        <div class="ks-root-card"><b>Gözetim / Yönetim Kontrolü</b><span>Saha gözetimi, kontrol sıklığı, uygunsuzluğun tekrarı, yönetim takibi.</span></div>
+        <div class="ks-root-card"><b>Çalışma Ortamı</b><span>Aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni, sıcaklık ve alan kısıtları.</span></div>
+        <div class="ks-root-card"><b>İnsan Faktörü</b><span>Dikkat kaybı vb. tek başına son neden olarak değil; ilişkili sistem koşullarıyla birlikte kaydedilir.</span></div>
+      </div>
     </div>
     <div id="ks-view-risk" class="ks-view"><div id="ks-risk-body"></div></div>
     <div id="ks-view-leading" class="ks-view"><div id="ks-leading-body"></div></div>
@@ -5747,6 +6772,7 @@ function fillTaskModal(t) {
   document.getElementById('m-hse-iliski').value = t ? (t.hseIliski || '') : '';
   document.getElementById('m-hse-kritik').value = t ? (t.hseKritik || 'Orta') : 'Orta';
   document.getElementById('m-hse-tedbir').value = t ? (t.hseTedbir || 'İdari / Organizasyonel Kontrol') : 'İdari / Organizasyonel Kontrol';
+  hseTaskRootCauseOptions();
   document.getElementById('m-hse-kok').value = t ? (t.hseKok || '') : '';
   hseTaskToggle();
 
@@ -6637,6 +7663,7 @@ const LIST_COLS = [
   { key:'termin', label:'Termin Tarihi',            filter:true  },
   { key:'prio',   label:'Öncelik',                  filter:true  },
   { key:'fab',    label:'Fabrika Adı',              filter:true  },
+  { key:'hse',    label:'HSE Bağlantısı',            filter:false },
 ];
 let listFilters = {};   // colKey -> Set(seçili değerler)
 let openFilterCol = null;
@@ -6894,6 +7921,22 @@ function cellEditable(field, id, currentValue, displayHtml) {
   return `<div class="lv-dbl-edit" ondblclick="startCellEdit('${field}','${id}',event)">${displayHtml}</div>`;
 }
 
+function renderListHseCell(t) {
+  const badges = [];
+  if (t.hseIliski) {
+    badges.push(`<span class="lv-hse-badge">${esc(t.hseIliski)}</span>`);
+  }
+  if (t.hseKritik) {
+    const c = t.hseKritik === 'Kritik' ? 'crit' : t.hseKritik === 'Yüksek' ? 'high' : t.hseKritik === 'Orta' ? 'mid' : 'low';
+    badges.push(`<span class="lv-hse-critical ${c}">${esc(t.hseKritik)}</span>`);
+  }
+  const auditCount = Array.isArray(t.auditFindingIds) ? t.auditFindingIds.length : (t.auditRepeatCount || 0);
+  if (auditCount > 0) {
+    badges.push(`<span class="lv-audit-badge" title="Denetim bulgusu ile bağlantılı">🔎 ${auditCount > 1 ? auditCount + ' Denetim' : 'Denetim'}</span>`);
+  }
+  return badges.length ? `<div class="lv-hse-wrap">${badges.join('')}</div>` : '<span class="lv-muted">—</span>';
+}
+
 function renderListView(tasksToShow) {
   const thead = document.getElementById('list-thead');
   const tbody = document.getElementById('list-tbody');
@@ -6957,6 +8000,7 @@ function renderListView(tasksToShow) {
         </div>
         ${openInlineEdit === 'fab:'+t.id ? buildInlineFabDropdown(t) : ''}
       </td>
+      <td class="lv-hse-cell">${renderListHseCell(t)}</td>
       <td class="lv-actions">
         <button class="lv-btn" onclick="openEditModal('${t.id}')" title="Düzenle">✎</button>
         <button class="lv-btn lv-del" onclick="del('${t.id}')" title="Sil">×</button>
@@ -11736,9 +12780,10 @@ function kazaOpenAdd(editId) {
   kazaRenderKokNedenListesi();
   document.getElementById('kaza-m-yaralanma').value = k ? (k.yaralanma||'') : '';
   document.getElementById('kaza-m-koknedan').value  = k ? (k.kokNeden||'') : '';
+  document.getElementById('kaza-m-potansiyel').value = k && k.potansiyelSiddet ? String(k.potansiyelSiddet) : '';
 
   const _kar = document.getElementById('kaza-ai-result');
-  if (_kar) _kar.innerHTML = '<div><span>Yaralanma / Hasar Türü</span><b>—</b></div><div><span>Kök Neden</span><b>—</b></div><div><span>Ana Kök Neden</span><b>—</b></div>';
+  if (_kar) _kar.innerHTML = '<div><span>Yaralanma / Hasar Türü</span><b>—</b></div><div><span>Kök Neden</span><b>—</b></div><div><span>Ana Kök Neden</span><b>—</b></div><div><span>Potansiyel Şiddet</span><b>—</b></div>';
   const _kan = document.getElementById('kaza-ai-note');
   if (_kan) _kan.textContent = 'Henüz analiz edilmedi.';
 
@@ -11773,6 +12818,7 @@ function kazaSubmit() {
     yaralanma:  document.getElementById('kaza-m-yaralanma').value.trim(),
     aciklama,
     kokNeden:   document.getElementById('kaza-m-koknedan').value.trim(),
+    potansiyelSiddet: parseInt(document.getElementById('kaza-m-potansiyel').value) || null,
     onlem:      document.getElementById('kaza-m-onlem').value.trim(),
     onlemTamam: document.getElementById('kaza-m-onlem-tamam').checked,
   };
@@ -12351,6 +13397,16 @@ function kazaStatsRenderFiltreler() {
   if (yilSel) {
     const onceki = yilSel.value;
     const cy = new Date().getFullYear();
+
+    const kayitYillari = [...new Set(
+      (Array.isArray(kazaItems) ? kazaItems : [])
+        .map(k => (k.tarih || '').slice(0,4))
+        .filter(y => /^\d{4}$/.test(y))
+    )]
+      .map(Number)
+      .filter(y => y < cy)
+      .sort((a,b) => b-a);
+
     yilSel.innerHTML = `
       <option value="ytd">${cy} · YTD</option>
       <option value="q1">${cy} · Ç1</option>
@@ -12359,8 +13415,10 @@ function kazaStatsRenderFiltreler() {
       <option value="q4">${cy} · Ç4</option>
       <option value="6m">Son 6 Ay</option>
       <option value="12m">Son 12 Ay</option>
+      ${kayitYillari.map(y => `<option value="year:${y}">${y}</option>`).join('')}
       <option value="tumu">Tüm Yıllar</option>`;
-    const allowed = ['ytd','q1','q2','q3','q4','6m','12m','tumu'];
+
+    const allowed = ['ytd','q1','q2','q3','q4','6m','12m','tumu', ...kayitYillari.map(y => `year:${y}`)];
     yilSel.value = allowed.includes(onceki) ? onceki : 'ytd';
   }
 
@@ -12403,12 +13461,17 @@ function ksPeriodBounds(period) {
     start = new Date(now);
     start.setMonth(start.getMonth()-12);
     start.setHours(0,0,0,0);
+  } else if (/^year:\d{4}$/.test(period)) {
+    const y = Number(period.split(':')[1]);
+    start = new Date(y,0,1);
+    end = new Date(y,11,31,23,59,59,999);
   }
   return {start,end};
 }
 
 function ksPeriodLabel(v) {
   const cy = new Date().getFullYear();
+  if (/^year:\d{4}$/.test(v || '')) return v.split(':')[1];
   return ({
     ytd:`${cy} · YTD`, q1:`${cy} · Ç1`, q2:`${cy} · Ç2`,
     q3:`${cy} · Ç3`, q4:`${cy} · Ç4`,
@@ -12454,11 +13517,20 @@ const ksDataLabelPlugin = {
         const value = dataset.data[index];
         if (value === undefined || value === null) return;
         ctx.save();
-        ctx.fillStyle = '#333';
-        ctx.font = '10px Arial, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(String(value), bar.x, bar.y - 3);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px Inter, Arial, sans-serif';
+        const horizontal = chart.options?.indexAxis === 'y';
+        if (horizontal) {
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          const inside = Math.max(bar.x - 22, chart.chartArea.left + 8);
+          ctx.fillText(String(value), inside, bar.y);
+        } else {
+          ctx.fillStyle = '#333';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(String(value), bar.x, bar.y - 3);
+        }
         ctx.restore();
       });
     });
@@ -12535,7 +13607,9 @@ if (typeof Chart !== 'undefined') Chart.register(ksParetoGuidePlugin);
 
 
 // Yıl renkleri (Tüm Yıllar karşılaştırmasında her yıla ayrı renk)
-const KS_YIL_RENKLERI = ['#378ADD','#C0392B','#27AE60','#E09000','#7F77DD','#16A085','#D4527E','#8E44AD'];
+const KS_YIL_RENKLERI = ['#D94B4B','#F27A28','#E9B000','#214D73','#706CC3','#1FA16D','#4285D4','#8B5FA8'];
+// Genel Analiz için onaylanan görsel palet: Claude taslaktaki dikkat çekici çok renkli sütun dili.
+const KS_ANALIZ_RENKLERI = ['#D94B4B','#F27A28','#E9B000','#214D73','#706CC3'];
 
 // Aylık dağılım verisini hesaplar. "Tüm Yıllar" seçiliyse her yıl ayrı bir seri
 // (grup sütun, farklı renk) olarak döner; tek bir yıl seçiliyse mevcut tek-seri
@@ -12549,7 +13623,7 @@ function ksTurVeriHesapla(liste, yilFiltre) {
     const turMap = {};
     liste.forEach(k => { const v = (k.yaralanma||'').trim() || 'Belirtilmemiş'; turMap[v] = (turMap[v]||0)+1; });
     const turSirali = Object.entries(turMap).sort((a,b) => b[1]-a[1]);
-    return { tekYil:true, labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] };
+    return { tekYil:true, labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:turSirali.map((_,i)=>KS_ANALIZ_RENKLERI[i % KS_ANALIZ_RENKLERI.length]), borderRadius:7 }] };
   }
   const yillar = Array.from(new Set(liste.filter(k => k.tarih).map(k => k.tarih.slice(0,4)))).sort();
   const turToplam = {};
@@ -12563,7 +13637,7 @@ function ksTurVeriHesapla(liste, yilFiltre) {
         yilMap[v] = (yilMap[v]||0)+1;
       }
     });
-    return { label: yil, data: turListesi.map(t => yilMap[t] || 0), backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:4 };
+    return { label: yil, data: turListesi.map(t => yilMap[t] || 0), backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:7 };
   });
   return { tekYil: (yillar.length <= 1), labels: turListesi, datasets };
 }
@@ -12574,7 +13648,7 @@ function ksKokVeriHesapla(liste, yilFiltre) {
     const m = {};
     liste.forEach(k => { const v = deg(k); m[v] = (m[v]||0)+1; });
     const sirali = Object.entries(m).sort((a,b) => b[1]-a[1]);
-    return { tekYil:true, labels: sirali.map(x=>x[0]), datasets:[{ label:'Adet', data: sirali.map(x=>x[1]), backgroundColor:'#378ADD', borderRadius:4 }] };
+    return { tekYil:true, labels: sirali.map(x=>x[0]), datasets:[{ label:'Adet', data: sirali.map(x=>x[1]), backgroundColor:sirali.map((_,i)=>KS_ANALIZ_RENKLERI[i % KS_ANALIZ_RENKLERI.length]), borderRadius:7 }] };
   }
   const yillar = Array.from(new Set(liste.filter(k => k.tarih).map(k => k.tarih.slice(0,4)))).sort();
   const toplam = {};
@@ -12583,7 +13657,7 @@ function ksKokVeriHesapla(liste, yilFiltre) {
   const datasets = yillar.map((yil, i) => {
     const yilMap = {};
     liste.forEach(k => { if (k.tarih && k.tarih.startsWith(yil)) { const v = deg(k); yilMap[v] = (yilMap[v]||0)+1; } });
-    return { label: yil, data: listesi.map(t => yilMap[t] || 0), backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:4 };
+    return { label: yil, data: listesi.map(t => yilMap[t] || 0), backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:7 };
   });
   return { tekYil: (yillar.length <= 1), labels: listesi, datasets };
 }
@@ -12592,13 +13666,13 @@ function ksAylikVeriHesapla(liste, yilFiltre) {
   if (yilFiltre !== 'tumu') {
     const ayMap = new Array(12).fill(0);
     liste.forEach(k => { if (k.tarih) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
-    return { tekYil:true, labels: KS_AY_ISIM, datasets: [{ label:'Olay', data: ayMap, backgroundColor:'#378ADD', borderRadius:4 }] };
+    return { tekYil:true, labels: KS_AY_ISIM, datasets: [{ label:'Olay', data: ayMap, backgroundColor:KS_AY_ISIM.map((_,i)=>KS_ANALIZ_RENKLERI[i % KS_ANALIZ_RENKLERI.length]), borderRadius:7 }] };
   }
   const yillar = Array.from(new Set(liste.filter(k => k.tarih).map(k => k.tarih.slice(0,4)))).sort();
   const datasets = yillar.map((yil, i) => {
     const ayMap = new Array(12).fill(0);
     liste.forEach(k => { if (k.tarih && k.tarih.startsWith(yil)) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
-    return { label: yil, data: ayMap, backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:4 };
+    return { label: yil, data: ayMap, backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:7 };
   });
   return { tekYil: (yillar.length <= 1), labels: KS_AY_ISIM, datasets };
 }
@@ -12650,6 +13724,40 @@ function ksBarOptions(vals, legendOn) {
   };
 }
 
+function ksKokHorizontalOptions(vals, legendOn) {
+  return {
+    indexAxis:'y',
+    responsive:true,
+    maintainAspectRatio:false,
+    layout:{padding:{right:12}},
+    plugins:{
+      legend:{ display: !!legendOn, position:'top', labels:{ color:'#444', font:{ size:10 }, boxWidth:12 } },
+      ksDataLabel:{ enabled:true }
+    },
+    scales:{
+      y:{
+        ticks:{
+          color:'#17212B',
+          font:{size:11,weight:'600'},
+          autoSkip:false,
+          callback:function(value){
+            const label=this.getLabelForValue(value);
+            return ksChartLabelWrap(label, 20);
+          }
+        },
+        grid:{display:false}
+      },
+      x:{
+        beginAtZero:true,
+        min:0,
+        max:ksYEksenMax(vals),
+        ticks:{color:'#6F7C89',stepSize:1,precision:0,font:{size:9}},
+        grid:{color:'#EEF1F4'}
+      }
+    }
+  };
+}
+
 function ksChartLabelWrap(label, maxChars=18) {
   const s = String(label ?? '');
   if (s.length <= maxChars) return s;
@@ -12680,7 +13788,7 @@ function ksParetoConfig(data) {
           type:'bar',
           label:'Adet',
           data:data.map(d=>d.val),
-          backgroundColor:'#7F77DD',
+          backgroundColor:data.map((_,i)=>KS_ANALIZ_RENKLERI[i % KS_ANALIZ_RENKLERI.length]),
           borderRadius:4,
           order:2,
           yAxisID:'y'
@@ -12931,7 +14039,8 @@ function kazaStatsRender() {
     <div class="ks-chart-row">
       <div class="ks-chart-card">
         <div class="ks-chart-title">Kök Nedene Göre Dağılım</div>
-        <div class="ks-canvas-wrap">${liste.length ? '<canvas id="ks-canvas-kok"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
+        <div class="ks-chart-subtitle">Aksiyon önceliklendirmesi için</div>
+        <div class="ks-canvas-wrap ks-kok-horizontal-wrap">${liste.length ? '<canvas id="ks-canvas-kok"></canvas>' : '<div class="ks-empty">Kayıt yok</div>'}</div>
       </div>
       <div class="ks-chart-card">
         <div class="ks-chart-title">Kök Neden — Pareto Analizi</div>
@@ -13002,7 +14111,7 @@ function kazaStatsRender() {
   ksMakeChart('ks-canvas-kok', {
     type:'bar',
     data:{ labels: ksKokVeri.labels, datasets: ksKokVeri.datasets },
-    options: ksBarOptions(ksKokTumDegerler, !ksKokVeri.tekYil)
+    options: ksKokHorizontalOptions(ksKokTumDegerler, !ksKokVeri.tekYil)
   });
   const ksKokParetoData = ksParetoVerisi(kokEntries);
   ksMakeChart('ks-canvas-kok-pareto', ksParetoConfig(ksKokParetoData));
@@ -13021,51 +14130,91 @@ function kazaAnalizEt(){
   const res = document.getElementById('kaza-ai-result');
   const note = document.getElementById('kaza-ai-note');
   if (!metin){ if(note) note.textContent='Öneri için önce olay anlatımını yazın.'; return; }
+
   const t = metin.toLocaleLowerCase('tr-TR');
-  let hasar='', kok='', msg='';
+  let hasar='', kok='', msg='', siddet='';
 
   if (/(sıkış|ezil|pres|hareketli bölüm|iki parça arasında)/.test(t)){
     hasar='Doku Ezilmesi / Sıkışma';
-    kok=/(durdurmadan|çalışırken|makine çalış)/.test(t)?'Makineyi Durdurmadan Müdahale Yapmak':'Makine Koruyucularının Yetersiz Olması';
-    msg='Sıkışma/ezilme mekanizması güçlü görünüyor. Kök neden önerisini saha bilgisiyle doğrulayın.';
+    kok=/(durdurmadan|çalışırken|makine çalış)/.test(t)
+      ? 'Makineyi Durdurmadan Müdahale Yapmak'
+      : 'Makine Koruyucularının Yetersiz Olması';
+    siddet='5';
+    msg='Sıkışma/ezilme mekanizması güçlü görünüyor. Potansiyel şiddet önerisini saha koşullarıyla doğrulayın.';
+  } else if (/(elektrik|ark|çarpıl)/.test(t)){
+    hasar='Elektrik Çarpması / Ark Sıçraması';
+    kok='EKED/LOTO Eksikliği';
+    siddet='5';
+    msg='Elektrik/ark maruziyetinde potansiyel sonuç çok ağır olabilir; saha koşullarıyla doğrulayın.';
+  } else if (/(yüksekten düş|merdiven|platformdan düş|çatıdan düş)/.test(t)){
+    hasar='Yüksekten Düşme';
+    kok='Düşme ve Denge Kaybı';
+    siddet='5';
+    msg='Yüksekten düşme olaylarında potansiyel şiddet çok yüksek olabilir; korkuluk, erişim ve çalışma yöntemi ayrıca doğrulanmalıdır.';
   } else if (/(buhar|sıcak su|kaynar|sıcak sıvı)/.test(t)){
-    hasar='Sıcak Sıvı / Buhar Teması'; kok='İş Yöntemi / Prosedür Yetersizliği';
+    hasar='Sıcak Sıvı / Buhar Teması';
+    kok='İş Yöntemi / Prosedür Yetersizliği';
+    siddet=/(buhar|kaynar)/.test(t)?'4':'3';
     msg='Termal maruziyet açık. İş yöntemi, proses kontrolü ve KKD şartlarını ayrıca doğrulayın.';
+  } else if (/(kimyasal|asit|alkali|tiner|solvent|sıçra)/.test(t)){
+    hasar='Kimyasal Madde Sıçraması / Teması';
+    kok='Kimyasal Kontrol / Havalandırma Yetersizliği';
+    siddet='4';
+    msg='Kimyasal maruziyet olasılığı yüksek. SDS, proses kontrolü ve KKD şartlarını doğrulayın.';
   } else if (/(çarp|cisim düşt|parça çarpt|malzeme çarpt)/.test(t)){
-    hasar='Çarpma / Cisim Çarpması'; kok='İş Yöntemi / Prosedür Yetersizliği';
+    hasar='Çarpma / Cisim Çarpması';
+    kok='İş Yöntemi / Prosedür Yetersizliği';
+    siddet='3';
     msg='Çarpma mekanizması belirgin. Daha temel ekipman/istif nedenini biliyorsanız onu seçin.';
   } else if (/(kes|sac kenarı|levha kenarı|delin)/.test(t)){
     hasar='Kesilme / Delinme';
-    kok=/eldiven/.test(t)?"KKD'nin Yetersiz / Uygunsuz Olması":'İş Yöntemi / Prosedür Yetersizliği';
-    msg='Kesilme/delinme etkisi yüksek güvenle önerildi. KKD ve iş yöntemi birlikte doğrulanmalıdır.';
+    kok=/eldiven/.test(t) ? "KKD'nin Yetersiz / Uygunsuz Olması" : 'İş Yöntemi / Prosedür Yetersizliği';
+    siddet='3';
+    msg='Kesilme/delinme etkisi belirgin. KKD ve iş yöntemi birlikte doğrulanmalıdır.';
   } else if (/(düş|kay|takıl|denge)/.test(t)){
-    hasar=/yüksekten|merdiven|platform/.test(t)?'Yüksekten Düşme':'Kayma / Takılma / Aynı Seviyede Düşme';
+    hasar='Kayma / Takılma / Aynı Seviyede Düşme';
     kok='Düşme ve Denge Kaybı';
-    msg='Zemin, korkuluk veya davranış gibi daha temel neden biliniyorsa o neden tercih edilmelidir.';
-  } else if (/(kimyasal|asit|alkali|tiner|solvent|sıçra)/.test(t)){
-    hasar='Kimyasal Madde Sıçraması / Teması'; kok='Kimyasal Kontrol / Havalandırma Yetersizliği';
-    msg='Kimyasal maruziyet olasılığı yüksek. SDS, proses kontrolü ve KKD şartlarını doğrulayın.';
+    siddet='3';
+    msg='Zemin, çevre veya davranış gibi daha temel neden biliniyorsa o neden tercih edilmelidir.';
   } else {
-    msg='Hasar türü veya kök neden için yeterli açık ifade bulunamadı. Olay anlatımını biraz daha ayrıntılandırın.';
+    msg='Hasar türü, kök neden veya potansiyel şiddet için yeterli açık ifade bulunamadı. Olay anlatımını biraz daha ayrıntılandırın.';
   }
 
   const ana = kok && typeof kazaKokNedenKategori==='function'
     ? (kazaKokNedenKategori(kok)||'Standart ana kategori eşleştirmesi') : '—';
+  const siddetAd = ({'1':'Çok Düşük','2':'Düşük','3':'Orta','4':'Yüksek','5':'Çok Yüksek'})[siddet] || 'Değerlendirilmedi';
 
   if(res) res.innerHTML=`
     <div><span>Yaralanma / Hasar Türü</span><b>${hasar||'Belirsiz'}</b></div>
     <div><span>Kök Neden</span><b>${kok||'Yeterli bilgi yok'}</b></div>
-    <div><span>Ana Kök Neden</span><b>${ana}</b></div>`;
-  if(note) note.innerHTML = msg + ((hasar||kok)
-    ? ` <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygula('${(hasar||'').replaceAll("'","\\'")}','${(kok||'').replaceAll("'","\\'")}')">Öneriyi Uygula</button>`:'');
+    <div><span>Ana Kök Neden</span><b>${ana}</b></div>
+    <div><span>Potansiyel Şiddet</span><b>${siddetAd}</b></div>`;
+
+  if(note) note.innerHTML = msg + ((hasar||kok||siddet)
+    ? ` <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygula('${(hasar||'').replaceAll("'","\\'")}','${(kok||'').replaceAll("'","\\'")}','${siddet}')">Öneriyi Uygula</button>`:'');
 }
-function kazaAnalizUygula(hasar,kok){
+function kazaAnalizUygula(hasar,kok,siddet){
   const h=document.getElementById('kaza-m-yaralanma');
   const k=document.getElementById('kaza-m-koknedan');
+  const p=document.getElementById('kaza-m-potansiyel');
   if(h&&hasar) h.value=hasar;
   if(k&&kok) k.value=kok;
+  if(p&&siddet) p.value=String(siddet);
 }
 
+
+function ksIsoCreateTask(finding, action){
+  openAddModal();
+  setTimeout(()=>{
+    const txt=document.getElementById('m-text');
+    const note=document.getElementById('m-note');
+    if(txt) txt.value=String(finding||'').replace(/&#39;/g,"'");
+    if(note) note.value=String(action||'').replace(/&#39;/g,"'");
+    const h=document.getElementById('m-hse-iliski');
+    if(h && !h.value) h.value='Diğer İSG';
+    hseTaskToggle();
+  },80);
+}
 
 // ── Durum Özeti kullanıcı kontrolü ──────────────────────────────
 // Görünür arayüzde herhangi bir sağlayıcı/AI adı kullanılmaz.
@@ -13145,9 +14294,23 @@ function ksSummaryRefreshStatus(){
 // ── ISO 45004 / HSE Performans entegrasyonu ─────────────────────
 // Bu katman mevcut olay, görev ve denetim verilerini yalnızca okur.
 // Firebase/Auth/Realtime sync fonksiyonları değiştirilmez.
+function hseTaskRootCauseOptions(){
+  const sel = document.getElementById('m-hse-kok');
+  if (!sel) return;
+  const mevcut = sel.value || '';
+  const liste = (Array.isArray(kazaKokNedenListesi) && kazaKokNedenListesi.length)
+    ? kazaKokNedenListesi.slice()
+    : (Array.isArray(KAZA_KOKNEDEN_VARSAYILAN) ? KAZA_KOKNEDEN_VARSAYILAN.slice() : []);
+  const sirali = [...new Set(liste)].sort((a,b)=>a.localeCompare(b,'tr'));
+  sel.innerHTML = `<option value="">Seçiniz</option>` +
+    sirali.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  if (mevcut && sirali.includes(mevcut)) sel.value = mevcut;
+}
+
 function hseTaskToggle() {
   const iliski = document.getElementById('m-hse-iliski')?.value || '';
   const extra = document.getElementById('m-hse-extra');
+  if (iliski) hseTaskRootCauseOptions();
   if (extra) extra.style.display = iliski ? 'grid' : 'none';
 }
 
@@ -13188,6 +14351,61 @@ function ksRootMain(kok) {
   return (typeof kazaKokNedenKategori === 'function' && kazaKokNedenKategori(kok)) || 'Kategori eşleşmesi yok';
 }
 
+function ksHsePyramidItems(kazaSay, ilkSay, maddiSay, ramakSay) {
+  const widths=[56,70,84,100];
+  const order={kaza:0,ilkyardim:1,maddi:2,ramak:3};
+  const rows=[
+    {id:'kaza',label:'İş Kazası',value:kazaSay,color:'#d9534f'},
+    {id:'ilkyardim',label:'İlk Yardım',value:ilkSay,color:'#eb9e3d'},
+    {id:'maddi',label:'Maddi Hasar',value:maddiSay,color:'#7167c7'},
+    {id:'ramak',label:'Ramak Kala',value:ramakSay,color:'#1fa16d'}
+  ];
+  rows.sort((a,b)=>(a.value-b.value)||(order[a.id]-order[b.id]));
+  return rows.map((r,i)=>({...r,width:widths[i]}));
+}
+
+function ksHseTrendData(liste, period) {
+  const now=new Date();
+  const months=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  if (period==='tumu') {
+    const years=[...new Set(liste.map(k=>String(k.tarih||'').slice(0,4)).filter(y=>/^\\d{4}$/.test(y)))].sort();
+    const labels=years.length?years:[String(now.getFullYear())];
+    const vals=(tur)=>labels.map(y=>liste.filter(k=>k.tur===tur && String(k.tarih||'').startsWith(y+'-')).length);
+    return {title:'Yıllık Performans Trendi',labels,kaza:vals('kaza'),ilk:vals('ilkyardim'),ramak:vals('ramak')};
+  }
+  let slots=[];
+  if (/^q[1-4]$/.test(period)) {
+    const q=Number(period.slice(1)), y=now.getFullYear();
+    for(let m=(q-1)*3;m<q*3;m++) slots.push(new Date(y,m,1));
+  } else if (period==='6m' || period==='12m') {
+    const n=period==='6m'?6:12;
+    for(let i=n-1;i>=0;i--) slots.push(new Date(now.getFullYear(),now.getMonth()-i,1));
+  } else {
+    const y=now.getFullYear();
+    for(let m=0;m<12;m++) slots.push(new Date(y,m,1));
+  }
+  const keys=slots.map(d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+  const labels=slots.map((d,i)=>{
+    const base=months[d.getMonth()];
+    return slots.length>12 || (i>0 && d.getFullYear()!==slots[i-1].getFullYear()) ? `${base} ${String(d.getFullYear()).slice(-2)}` : base;
+  });
+  const vals=(tur)=>keys.map(key=>liste.filter(k=>k.tur===tur && String(k.tarih||'').startsWith(key)).length);
+  const title=period==='6m'?'Son 6 Ay Olay Trendi':period==='12m'?'12 Aylık Olay Trendi':/^q/.test(period)?'Seçili Dönem Olay Trendi':'12 Aylık Olay Trendi';
+  return {title,labels,kaza:vals('kaza'),ilk:vals('ilkyardim'),ramak:vals('ramak')};
+}
+
+function ksPrioritySort(tasks) {
+  const rank={Kritik:4,'Yüksek':3,'Orta':2,'Düşük':1};
+  const now=Date.now();
+  return tasks.slice().sort((a,b)=>{
+    const rk=(rank[b.hseKritik]||0)-(rank[a.hseKritik]||0);
+    if(rk) return rk;
+    const da=a.termin?Math.floor((now-new Date(a.termin+'T23:59:59').getTime())/86400000):0;
+    const db=b.termin?Math.floor((now-new Date(b.termin+'T23:59:59').getTime())/86400000):0;
+    return db-da;
+  });
+}
+
 function ksRenderISO45004(liste) {
   liste = Array.isArray(liste) ? liste : [];
   if (!ksSummaryOverride) ksSummaryGenerated = '';
@@ -13206,6 +14424,9 @@ function ksRenderISO45004(liste) {
   const maddiSay = liste.filter(k=>k.tur==='maddi').length;
   const kayip = liste.reduce((s,k)=>s+(parseInt(k.kayip)||0),0);
   const yilSel = document.getElementById('ks-f-yil')?.value || '';
+  const pyramidItems = ksHsePyramidItems(kazaSay, ilkSay, maddiSay, ramakSay);
+  const hseTrend = ksHseTrendData(liste, yilSel || 'ytd');
+  const priorityTasks = ksPrioritySort(overdue).slice(0,3);
   const saat = typeof kazaCalismaSaati==='function' ? kazaCalismaSaati(yilSel==='tumu'?'':yilSel) : 0;
   const siklik = saat>0 ? kazaSay*1000000/saat : NaN;
   const agirlik = saat>0 ? kayip*1000000/saat : NaN;
@@ -13220,6 +14441,30 @@ function ksRenderISO45004(liste) {
   const denBul = (typeof bulgular!=='undefined' && Array.isArray(bulgular)) ? bulgular : [];
   const denTotal=denBul.length, denClosed=denBul.filter(b=>b.durum==='kapali').length;
   const denPct=ksPct(denClosed,denTotal);
+
+  // Referans Leading/Lagging setinin gerçek veri karşılıkları
+  const criticalCompleted = completed.filter(t => t.hseKritik === 'Kritik');
+  const criticalOnTimeKnown = criticalCompleted.map(ksTaskOnTime).filter(v=>v!==null);
+  const criticalOnTimePct = ksPct(criticalOnTimeKnown.filter(Boolean).length, criticalOnTimeKnown.length);
+
+  const protectiveOpen = openTasks.filter(t =>
+    ['Mühendislik Kontrolü','KKD'].includes(t.hseTedbir) ||
+    ['Makine / Ekipman Güvenliği','KKD'].includes(t.hseIliski)
+  ).length;
+
+  const selectedFab = document.getElementById('ks-f-fab')?.value || 'tumu';
+  const kontrolKnown = (typeof kontrolItems!=='undefined' && Array.isArray(kontrolItems) ? kontrolItems : [])
+    .filter(it => selectedFab==='tumu' || (Array.isArray(it.fabs)?it.fabs:[it.fab]).filter(Boolean).includes(selectedFab))
+    .map(it => {
+      const nd = typeof kontrolNextDate==='function' ? kontrolNextDate(it.lastDate,it.periodVal,it.periodUnit) : null;
+      return nd ? {it,days:kontrolDaysLeft(nd)} : null;
+    }).filter(Boolean);
+  const kontrolOnTimePct = ksPct(kontrolKnown.filter(x=>x.days>=0).length, kontrolKnown.length);
+
+  const highPotentialCount = liste.filter(k => Number(k.potansiyelSiddet)>=4).length;
+  const lostTimeCases = liste.filter(k => k.tur==='kaza' && (parseInt(k.kayip)||0)>0).length;
+  const ltifr = saat>0 ? lostTimeCases*1000000/saat : NaN;
+  const trifr = saat>0 ? (kazaSay+ilkSay)*1000000/saat : NaN;
 
   const hse = document.getElementById('ks-hse-body');
   if (hse) {
@@ -13243,10 +14488,7 @@ function ksRenderISO45004(liste) {
         <section class="ks-panel-card">
           <div class="ks-section-title">Gerçek Olay Dağılımı</div>
           <div class="ks-pyramid">
-            <div style="width:56%;background:#d9534f"><span>İş Kazası</span><b>${kazaSay}</b></div>
-            <div style="width:70%;background:#eb9e3d"><span>İlk Yardım</span><b>${ilkSay}</b></div>
-            <div style="width:84%;background:#7167c7"><span>Maddi Hasar</span><b>${maddiSay}</b></div>
-            <div style="width:100%;background:#1fa16d"><span>Ramak Kala</span><b>${ramakSay}</b></div>
+            ${pyramidItems.map(r=>`<div style="width:${r.width}%;background:${r.color}"><span>${r.label}</span><b>${r.value}</b></div>`).join('')}
           </div>
           <p class="ks-note">Bu profil seçili dönemin gerçek olay dağılımıdır; hedef veya “ideal oran” değildir.</p>
         </section>
@@ -13276,68 +14518,236 @@ function ksRenderISO45004(liste) {
           <div id="ks-summary-status" class="ks-summary-status">${ksSummaryStatusText()}</div>
         </section>
       </div>
+      <div class="ks-section-heading"><i></i><div><h3>${ksEsc(hseTrend.title)}</h3></div></div>
+      <section class="ks-hse-trend-card"><div class="ks-hse-trend-wrap"><canvas id="ks-hse-trend-chart"></canvas></div></section>
+
+      <div class="ks-section-heading"><i></i><div><h3>Öncelikli HSE Bulguları ve İlişkili Görevler</h3><span>Değerlendirme → aksiyon</span></div></div>
       <section class="ks-panel-card">
-        <div class="ks-section-title">Öncelikli HSE Bulguları ve İlişkili Görevler</div>
-        <div class="ks-priority-list">
-          ${overdue.length ? overdue.slice(0,5).map(t=>`
-            <div class="ks-priority-item">
-              <span class="ks-risk-badge ${t.hseKritik==='Kritik'?'crit':t.hseKritik==='Yüksek'?'high':''}">${ksEsc(t.hseKritik||'HSE')}</span>
-              <div><b>${ksEsc(t.hseIliski)}</b><strong>${ksEsc(t.text)}</strong>
-              <small>${ksEsc(t.hseTedbir||'Tedbir türü belirtilmedi')} · Termin: ${ksEsc(t.termin||'—')}</small></div>
-            </div>`).join('') :
+        <div class="ks-priority-list reference-priority">
+          ${priorityTasks.length ? priorityTasks.map((t,idx)=>{
+            const anaKok=t.hseKok ? ksRootMain(t.hseKok) : 'Belirtilmedi';
+            const statusClass=t.hseKritik==='Kritik'?'crit':t.hseKritik==='Yüksek'?'high':t.hseKritik==='Orta'?'medium':'low';
+            return `
+            <div class="ks-priority-item reference-prio">
+              <div class="ks-priority-rank">${idx+1}</div>
+              <div class="ks-priority-copy">
+                <strong>${ksEsc(t.hseIliski || t.text || 'HSE Bulgusu')}</strong>
+                <span class="ks-priority-task">${ksEsc(t.text || 'İlişkili görev belirtilmedi')}</span>
+                <small>${ksEsc(t.hseTedbir||'Tedbir türü belirtilmedi')} · Ana Kök Neden: ${ksEsc(anaKok)} · Termin: ${ksEsc(t.termin||'—')}</small>
+              </div>
+              <span class="ks-priority-status ${statusClass}">${ksEsc(t.hseKritik||'HSE')}</span>
+            </div>`;
+          }).join('') :
             `<div class="ks-empty-state">HSE ile sınıflandırılmış gecikmiş görev bulunmuyor. Mevcut görevler düzenlendikçe bu alan gerçek verilerle dolacaktır.</div>`}
         </div>
       </section>`;
+
+    ksMakeChart('ks-hse-trend-chart', {
+      type:'line',
+      data:{labels:hseTrend.labels,datasets:[
+        {label:'Ramak Kala',data:hseTrend.ramak,borderColor:'#1fa16d',backgroundColor:'#1fa16d22',tension:.35,fill:false},
+        {label:'İlk Yardım',data:hseTrend.ilk,borderColor:'#eb9e3d',backgroundColor:'#eb9e3d22',tension:.35,fill:false},
+        {label:'İş Kazası',data:hseTrend.kaza,borderColor:'#d9534f',backgroundColor:'#d9534f22',tension:.35,fill:false}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,usePointStyle:true,color:'#667481',font:{family:'Inter, Segoe UI, Arial, sans-serif'}}}},scales:{y:{beginAtZero:true,ticks:{precision:0},grid:{color:'#edf1f4'}},x:{grid:{display:false}}}}
+    });
   }
 
   const leading = document.getElementById('ks-leading-body');
   if (leading) leading.innerHTML = `
-    <div class="ks-score-grid">
-      <section class="ks-panel-card">
-        <div class="ks-section-title">Leading — Proaktif Göstergeler</div>
-        <div class="ks-score-list">
-          <div><span>HSE görevleri zamanında kapanma</span><b>${hseOnTimePct===null?'—':'%'+hseOnTimePct}</b></div>
-          <div><span>Açık HSE görevi</span><b>${openTasks.length}</b></div>
-          <div><span>Geciken yüksek/kritik HSE görevi</span><b class="${criticalOverdue.length?'bad':''}">${criticalOverdue.length}</b></div>
-          <div><span>Denetim bulgusu kapanma</span><b>${denPct===null?'—':'%'+denPct}</b></div>
+    <div class="ks-ref-score">
+      <section class="ks-ref-card">
+        <h3>Leading — Proaktif Göstergeler</h3>
+        <div class="ks-ref-score-list">
+          <div class="ks-ref-score-row"><span>İSG görevleri zamanında kapanma</span><strong>${hseOnTimePct===null?'—':'%'+hseOnTimePct}</strong></div>
+          <div class="ks-ref-score-row"><span>Kritik İSG görevleri zamanında kapanma</span><strong class="${criticalOnTimePct!==null&&criticalOnTimePct<80?'bad':''}">${criticalOnTimePct===null?'—':'%'+criticalOnTimePct}</strong></div>
+          <div class="ks-ref-score-row"><span>Geciken yüksek/kritik HSE görevi</span><strong class="${criticalOverdue.length?'bad':''}">${criticalOverdue.length}</strong></div>
+          <div class="ks-ref-score-row"><span>Koruyucu tedbir / ekipman eksikliği</span><strong>${protectiveOpen}</strong></div>
+          <div class="ks-ref-score-row"><span>Denetim bulgusu kapanma</span><strong>${denPct===null?'—':'%'+denPct}</strong></div>
+          <div class="ks-ref-score-row"><span>Periyodik kontroller zamanında</span><strong>${kontrolOnTimePct===null?'—':'%'+kontrolOnTimePct}</strong></div>
         </div>
       </section>
-      <section class="ks-panel-card">
-        <div class="ks-section-title">Lagging — Sonuç Göstergeleri</div>
-        <div class="ks-score-list">
-          <div><span>İş Kazası</span><b>${kazaSay}</b></div>
-          <div><span>İlk Yardım</span><b>${ilkSay}</b></div>
-          <div><span>Kayıp Gün</span><b>${kayip}</b></div>
-          <div><span>Kaza Sıklık Oranı</span><b>${ksFmtRate(siklik)}</b></div>
+
+      <section class="ks-ref-card">
+        <h3>Lagging — Sonuç Göstergeleri</h3>
+        <div class="ks-ref-score-list">
+          <div class="ks-ref-score-row"><span>İş Kazası</span><strong>${kazaSay}</strong></div>
+          <div class="ks-ref-score-row"><span>İlk Yardım</span><strong>${ilkSay}</strong></div>
+          <div class="ks-ref-score-row"><span>Kayıp Gün</span><strong>${kayip}</strong></div>
+          <div class="ks-ref-score-row"><span>Yüksek Potansiyelli Olay</span><strong>${highPotentialCount}</strong></div>
+          <div class="ks-ref-score-row"><span>LTIFR</span><strong>${ksFmtRate(ltifr)}</strong></div>
+          <div class="ks-ref-score-row"><span>TRIFR</span><strong>${ksFmtRate(trifr)}</strong></div>
         </div>
       </section>
     </div>
-    <div class="ks-eval-box"><b>Dönem değerlendirmesi:</b> Proaktif göstergeler olay sonuçlarından ayrı izlenir. Ramak kala bildirimlerindeki artış tek başına olumsuz performans olarak değerlendirilmez; olay şiddeti, kök nedenler ve aksiyon kapanma performansı ile birlikte yorumlanır.</div>`;
+    <div class="ks-ref-reading"><b>Dönem Değerlendirmesi:</b> Sonuç göstergeleri tek başına yorumlanmaz. Ramak kala bildirimleri, HSE görevlerinin zamanında kapanması, denetim bulguları ve periyodik kontrol performansı ile birlikte değerlendirilir.${criticalOverdue.length ? ` <b>${criticalOverdue.length} gecikmiş yüksek/kritik aksiyon</b> proaktif performansta dikkat gerektiren alan olarak izlenmelidir.` : ''}</div>`;
 
   const risk = document.getElementById('ks-risk-body');
-  if (risk) risk.innerHTML = `
-    <section class="ks-panel-card">
-      <div class="ks-section-title">Kritik Risk Görünümü</div>
-      <div class="ks-risk-info">
-        <b>Şiddet × Frekans değerlendirmesi için veri bütünlüğü kuralı</b>
-        <p>Mevcut olay kayıtlarında bağımsız “potansiyel şiddet” sınıfı tutulmadığından sistem otomatik olarak yapay bir 5×5 puan üretmez. Bu alan, yüksek potansiyelli olay sınıflandırması eklendiğinde gerçek veriden beslenecektir.</p>
-      </div>
-      <div class="ks-root-grid">
-        ${topRoots.length ? topRoots.map(([r,n],i)=>`<div><span>${i+1}</span><b>${ksEsc(r)}</b><strong>${n} olay</strong></div>`).join('') : '<div class="ks-empty-state">Sınıflandırılmış kök neden verisi yok.</div>'}
-      </div>
-      ${criticalOverdue.length ? `<div class="ks-critical-tasks"><b>Açık yüksek/kritik HSE görevleri</b>${criticalOverdue.map(t=>`<div>${ksEsc(t.hseIliski)} — ${ksEsc(t.text)} <span>${ksEsc(t.hseKritik)}</span></div>`).join('')}</div>`:''}
-    </section>`;
+  if (risk) {
+    const riskRecords = liste.filter(k => Number(k.potansiyelSiddet)>=1 && Number(k.potansiyelSiddet)<=5);
+
+    if (!riskRecords.length) {
+      risk.innerHTML = `
+        <div class="ks-section-heading"><i></i><div><h3>Kritik Risk Analizi</h3><span>Frekans tek başına öncelik değildir</span></div></div>
+        <section class="ks-panel-card">
+          <div class="ks-section-title">Şiddet × Frekans Matrisi</div>
+          <div class="ks-risk-info">
+            <b>Potansiyel şiddet verisi bulunmuyor</b>
+            <p>Yeni olay kayıtlarında “Potansiyel Şiddet” alanı değerlendirildikçe 5×5 matris gerçek kayıtlarla oluşacaktır. Eski kayıtlara otomatik veya varsayımsal şiddet puanı atanmaz.</p>
+          </div>
+          ${criticalOverdue.length ? `<div class="ks-critical-tasks"><b>Açık yüksek/kritik HSE görevleri</b>${criticalOverdue.map(t=>`<div>${ksEsc(t.hseIliski)} — ${ksEsc(t.text)} <span>${ksEsc(t.hseKritik)}</span></div>`).join('')}</div>`:''}
+        </section>`;
+    } else {
+      // Frekans, seçili dönemde aynı ana kök neden grubunun tekrar sayısından türetilir.
+      const freqMap = {};
+      riskRecords.forEach(k=>{
+        const g = kazaKokNedenKategori(k.kokNeden) || k.kokNeden || 'Sınıflandırılmamış';
+        freqMap[g]=(freqMap[g]||0)+1;
+      });
+      const freqLevel = n => n>=10?5:n>=6?4:n>=3?3:n>=2?2:1;
+
+      const matrix = Array.from({length:5},()=>Array.from({length:5},()=>[]));
+      riskRecords.forEach(k=>{
+        const sev = Number(k.potansiyelSiddet);
+        const g = kazaKokNedenKategori(k.kokNeden) || k.kokNeden || 'Sınıflandırılmamış';
+        const fr = freqLevel(freqMap[g]||1);
+        matrix[5-sev][fr-1].push(k);
+      });
+
+      const sevNames=['Çok Yüksek','Yüksek','Orta','Düşük','Çok Düşük'];
+      const frNames=['Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'];
+
+      risk.innerHTML = `
+        <div class="ks-section-heading"><i></i><div><h3>Kritik Risk Analizi</h3><span>Frekans tek başına öncelik değildir</span></div></div>
+        <section class="ks-panel-card">
+          <div class="ks-section-title">Şiddet × Frekans Matrisi</div>
+          <div class="ks-matrix-axis-note"><b>Dikey eksen:</b> Potansiyel Şiddet · <b>Yatay eksen:</b> Gerçekleşme Frekansı</div>
+          <div class="ks-matrix-scroll">
+            <div class="ks-real-matrix">
+              <div class="ks-real-matrix-head"><div></div>${frNames.map(x=>`<div>${x}</div>`).join('')}</div>
+              ${matrix.map((row,ri)=>`
+                <div class="ks-real-matrix-row">
+                  <div class="ks-real-y">${sevNames[ri]}</div>
+                  ${row.map((arr,ci)=>{
+                    const score=(5-ri)*(ci+1);
+                    const cls=score>=15?'crit':score>=8?'warn':'low';
+                    return `<div class="ks-real-cell ${cls}">
+                      ${arr.slice(0,2).map(k=>`<b>${ksEsc((k.aciklama||'Olay').slice(0,42))}</b>`).join('')}
+                      ${arr.length>2?`<small>+${arr.length-2} kayıt</small>`:''}
+                    </div>`;
+                  }).join('')}
+                </div>`).join('')}
+            </div>
+          </div>
+          <div class="ks-note">Matris yalnız potansiyel şiddeti değerlendirilmiş olaylardan üretilir. Düşük frekanslı fakat çok yüksek şiddet potansiyelli olaylar Pareto'da geride kalsa bile kritik risk olarak görünür.</div>
+          ${criticalOverdue.length ? `<div class="ks-critical-tasks"><b>Açık yüksek/kritik HSE görevleri</b>${criticalOverdue.map(t=>`<div>${ksEsc(t.hseIliski)} — ${ksEsc(t.text)} <span>${ksEsc(t.hseKritik)}</span></div>`).join('')}</div>`:''}
+        </section>`;
+    }
+  }
 
   const iso = document.getElementById('ks-iso-body');
-  if (iso) iso.innerHTML = `
-    <section class="ks-panel-card">
-      <div class="ks-section-title">ISO 45004 Performans Değerlendirme Akışı</div>
-      <div class="ks-workflow">
-        <div><b>1</b><span>İzle</span></div><div><b>2</b><span>Ölç</span></div><div><b>3</b><span>Analiz Et</span></div>
-        <div><b>4</b><span>Değerlendir</span></div><div><b>5</b><span>Aksiyon Al</span></div><div><b>6</b><span>Gözden Geçir</span></div>
+  if (iso) {
+    const fabForYears = document.getElementById('ks-f-fab')?.value || 'tumu';
+    const yearSource = (typeof kazaItems!=='undefined' && Array.isArray(kazaItems) ? kazaItems : [])
+      .filter(k => fabForYears==='tumu' || k.fab===fabForYears);
+    const yearSet = [...new Set(yearSource.map(k=>(k.tarih||'').slice(0,4)).filter(y=>/^\d{4}$/.test(y)))]
+      .map(Number).sort((a,b)=>a-b);
+    const displayYears = yearSet.slice(-4);
+    const yearStats = displayYears.map(y => {
+      const yl = yearSource.filter(k => (k.tarih||'').slice(0,4)===String(y));
+      return {
+        year:y,
+        accident:yl.filter(k=>k.tur==='kaza').length,
+        lost:yl.reduce((a,k)=>a+(parseInt(k.kayip)||0),0),
+        near:yl.filter(k=>k.tur==='ramak').length
+      };
+    });
+    const currentYear = new Date().getFullYear();
+    const currentNear = yearSource.filter(k=>(k.tarih||'').slice(0,4)===String(currentYear) && k.tur==='ramak').length;
+
+    const priorityRows = [];
+    criticalOverdue.slice(0,3).forEach(t => priorityRows.push({
+      type:'task', id:t.id,
+      finding:`${t.hseIliski||'HSE'} — ${t.text}`,
+      action:t.hseTedbir || 'Yönetim kapanış takibi ve sorumlu/tarih güncelleme'
+    }));
+    if (priorityRows.length<3) {
+      liste.filter(k=>Number(k.potansiyelSiddet)>=4).slice(0,3-priorityRows.length).forEach(k=>priorityRows.push({
+        type:'event', id:k.id,
+        finding:`Yüksek potansiyelli olay — ${(k.aciklama||k.yaralanma||'Olay kaydı').slice(0,85)}`,
+        action:k.onlem || 'İlgili kontrol tedbirini doğrula ve aksiyon görevi oluştur'
+      }));
+    }
+    if (priorityRows.length<3) {
+      topRoots.slice(0,3-priorityRows.length).forEach(([root,n])=>priorityRows.push({
+        type:'root', id:'',
+        finding:`${root} — ${n} olay`,
+        action:'Kök nedene yönelik hedefli saha doğrulaması ve aksiyon planı oluştur'
+      }));
+    }
+
+    iso.innerHTML = `
+      <div class="ks-ref-section-title"><i></i><h2>ISO 45004 Performans Değerlendirme Akışı</h2></div>
+      <div class="ks-ref-workflow">
+        <div class="ks-ref-wf"><b>İZLE</b><span>Olay, denetim, kontrol, görev</span></div>
+        <div class="ks-ref-wf"><b>ÖLÇ</b><span>KPI ve performans göstergeleri</span></div>
+        <div class="ks-ref-wf"><b>ANALİZ ET</b><span>Trend, Pareto, kök neden</span></div>
+        <div class="ks-ref-wf"><b>DEĞERLENDİR</b><span>Durum özeti, risk önceliği</span></div>
+        <div class="ks-ref-wf"><b>AKSİYON AL</b><span>Öncelikli aksiyon / görev</span></div>
+        <div class="ks-ref-wf"><b>GÖZDEN GEÇİR</b><span>Dönem ve uzun vadeli gelişim</span></div>
       </div>
-      <div class="ks-iso-note">Performans değerlendirmesi yalnız geçmiş olay sayılarına dayanmaz. Olay sonuçları; ramak kala bildirimleri, görev/aksiyon kapanması ve denetim performansı gibi proaktif göstergelerle birlikte ele alınır.</div>
-    </section>`;
+
+      <div class="ks-ref-section-title"><i></i><h2>Sürekli İyileştirme Görünümü</h2><small>Gerçek yıllık kayıtlar</small></div>
+      <section class="ks-ref-card ks-improve-card">
+        <div class="ks-ref-yearline">
+          ${yearStats.slice(-3).map(x=>`<div class="ks-ref-yearbox"><b>${x.accident}</b><span>${x.year} İş Kazası</span></div>`).join('')}
+          <div class="ks-ref-yearbox"><b>${currentNear}</b><span>${currentYear} Ramak Kala</span></div>
+          <div class="ks-ref-yearbox"><b>${denPct===null?'—':denPct+'%'}</b><span>Aksiyon Kapanma</span></div>
+        </div>
+        <div class="ks-year-chart-wrap"><canvas id="ks-year-chart"></canvas></div>
+        <div class="ks-ref-reading"><b>Sürekli iyileştirme değerlendirmesi:</b> Uzun dönem verileri, sonuç göstergelerindeki yön ile proaktif bildirim ve aksiyon yönetiminin birlikte izlenmesini sağlar. Yıllık görünüm, aylık dalgalanmadan bağımsız olarak uzun vadeli performans yönünü gösterir.</div>
+      </section>
+
+      <div class="ks-ref-section-title"><i></i><h2>Öncelikli Bulgular → Aksiyon</h2></div>
+      <div class="ks-ref-table-wrap"><table class="ks-ref-table">
+        <thead><tr><th>Öncelik</th><th>Performans Bulgusu</th><th>Önerilen Aksiyon</th><th>Bağlantı</th></tr></thead>
+        <tbody>
+          ${priorityRows.length ? priorityRows.map((x,i)=>`<tr>
+            <td><span class="ks-iso-rank">${i+1}</span></td>
+            <td>${ksEsc(x.finding)}</td>
+            <td>${ksEsc(x.action)}</td>
+            <td>${x.type==='task'
+              ? `<button class="ks-ref-btn" onclick="openEditModal('${x.id}')">Görevi Aç</button>`
+              : `<button class="ks-ref-btn" onclick="ksIsoCreateTask('${ksEsc(x.finding).replaceAll("'","&#39;")}','${ksEsc(x.action).replaceAll("'","&#39;")}')">+ Görev Oluştur</button>`}</td>
+          </tr>`).join('') : `<tr><td colspan="4">Seçili kapsamda öncelikli bulgu bulunmuyor.</td></tr>`}
+        </tbody>
+      </table></div>`;
+
+    requestAnimationFrame(()=>{
+      const canvas=document.getElementById('ks-year-chart');
+      if (!canvas || typeof Chart==='undefined') return;
+      if (ksCharts['ks-year-chart']) ksCharts['ks-year-chart'].destroy();
+      ksCharts['ks-year-chart']=new Chart(canvas.getContext('2d'),{
+        type:'line',
+        data:{
+          labels:yearStats.map(x=>String(x.year)),
+          datasets:[
+            {label:'İş Kazası',data:yearStats.map(x=>x.accident),borderColor:'#d9534f',backgroundColor:'#d9534f',tension:.3},
+            {label:'Kayıp Gün',data:yearStats.map(x=>x.lost),borderColor:'#7167c7',backgroundColor:'#7167c7',tension:.3},
+            {label:'Ramak Kala',data:yearStats.map(x=>x.near),borderColor:'#1fa16d',backgroundColor:'#1fa16d',tension:.3}
+          ]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{labels:{boxWidth:10,color:'#53616e',font:{size:10}}}},
+          scales:{
+            x:{grid:{display:false},ticks:{color:'#6f7c89',font:{size:10}}},
+            y:{beginAtZero:true,ticks:{precision:0,color:'#6f7c89',font:{size:10}},grid:{color:'#eef1f4'}}
+          }
+        }
+      });
+    });
+  }
 
   const report = document.getElementById('ks-report-body');
   if (report) report.innerHTML = `
@@ -13373,8 +14783,10 @@ function ksRenderISO45004(liste) {
         <label><input type="checkbox" id="ks-r-leading" checked> Leading / Lagging</label>
         <label><input type="checkbox" id="ks-r-severity" checked> Şiddet × Frekans</label>
         <label><input type="checkbox" id="ks-r-factory" checked> Fabrika Karşılaştırması</label>
-        <label><input type="checkbox" id="ks-r-improve" checked> Sürekli İyileştirme</label>
-        <label><input type="checkbox" id="ks-r-actions" checked> Öncelikli Aksiyonlar</label>
+        <label><input type="checkbox" id="ks-r-iso-flow" checked> ISO 45004 Değerlendirme Akışı</label>
+        <label><input type="checkbox" id="ks-r-root-class" checked> Sistematik Kök Neden Sınıflandırması</label>
+        <label><input type="checkbox" id="ks-r-improve" checked> Sürekli İyileştirme + Yıllık Değerlendirme</label>
+        <label><input type="checkbox" id="ks-r-actions" checked> Öncelikli Bulgular / Aksiyonlar</label>
         <label><input type="checkbox" id="ks-r-events-appendix"> Ek: Kaza / Ramak Kala Olay Listesi</label>
       </section>
     </div>
@@ -13399,6 +14811,31 @@ function ksReportChecked(id, fallback=true){
   return el ? !!el.checked : fallback;
 }
 
+function ksCanvasDataUrl(id){
+  try{
+    const c=document.getElementById(id);
+    if(!c || !c.width || !c.height) return '';
+    return c.toDataURL('image/png',1.0);
+  }catch(e){ return ''; }
+}
+function ksReportChartHTML(id,title){
+  const u=ksCanvasDataUrl(id);
+  return u ? `<section class="hse-pr-section"><h2>${ksEsc(title)}</h2><img class="hse-pr-chart" src="${u}" alt="${ksEsc(title)}"></section>` : '';
+}
+function ksHsePrintContainer(){
+  let el=document.getElementById('hse-print');
+  if(!el){
+    el=document.createElement('div');
+    el.id='hse-print';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function ksCleanupHsePrint(){
+  document.body.classList.remove('print-hse-report');
+  const el=document.getElementById('hse-print');
+  if(el) el.innerHTML='';
+}
 function ksPrintHSE(mode='management'){
   const liste = kazaStatsFiltrele();
   const hseTasks = ksHseTasks();
@@ -13426,57 +14863,155 @@ function ksPrintHSE(mode='management'){
     leading:ksReportChecked('ks-r-leading'),
     severity:ksReportChecked('ks-r-severity'),
     factory:ksReportChecked('ks-r-factory'),
+    isoFlow:ksReportChecked('ks-r-iso-flow'),
+    rootClass:ksReportChecked('ks-r-root-class'),
     improve:ksReportChecked('ks-r-improve'),
     actions:ksReportChecked('ks-r-actions'),
     appendix:ksReportChecked('ks-r-events-appendix',false)
   };
 
   const summaryText = ksSummaryPlainText() || `Seçili dönemde ${kazaSay} iş kazası, ${ramakSay} ramak kala ve ${kayip} kayıp gün bulunmaktadır.`;
-  const rootMap={};
-  liste.forEach(k=>{const v=(k.kokNeden||'Belirtilmemiş').trim()||'Belirtilmemiş';rootMap[v]=(rootMap[v]||0)+1;});
-  const eventMap={};
-  liste.forEach(k=>{const v=(k.yaralanma||'Belirtilmemiş').trim()||'Belirtilmemiş';eventMap[v]=(eventMap[v]||0)+1;});
-  const topRoot=Object.entries(rootMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const topEvent=Object.entries(eventMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const rootMap={}, eventMap={}, monthMap=Array(12).fill(0), fabMap={};
+  liste.forEach(k=>{
+    const r=(k.kokNeden||'Belirtilmemiş').trim()||'Belirtilmemiş'; rootMap[r]=(rootMap[r]||0)+1;
+    const e=(k.yaralanma||'Belirtilmemiş').trim()||'Belirtilmemiş'; eventMap[e]=(eventMap[e]||0)+1;
+    if(k.tarih){ const m=Number(k.tarih.slice(5,7))-1; if(m>=0&&m<12) monthMap[m]++; }
+    const f=k.fab||'Belirtilmemiş'; fabMap[f]=(fabMap[f]||0)+1;
+  });
+  const topRoot=Object.entries(rootMap).sort((a,b)=>b[1]-a[1]);
+  const topEvent=Object.entries(eventMap).sort((a,b)=>b[1]-a[1]);
 
-  const sec = [];
-  if(incl.summary) sec.push(`<section><h2>1. Durum Özeti</h2><p>${ksEsc(summaryText)}</p></section>`);
-  if(incl.kpi) sec.push(`<section><h2>Performans Göstergeleri</h2><div class="kpis">
+  // Leading/Lagging actual values
+  const completed=hseTasks.filter(t=>t.status==='tamam'||t.doneAt);
+  const onTimeKnown=completed.map(ksTaskOnTime).filter(v=>v!==null);
+  const hseOnTimePct=ksPct(onTimeKnown.filter(Boolean).length,onTimeKnown.length);
+  const criticalCompleted=completed.filter(t=>t.hseKritik==='Kritik');
+  const criticalKnown=criticalCompleted.map(ksTaskOnTime).filter(v=>v!==null);
+  const criticalPct=ksPct(criticalKnown.filter(Boolean).length,criticalKnown.length);
+  const criticalOverdue=hseTasks.filter(t=>['Yüksek','Kritik'].includes(t.hseKritik)&&ksIsOverdue(t));
+  const protectiveOpen=hseTasks.filter(t=>!(t.status==='tamam'||t.doneAt) &&
+    (['Mühendislik Kontrolü','KKD'].includes(t.hseTedbir)||['Makine / Ekipman Güvenliği','KKD'].includes(t.hseIliski))).length;
+  const denBul=(typeof bulgular!=='undefined'&&Array.isArray(bulgular))?bulgular:[];
+  const denPct=ksPct(denBul.filter(b=>b.durum==='kapali').length,denBul.length);
+  const highPotential=liste.filter(k=>Number(k.potansiyelSiddet)>=4).length;
+  const saat=Number(kazaAyar?.saat)||0;
+  const lostTimeCases=liste.filter(k=>k.tur==='kaza'&&(parseInt(k.kayip)||0)>0).length;
+  const ltifr=saat>0?lostTimeCases*1000000/saat:NaN;
+  const trifr=saat>0?(kazaSay+ilkSay)*1000000/saat:NaN;
+
+  const sec=[];
+
+  if(incl.summary) sec.push(`<section class="hse-pr-section"><h2>Durum Özeti</h2><p>${ksEsc(summaryText)}</p></section>`);
+
+  if(incl.kpi) sec.push(`<section class="hse-pr-section"><h2>Performans Göstergeleri</h2><div class="hse-pr-kpis">
     <div><b>${kazaSay}</b><span>İş Kazası</span></div><div><b>${ilkSay}</b><span>İlk Yardım</span></div>
     <div><b>${ramakSay}</b><span>Ramak Kala</span></div><div><b>${maddiSay}</b><span>Maddi Hasar</span></div>
-    <div><b>${kayip}</b><span>Kayıp Gün</span></div>
+    <div><b>${kayip}</b><span>Kayıp Gün</span></div><div><b>${highPotential}</b><span>Yüksek Potansiyelli</span></div>
   </div></section>`);
-  if(incl.priority || incl.actions) sec.push(`<section><h2>Öncelikli HSE Görevleri / Aksiyonlar</h2>
-    <table><tr><th>Alan</th><th>Görev</th><th>Kritiklik</th><th>Termin</th></tr>
-    ${gecikmis.length?gecikmis.map(t=>`<tr><td>${ksEsc(t.hseIliski||'—')}</td><td>${ksEsc(t.text||'—')}</td><td>${ksEsc(t.hseKritik||'—')}</td><td>${ksEsc(t.termin||'—')}</td></tr>`).join(''):'<tr><td colspan="4">Gecikmiş HSE görevi yok.</td></tr>'}
-    </table></section>`);
-  if(incl.event) sec.push(`<section><h2>Kaza / Hasar Türü</h2><table><tr><th>Tür</th><th>Adet</th></tr>${topEvent.map(([a,n])=>`<tr><td>${ksEsc(a)}</td><td>${n}</td></tr>`).join('')}</table></section>`);
-  if(incl.root) sec.push(`<section><h2>Kök Neden</h2><table><tr><th>Kök Neden</th><th>Adet</th></tr>${topRoot.map(([a,n])=>`<tr><td>${ksEsc(a)}</td><td>${n}</td></tr>`).join('')}</table></section>`);
-  if(incl.leading) sec.push(`<section><h2>Leading / Lagging Değerlendirmesi</h2><p>Proaktif göstergeler; olay sonuçları, HSE görev kapanmaları ve denetim performansıyla birlikte değerlendirilir.</p></section>`);
-  if(incl.risk || incl.severity) sec.push(`<section><h2>Kritik Riskler</h2><p>Yüksek potansiyelli riskler frekans tek başına kullanılmadan değerlendirilir. Mevcut veri modelinde potansiyel şiddet sınıfı yoksa yapay puan üretilmez.</p></section>`);
-  if(incl.improve) sec.push(`<section><h2>Sürekli İyileştirme</h2><p>Uzun dönem performans; olay sonuçları, proaktif bildirimler, kontrol faaliyetleri ve aksiyon kapanma göstergeleri birlikte izlenir.</p></section>`);
+
+  if(incl.trend){
+    const ch=ksReportChartHTML('ks-hse-trend-chart','Olay Trendi');
+    sec.push(ch || `<section class="hse-pr-section"><h2>Olay Trendi</h2><p>Seçili dönemde ${liste.length} olay kaydı bulunmaktadır. Grafik görüntüsü hazırlanamadı.</p></section>`);
+  }
+
+  if(incl.priority || incl.actions) sec.push(`<section class="hse-pr-section"><h2>Öncelikli HSE Bulguları / Aksiyonlar</h2>
+    <table><thead><tr><th>Alan</th><th>Görev / Bulgu</th><th>Kritiklik</th><th>Termin</th><th>Ana Kök Neden</th></tr></thead><tbody>
+    ${gecikmis.length?gecikmis.slice(0,12).map(t=>`<tr><td>${ksEsc(t.hseIliski||'—')}</td><td>${ksEsc(t.text||'—')}</td><td>${ksEsc(t.hseKritik||'—')}</td><td>${ksEsc(t.termin||'—')}</td><td>${ksEsc(t.hseKok? (kazaKokNedenKategori(t.hseKok)||t.hseKok):'—')}</td></tr>`).join(''):'<tr><td colspan="5">Gecikmiş HSE görevi yok.</td></tr>'}
+    </tbody></table></section>`);
+
+  if(incl.event){
+    const ch=ksReportChartHTML('ks-canvas-tur','Kaza / Hasar Türüne Göre Dağılım');
+    sec.push(ch || `<section class="hse-pr-section"><h2>Kaza / Hasar Türüne Göre Dağılım</h2><table><thead><tr><th>Tür</th><th>Adet</th></tr></thead><tbody>${topEvent.map(([a,n])=>`<tr><td>${ksEsc(a)}</td><td>${n}</td></tr>`).join('')}</tbody></table></section>`);
+  }
+  if(incl.eventP){
+    const ch=ksReportChartHTML('ks-canvas-tur-pareto','Kaza / Hasar Türü Pareto');
+    sec.push(ch || `<section class="hse-pr-section"><h2>Kaza / Hasar Türü Pareto</h2><p>Pareto grafiği seçildi; grafik görüntüsü hazırlanamadı.</p></section>`);
+  }
+  if(incl.root){
+    const ch=ksReportChartHTML('ks-canvas-kok','Kök Nedene Göre Dağılım');
+    sec.push(ch || `<section class="hse-pr-section"><h2>Kök Nedene Göre Dağılım</h2><table><thead><tr><th>Kök Neden</th><th>Adet</th></tr></thead><tbody>${topRoot.map(([a,n])=>`<tr><td>${ksEsc(a)}</td><td>${n}</td></tr>`).join('')}</tbody></table></section>`);
+  }
+  if(incl.rootP){
+    const ch=ksReportChartHTML('ks-canvas-kok-pareto','Kök Neden Pareto');
+    sec.push(ch || `<section class="hse-pr-section"><h2>Kök Neden Pareto</h2><p>Pareto grafiği seçildi; grafik görüntüsü hazırlanamadı.</p></section>`);
+  }
+  if(incl.month){
+    const c1=ksReportChartHTML('ks-canvas-ay','Aylara Göre Dağılım');
+    const c2=ksReportChartHTML('ks-canvas-ay-pareto','Aylar Pareto');
+    sec.push(c1 || `<section class="hse-pr-section"><h2>Aylara Göre Dağılım</h2><table><tbody>${['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'].map((m,i)=>`<tr><td>${m}</td><td>${monthMap[i]}</td></tr>`).join('')}</tbody></table></section>`);
+    if(c2) sec.push(c2);
+  }
+
+  if(incl.leading) sec.push(`<section class="hse-pr-section"><h2>Leading / Lagging Değerlendirmesi</h2>
+    <div class="hse-pr-two">
+      <div><h3>Leading — Proaktif Göstergeler</h3><table><tbody>
+        <tr><td>İSG görevleri zamanında kapanma</td><td>${hseOnTimePct===null?'—':'%'+hseOnTimePct}</td></tr>
+        <tr><td>Kritik İSG görevleri zamanında kapanma</td><td>${criticalPct===null?'—':'%'+criticalPct}</td></tr>
+        <tr><td>Geciken yüksek/kritik HSE görevi</td><td>${criticalOverdue.length}</td></tr>
+        <tr><td>Koruyucu tedbir / ekipman eksikliği</td><td>${protectiveOpen}</td></tr>
+        <tr><td>Denetim bulgusu kapanma</td><td>${denPct===null?'—':'%'+denPct}</td></tr>
+      </tbody></table></div>
+      <div><h3>Lagging — Sonuç Göstergeleri</h3><table><tbody>
+        <tr><td>İş Kazası</td><td>${kazaSay}</td></tr><tr><td>İlk Yardım</td><td>${ilkSay}</td></tr>
+        <tr><td>Kayıp Gün</td><td>${kayip}</td></tr><tr><td>Yüksek Potansiyelli Olay</td><td>${highPotential}</td></tr>
+        <tr><td>LTIFR</td><td>${ksFmtRate(ltifr)}</td></tr><tr><td>TRIFR</td><td>${ksFmtRate(trifr)}</td></tr>
+      </tbody></table></div>
+    </div></section>`);
+
+  if(incl.severity || incl.risk){
+    const sev=liste.filter(k=>Number(k.potansiyelSiddet)>=1);
+    sec.push(`<section class="hse-pr-section"><h2>Şiddet × Frekans / Kritik Risk</h2>
+      ${sev.length?`<table><thead><tr><th>Olay</th><th>Kök Neden</th><th>Potansiyel Şiddet</th></tr></thead><tbody>${sev.slice(0,20).map(k=>`<tr><td>${ksEsc(k.aciklama||'—')}</td><td>${ksEsc(k.kokNeden||'—')}</td><td>${['','Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'][Number(k.potansiyelSiddet)]}</td></tr>`).join('')}</tbody></table>`:'<p>Potansiyel şiddeti değerlendirilmiş olay bulunmuyor.</p>'}
+    </section>`);
+  }
+
+  if(incl.factory) sec.push(`<section class="hse-pr-section"><h2>Fabrika Karşılaştırması</h2><table><thead><tr><th>Fabrika</th><th>Olay</th></tr></thead><tbody>${Object.entries(fabMap).sort((a,b)=>b[1]-a[1]).map(([f,n])=>`<tr><td>${ksEsc(f)}</td><td>${n}</td></tr>`).join('')||'<tr><td colspan="2">Veri yok</td></tr>'}</tbody></table></section>`);
+
+  if(incl.isoFlow) sec.push(`<section class="hse-pr-section"><h2>ISO 45004 Performans Değerlendirme Akışı</h2>
+    <div class="hse-pr-flow">${[
+      ['İZLE','Olay, denetim, kontrol, görev'],['ÖLÇ','KPI ve performans göstergeleri'],
+      ['ANALİZ ET','Trend, Pareto, kök neden'],['DEĞERLENDİR','Durum özeti, risk önceliği'],
+      ['AKSİYON AL','Öncelikli aksiyon / görev'],['GÖZDEN GEÇİR','Dönem ve uzun vadeli gelişim']
+    ].map(x=>`<div><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div></section>`);
+
+  if(incl.rootClass) sec.push(`<section class="hse-pr-section"><h2>Sistematik Kök Neden Sınıflandırması</h2><div class="hse-pr-rootgrid">
+    <div><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, ergonomi, ekipman tasarımı, fiziksel izolasyon.</span></div>
+    <div><b>İş Organizasyonu / Prosedür</b><span>İş yöntemi, EKED, görev planlama, vardiya, iş akışı ve prosedür eksiklikleri.</span></div>
+    <div><b>Yetkinlik / Eğitim</b><span>Eğitim, işe uygunluk, yeterlilik ve talimatın anlaşılması.</span></div>
+    <div><b>Gözetim / Yönetim Kontrolü</b><span>Saha gözetimi, kontrol sıklığı, uygunsuzluğun tekrarı ve yönetim takibi.</span></div>
+    <div><b>Çalışma Ortamı</b><span>Aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni ve alan kısıtları.</span></div>
+    <div><b>İnsan Faktörü</b><span>Dikkat kaybı vb. sistem koşullarıyla birlikte değerlendirilir.</span></div>
+  </div></section>`);
+
+  if(incl.improve){
+    const years=[...new Set((typeof kazaItems!=='undefined'?kazaItems:[]).map(k=>(k.tarih||'').slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort();
+    const rows=years.map(y=>{
+      const yl=kazaItems.filter(k=>(k.tarih||'').slice(0,4)===y && (fabLabel==='Tüm Fabrikalar'||k.fab===fabLabel));
+      return [y,yl.filter(k=>k.tur==='kaza').length,yl.filter(k=>k.tur==='ramak').length,yl.reduce((a,k)=>a+(parseInt(k.kayip)||0),0)];
+    });
+    const ch=ksReportChartHTML('ks-year-chart','Yıllara Göre Performans Eğilimi');
+    sec.push(`<section class="hse-pr-section"><h2>Sürekli İyileştirme / Yıllık Değerlendirme</h2>
+      <table><thead><tr><th>Yıl</th><th>İş Kazası</th><th>Ramak Kala</th><th>Kayıp Gün</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')||'<tr><td colspan="4">Yıllık veri yok</td></tr>'}</tbody></table>
+      <div class="hse-pr-note">Uzun dönem performans; olay sonuçları, proaktif bildirimler, denetim ve aksiyon kapanma göstergeleri birlikte değerlendirilir.</div>
+    </section>`);
+    if(ch) sec.push(ch);
+  }
+
   if(incl.appendix) sec.push(ksEventTableHTML(liste,'Ek — Kaza / Ramak Kala Olay Listesi'));
 
-  const w=window.open('','_blank');
-  if(!w){ alert('Yazdırma penceresi açılamadı. Açılır pencere engelini kontrol edin.'); return; }
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>İSG Performans Değerlendirme Raporu</title>
-  <style>
-    body{font:12px Inter,Arial,sans-serif;color:#152334;margin:28px;background:#fff}h1{font-size:21px;color:#0d2b46;margin:0 0 4px}
-    .meta{color:#6f7c89;font-size:10px;border-bottom:3px solid #0d2b46;padding-bottom:12px}.approach{margin:14px 0;background:#f7f9fa;border-left:4px solid #f07a24;padding:10px;border-radius:8px;font-size:10px;line-height:1.5}
-    section{break-inside:avoid;margin-top:19px}h2{font-size:13px;color:#0d2b46;border-bottom:1px solid #dfe6ec;padding-bottom:5px}
-    .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.kpis div{border:1px solid #dfe6ec;border-radius:9px;padding:9px}.kpis b{display:block;font-size:20px}.kpis span{font-size:9px;color:#6f7c89}
-    table{width:100%;border-collapse:collapse;margin-top:7px}th,td{border-bottom:1px solid #dfe6ec;padding:7px;text-align:left;font-size:9.5px}th{background:#eef3f7;color:#0d2b46}
-    p{line-height:1.55}.foot{margin-top:20px;font-size:8.5px;color:#7d8993}@media print{body{margin:12mm}}
-  </style></head><body>
-  <h1>İSG PERFORMANS DEĞERLENDİRME RAPORU</h1>
-  <div class="meta"><b>${ksEsc(periodLabel)}</b> · ${ksEsc(fabLabel)} · ${ksEsc(turLabel)} · Rapor: ${mode==='detail'?'Detaylı Analiz':'Yönetici'}</div>
-  <div class="approach"><b>Yaklaşım:</b> Bu rapor ISO 45004:2024 performans değerlendirme yaklaşımı esas alınarak hazırlanmıştır. Bu ifade bir belgelendirme veya standarda tam uygunluk iddiası değildir.</div>
-  ${sec.join('')}
-  <div class="foot">Rapor kapsamı kullanıcı tarafından seçilen bölümlere göre oluşturulmuştur.</div>
-  <script>window.onload=()=>window.print()<\/script></body></html>`);
-  w.document.close();
-}
+  const el=ksHsePrintContainer();
+  el.innerHTML=`<div class="hse-pr-cover">
+    <h1>İSG PERFORMANS DEĞERLENDİRME RAPORU</h1>
+    <div class="hse-pr-meta"><b>${ksEsc(periodLabel)}</b> · ${ksEsc(fabLabel)} · ${ksEsc(turLabel)} · ${mode==='detail'?'Detaylı Analiz Raporu':'Yönetici Raporu'}</div>
+    <div class="hse-pr-approach"><b>Yaklaşım:</b> ISO 45004:2024 performans değerlendirme yaklaşımı esas alınarak hazırlanmıştır. Bu ifade belgelendirme veya standarda tam uygunluk iddiası değildir.</div>
+  </div>${sec.filter(Boolean).join('')}<div class="hse-pr-foot">Rapor kapsamı Kurumsal Rapor ekranında işaretlenen bölümlere göre oluşturulmuştur.</div>`;
 
+  document.body.classList.add('print-hse-report');
+  // Aynı sayfada tek yazdırma akışı: yeni web sekmesi/popup oluşturulmaz.
+  setTimeout(()=>window.print(),120);
+  window.addEventListener('afterprint',ksCleanupHsePrint,{once:true});
+  setTimeout(()=>{ if(document.body.classList.contains('print-hse-report')) ksCleanupHsePrint(); },3000);
+}
 function ksEventTableHTML(liste,title='Kaza / Ramak Kala Olay Listesi'){
   const rows = liste.slice().sort((a,b)=>(a.tarih||'').localeCompare(b.tarih||'')).map(k=>`
     <tr>
@@ -13496,13 +15031,14 @@ function ksPrintEventList(){
   const periodLabel=ksPeriodLabel(document.getElementById('ks-f-yil')?.value || 'ytd');
   const fabLabel=document.getElementById('ks-f-fab')?.selectedOptions?.[0]?.text || 'Tüm Fabrikalar';
   const turLabel=document.getElementById('ks-f-tur-select')?.selectedOptions?.[0]?.text || 'Tüm Olay Türleri';
-  const w=window.open('','_blank');
-  if(!w){alert('Yazdırma penceresi açılamadı. Açılır pencere engelini kontrol edin.');return;}
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Olay Listesi</title>
-    <style>body{font:11px Inter,Arial,sans-serif;color:#152334;margin:22px}h1{color:#0d2b46;font-size:19px}.meta{font-size:10px;color:#6f7c89;margin-bottom:14px}table{width:100%;border-collapse:collapse}th,td{font-size:8.7px;border-bottom:1px solid #dfe6ec;padding:6px;text-align:left;vertical-align:top}th{background:#eef3f7;color:#0d2b46}@media print{body{margin:8mm}}</style>
-    </head><body><h1>KAZA / RAMAK KALA OLAY LİSTESİ</h1><div class="meta">${ksEsc(periodLabel)} · ${ksEsc(fabLabel)} · ${ksEsc(turLabel)} · ${liste.length} kayıt</div>
-    ${ksEventTableHTML(liste,'Olay Kayıtları')}<script>window.onload=()=>window.print()<\/script></body></html>`);
-  w.document.close();
+  const el=ksHsePrintContainer();
+  el.innerHTML=`<div class="hse-pr-cover"><h1>KAZA / RAMAK KALA OLAY LİSTESİ</h1>
+    <div class="hse-pr-meta">${ksEsc(periodLabel)} · ${ksEsc(fabLabel)} · ${ksEsc(turLabel)} · ${liste.length} kayıt</div></div>
+    ${ksEventTableHTML(liste,'Olay Kayıtları')}`;
+  document.body.classList.add('print-hse-report');
+  setTimeout(()=>window.print(),120);
+  window.addEventListener('afterprint',ksCleanupHsePrint,{once:true});
+  setTimeout(()=>{ if(document.body.classList.contains('print-hse-report')) ksCleanupHsePrint(); },3000);
 }
 
 // ── V8.2: Mobil görev FAB kesin görünürlük kontrolü ─────────────
@@ -13680,7 +15216,7 @@ function denetimRender() {
   stats.innerHTML = `
     <div class="dn-main-stat"><b>${denetimler.length}</b><span>Denetim</span></div>
     <div class="dn-main-stat"><b>${liste.length}</b><span>Toplam Bulgu</span></div>
-    <div class="dn-main-stat warn"><b>${acik}</b><span>Açık Bulgu</span></div>
+    <div class="dn-main-stat warn"><b>${acik}</b><span>Kapanmamış Bulgu</span></div>
     <div class="dn-main-stat good"><b>%${oran}</b><span>Kapanma Oranı</span></div>
     <div class="dn-compact-status">
       <span><i class="amber"></i>Açık <b>${acikSaf}</b></span>
@@ -13744,7 +15280,9 @@ function denetimRender() {
         </div>
 
         <div class="dnk-alt">
-          <button onclick="bulguGoreveEkle('${b.id}')" title="Görev panosuna ekle" class="dnk-gorev-btn">📋 Göreve Ekle</button>
+          ${b.linkedTaskId
+            ? `<span class="dnk-linked-badge" title="Bu bulgu görev panosundaki bir görevle bağlantılı">🔎 Göreve Bağlı${(b.auditRepeatCount||0)>1?' · '+b.auditRepeatCount+' Denetim Bulgusu':''}</span>`
+            : `<button onclick="bulguGoreveEkle('${b.id}')" title="Mevcut benzer görevi bağla veya yeni görev oluştur" class="dnk-gorev-btn">📋 Göreve Ekle</button>`}
           <div style="flex:1"></div>
           ${terminStr ? `<span class="dnk-termin ${gecikmis?'gecikmis':''}">📅 ${terminStr}${gecikmis?' · Termini geçti':''}</span>` : ''}
         </div>
@@ -13869,6 +15407,11 @@ function bulguOpen(editId, denetimId) {
   document.getElementById('bg-m-bolum').value   = b ? (b.bolum||'') : '';
   document.getElementById('bg-m-sorumlu').value = b ? (b.sorumlu||'') : '';
   document.getElementById('bg-m-termin').value  = b ? (b.termin||'') : '';
+  bulguHseKokDoldur();
+  document.getElementById('bg-m-hse-iliski').value = b ? (b.hseIliski||'') : '';
+  document.getElementById('bg-m-hse-tedbir').value = b ? (b.hseTedbir||'İdari / Organizasyonel Kontrol') : 'İdari / Organizasyonel Kontrol';
+  document.getElementById('bg-m-hse-kok').value = b ? (b.hseKok||'') : '';
+  bulguHseToggle();
   document.getElementById('bulgu-modal-bg').style.display = 'flex';
   setTimeout(() => document.getElementById('bg-m-metin').focus(), 80);
 }
@@ -13887,6 +15430,9 @@ function bulguSubmit() {
     bolum:   document.getElementById('bg-m-bolum').value.trim(),
     sorumlu: document.getElementById('bg-m-sorumlu').value.trim(),
     termin:  document.getElementById('bg-m-termin').value,
+    hseIliski: document.getElementById('bg-m-hse-iliski')?.value || '',
+    hseTedbir: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-tedbir')?.value || '') : '',
+    hseKok: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-kok')?.value || '') : '',
   };
   if (bgEditId) {
     const b = bulgular.find(x => x.id === bgEditId);
@@ -13910,27 +15456,87 @@ function bulguDurumDegistir(id, durum) {
   if (durum === 'kapali') b.kapanis = Date.now(); else b.kapanis = null;
   denetimSave(); denetimRender();
 }
+function bulguHseKokDoldur() {
+  const sel = document.getElementById('bg-m-hse-kok');
+  if (!sel) return;
+  const mevcut = sel.value || '';
+  const liste = (typeof kazaKokNedenListesi !== 'undefined' && Array.isArray(kazaKokNedenListesi) && kazaKokNedenListesi.length)
+    ? kazaKokNedenListesi : (typeof KAZA_KOKNEDEN_VARSAYILAN !== 'undefined' ? KAZA_KOKNEDEN_VARSAYILAN : []);
+  sel.innerHTML = '<option value="">Seçiniz</option>' + liste.slice().sort((a,b)=>a.localeCompare(b,'tr'))
+    .map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  if (mevcut && liste.includes(mevcut)) sel.value = mevcut;
+}
+function bulguHseToggle() {
+  const iliski = document.getElementById('bg-m-hse-iliski')?.value || '';
+  const ex = document.getElementById('bg-m-hse-extra');
+  if (ex) ex.classList.toggle('show', !!iliski);
+}
+function bulguNormalizeText(v) {
+  return (v||'').toLocaleLowerCase('tr-TR').replace(/[^\p{L}\p{N}\s]/gu,' ')
+    .replace(/\s+/g,' ').trim();
+}
+function bulguTaskBenzerlik(b, t, d) {
+  if (!t || t.doneAt || t.status === 'tamamlandi') return 0;
+  const a = new Set(bulguNormalizeText(b.metin).split(' ').filter(x=>x.length>3));
+  const z = new Set(bulguNormalizeText(t.text).split(' ').filter(x=>x.length>3));
+  let ortak=0; a.forEach(x=>{ if(z.has(x)) ortak++; });
+  const metinSkor = a.size ? ortak/a.size : 0;
+  const bFabs = dnFabListesi(d);
+  const tFabs = Array.isArray(t.fabs) ? t.fabs : (t.fab ? String(t.fab).split(',').map(x=>x.trim()) : []);
+  const fabEs = bFabs.some(f=>tFabs.includes(f));
+  const hseEs = b.hseIliski && t.hseIliski && b.hseIliski===t.hseIliski;
+  const kokEs = b.hseKok && t.hseKok && b.hseKok===t.hseKok;
+  return metinSkor + (fabEs?.28:0) + (hseEs?.32:0) + (kokEs?.22:0);
+}
+function bulguGorevBagla(b, task, d) {
+  task.auditFindingIds = Array.isArray(task.auditFindingIds) ? task.auditFindingIds : [];
+  if (!task.auditFindingIds.includes(b.id)) task.auditFindingIds.push(b.id);
+  task.auditLinks = Array.isArray(task.auditLinks) ? task.auditLinks : [];
+  if (!task.auditLinks.some(x=>x.findingId===b.id)) {
+    task.auditLinks.push({findingId:b.id, auditId:b.denetimId, auditName:d?.ad||'', auditDate:d?.tarih||'', linkedAt:Date.now()});
+  }
+  b.linkedTaskId = task.id;
+  b.linkedTaskAt = Date.now();
+  b.auditRepeatCount = task.auditFindingIds.length;
+  task.auditRepeatCount = task.auditFindingIds.length;
+  denetimSave(); save(); render(); denetimRender();
+  toast(task.auditFindingIds.length>1 ? `Mevcut göreve bağlandı · ${task.auditFindingIds.length} denetim bulgusu` : 'Bulgu mevcut göreve bağlandı');
+}
+function bulguYeniGorevOlustur(b,d) {
+  const id=Date.now()+'';
+  const task={
+    id,
+    text:b.metin,
+    status:COLS[0]?.id||'bekliyor',
+    prio:b.onem==='yuksek'?'high':b.onem==='dusuk'?'low':'normal',
+    sorumlu:b.sorumlu||'', termin:b.termin||'', talep:'',
+    note:(b.oneri?'Öneri: '+b.oneri+'\n':'')+(d?'Denetim: '+d.ad+' ('+(d.tarih||'')+')':''),
+    fab:dnFabListesi(d).join(', '), fabs:dnFabListesi(d), date:td(), addedAt:Date.now(), doneAt:null,
+    hseIliski:b.hseIliski||'', hseTedbir:b.hseTedbir||'', hseKok:b.hseKok||'',
+    auditFindingIds:[b.id],
+    auditLinks:[{findingId:b.id,auditId:b.denetimId,auditName:d?.ad||'',auditDate:d?.tarih||'',linkedAt:Date.now()}],
+    auditRepeatCount:1
+  };
+  tasks.push(task);
+  b.linkedTaskId=id; b.linkedTaskAt=Date.now(); b.auditRepeatCount=1;
+  denetimSave(); save(); render(); denetimRender();
+  toast('Bulgu görev panosuna eklendi ve denetim bağlantısı kuruldu');
+}
 function bulguGoreveEkle(id) {
-  const b = bulgular.find(x => x.id === id);
-  if (!b) return;
-  const d = denetimler.find(x => x.id === b.denetimId);
-  tasks.push({
-    id: Date.now()+'',
-    text: b.metin,
-    status: COLS[0]?.id || 'bekliyor',
-    prio: b.onem === 'yuksek' ? 'high' : b.onem === 'dusuk' ? 'low' : 'normal',
-    sorumlu: b.sorumlu || '',
-    termin: b.termin || '',
-    talep: '',
-    note: (b.oneri ? 'Öneri: '+b.oneri+'\n' : '') + (d ? 'Denetim: '+d.ad+' ('+(d.tarih||'')+')' : ''),
-    fab: dnFabListesi(d).join(', '),
-    fabs: dnFabListesi(d),
-    date: td(),
-    addedAt: Date.now(),
-    doneAt: null
-  });
-  save(); render();
-  toast('Bulgu görev panosuna eklendi');
+  const b=bulgular.find(x=>x.id===id); if(!b) return;
+  const d=denetimler.find(x=>x.id===b.denetimId);
+  if (b.linkedTaskId) {
+    const mevcut=tasks.find(t=>String(t.id)===String(b.linkedTaskId));
+    if(mevcut){ toast('Bu bulgu zaten bir görevle bağlantılı'); return; }
+  }
+  const adaylar=tasks.map(t=>({t,skor:bulguTaskBenzerlik(b,t,d)}))
+    .filter(x=>x.skor>=.52).sort((a,z)=>z.skor-a.skor).slice(0,3);
+  if (adaylar.length) {
+    const ad=adaylar[0].t;
+    const sec=confirm(`Benzer açık görev bulundu:\n\n"${ad.text}"\n\nTamam = mevcut göreve bağla\nİptal = yeni görev oluştur`);
+    if(sec){ bulguGorevBagla(b,ad,d); return; }
+  }
+  bulguYeniGorevOlustur(b,d);
 }
 
 // ── TOPLU YAPIŞTIRMA ────────────────────────────────────────
