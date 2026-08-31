@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.4.5">
+<meta name="app-version" content="8.4.6">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.4.5';
+  const APP_VERSION = '8.4.6';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -939,6 +939,13 @@ html, body { height: 100%; overflow: hidden;
   background:var(--surface2); cursor:pointer; color:var(--text2); flex-shrink:0;
 }
 .kaza-onlem-gorev-btn:hover { background:var(--surface); border-color:var(--accent,#378ADD); color:var(--accent,#378ADD); }
+.kaza-linked-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  border:1px solid #B9D9CB;background:#EDF8F3;color:#257A5A;
+  border-radius:99px;padding:5px 9px;font-size:10px;font-weight:800;
+  white-space:nowrap;
+}
+
 .kaza-onlem-sel {
   font-size:10px; font-weight:700; padding:2px 6px; border-radius:99px;
   border:1px solid var(--border2); background:var(--surface); color:var(--text2);
@@ -4562,6 +4569,43 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 }
 </style>
 
+<style id="hse-chart-mobile-overflow-fix">
+/* Genel Analiz grafiklerinde mobil etiket güvenliği.
+   PC görünümü değiştirilmez; yalnız 620px ve altında devreye girer. */
+@media(max-width:620px){
+  #kaza-stats-body .ks-canvas-wrap.ks-mobile-x-scroll{
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    min-height:300px!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    scrollbar-width:thin;
+  }
+  #kaza-stats-body .ks-canvas-wrap.ks-mobile-x-scroll canvas{
+    width:var(--ks-mobile-chart-width)!important;
+    min-width:var(--ks-mobile-chart-width)!important;
+    max-width:none!important;
+  }
+  #kaza-stats-body .ks-canvas-wrap.ks-mobile-dynamic-height{
+    min-height:var(--ks-mobile-chart-height)!important;
+    height:var(--ks-mobile-chart-height)!important;
+    overflow:visible!important;
+  }
+  #kaza-stats-body .ks-canvas-wrap.ks-mobile-dynamic-height canvas{
+    height:var(--ks-mobile-chart-height)!important;
+    max-height:none!important;
+  }
+}
+</style>
+
+
+<style id="hse-task-modal-layer-fix">
+/* HSE / ISO 45004 ekranından açılan mevcut görev ekleme-düzenleme modalı
+   tam ekran HSE katmanının üstünde görünmelidir. */
+#add-modal-bg{
+  z-index:120!important;
+}
+</style>
 
 <style id="task-modal-global-hse">
 /* Board > Görev Ekle: Kaza/Olay kayıt modalı ile aynı kurumsal HSE dil */
@@ -5017,6 +5061,44 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 </style>
 
 
+
+<style id="severity-frequency-scroll-fix-v2">
+.ks-panel-card{
+  min-width:0!important;
+}
+.ks-matrix-scroll{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  touch-action:pan-x pan-y;
+  scrollbar-width:thin;
+  padding-bottom:4px;
+}
+.ks-matrix-scroll .ks-real-matrix{
+  width:760px!important;
+  min-width:760px!important;
+  max-width:none!important;
+}
+@media(max-width:620px){
+  #ks-view-risk .ks-panel-card{
+    overflow:hidden!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  #ks-view-risk .ks-matrix-scroll{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+  }
+}
+</style>
+
 <style id="potential-severity-matrix-v1">
 .kaza-potential-field{
   background:#F8FAFC!important;
@@ -5081,6 +5163,83 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 }
 </style>
 
+
+
+<style id="severity-frequency-detail-list-v2">
+.ks-risk-detail-list{
+  margin-top:14px;
+  border:1px solid #DFE6EC;
+  border-radius:13px;
+  overflow:hidden;
+  background:#fff;
+}
+.ks-risk-detail-title{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:10px 12px;
+  background:#F7F9FB;
+  border-bottom:1px solid #DFE6EC;
+}
+.ks-risk-detail-title b{font-size:11px;color:#152334}
+.ks-risk-detail-title span{
+  font-size:9px;font-weight:800;color:#53616E;
+  background:#E6EDF2;border-radius:99px;padding:3px 7px;
+}
+.ks-risk-detail-head,.ks-risk-detail-row{
+  display:grid;
+  grid-template-columns:86px minmax(0,1.7fr) minmax(0,1fr) 92px;
+  gap:8px;align-items:start;
+  padding:8px 10px;
+}
+.ks-risk-detail-head{
+  background:#FBFCFD;
+  border-bottom:1px solid #DFE6EC;
+  color:#6F7C89;
+  font-size:8.5px;
+  font-weight:900;
+}
+.ks-risk-detail-row{
+  border-bottom:1px solid #EDF1F4;
+  font-size:9.5px;
+  line-height:1.45;
+  color:#465763;
+}
+.ks-risk-detail-row:last-child{border-bottom:0}
+.ks-risk-detail-row>span{min-width:0;overflow-wrap:break-word;word-break:normal}
+.ks-risk-detail-row .sev{
+  display:inline-flex;width:max-content;max-width:100%;
+  padding:3px 7px;border-radius:99px;font-size:8.5px;font-weight:900;white-space:nowrap;
+}
+.ks-risk-detail-row .sev-4{background:#FFF0DC;color:#9A6618}
+.ks-risk-detail-row .sev-5{background:#FDEAEA;color:#A63D3D}
+.ks-critical-tasks>b small{font-size:9px;color:#6F7C89;font-weight:700}
+@media(max-width:620px){
+  .ks-risk-detail-head{display:none}
+  .ks-risk-detail-row{
+    grid-template-columns:1fr!important;
+    gap:5px!important;
+    padding:10px 12px!important;
+  }
+  .ks-risk-detail-row>span:nth-child(2){
+    color:#152334;
+    font-size:11px;
+    font-weight:700;
+  }
+  .ks-risk-detail-row>span:nth-child(3)::before{
+    content:"Kök Neden: ";
+    font-weight:800;color:#6F7C89;
+  }
+  .ks-risk-detail-row>span:nth-child(4)::before{
+    content:"Tarih: ";
+    font-weight:800;color:#6F7C89;
+  }
+  .ks-critical-tasks>div{
+    align-items:flex-start!important;
+    flex-wrap:wrap!important;
+    line-height:1.45!important;
+    font-size:10px!important;
+  }
+}
+</style>
 
 <style id="leading-iso-reference-final">
 /* Leading / Lagging — final referans görünümü */
@@ -5223,7 +5382,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 /* HSE / Denetim bağlantı rozetleri */
 .lv-hse-cell{min-width:180px!important;max-width:250px!important}
 .lv-hse-wrap{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
-.lv-hse-badge,.lv-hse-critical,.lv-audit-badge{
+.lv-hse-badge,.lv-hse-critical,.lv-audit-badge,.lv-incident-badge{
   display:inline-flex;align-items:center;gap:4px;
   border-radius:999px;padding:4px 7px;
   font-size:9px;font-weight:850;line-height:1.1;white-space:nowrap
@@ -5235,6 +5394,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 .lv-hse-critical.mid{background:#FFF8DF;color:#947000;border-color:#F1E2A7}
 .lv-hse-critical.low{background:#EDF8F3;color:#257A5A;border-color:#CFE8DC}
 .lv-audit-badge{background:#EDF8F3;color:#257A5A;border:1px solid #CFE8DC}
+.lv-incident-badge{background:#FFF3E8;color:#A85C17;border:1px solid #F2D3B2}
 
 /* Filtre menüleri de aynı HSE yüzey dili */
 .lf-dropdown{
@@ -5283,52 +5443,188 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 <style id="hse-report-print-fix">
 #hse-print{display:none}
 @media print{
-  body.print-hse-report #app,
-  body.print-hse-report #toast,
-  body.print-hse-report #loading-msg,
-  body.print-hse-report #mob-fab,
-  body.print-hse-report #kaza-stats-panel-wrap{
-    display:none!important;
+  #hse-print{page:hseReport!important}
+  @page hseReport{
+    size:A4 portrait;
+    margin:8mm 11mm 12mm 11mm;
+    @bottom-center{
+      content:"Sayfa " counter(page) "/" counter(pages);
+      font-family:Arial,Helvetica,sans-serif;
+      font-size:7.5px;
+      color:#66798a;
+    }
   }
-  body.print-hse-report #hse-print{
+
+  html,body{background:#fff!important}
+  body.print-hse-report{margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important}
+  body.print-hse-report > *:not(#hse-print){display:none!important}
+  body.print-hse-report #hse-print{display:block!important;background:#fff!important;color:#23384a!important}
+  body.print-hse-report #hse-print,
+  body.print-hse-report #hse-print *{
+    box-sizing:border-box!important;
+    font-family:Arial,Helvetica,sans-serif!important;
+    font-style:normal!important;
+    font-variant:normal!important;
+    font-stretch:normal!important;
+    letter-spacing:0!important;
+    word-spacing:0!important;
+    text-shadow:none!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+
+  /* B3 sabit üst bilgi */
+  #hse-print .hse-pr-doc-shell{
+    width:100%!important;
+    border-collapse:collapse!important;
+    table-layout:fixed!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  #hse-print .hse-pr-doc-shell>thead{display:table-header-group!important}
+  #hse-print .hse-pr-doc-shell>tbody{display:table-row-group!important}
+  #hse-print .hse-pr-doc-shell>thead>tr>td,
+  #hse-print .hse-pr-doc-shell>tbody>tr>td{padding:0!important;border:0!important;vertical-align:top!important}
+  #hse-print .hse-pr-fixed-head{
     display:block!important;
-    color:#152334!important;
+    position:static!important;
+    height:auto!important;
     background:#fff!important;
-    font-family:Inter,Arial,sans-serif!important;
-    font-size:10.5px!important;
-    line-height:1.45!important;
+    border-bottom:1px solid #dfe6ec!important;
+    padding:0 0 3mm!important;
+    margin:0 0 5mm!important;
   }
-  body.print-hse-report{overflow:visible!important;background:#fff!important}
-  @page{size:A4 portrait;margin:11mm 9mm 13mm}
-  #hse-print .hse-pr-cover{break-after:auto}
-  #hse-print h1{margin:0;color:#0d2b46;font-size:20px;letter-spacing:.01em}
-  #hse-print .hse-pr-meta{margin-top:5px;color:#6f7c89;font-size:9.5px;border-bottom:3px solid #0d2b46;padding-bottom:9px}
-  #hse-print .hse-pr-approach,#hse-print .hse-pr-note{
-    margin-top:10px;background:#f7f9fa;border-left:4px solid #f07a24;border-radius:7px;padding:8px;font-size:9.2px;line-height:1.5
+  #hse-print .hse-pr-fixed-head h1{
+    margin:0!important;color:#0d2b46!important;
+    font-size:13.5px!important;line-height:1.18!important;font-weight:700!important;
   }
-  #hse-print .hse-pr-section{margin-top:15px;break-inside:avoid}
-  #hse-print h2{margin:0 0 7px;color:#0d2b46;font-size:12.5px;border-bottom:1px solid #dfe6ec;padding-bottom:5px}
-  #hse-print h3{font-size:10.5px;color:#0d2b46;margin:0 0 5px}
-  #hse-print p{margin:0;line-height:1.55}
-  #hse-print table{width:100%;border-collapse:collapse;margin-top:5px}
-  #hse-print th,#hse-print td{border-bottom:1px solid #dfe6ec;padding:5px 6px;text-align:left;vertical-align:top;font-size:8.7px}
-  #hse-print th{background:#eef3f7;color:#0d2b46;font-weight:800}
-  #hse-print .hse-pr-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
-  #hse-print .hse-pr-kpis>div{border:1px solid #dfe6ec;border-radius:8px;padding:7px}
-  #hse-print .hse-pr-kpis b{display:block;font-size:17px;color:#152334}
-  #hse-print .hse-pr-kpis span{display:block;margin-top:2px;font-size:8px;color:#6f7c89}
-  #hse-print .hse-pr-chart{display:block;width:100%;max-height:145mm;object-fit:contain;margin:5px auto 0}
-  #hse-print .hse-pr-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  #hse-print .hse-pr-two>div{border:1px solid #dfe6ec;border-radius:9px;padding:8px}
-  #hse-print .hse-pr-flow{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
-  #hse-print .hse-pr-flow>div{border:1px solid #dfe6ec;border-radius:8px;padding:7px;text-align:center}
-  #hse-print .hse-pr-flow b{display:block;color:#0d2b46;font-size:9px}
-  #hse-print .hse-pr-flow span{display:block;color:#6f7c89;font-size:7.7px;margin-top:2px}
-  #hse-print .hse-pr-rootgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-  #hse-print .hse-pr-rootgrid>div{border:1px solid #dfe6ec;border-radius:9px;padding:7px}
-  #hse-print .hse-pr-rootgrid b{display:block;color:#152334;font-size:9px;margin-bottom:3px}
-  #hse-print .hse-pr-rootgrid span{display:block;color:#6f7c89;font-size:8px;line-height:1.4}
-  #hse-print .hse-pr-foot{margin-top:14px;color:#8a949d;font-size:8px}
+  #hse-print .hse-pr-fixed-head>div{
+    margin-top:2px!important;color:#4285d4!important;
+    font-size:8.5px!important;line-height:1.3!important;font-weight:400!important;
+  }
+
+  #hse-print .hse-pr-doc-body{display:block!important;width:100%!important;margin:0!important;padding:0!important}
+  #hse-print .hse-pr-cover{margin:0 0 7mm!important}
+
+  /* Dönem / Fabrika / Kapsam - ilk B taslağı */
+  #hse-print .hse-pr-context{
+    width:100%!important;margin:0 0 7mm!important;
+    border-collapse:collapse!important;table-layout:fixed!important;
+  }
+  #hse-print .hse-pr-context th{
+    background:#eef1fb!important;color:#0d2b46!important;
+    font-size:9px!important;line-height:1.2!important;font-weight:700!important;
+    padding:8px 9px!important;border:1px solid #dfe6ec!important;text-align:left!important;
+    white-space:nowrap!important;
+  }
+  #hse-print .hse-pr-context td{
+    background:#fff!important;color:#23384a!important;
+    font-size:9.5px!important;line-height:1.3!important;font-weight:400!important;
+    padding:9px!important;border:1px solid #dfe6ec!important;text-align:left!important;
+  }
+
+  /* B3 bölüm başlıkları */
+  #hse-print .hse-pr-section,
+  #hse-print .hse-pr-approach-section{
+    display:block!important;margin:0 0 8mm!important;padding:0!important;
+    break-inside:auto!important;page-break-inside:auto!important;
+  }
+  #hse-print .hse-pr-section-head{
+    display:block!important;margin:0 0 3mm!important;padding:0!important;border:0!important;
+    break-after:avoid-page!important;page-break-after:avoid!important;
+  }
+  #hse-print .hse-pr-secno{display:none!important}
+  #hse-print .hse-pr-section-title{
+    display:block!important;border-left:4px solid #f07a24!important;padding:1px 0 1px 8px!important;
+  }
+  #hse-print .hse-pr-section-title h2{
+    margin:0!important;padding:0!important;color:#0d2b46!important;
+    font-size:13px!important;line-height:1.25!important;font-weight:700!important;
+  }
+  #hse-print .hse-pr-desc{
+    margin-top:4px!important;color:#526575!important;
+    font-size:8.6px!important;line-height:1.4!important;font-weight:400!important;
+  }
+  #hse-print h3{
+    margin:0 0 4px!important;color:#0d2b46!important;
+    font-size:9.5px!important;line-height:1.3!important;font-weight:700!important;
+  }
+  #hse-print p{margin:0 0 4px!important;color:#23384a!important;font-size:8.8px!important;line-height:1.45!important}
+
+  /* Yönetici özeti */
+  #hse-print .hse-pr-kpis{
+    display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:0!important;margin:0 0 3mm!important;border:1px solid #dfe6ec!important;background:#fff!important;
+  }
+  #hse-print .hse-pr-kpis>div{
+    min-width:0!important;border-right:1px solid #dfe6ec!important;padding:8px 9px!important;background:#fff!important;
+  }
+  #hse-print .hse-pr-kpis>div:last-child{border-right:0!important}
+  #hse-print .hse-pr-kpis b{display:block!important;color:#0d2b46!important;font-size:14px!important;line-height:1.1!important;font-weight:700!important}
+  #hse-print .hse-pr-kpis span{display:block!important;margin-top:5px!important;color:#23384a!important;font-size:8.5px!important;line-height:1.25!important;font-weight:700!important}
+
+  /* Grafikler */
+  #hse-print .hse-pr-chart-frame{
+    margin:2mm 0 3mm!important;padding:0!important;
+    break-inside:avoid!important;page-break-inside:avoid!important;
+  }
+  #hse-print .hse-pr-chart{
+    display:block!important;width:100%!important;max-width:100%!important;max-height:94mm!important;
+    object-fit:contain!important;margin:0 auto!important;
+  }
+  #hse-print .hse-pr-chart-caption{margin-top:2mm!important;color:#526575!important;font-size:8px!important;line-height:1.35!important}
+  #hse-print .hse-pr-empty{padding:8px!important;border:1px dashed #cfd9e1!important;border-radius:6px!important;color:#66798a!important;font-size:8.5px!important;background:#fafcfd!important}
+
+  /* Tüm raporda aynı tablo/font sistemi */
+  #hse-print .hse-pr-table-wrap{
+    width:100%!important;overflow:visible!important;margin:2mm 0 3mm!important;
+    break-before:avoid-page!important;page-break-before:avoid!important;
+  }
+  #hse-print .hse-pr-table-wrap table{
+    width:100%!important;border-collapse:collapse!important;table-layout:auto!important;margin:0!important;
+  }
+  #hse-print .hse-pr-table-wrap thead{display:table-header-group!important}
+  #hse-print .hse-pr-table-wrap tr{break-inside:avoid!important;page-break-inside:avoid!important}
+  #hse-print .hse-pr-table-wrap th{
+    background:#0d2b46!important;color:#fff!important;border:1px solid #d3dce3!important;
+    padding:6px 7px!important;font-size:7.6px!important;line-height:1.25!important;font-weight:700!important;
+    text-align:left!important;vertical-align:top!important;white-space:normal!important;
+    word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important;
+  }
+  #hse-print .hse-pr-table-wrap td{
+    background:#fff!important;color:#23384a!important;border:1px solid #dfe6ec!important;
+    padding:6px 7px!important;font-size:7.8px!important;line-height:1.35!important;font-weight:400!important;
+    text-align:left!important;vertical-align:top!important;white-space:normal!important;
+    word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important;
+  }
+  #hse-print .hse-pr-table-wrap tbody tr:nth-child(even) td{background:#f8fafb!important}
+  #hse-print .hse-pr-empty-cell{color:#66798a!important;font-style:italic!important}
+
+  /* B3 bilgi / değerlendirme kartları */
+  #hse-print .hse-pr-interpret{
+    display:block!important;margin:3mm 0 0!important;padding:8px 10px!important;
+    border:1px solid #9fc5ee!important;border-left:4px solid #4285d4!important;border-radius:4px!important;
+    background:#eef5fa!important;color:#23384a!important;font-size:8.7px!important;line-height:1.45!important;
+    break-inside:avoid!important;page-break-inside:avoid!important;
+  }
+  #hse-print .hse-pr-interpret.good{border-color:#83caaa!important;border-left-color:#1fa16d!important;background:#eef8f3!important}
+  #hse-print .hse-pr-interpret.warn{border-color:#efaa70!important;border-left-color:#f07a24!important;background:#fff5ea!important}
+  #hse-print .hse-pr-interpret b{display:block!important;margin:0 0 4px!important;color:#0d2b46!important;font-size:9px!important;line-height:1.25!important;font-weight:700!important}
+  #hse-print .hse-pr-interpret span{display:block!important;color:#23384a!important;font-size:8.7px!important;line-height:1.45!important;font-weight:400!important}
+
+  #hse-print .hse-pr-two{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:2mm!important}
+  #hse-print .hse-pr-two>div{min-width:0!important;border:1px solid #dfe6ec!important;border-radius:6px!important;padding:8px!important;background:#fff!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  #hse-print .hse-pr-flow{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:5px!important;margin-top:2mm!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  #hse-print .hse-pr-flow>div{border:1px solid #dfe6ec!important;border-radius:6px!important;padding:7px 5px!important;text-align:center!important;background:#fff!important}
+  #hse-print .hse-pr-flow b{display:block!important;color:#0d2b46!important;font-size:7.6px!important;line-height:1.2!important;font-weight:700!important}
+  #hse-print .hse-pr-flow span{display:block!important;margin-top:3px!important;color:#66798a!important;font-size:6.6px!important;line-height:1.3!important}
+  #hse-print .hse-pr-rootgrid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;margin-top:2mm!important}
+  #hse-print .hse-pr-rootgrid>div{min-width:0!important;border:1px solid #dfe6ec!important;border-radius:6px!important;padding:8px!important;background:#fff!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  #hse-print .hse-pr-rootgrid b{display:block!important;color:#0d2b46!important;font-size:8px!important;line-height:1.25!important;font-weight:700!important;margin-bottom:3px!important}
+  #hse-print .hse-pr-rootgrid span{display:block!important;color:#66798a!important;font-size:7px!important;line-height:1.35!important}
+  #hse-print .hse-pr-matrix{break-inside:avoid!important;page-break-inside:avoid!important}
+  #hse-print .hse-pr-subsection{margin-top:5mm!important}
+  #hse-print .hse-pr-subsection h3{margin:0 0 2mm!important;break-after:avoid-page!important;page-break-after:avoid!important}
 }
 </style>
 
@@ -8163,7 +8459,9 @@ function cellEditable(field, id, currentValue, displayHtml) {
 
 function renderListHseCell(t) {
   const badges = [];
-  if (t.hseIliski) {
+  if (t.incidentType) {
+    badges.push(`<span class="lv-incident-badge" title="Kaza / Olay kaydı ile bağlantılı">⚑ ${esc(t.incidentType)}</span>`);
+  } else if (t.hseIliski) {
     badges.push(`<span class="lv-hse-badge">${esc(t.hseIliski)}</span>`);
   }
   if (t.hseKritik) {
@@ -12992,7 +13290,9 @@ function kazaRender() {
       ${alan('Kök neden', k.kokNeden)}
       ${k.onlem ? `<div class="kaza-onlem-kutu">💡 <b>Alınan / Alınacak Önlem:</b> ${esc(k.onlem)}</div>
         <div class="kaza-onlem-alt">
-          <button onclick="kazaOnlemGorev('${k.id}')" title="Bu önlemi görev panosuna ekle" class="kaza-onlem-gorev-btn">📋 Göreve Ekle</button>
+          ${(k.linkedTaskId && tasks.some(t=>String(t.id)===String(k.linkedTaskId)))
+            ? `<span class="kaza-linked-badge" title="Bu olay görev panosundaki bir görevle bağlantılı">🔗 Göreve Bağlı</span>`
+            : `<button onclick="kazaOnlemGorev('${k.id}')" title="Bu önlemi görev panosuna ekle" class="kaza-onlem-gorev-btn">📋 Göreve Ekle</button>`}
           <div style="flex:1"></div>
           <select class="kaza-onlem-sel ${k.onlemTamam?'tamam':'acik'}" onchange="kazaOnlemDurum('${k.id}',this.value)">
             <option value="acik"${!k.onlemTamam?' selected':''}>Açık</option>
@@ -13103,10 +13403,23 @@ function kazaOnlemDurum(id, deger) {
 function kazaOnlemGorev(id) {
   const k = kazaItems.find(x => x.id === id);
   if (!k || !k.onlem) return;
-  const t = kazaTur(k.tur);
-  tasks.push({
-    id: Date.now()+'',
-    text: `[${t.ad}] ${k.onlem}`,
+
+  if (k.linkedTaskId) {
+    const mevcut = tasks.find(t => String(t.id) === String(k.linkedTaskId));
+    if (mevcut) {
+      toast('Bu olay zaten bir görevle bağlantılı');
+      kazaRender();
+      return;
+    }
+    k.linkedTaskId = '';
+    k.linkedTaskAt = null;
+  }
+
+  const tur = kazaTur(k.tur);
+  const taskId = Date.now()+'';
+  const task = {
+    id: taskId,
+    text: `[${tur.ad}] ${k.onlem}`,
     status: COLS[0]?.id || 'bekliyor',
     prio: k.tur === 'kaza' ? 'high' : 'normal',
     sorumlu: '',
@@ -13117,14 +13430,32 @@ function kazaOnlemGorev(id) {
     hseKritik: k.tur === 'kaza' ? 'Yüksek' : 'Orta',
     hseTedbir: 'Diğer',
     hseKok: k.kokNeden || '',
+    incidentType: tur.ad,
+    incidentTypeId: k.tur,
+    incidentIds: [k.id],
+    incidentLinks: [{
+      incidentId: k.id,
+      incidentType: k.tur,
+      incidentName: tur.ad,
+      incidentDate: k.tarih || '',
+      linkedAt: Date.now()
+    }],
     fab: k.fab || '',
     fabs: k.fab ? [k.fab] : [],
     date: td(),
     addedAt: Date.now(),
     doneAt: null
-  });
-  save(); render();
-  toast('Önlem görev panosuna eklendi');
+  };
+
+  tasks.push(task);
+  k.linkedTaskId = taskId;
+  k.linkedTaskAt = Date.now();
+
+  kazaSave();
+  save();
+  render();
+  kazaRender();
+  toast(`${tur.ad} kaydı görev panosuna eklendi ve bağlantı kuruldu`);
 }
 
 // ── Ayarlar ─────────────────────────────────────────────────
@@ -13746,10 +14077,55 @@ function kazaStatsFiltrele() {
     return true;
   });
 }
+function ksPrepareResponsiveChart(canvasId, config) {
+  const el = document.getElementById(canvasId);
+  if (!el) return;
+  const wrap = el.closest('.ks-canvas-wrap');
+  if (!wrap) return;
+
+  // Önce önceki mobil ölçüleri temizle; PC/tablet görünümü mevcut davranışını korur.
+  wrap.classList.remove('ks-mobile-x-scroll','ks-mobile-dynamic-height');
+  wrap.style.removeProperty('--ks-mobile-chart-width');
+  wrap.style.removeProperty('--ks-mobile-chart-height');
+  el.style.removeProperty('width');
+  el.style.removeProperty('max-width');
+  el.style.removeProperty('min-width');
+  el.style.removeProperty('height');
+
+  if (!window.matchMedia('(max-width: 620px)').matches) return;
+
+  const labels = Array.isArray(config?.data?.labels) ? config.data.labels : [];
+  const count = labels.length;
+  const isHorizontal = config?.options?.indexAxis === 'y';
+
+  if (isHorizontal) {
+    // Yatay kök neden grafiğinde her kategoriye yeterli dikey alan ayır.
+    // Kategori sayısı gelecekte arttığında yükseklik otomatik büyür ve etiketler üst üste binmez.
+    const h = Math.min(1500, Math.max(330, 92 + count * 52));
+    wrap.classList.add('ks-mobile-dynamic-height');
+    wrap.style.setProperty('--ks-mobile-chart-height', h + 'px');
+    el.style.setProperty('height', h + 'px', 'important');
+    return;
+  }
+
+  // Dikey sütun / Pareto grafiklerinde kategori sayısı arttıkça içeride yatay kaydırma kullan.
+  // Sayfanın kendisi taşmaz; yalnız grafik alanı kayar. Böylece uzun başlıklar okunur kalır.
+  if (count > 4) {
+    const perCategory = count >= 10 ? 76 : 84;
+    const minWidth = Math.min(1800, Math.max(430, count * perCategory));
+    wrap.classList.add('ks-mobile-x-scroll');
+    wrap.style.setProperty('--ks-mobile-chart-width', minWidth + 'px');
+    el.style.setProperty('width', minWidth + 'px', 'important');
+    el.style.setProperty('max-width', 'none', 'important');
+    el.style.setProperty('min-width', minWidth + 'px', 'important');
+  }
+}
+
 function ksMakeChart(canvasId, config) {
   const el = document.getElementById(canvasId);
   if (!el || typeof Chart === 'undefined') return;
   if (ksCharts[canvasId]) { ksCharts[canvasId].destroy(); }
+  ksPrepareResponsiveChart(canvasId, config);
   ksCharts[canvasId] = new Chart(el.getContext('2d'), config);
 }
 
@@ -13992,7 +14368,7 @@ function ksKokHorizontalOptions(vals, legendOn) {
           autoSkip:false,
           callback:function(value){
             const label=this.getLabelForValue(value);
-            return ksChartLabelWrap(label, 20);
+            return ksChartLabelWrap(label, window.matchMedia('(max-width: 620px)').matches ? 18 : 20);
           }
         },
         grid:{display:false}
@@ -14078,9 +14454,10 @@ function ksParetoConfig(data) {
           ticks:{
             color:'#444',
             font:{size:9.5},
-            maxRotation:42,
-            minRotation:0,
-            autoSkip:false
+            maxRotation: window.matchMedia('(max-width: 620px)').matches ? 38 : 42,
+            minRotation: window.matchMedia('(max-width: 620px)').matches ? 38 : 0,
+            autoSkip:false,
+            padding: window.matchMedia('(max-width: 620px)').matches ? 5 : 3
           },
           grid:{display:false}
         },
@@ -14657,6 +15034,58 @@ function ksPrioritySort(tasks) {
   });
 }
 
+
+function ksNearMissLeadingMetric(periodValue, fabValue='tumu') {
+  const src = (typeof kazaItems!=='undefined' && Array.isArray(kazaItems) ? kazaItems : [])
+    .filter(k => k.tur === 'ramak')
+    .filter(k => fabValue==='tumu' || k.fab===fabValue)
+    .filter(k => k.tarih);
+
+  const countBetween = (start,end) => src.filter(k=>{
+    const d=new Date(k.tarih+'T12:00:00');
+    return !Number.isNaN(d.getTime()) && (!start || d>=start) && (!end || d<=end);
+  }).length;
+
+  if (periodValue === 'tumu') {
+    return {current:src.length, previous:null, delta:null, text:String(src.length), title:'Toplam ramak kala bildirimi'};
+  }
+
+  const now=new Date();
+  let cur=ksPeriodBounds(periodValue);
+  let prevStart=null, prevEnd=null;
+
+  if (periodValue==='ytd') {
+    prevStart=new Date(now.getFullYear()-1,0,1);
+    prevEnd=new Date(now.getFullYear()-1,now.getMonth(),now.getDate(),23,59,59,999);
+  } else if (/^q[1-4]$/.test(periodValue)) {
+    const q=Number(periodValue.slice(1)), curStart=new Date(now.getFullYear(),(q-1)*3,1);
+    prevEnd=new Date(curStart.getTime()-1);
+    prevStart=new Date(prevEnd.getFullYear(),prevEnd.getMonth()-2,1);
+  } else if (periodValue==='6m' || periodValue==='12m') {
+    const months=periodValue==='6m'?6:12;
+    prevEnd=new Date(cur.start.getTime()-1);
+    prevStart=new Date(prevEnd);
+    prevStart.setMonth(prevStart.getMonth()-months);
+    prevStart.setDate(prevStart.getDate()+1);
+    prevStart.setHours(0,0,0,0);
+  } else if (/^year:\d{4}$/.test(periodValue)) {
+    const y=Number(periodValue.split(':')[1]);
+    prevStart=new Date(y-1,0,1);
+    prevEnd=new Date(y-1,11,31,23,59,59,999);
+  }
+
+  const current=countBetween(cur.start,cur.end);
+  const previous=(prevStart&&prevEnd)?countBetween(prevStart,prevEnd):null;
+  if (previous===null) return {current,previous:null,delta:null,text:String(current),title:'Ramak kala bildirimi'};
+  if (previous===0) return {current,previous,delta:null,text:current?`${current} kayıt`:'0',title:'Önceki karşılaştırma döneminde kayıt yok'};
+  const delta=Math.round((current-previous)*100/previous);
+  return {
+    current, previous, delta,
+    text:`${delta>0?'+':''}${delta}%`,
+    title:`Mevcut dönem: ${current} · Önceki karşılaştırılabilir dönem: ${previous}`
+  };
+}
+
 function ksRenderISO45004(liste) {
   liste = Array.isArray(liste) ? liste : [];
   if (!ksSummaryOverride) ksSummaryGenerated = '';
@@ -14704,6 +15133,7 @@ function ksRenderISO45004(liste) {
   ).length;
 
   const selectedFab = document.getElementById('ks-f-fab')?.value || 'tumu';
+  const nearMissLead = ksNearMissLeadingMetric(yilSel || 'ytd', selectedFab);
   const kontrolKnown = (typeof kontrolItems!=='undefined' && Array.isArray(kontrolItems) ? kontrolItems : [])
     .filter(it => selectedFab==='tumu' || (Array.isArray(it.fabs)?it.fabs:[it.fab]).filter(Boolean).includes(selectedFab))
     .map(it => {
@@ -14810,12 +15240,11 @@ function ksRenderISO45004(liste) {
       <section class="ks-ref-card">
         <h3>Leading — Proaktif Göstergeler</h3>
         <div class="ks-ref-score-list">
-          <div class="ks-ref-score-row"><span>İSG görevleri zamanında kapanma</span><strong>${hseOnTimePct===null?'—':'%'+hseOnTimePct}</strong></div>
-          <div class="ks-ref-score-row"><span>Kritik İSG görevleri zamanında kapanma</span><strong class="${criticalOnTimePct!==null&&criticalOnTimePct<80?'bad':''}">${criticalOnTimePct===null?'—':'%'+criticalOnTimePct}</strong></div>
-          <div class="ks-ref-score-row"><span>Geciken yüksek/kritik HSE görevi</span><strong class="${criticalOverdue.length?'bad':''}">${criticalOverdue.length}</strong></div>
-          <div class="ks-ref-score-row"><span>Koruyucu tedbir / ekipman eksikliği</span><strong>${protectiveOpen}</strong></div>
+          <div class="ks-ref-score-row" title="${ksEsc(nearMissLead.title)}"><span>Ramak kala bildirimi</span><strong class="${nearMissLead.delta!==null&&nearMissLead.delta>=0?'good':''}">${ksEsc(nearMissLead.text)}</strong></div>
           <div class="ks-ref-score-row"><span>Denetim bulgusu kapanma</span><strong>${denPct===null?'—':'%'+denPct}</strong></div>
           <div class="ks-ref-score-row"><span>Periyodik kontroller zamanında</span><strong>${kontrolOnTimePct===null?'—':'%'+kontrolOnTimePct}</strong></div>
+          <div class="ks-ref-score-row"><span>Görevler zamanında kapandı</span><strong>${hseOnTimePct===null?'—':'%'+hseOnTimePct}</strong></div>
+          <div class="ks-ref-score-row"><span>Geciken kritik aksiyon</span><strong class="${criticalOverdue.length?'bad':''}">${criticalOverdue.length}</strong></div>
         </div>
       </section>
 
@@ -14825,8 +15254,7 @@ function ksRenderISO45004(liste) {
           <div class="ks-ref-score-row"><span>İş Kazası</span><strong>${kazaSay}</strong></div>
           <div class="ks-ref-score-row"><span>İlk Yardım</span><strong>${ilkSay}</strong></div>
           <div class="ks-ref-score-row"><span>Kayıp Gün</span><strong>${kayip}</strong></div>
-          <div class="ks-ref-score-row"><span>Yüksek Potansiyelli Olay</span><strong>${highPotentialCount}</strong></div>
-          <div class="ks-ref-score-row"><span>LTIFR</span><strong>${ksFmtRate(ltifr)}</strong></div>
+          <div class="ks-ref-score-row"><span>Yüksek Potansiyelli Olay</span><strong class="${highPotentialCount?'warn':''}">${highPotentialCount}</strong></div>
           <div class="ks-ref-score-row"><span>TRIFR</span><strong>${ksFmtRate(trifr)}</strong></div>
         </div>
       </section>
@@ -14890,8 +15318,34 @@ function ksRenderISO45004(liste) {
                 </div>`).join('')}
             </div>
           </div>
-          <div class="ks-note">Matris yalnız potansiyel şiddeti değerlendirilmiş olaylardan üretilir. Düşük frekanslı fakat çok yüksek şiddet potansiyelli olaylar Pareto'da geride kalsa bile kritik risk olarak görünür.</div>
-          ${criticalOverdue.length ? `<div class="ks-critical-tasks"><b>Açık yüksek/kritik HSE görevleri</b>${criticalOverdue.map(t=>`<div>${ksEsc(t.hseIliski)} — ${ksEsc(t.text)} <span>${ksEsc(t.hseKritik)}</span></div>`).join('')}</div>`:''}
+          <div class="ks-note">Matris yalnız potansiyel şiddeti değerlendirilmiş olaylardan üretilir. Hücrelerde okunabilirliği korumak için en fazla 2 olay başlığı gösterilir; aynı hücrede daha fazla kayıt varsa toplam ek kayıt sayısı belirtilir. Düşük frekanslı fakat çok yüksek şiddet potansiyelli olaylar Pareto'da geride kalsa bile kritik risk olarak görünür.</div>
+          ${(()=>{
+            const highPotential = riskRecords
+              .filter(k=>Number(k.potansiyelSiddet)>=4)
+              .sort((a,b)=>{
+                const sd=Number(b.potansiyelSiddet)-Number(a.potansiyelSiddet);
+                if(sd) return sd;
+                return String(b.tarih||'').localeCompare(String(a.tarih||''));
+              });
+            return highPotential.length ? `
+              <div class="ks-risk-detail-list">
+                <div class="ks-risk-detail-title">
+                  <b>Yüksek / Çok Yüksek Potansiyelli Olaylar</b>
+                  <span>${highPotential.length} kayıt</span>
+                </div>
+                <div class="ks-risk-detail-head">
+                  <span>Şiddet</span><span>Olay / Bulgu</span><span>Kök Neden</span><span>Tarih</span>
+                </div>
+                ${highPotential.map(k=>`
+                  <div class="ks-risk-detail-row">
+                    <span class="sev sev-${Number(k.potansiyelSiddet)}">${Number(k.potansiyelSiddet)===5?'Çok Yüksek':'Yüksek'}</span>
+                    <span>${ksEsc(k.aciklama||k.yaralanma||'Olay kaydı')}</span>
+                    <span>${ksEsc(k.kokNeden||'Sınıflandırılmamış')}</span>
+                    <span>${ksEsc(k.tarih||'—')}</span>
+                  </div>`).join('')}
+              </div>` : '';
+          })()}
+          ${criticalOverdue.length ? `<div class="ks-critical-tasks"><b>Açık yüksek/kritik HSE görevleri <small>(${criticalOverdue.length})</small></b>${criticalOverdue.map(t=>`<div>${ksEsc(t.hseIliski)} — ${ksEsc(t.text)} <span>${ksEsc(t.hseKritik)}</span></div>`).join('')}</div>`:''}
         </section>`;
     }
   }
@@ -15038,7 +15492,7 @@ function ksRenderISO45004(liste) {
         <label><input type="checkbox" id="ks-r-root-class" checked> Sistematik Kök Neden Sınıflandırması</label>
         <label><input type="checkbox" id="ks-r-improve" checked> Sürekli İyileştirme + Yıllık Değerlendirme</label>
         <label><input type="checkbox" id="ks-r-actions" checked> Öncelikli Bulgular / Aksiyonlar</label>
-        <label><input type="checkbox" id="ks-r-events-appendix"> Ek: Kaza / Ramak Kala Olay Listesi</label>
+        <label><input type="checkbox" id="ks-r-events-appendix"> Ek: Olay Detay Tabloları</label>
       </section>
     </div>
 
@@ -15053,7 +15507,7 @@ function ksRenderISO45004(liste) {
         <div><h3>İSG PERFORMANS DEĞERLENDİRME RAPORU</h3><small>ISO 45004:2024 performans değerlendirme yaklaşımı</small></div>
         <div><b>${ksEsc(ksPeriodLabel(document.getElementById('ks-f-yil')?.value || 'ytd'))}</b><small>${ksEsc(document.getElementById('ks-f-fab')?.selectedOptions?.[0]?.text || 'Tüm Fabrikalar')}</small></div>
       </div>
-      <div class="ks-rp-note"><b>Yaklaşım:</b> Rapor kapsamı yukarıdaki seçimlere göre oluşturulur. Bu ifade standarda tam uygunluk veya belgelendirme iddiası değildir.</div>
+      <div class="ks-rp-note"><b>Yaklaşım:</b> Rapor kapsamı seçilen bölümlere göre oluşturulur; grafikler, tablolar ve dönem değerlendirmeleri rapor verilerinden yeniden üretilir.</div>
     </div>`;
 }
 
@@ -15062,16 +15516,61 @@ function ksReportChecked(id, fallback=true){
   return el ? !!el.checked : fallback;
 }
 
-function ksCanvasDataUrl(id){
+function ksReportFreshChart(config,width=1080,height=500){
+  if(typeof Chart==='undefined') return '';
+  let host=null, chart=null;
   try{
-    const c=document.getElementById(id);
-    if(!c || !c.width || !c.height) return '';
+    host=document.createElement('div');
+    host.style.cssText='position:fixed;left:-12000px;top:0;width:'+width+'px;height:'+height+'px;background:#fff;pointer-events:none;';
+    const c=document.createElement('canvas');
+    c.width=width;c.height=height;
+    host.appendChild(c);document.body.appendChild(host);
+    const cfg={...config,options:{...(config.options||{}),responsive:false,maintainAspectRatio:false,animation:false,devicePixelRatio:2}};
+    chart=new Chart(c.getContext('2d'),cfg);
+    chart.update('none');
     return c.toDataURL('image/png',1.0);
-  }catch(e){ return ''; }
+  }catch(e){ console.warn('HSE rapor grafik üretimi:',e); return ''; }
+  finally{ try{chart&&chart.destroy();}catch(e){} try{host&&host.remove();}catch(e){} }
 }
-function ksReportChartHTML(id,title){
-  const u=ksCanvasDataUrl(id);
-  return u ? `<section class="hse-pr-section"><h2>${ksEsc(title)}</h2><img class="hse-pr-chart" src="${u}" alt="${ksEsc(title)}"></section>` : '';
+function ksReportBarImage(labels,values,horizontal=false){
+  return ksReportFreshChart({type:'bar',data:{labels,datasets:[{label:'Adet',data:values,backgroundColor:'#4285d4',borderRadius:5}]},options:{indexAxis:horizontal?'y':'x',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'#eef1f4'},ticks:{color:'#53616e',font:{size:10},precision:0}},y:{beginAtZero:true,grid:{color:'#eef1f4'},ticks:{color:'#53616e',font:{size:10},precision:0}}}}},1080,horizontal?620:500);
+}
+function ksReportParetoImage(data){
+  const labels=data.map(x=>x.label), vals=data.map(x=>x.val), pct=data.map(x=>x.kumPct);
+  return ksReportFreshChart({type:'bar',data:{labels,datasets:[{type:'bar',label:'Adet',data:vals,backgroundColor:'#0d2b46',borderRadius:4,yAxisID:'y'},{type:'line',label:'Kümülatif %',data:pct,borderColor:'#f07a24',backgroundColor:'#f07a24',pointRadius:3,tension:.2,yAxisID:'y1'}]},options:{plugins:{legend:{position:'top',labels:{boxWidth:10,color:'#53616e',font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#53616e',font:{size:9},maxRotation:30,minRotation:0}},y:{beginAtZero:true,position:'left',ticks:{precision:0,color:'#53616e'},grid:{color:'#eef1f4'}},y1:{beginAtZero:true,max:100,position:'right',ticks:{callback:v=>v+'%',color:'#53616e'},grid:{drawOnChartArea:false}}}}},1080,520);
+}
+function ksReportLineImage(labels,datasets){
+  return ksReportFreshChart({type:'line',data:{labels,datasets},options:{plugins:{legend:{position:'top',labels:{boxWidth:10,color:'#53616e',font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#53616e',font:{size:9}}},y:{beginAtZero:true,ticks:{precision:0,color:'#53616e'},grid:{color:'#eef1f4'}}}}},1080,500);
+}
+function ksReportImgHTML(dataUrl,alt,caption=''){
+  if(!dataUrl) return '<div class="hse-pr-empty">Grafik üretilemedi. İlgili tablo ve sayısal veriler raporda korunmuştur.</div>';
+  return `<div class="hse-pr-chart-frame"><img class="hse-pr-chart" src="${dataUrl}" alt="${ksEsc(alt)}">${caption?`<div class="hse-pr-chart-caption">${ksEsc(caption)}</div>`:''}</div>`;
+}
+function ksReportNoteTitle(title){
+  const t=String(title||'').toLocaleLowerCase('tr-TR');
+  if(t.includes('pareto')) return 'Pareto Değerlendirmesi';
+  if(t.includes('leading')) return 'Performans Değerlendirmesi';
+  if(t.includes('aksiyon')||t.includes('öncelik')) return 'Aksiyon Değerlendirmesi';
+  if(t.includes('kaza / hasar')||t.includes('kök nedene göre')||t.includes('trend')||t.includes('fabrika')) return 'Grafik Değerlendirmesi';
+  if(t.includes('yönetici')||t.includes('temel performans')) return 'Yönetim Değerlendirmesi';
+  if(t.includes('şiddet')||t.includes('kritik risk')) return 'Risk Değerlendirmesi';
+  if(t.includes('iso 45004')||t.includes('sürekli iyileştirme')) return 'Dönem Değerlendirmesi';
+  return 'Değerlendirme';
+}
+function ksReportNoteClass(title){
+  const t=String(title||'').toLocaleLowerCase('tr-TR');
+  if(t.includes('pareto')||t.includes('şiddet')||t.includes('kritik risk')) return 'warn';
+  if(t.includes('yönetici')||t.includes('aksiyon')||t.includes('leading')||t.includes('sürekli')) return 'good';
+  return '';
+}
+function ksReportSection(no,title,desc,body,interpret=''){
+  const n=String(parseInt(no,10)||no);
+  const note=interpret?`<div class="hse-pr-interpret ${ksReportNoteClass(title)}"><b>${ksEsc(ksReportNoteTitle(title))}</b><span>${interpret}</span></div>`:'';
+  return `<section class="hse-pr-section"><div class="hse-pr-section-head"><div class="hse-pr-section-title"><h2>${ksEsc(n)}. ${ksEsc(title)}</h2>${desc?`<div class="hse-pr-desc">${ksEsc(desc)}</div>`:''}</div></div>${body}${note}</section>`;
+}
+function ksReportTable(headers,rows,empty='Seçili kapsamda veri bulunmuyor.'){
+  const body=rows&&rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${headers.length}" class="hse-pr-empty-cell">${ksEsc(empty)}</td></tr>`;
+  return `<div class="hse-pr-table-wrap"><table><thead><tr>${headers.map(h=>`<th>${ksEsc(h)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 function ksHsePrintContainer(){
   let el=document.getElementById('hse-print');
@@ -15087,52 +15586,100 @@ function ksCleanupHsePrint(){
   const el=document.getElementById('hse-print');
   if(el) el.innerHTML='';
 }
+
+function ksReportApproachNarrative(ctx){
+  const parts=[];
+  parts.push(`Seçilen dönemde ${ctx.total} olay kaydı bulunmaktadır; bunların ${ctx.kaza} adedi iş kazası, ${ctx.ilk} adedi ilk yardım, ${ctx.ramak} adedi ramak kala ve ${ctx.maddi} adedi maddi hasardır.`);
+  if(ctx.highPotential>0) parts.push(`${ctx.highPotential} kayıt yüksek veya çok yüksek potansiyel şiddet düzeyindedir ve sıklıktan bağımsız olarak yönetim önceliği taşır.`);
+  if(ctx.criticalOverdue>0) parts.push(`${ctx.criticalOverdue} yüksek/kritik HSE aksiyonu gecikmiş durumdadır; kapanış sorumluluğu ve termin takibi öncelikli olarak gözden geçirilmelidir.`);
+  if(ctx.nearMiss && ctx.nearMiss.delta!==null) {
+    parts.push(`Ramak kala bildirimleri karşılaştırılabilir önceki döneme göre ${ctx.nearMiss.delta>0?'%'+ctx.nearMiss.delta+' artmıştır':ctx.nearMiss.delta<0?'%'+Math.abs(ctx.nearMiss.delta)+' azalmıştır':'değişmemiştir'}; bu değişim bildirim kültürü, maruziyet ve aksiyon kapanma performansıyla birlikte değerlendirilmelidir.`);
+  }
+  parts.push(`Performans değerlendirmesi; olay sonuçları, proaktif bildirimler, denetim bulguları, periyodik kontroller ve HSE görevlerinin kapanma performansı birlikte ele alınarak yapılmıştır.`);
+  return parts.join(' ');
+}
+
+function ksReportEvaluationText(type,ctx){
+  if(type==='pareto'){
+    const top=ctx?.[0];
+    return top ? `${top.label} ilk sırada yer almaktadır. Pareto yoğunlaşması önceliklendirme için kullanılır; potansiyel şiddet ve kritik risk sonuçlarıyla birlikte okunmalıdır.` : 'Pareto değerlendirmesi için yeterli kayıt bulunmamaktadır.';
+  }
+  if(type==='leading'){
+    return `Proaktif göstergeler ramak kala bildirimi, denetim kapanma performansı, periyodik kontroller, görevlerin zamanında kapanması ve geciken kritik aksiyonlar üzerinden izlenir. Ramak kala artışı tek başına olumsuz kabul edilmez; bildirim kültürü ve aksiyon kalitesiyle birlikte yorumlanır.`;
+  }
+  if(type==='actions'){
+    return `Açık aksiyonlar kritiklik, termin ve kontrol/tedbir türüne göre izlenir. Geciken yüksek veya kritik kayıtlar yönetim gözden geçirmesinde öncelikli takip kapsamına alınmalıdır.`;
+  }
+  return '';
+}
+
+
+function ksReportDistributionInsight(entries,total,kind){
+  if(!entries || !entries.length || !total) return `${kind} dağılımı için seçili kapsamda yeterli kayıt bulunmamaktadır.`;
+  const [name,count]=entries[0];
+  const pct=Math.round(count*100/total);
+  return `${name} ${count} kayıt ile ilk sıradadır ve seçili kapsamdaki kayıtların yaklaşık %${pct}'ini oluşturmaktadır. Bu yoğunlaşma, tekrar eden maruziyet ve ilişkili kontrol tedbirleriyle birlikte değerlendirilmelidir.`;
+}
+function ksReportTrendInsight(tr){
+  if(!tr || !tr.labels?.length) return 'Trend değerlendirmesi için yeterli dönem verisi bulunmamaktadır.';
+  const totals=tr.labels.map((_,i)=>(tr.kaza?.[i]||0)+(tr.ilk?.[i]||0)+(tr.ramak?.[i]||0));
+  const max=Math.max(...totals);
+  if(max<=0) return 'Seçili dönemde trend oluşturacak olay kaydı bulunmamaktadır.';
+  const i=totals.indexOf(max);
+  return `${tr.labels[i]} dönemi ${max} toplam kayıt ile en yoğun dönemdir. Aylık yükselişler tek başına yorumlanmamalı; üretim yükü, maruziyet, denetim ve aksiyon kapanma performansıyla birlikte incelenmelidir.`;
+}
+function ksReportRiskInsight(highPotential,criticalOverdue,sevCount){
+  if(!sevCount) return 'Potansiyel şiddeti değerlendirilmiş olay bulunmadığından kritik risk yorumu üretilememektedir; yeni kayıtların potansiyel şiddet alanı tamamlanmalıdır.';
+  if(highPotential || criticalOverdue) return `${highPotential} yüksek/çok yüksek potansiyelli olay ve ${criticalOverdue} gecikmiş yüksek/kritik HSE görevi bulunmaktadır. Düşük frekanslı ancak ağır sonuç potansiyelli kayıtlar yönetim önceliğinde tutulmalıdır.`;
+  return 'Potansiyel şiddeti değerlendirilmiş kayıtlar içinde yüksek/çok yüksek olay veya gecikmiş yüksek/kritik aksiyon bulunmamaktadır; mevcut kontrol performansı izlenmeye devam edilmelidir.';
+}
+function ksReportFactoryInsight(entries,total){
+  if(!entries || !entries.length || !total) return 'Fabrika karşılaştırması için seçili kapsamda kayıt bulunmamaktadır.';
+  const top=entries[0], pct=Math.round(top[1]*100/total);
+  return `${top[0]} ${top[1]} kayıt ve yaklaşık %${pct} pay ile ilk sıradadır. Ham olay adetleri çalışan sayısı, çalışma saati ve maruziyet farklılıkları dikkate alınmadan tek başına performans karşılaştırması olarak kullanılmamalıdır.`;
+}
+
+function ksReportIncidentAppendix(liste){
+  const defs=[
+    ['kaza','İş Kazası Kayıtları','İş kazalarının ortak özellikleri, yüksek potansiyelli kayıtları, tekrar eden nedenleri ve açık aksiyonları birlikte değerlendirilmelidir.'],
+    ['ramak','Ramak Kala / Yüksek Potansiyelli Olaylar','Ramak kala kayıtları gerçekleşmiş yaralanma olmasa dahi önleyici öğrenme sağlar; tekrar eğilimi, potansiyel şiddet ve bağlı aksiyonların durumu birlikte izlenmelidir.'],
+    ['ilkyardim','İlk Yardım Vakaları','İlk yardım vakalarında tekrar eden iş türleri ve hafif yaralanma örüntüleri, daha ciddi sonuçlara dönüşme potansiyeli açısından değerlendirilmelidir.'],
+    ['maddi','Maddi Hasar Olayları','Maddi hasar kayıtları teknik bütünlük, proses kontrolü ve tekrarlayan sistem zayıflıkları açısından değerlendirilmelidir.']
+  ];
+  return defs.map(([id,title,note])=>{
+    const rows=liste.filter(k=>k.tur===id).sort((a,b)=>String(a.tarih||'').localeCompare(String(b.tarih||''))).map(k=>[
+      ksEsc(k.tarih||'—'),ksEsc(k.fab||'—'),ksEsc(k.bolum||'—'),
+      ksEsc(k.yaralanma||'—'),ksEsc(k.kokNeden||'—'),
+      ksEsc((k.aciklama||'—').slice(0,220)),ksEsc(k.onlem||'—')
+    ]);
+    if(!rows.length) return '';
+    return `<div class="hse-pr-subsection"><h3>${title}</h3>${ksReportTable(['Tarih','Fabrika','Bölüm','Hasar / Tür','Kök Neden','Olay','Aksiyon'],rows)}<div class="hse-pr-interpret">${note}</div></div>`;
+  }).filter(Boolean).join('');
+}
+
 function ksPrintHSE(mode='management'){
-  const liste = kazaStatsFiltrele();
-  const hseTasks = ksHseTasks();
-  const kazaSay = liste.filter(k=>k.tur==='kaza').length;
-  const ramakSay = liste.filter(k=>k.tur==='ramak').length;
-  const ilkSay = liste.filter(k=>k.tur==='ilkyardim').length;
-  const maddiSay = liste.filter(k=>k.tur==='maddi').length;
-  const kayip = liste.reduce((a,k)=>a+(parseInt(k.kayip)||0),0);
-  const gecikmis = hseTasks.filter(ksIsOverdue);
-  const periodLabel = ksPeriodLabel(document.getElementById('ks-f-yil')?.value || 'ytd');
-  const fabLabel = document.getElementById('ks-f-fab')?.selectedOptions?.[0]?.text || 'Tüm Fabrikalar';
-  const turLabel = document.getElementById('ks-f-tur-select')?.selectedOptions?.[0]?.text || 'Tüm Olay Türleri';
+  const liste=kazaStatsFiltrele();
+  const hseTasks=ksHseTasks();
+  const kazaSay=liste.filter(k=>k.tur==='kaza').length;
+  const ramakSay=liste.filter(k=>k.tur==='ramak').length;
+  const ilkSay=liste.filter(k=>k.tur==='ilkyardim').length;
+  const maddiSay=liste.filter(k=>k.tur==='maddi').length;
+  const kayip=liste.reduce((a,k)=>a+(parseInt(k.kayip)||0),0);
+  const periodValue=document.getElementById('ks-f-yil')?.value||'ytd';
+  const periodLabel=ksPeriodLabel(periodValue);
+  const fabLabel=document.getElementById('ks-f-fab')?.selectedOptions?.[0]?.text||'Tüm Fabrikalar';
+  const turLabel=document.getElementById('ks-f-tur-select')?.selectedOptions?.[0]?.text||'Tüm Olay Türleri';
+  const reportDate=new Date().toLocaleString('tr-TR');
+  const incl={summary:ksReportChecked('ks-r-summary'),kpi:ksReportChecked('ks-r-kpi'),trend:ksReportChecked('ks-r-trend'),risk:ksReportChecked('ks-r-risk'),priority:ksReportChecked('ks-r-priority'),event:ksReportChecked('ks-r-event'),eventP:ksReportChecked('ks-r-event-p'),root:ksReportChecked('ks-r-root'),rootP:ksReportChecked('ks-r-root-p'),month:ksReportChecked('ks-r-month',false),leading:ksReportChecked('ks-r-leading'),severity:ksReportChecked('ks-r-severity'),factory:ksReportChecked('ks-r-factory'),isoFlow:ksReportChecked('ks-r-iso-flow'),rootClass:ksReportChecked('ks-r-root-class'),improve:ksReportChecked('ks-r-improve'),actions:ksReportChecked('ks-r-actions'),appendix:ksReportChecked('ks-r-events-appendix',false)};
 
-  const incl = {
-    summary:ksReportChecked('ks-r-summary'),
-    kpi:ksReportChecked('ks-r-kpi'),
-    trend:ksReportChecked('ks-r-trend'),
-    risk:ksReportChecked('ks-r-risk'),
-    priority:ksReportChecked('ks-r-priority'),
-    event:ksReportChecked('ks-r-event'),
-    eventP:ksReportChecked('ks-r-event-p'),
-    root:ksReportChecked('ks-r-root'),
-    rootP:ksReportChecked('ks-r-root-p'),
-    month:ksReportChecked('ks-r-month',false),
-    leading:ksReportChecked('ks-r-leading'),
-    severity:ksReportChecked('ks-r-severity'),
-    factory:ksReportChecked('ks-r-factory'),
-    isoFlow:ksReportChecked('ks-r-iso-flow'),
-    rootClass:ksReportChecked('ks-r-root-class'),
-    improve:ksReportChecked('ks-r-improve'),
-    actions:ksReportChecked('ks-r-actions'),
-    appendix:ksReportChecked('ks-r-events-appendix',false)
-  };
-
-  const summaryText = ksSummaryPlainText() || `Seçili dönemde ${kazaSay} iş kazası, ${ramakSay} ramak kala ve ${kayip} kayıp gün bulunmaktadır.`;
-  const rootMap={}, eventMap={}, monthMap=Array(12).fill(0), fabMap={};
-  liste.forEach(k=>{
-    const r=(k.kokNeden||'Belirtilmemiş').trim()||'Belirtilmemiş'; rootMap[r]=(rootMap[r]||0)+1;
-    const e=(k.yaralanma||'Belirtilmemiş').trim()||'Belirtilmemiş'; eventMap[e]=(eventMap[e]||0)+1;
-    if(k.tarih){ const m=Number(k.tarih.slice(5,7))-1; if(m>=0&&m<12) monthMap[m]++; }
-    const f=k.fab||'Belirtilmemiş'; fabMap[f]=(fabMap[f]||0)+1;
-  });
+  const rootMap={},eventMap={},monthMap=Array(12).fill(0),fabMap={};
+  liste.forEach(k=>{const r=(k.kokNeden||'Belirtilmemiş').trim()||'Belirtilmemiş';rootMap[r]=(rootMap[r]||0)+1;const e=(k.yaralanma||'Belirtilmemiş').trim()||'Belirtilmemiş';eventMap[e]=(eventMap[e]||0)+1;if(k.tarih){const m=Number(k.tarih.slice(5,7))-1;if(m>=0&&m<12)monthMap[m]++;}const f=k.fab||'Belirtilmemiş';fabMap[f]=(fabMap[f]||0)+1;});
   const topRoot=Object.entries(rootMap).sort((a,b)=>b[1]-a[1]);
   const topEvent=Object.entries(eventMap).sort((a,b)=>b[1]-a[1]);
-
-  // Leading/Lagging actual values
+  const monthEntries=KS_AY_ISIM.map((m,i)=>[m,monthMap[i]]);
+  const eventPareto=ksParetoVerisi(topEvent),rootPareto=ksParetoVerisi(topRoot),monthPareto=ksParetoVerisi(monthEntries);
+  const highPotential=liste.filter(k=>Number(k.potansiyelSiddet)>=4).length;
+  const sevRecords=liste.filter(k=>Number(k.potansiyelSiddet)>=1&&Number(k.potansiyelSiddet)<=5);
   const completed=hseTasks.filter(t=>t.status==='tamam'||t.doneAt);
   const onTimeKnown=completed.map(ksTaskOnTime).filter(v=>v!==null);
   const hseOnTimePct=ksPct(onTimeKnown.filter(Boolean).length,onTimeKnown.length);
@@ -15140,128 +15687,121 @@ function ksPrintHSE(mode='management'){
   const criticalKnown=criticalCompleted.map(ksTaskOnTime).filter(v=>v!==null);
   const criticalPct=ksPct(criticalKnown.filter(Boolean).length,criticalKnown.length);
   const criticalOverdue=hseTasks.filter(t=>['Yüksek','Kritik'].includes(t.hseKritik)&&ksIsOverdue(t));
-  const protectiveOpen=hseTasks.filter(t=>!(t.status==='tamam'||t.doneAt) &&
-    (['Mühendislik Kontrolü','KKD'].includes(t.hseTedbir)||['Makine / Ekipman Güvenliği','KKD'].includes(t.hseIliski))).length;
+  const allOverdue=hseTasks.filter(ksIsOverdue);
+  const protectiveOpen=hseTasks.filter(t=>!(t.status==='tamam'||t.doneAt)&&(['Mühendislik Kontrolü','KKD'].includes(t.hseTedbir)||['Makine / Ekipman Güvenliği','KKD'].includes(t.hseIliski))).length;
   const denBul=(typeof bulgular!=='undefined'&&Array.isArray(bulgular))?bulgular:[];
   const denPct=ksPct(denBul.filter(b=>b.durum==='kapali').length,denBul.length);
-  const highPotential=liste.filter(k=>Number(k.potansiyelSiddet)>=4).length;
+  const reportFabValue=document.getElementById('ks-f-fab')?.value||'tumu';
+  const kontrolKnown=(typeof kontrolItems!=='undefined'&&Array.isArray(kontrolItems)?kontrolItems:[])
+    .filter(it=>reportFabValue==='tumu'||(Array.isArray(it.fabs)?it.fabs:[it.fab]).filter(Boolean).includes(reportFabValue))
+    .map(it=>{const nd=typeof kontrolNextDate==='function'?kontrolNextDate(it.lastDate,it.periodVal,it.periodUnit):null;return nd?{days:kontrolDaysLeft(nd)}:null;}).filter(Boolean);
+  const kontrolOnTimePct=ksPct(kontrolKnown.filter(x=>x.days>=0).length,kontrolKnown.length);
   const saat=Number(kazaAyar?.saat)||0;
   const lostTimeCases=liste.filter(k=>k.tur==='kaza'&&(parseInt(k.kayip)||0)>0).length;
-  const ltifr=saat>0?lostTimeCases*1000000/saat:NaN;
-  const trifr=saat>0?(kazaSay+ilkSay)*1000000/saat:NaN;
+  const ltifr=saat>0?lostTimeCases*1000000/saat:NaN,trifr=saat>0?(kazaSay+ilkSay)*1000000/saat:NaN;
+  const summaryText=ksSummaryPlainText()||`Seçili dönemde ${kazaSay} iş kazası, ${ramakSay} ramak kala ve ${kayip} kayıp gün bulunmaktadır.`;
 
-  const sec=[];
-
-  if(incl.summary) sec.push(`<section class="hse-pr-section"><h2>Durum Özeti</h2><p>${ksEsc(summaryText)}</p></section>`);
-
-  if(incl.kpi) sec.push(`<section class="hse-pr-section"><h2>Performans Göstergeleri</h2><div class="hse-pr-kpis">
-    <div><b>${kazaSay}</b><span>İş Kazası</span></div><div><b>${ilkSay}</b><span>İlk Yardım</span></div>
-    <div><b>${ramakSay}</b><span>Ramak Kala</span></div><div><b>${maddiSay}</b><span>Maddi Hasar</span></div>
-    <div><b>${kayip}</b><span>Kayıp Gün</span></div><div><b>${highPotential}</b><span>Yüksek Potansiyelli</span></div>
-  </div></section>`);
+  let n=1;const sec=[];const next=()=>String(++n).padStart(2,'0');
+  if(incl.summary || incl.kpi){
+    const managerBody=incl.kpi?`<div class="hse-pr-kpis"><div><b>${liste.length}</b><span>Toplam Olay</span></div><div><b>${kazaSay}</b><span>İş Kazası</span></div><div><b>${ilkSay}</b><span>İlk Yardım</span></div><div><b>${criticalOverdue.length}</b><span>Gecikmiş Yüksek/Kritik Görev</span></div></div>`:'';
+    const managerNote=incl.summary?`${ksEsc(summaryText)} ${highPotential?`${highPotential} yüksek/çok yüksek potansiyelli olay yönetim önceliği taşımaktadır.`:''} ${criticalOverdue.length?`${criticalOverdue.length} yüksek/kritik HSE aksiyonu gecikmiştir.`:'Gecikmiş yüksek/kritik HSE aksiyonu bulunmamaktadır.'}`:'Temel göstergeler seçilen dönem ve fabrika kapsamındaki kayıtlar üzerinden oluşturulmuştur.';
+    sec.push(ksReportSection(next(),'Yönetici Özeti ve Temel Göstergeler','Üst yönetimin ilk bakışta görmesi gereken temel HSE sonuçları ve açık aksiyon yükü.',managerBody,managerNote));
+  }
 
   if(incl.trend){
-    const ch=ksReportChartHTML('ks-hse-trend-chart','Olay Trendi');
-    sec.push(ch || `<section class="hse-pr-section"><h2>Olay Trendi</h2><p>Seçili dönemde ${liste.length} olay kaydı bulunmaktadır. Grafik görüntüsü hazırlanamadı.</p></section>`);
+    const tr=ksHseTrendData(liste,periodValue);const img=ksReportLineImage(tr.labels,[{label:'İş Kazası',data:tr.kaza,borderColor:'#d9534f',backgroundColor:'#d9534f',tension:.25},{label:'İlk Yardım',data:tr.ilk,borderColor:'#f07a24',backgroundColor:'#f07a24',tension:.25},{label:'Ramak Kala',data:tr.ramak,borderColor:'#1fa16d',backgroundColor:'#1fa16d',tension:.25}]);
+    const rows=tr.labels.map((x,i)=>[ksEsc(x),tr.kaza[i],tr.ilk[i],tr.ramak[i]]);
+    sec.push(ksReportSection(next(),'Olay Trendi','Seçili dönemde olay türlerinin zaman içindeki yönünü gösterir.',ksReportImgHTML(img,'Olay Trendi','İş kazası, ilk yardım ve ramak kala kayıtlarının aynı zaman eksenindeki gelişimi.')+ksReportTable(['Dönem','İş Kazası','İlk Yardım','Ramak Kala'],rows),ksReportTrendInsight(tr)));
   }
 
-  if(incl.priority || incl.actions) sec.push(`<section class="hse-pr-section"><h2>Öncelikli HSE Bulguları / Aksiyonlar</h2>
-    <table><thead><tr><th>Alan</th><th>Görev / Bulgu</th><th>Kritiklik</th><th>Termin</th><th>Ana Kök Neden</th></tr></thead><tbody>
-    ${gecikmis.length?gecikmis.slice(0,12).map(t=>`<tr><td>${ksEsc(t.hseIliski||'—')}</td><td>${ksEsc(t.text||'—')}</td><td>${ksEsc(t.hseKritik||'—')}</td><td>${ksEsc(t.termin||'—')}</td><td>${ksEsc(t.hseKok? (kazaKokNedenKategori(t.hseKok)||t.hseKok):'—')}</td></tr>`).join(''):'<tr><td colspan="5">Gecikmiş HSE görevi yok.</td></tr>'}
-    </tbody></table></section>`);
-
-  if(incl.event){
-    const ch=ksReportChartHTML('ks-canvas-tur','Kaza / Hasar Türüne Göre Dağılım');
-    sec.push(ch || `<section class="hse-pr-section"><h2>Kaza / Hasar Türüne Göre Dağılım</h2><table><thead><tr><th>Tür</th><th>Adet</th></tr></thead><tbody>${topEvent.map(([a,n])=>`<tr><td>${ksEsc(a)}</td><td>${n}</td></tr>`).join('')}</tbody></table></section>`);
-  }
-  if(incl.eventP){
-    const ch=ksReportChartHTML('ks-canvas-tur-pareto','Kaza / Hasar Türü Pareto');
-    sec.push(ch || `<section class="hse-pr-section"><h2>Kaza / Hasar Türü Pareto</h2><p>Pareto grafiği seçildi; grafik görüntüsü hazırlanamadı.</p></section>`);
-  }
-  if(incl.root){
-    const ch=ksReportChartHTML('ks-canvas-kok','Kök Nedene Göre Dağılım');
-    sec.push(ch || `<section class="hse-pr-section"><h2>Kök Nedene Göre Dağılım</h2><table><thead><tr><th>Kök Neden</th><th>Adet</th></tr></thead><tbody>${topRoot.map(([a,n])=>`<tr><td>${ksEsc(a)}</td><td>${n}</td></tr>`).join('')}</tbody></table></section>`);
-  }
-  if(incl.rootP){
-    const ch=ksReportChartHTML('ks-canvas-kok-pareto','Kök Neden Pareto');
-    sec.push(ch || `<section class="hse-pr-section"><h2>Kök Neden Pareto</h2><p>Pareto grafiği seçildi; grafik görüntüsü hazırlanamadı.</p></section>`);
-  }
-  if(incl.month){
-    const c1=ksReportChartHTML('ks-canvas-ay','Aylara Göre Dağılım');
-    const c2=ksReportChartHTML('ks-canvas-ay-pareto','Aylar Pareto');
-    sec.push(c1 || `<section class="hse-pr-section"><h2>Aylara Göre Dağılım</h2><table><tbody>${['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'].map((m,i)=>`<tr><td>${m}</td><td>${monthMap[i]}</td></tr>`).join('')}</tbody></table></section>`);
-    if(c2) sec.push(c2);
+  if(incl.risk){
+    const crit=sevRecords.filter(k=>Number(k.potansiyelSiddet)>=4);
+    sec.push(ksReportSection(next(),'Kritik Risk Özeti','Potansiyel şiddeti yüksek olaylar ve gecikmiş yüksek/kritik HSE aksiyonlarının yönetim özeti.',ksReportTable(['Gösterge','Değer'],[['Yüksek / çok yüksek potansiyelli olay',highPotential],['Gecikmiş yüksek/kritik HSE görevi',criticalOverdue.length],['Toplam gecikmiş HSE görevi',allOverdue.length],['Potansiyel şiddeti değerlendirilmiş olay',sevRecords.length]])+ (crit.length?ksReportTable(['Olay','Kök Neden','Şiddet'],crit.slice(0,8).map(k=>[ksEsc((k.aciklama||'—').slice(0,120)),ksEsc(k.kokNeden||'—'),ksEsc(['','Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'][Number(k.potansiyelSiddet)])]),'Yüksek potansiyelli olay bulunmuyor.'):''),ksReportRiskInsight(highPotential,criticalOverdue.length,sevRecords.length)));
   }
 
-  if(incl.leading) sec.push(`<section class="hse-pr-section"><h2>Leading / Lagging Değerlendirmesi</h2>
-    <div class="hse-pr-two">
-      <div><h3>Leading — Proaktif Göstergeler</h3><table><tbody>
-        <tr><td>İSG görevleri zamanında kapanma</td><td>${hseOnTimePct===null?'—':'%'+hseOnTimePct}</td></tr>
-        <tr><td>Kritik İSG görevleri zamanında kapanma</td><td>${criticalPct===null?'—':'%'+criticalPct}</td></tr>
-        <tr><td>Geciken yüksek/kritik HSE görevi</td><td>${criticalOverdue.length}</td></tr>
-        <tr><td>Koruyucu tedbir / ekipman eksikliği</td><td>${protectiveOpen}</td></tr>
-        <tr><td>Denetim bulgusu kapanma</td><td>${denPct===null?'—':'%'+denPct}</td></tr>
-      </tbody></table></div>
-      <div><h3>Lagging — Sonuç Göstergeleri</h3><table><tbody>
-        <tr><td>İş Kazası</td><td>${kazaSay}</td></tr><tr><td>İlk Yardım</td><td>${ilkSay}</td></tr>
-        <tr><td>Kayıp Gün</td><td>${kayip}</td></tr><tr><td>Yüksek Potansiyelli Olay</td><td>${highPotential}</td></tr>
-        <tr><td>LTIFR</td><td>${ksFmtRate(ltifr)}</td></tr><tr><td>TRIFR</td><td>${ksFmtRate(trifr)}</td></tr>
-      </tbody></table></div>
-    </div></section>`);
-
-  if(incl.severity || incl.risk){
-    const sev=liste.filter(k=>Number(k.potansiyelSiddet)>=1);
-    sec.push(`<section class="hse-pr-section"><h2>Şiddet × Frekans / Kritik Risk</h2>
-      ${sev.length?`<table><thead><tr><th>Olay</th><th>Kök Neden</th><th>Potansiyel Şiddet</th></tr></thead><tbody>${sev.slice(0,20).map(k=>`<tr><td>${ksEsc(k.aciklama||'—')}</td><td>${ksEsc(k.kokNeden||'—')}</td><td>${['','Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'][Number(k.potansiyelSiddet)]}</td></tr>`).join('')}</tbody></table>`:'<p>Potansiyel şiddeti değerlendirilmiş olay bulunmuyor.</p>'}
-    </section>`);
+  if(incl.priority){
+    const pr=ksPrioritySort(hseTasks.filter(ksIsOverdue)).slice(0,3);
+    sec.push(ksReportSection(next(),'Yönetim Öncelikleri — İlk 3','Kritiklik ve gecikme süresine göre önceliklendirilen açık HSE görevleri.',ksReportTable(['Öncelik','HSE Alanı','Görev / Bulgu','Kritiklik','Termin'],pr.map((t,i)=>[i+1,ksEsc(t.hseIliski||'—'),ksEsc(t.text||'—'),ksEsc(t.hseKritik||'—'),ksEsc(t.termin||'—')]),'Öncelikli gecikmiş HSE görevi bulunmuyor.'),pr.length?`${pr.length} öncelikli gecikmiş HSE görevi yönetim takip listesine alınmıştır. Kritiklik ve termin bilgileri kapanış sırasının belirlenmesinde birlikte kullanılmalıdır.`:'Öncelikli gecikmiş HSE görevi bulunmamaktadır; mevcut açık görevler planlanan terminleri üzerinden izlenmelidir.'));
   }
 
-  if(incl.factory) sec.push(`<section class="hse-pr-section"><h2>Fabrika Karşılaştırması</h2><table><thead><tr><th>Fabrika</th><th>Olay</th></tr></thead><tbody>${Object.entries(fabMap).sort((a,b)=>b[1]-a[1]).map(([f,n])=>`<tr><td>${ksEsc(f)}</td><td>${n}</td></tr>`).join('')||'<tr><td colspan="2">Veri yok</td></tr>'}</tbody></table></section>`);
+  if(incl.event){const img=ksReportBarImage(topEvent.map(x=>x[0]),topEvent.map(x=>x[1]));sec.push(ksReportSection(next(),'Kaza / Hasar Türüne Göre Dağılım','Olaylarda kaydedilen yaralanma veya hasar türlerinin frekans dağılımı.',ksReportImgHTML(img,'Kaza / Hasar Türü Dağılımı','Sütun yüksekliği kayıt adedini ifade eder.')+ksReportTable(['Kaza / Hasar Türü','Adet'],topEvent.map(x=>[ksEsc(x[0]),x[1]])),ksReportDistributionInsight(topEvent,liste.length,'Kaza / hasar türü')));}
+  if(incl.eventP){const img=ksReportParetoImage(eventPareto);sec.push(ksReportSection(next(),'Kaza / Hasar Türü — Pareto Analizi','Kayıtların hangi hasar türlerinde yoğunlaştığını kümülatif yüzde ile gösterir.',ksReportImgHTML(img,'Kaza / Hasar Türü Pareto','Lacivert sütunlar adet, turuncu çizgi kümülatif yüzdeyi gösterir.')+ksReportTable(['Tür','Adet','Kümülatif %'],eventPareto.map(x=>[ksEsc(x.label),x.val,'%'+Math.round(x.kumPct)])),ksReportEvaluationText('pareto',eventPareto)));}
+  if(incl.root){const img=ksReportBarImage(topRoot.map(x=>x[0]),topRoot.map(x=>x[1]),true);sec.push(ksReportSection(next(),'Kök Nedene Göre Dağılım','Standartlaştırılmış kök neden kayıtlarının frekans dağılımı.',ksReportImgHTML(img,'Kök Neden Dağılımı','Yatay sütunlar kök neden tekrar sayılarını gösterir.')+ksReportTable(['Kök Neden','Ana Kategori','Adet'],topRoot.map(x=>[ksEsc(x[0]),ksEsc(kazaKokNedenKategori(x[0])||'Sınıflandırılmamış'),x[1]])),ksReportDistributionInsight(topRoot,liste.length,'Kök neden')));}
+  if(incl.rootP){const img=ksReportParetoImage(rootPareto);sec.push(ksReportSection(next(),'Kök Neden — Pareto Analizi','Kök nedenlerin toplam olaylar içindeki kümülatif yoğunlaşmasını gösterir.',ksReportImgHTML(img,'Kök Neden Pareto','Lacivert sütunlar adet, turuncu çizgi kümülatif yüzdeyi gösterir.')+ksReportTable(['Kök Neden','Adet','Kümülatif %'],rootPareto.map(x=>[ksEsc(x.label),x.val,'%'+Math.round(x.kumPct)])),ksReportEvaluationText('pareto',rootPareto)));}
+  if(incl.month){const img1=ksReportBarImage(KS_AY_ISIM,monthMap),img2=ksReportParetoImage(monthPareto);sec.push(ksReportSection(next(),'Aylık Olay Dağılımı ve Dönem Pareto','Olayların yıl içindeki dönemsel dağılımını ve yoğunlaşan ayları birlikte gösterir.',ksReportImgHTML(img1,'Aylık Olay Dağılımı','Her sütun ilgili aydaki toplam olay kaydını gösterir.')+ksReportImgHTML(img2,'Aylar Pareto','Kümülatif çizgi olayların dönemsel yoğunlaşmasını gösterir.')+ksReportTable(['Ay','Adet'],monthEntries.map(x=>[x[0],x[1]])),`Dönemsel yoğunlaşma; vardiya, üretim yükü, bakım dönemi veya çevresel koşullar gibi bağlamsal faktörlerle birlikte incelenmelidir.`));}
 
-  if(incl.isoFlow) sec.push(`<section class="hse-pr-section"><h2>ISO 45004 Performans Değerlendirme Akışı</h2>
-    <div class="hse-pr-flow">${[
-      ['İZLE','Olay, denetim, kontrol, görev'],['ÖLÇ','KPI ve performans göstergeleri'],
-      ['ANALİZ ET','Trend, Pareto, kök neden'],['DEĞERLENDİR','Durum özeti, risk önceliği'],
-      ['AKSİYON AL','Öncelikli aksiyon / görev'],['GÖZDEN GEÇİR','Dönem ve uzun vadeli gelişim']
-    ].map(x=>`<div><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div></section>`);
+  if(incl.leading){
+    const reportFab=document.getElementById('ks-f-fab')?.value||'tumu';
+    const nearMissLead=ksNearMissLeadingMetric(periodValue,reportFab);
+    sec.push(ksReportSection(next(),'Leading / Lagging HSE Scorecard','Proaktif yönetim faaliyetleri ile gerçekleşmiş sonuç göstergelerini onaylı referans yapısında birlikte izler.',
+      `<div class="hse-pr-two"><div><h3>Leading — Proaktif Göstergeler</h3>${ksReportTable(['Gösterge','Sonuç'],[
+        ['Ramak kala bildirimi',ksEsc(nearMissLead.text)],
+        ['Denetim bulgusu kapanma',denPct===null?'—':'%'+denPct],
+        ['Periyodik kontroller zamanında',kontrolOnTimePct===null?'—':'%'+kontrolOnTimePct],
+        ['Görevler zamanında kapandı',hseOnTimePct===null?'—':'%'+hseOnTimePct],
+        ['Geciken kritik aksiyon',criticalOverdue.length]
+      ])}</div><div><h3>Lagging — Sonuç Göstergeleri</h3>${ksReportTable(['Gösterge','Sonuç'],[
+        ['İş Kazası',kazaSay],['İlk Yardım',ilkSay],['Kayıp Gün',kayip],
+        ['Yüksek Potansiyelli Olay',highPotential],['TRIFR',ksFmtRate(trifr)]
+      ])}</div></div>`,
+      ksReportEvaluationText('leading')));}
 
-  if(incl.rootClass) sec.push(`<section class="hse-pr-section"><h2>Sistematik Kök Neden Sınıflandırması</h2><div class="hse-pr-rootgrid">
-    <div><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, teknik güvenlik sistemleri, yangın koruma sistemleri, ekipman tasarımı ve fiziksel izolasyon.</span></div>
-    <div><b>İş Organizasyonu / Prosedür</b><span>İş yöntemi, EKED, görev planlama, vardiya, iş akışı ve prosedür eksiklikleri.</span></div>
-    <div><b>Yetkinlik / Eğitim</b><span>Eğitim, işe uygunluk, yeterlilik ve talimatın anlaşılması.</span></div>
-    <div><b>Gözetim / Yönetim Kontrolü</b><span>Saha gözetimi, kontrol sıklığı, uygunsuzluğun tekrarı ve yönetim takibi.</span></div>
-    <div><b>Çalışma Ortamı</b><span>Kimyasal muhafaza / maruziyet kontrolü, aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni ve alan kısıtları.</span></div>
-    <div><b>İnsan Faktörü</b><span>Dikkat kaybı vb. sistem koşullarıyla birlikte değerlendirilir.</span></div>
-  </div></section>`);
 
-  if(incl.improve){
-    const years=[...new Set((typeof kazaItems!=='undefined'?kazaItems:[]).map(k=>(k.tarih||'').slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort();
-    const rows=years.map(y=>{
-      const yl=kazaItems.filter(k=>(k.tarih||'').slice(0,4)===y && (fabLabel==='Tüm Fabrikalar'||k.fab===fabLabel));
-      return [y,yl.filter(k=>k.tur==='kaza').length,yl.filter(k=>k.tur==='ramak').length,yl.reduce((a,k)=>a+(parseInt(k.kayip)||0),0)];
-    });
-    const ch=ksReportChartHTML('ks-year-chart','Yıllara Göre Performans Eğilimi');
-    sec.push(`<section class="hse-pr-section"><h2>Sürekli İyileştirme / Yıllık Değerlendirme</h2>
-      <table><thead><tr><th>Yıl</th><th>İş Kazası</th><th>Ramak Kala</th><th>Kayıp Gün</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')||'<tr><td colspan="4">Yıllık veri yok</td></tr>'}</tbody></table>
-      <div class="hse-pr-note">Uzun dönem performans; olay sonuçları, proaktif bildirimler, denetim ve aksiyon kapanma göstergeleri birlikte değerlendirilir.</div>
-    </section>`);
-    if(ch) sec.push(ch);
+  if(incl.severity){
+    let matrix='';
+    if(sevRecords.length){const fm={};sevRecords.forEach(k=>{const g=kazaKokNedenKategori(k.kokNeden)||k.kokNeden||'Sınıflandırılmamış';fm[g]=(fm[g]||0)+1;});const fl=n=>n>=10?5:n>=6?4:n>=3?3:n>=2?2:1;const cells=Array.from({length:5},()=>Array(5).fill(0));sevRecords.forEach(k=>{const sev=Number(k.potansiyelSiddet),g=kazaKokNedenKategori(k.kokNeden)||k.kokNeden||'Sınıflandırılmamış',fr=fl(fm[g]||1);cells[5-sev][fr-1]++;});const sn=['Çok Yüksek','Yüksek','Orta','Düşük','Çok Düşük'],fn=['Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'];matrix=`<table class="hse-pr-matrix"><thead><tr><th>Şiddet \\ Frekans</th>${fn.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${cells.map((r,ri)=>`<tr><th>${sn[ri]}</th>${r.map((v,ci)=>{const score=(5-ri)*(ci+1),cl=score>=15?'crit':score>=8?'warn':'low';return `<td class="${cl}">${v||'—'}</td>`}).join('')}</tr>`).join('')}</tbody></table>`;}else matrix='<div class="hse-pr-empty">Potansiyel şiddeti değerlendirilmiş olay bulunmuyor. Matris varsayımsal veri ile doldurulmaz.</div>';
+    sec.push(ksReportSection(next(),'Şiddet × Frekans Matrisi','Yalnız potansiyel şiddeti değerlendirilmiş gerçek olay kayıtları kullanılır.',matrix,`Matrisin amacı düşük frekanslı fakat yüksek sonuç potansiyelli olayların görünürlüğünü korumaktır.`));
+  }
+  if(incl.factory)sec.push(ksReportSection(next(),'Fabrika Karşılaştırması','Seçili dönem ve olay türü kapsamında fabrikalara göre olay sayıları.',ksReportTable(['Fabrika','Olay Adedi','Pay'],Object.entries(fabMap).sort((a,b)=>b[1]-a[1]).map(([f,v])=>[ksEsc(f),v,liste.length?'%'+Math.round(v*100/liste.length):'%0'])),ksReportFactoryInsight(Object.entries(fabMap).sort((a,b)=>b[1]-a[1]),liste.length)));
+  if(incl.isoFlow)sec.push(ksReportSection(next(),'ISO 45004 Performans Değerlendirme Akışı','Performans değerlendirme sürecinin uygulamadaki izleme–aksiyon–gözden geçirme döngüsü.',`<div class="hse-pr-flow">${[['İZLE','Olay, denetim, kontrol, görev'],['ÖLÇ','KPI ve performans göstergeleri'],['ANALİZ ET','Trend, Pareto, kök neden'],['DEĞERLENDİR','Durum özeti, risk önceliği'],['AKSİYON AL','Öncelikli aksiyon / görev'],['GÖZDEN GEÇİR','Dönem ve uzun vadeli gelişim']].map(x=>`<div><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div>`,`Bu akış; izleme, ölçme, analiz, değerlendirme, aksiyon ve yönetim gözden geçirmesini birbirine bağlayan performans değerlendirme döngüsünü gösterir.`));
+  if(incl.rootClass)sec.push(ksReportSection(next(),'Sistematik Kök Neden Sınıflandırması','Kök neden kayıtlarının sistem düzeyinde değerlendirilmesi için kullanılan altı analiz başlığı.',`<div class="hse-pr-rootgrid"><div><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, teknik güvenlik sistemleri, yangın koruma sistemleri, ekipman tasarımı ve fiziksel izolasyon.</span></div><div><b>İş Organizasyonu / Prosedür</b><span>İş yöntemi, EKED, görev planlama, vardiya, iş akışı ve prosedür eksiklikleri.</span></div><div><b>Yetkinlik / Eğitim</b><span>Eğitim, işe uygunluk, yeterlilik ve talimatın anlaşılması.</span></div><div><b>Gözetim / Yönetim Kontrolü</b><span>Saha gözetimi, kontrol sıklığı, uygunsuzluğun tekrarı ve yönetim takibi.</span></div><div><b>Çalışma Ortamı</b><span>Kimyasal muhafaza / maruziyet kontrolü, aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni ve alan kısıtları.</span></div><div><b>İnsan Faktörü</b><span>Dikkat kaybı gibi insan faktörleri tek başına son neden olarak değil, ilişkili sistem koşullarıyla birlikte değerlendirilir.</span></div></div>`,`Bu sınıflandırma olay nedenlerini yalnız davranışsal açıklamalara indirgemeden sistem ve kontrol katmanlarını görünür kılar.`));
+
+  if(incl.improve){const source=(typeof kazaItems!=='undefined'&&Array.isArray(kazaItems)?kazaItems:[]).filter(k=>fabLabel==='Tüm Fabrikalar'||k.fab===fabLabel);const years=[...new Set(source.map(k=>(k.tarih||'').slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort();const rows=years.map(y=>{const yl=source.filter(k=>(k.tarih||'').slice(0,4)===y);return [y,yl.filter(k=>k.tur==='kaza').length,yl.filter(k=>k.tur==='ramak').length,yl.reduce((a,k)=>a+(parseInt(k.kayip)||0),0)]});const img=ksReportLineImage(rows.map(r=>r[0]),[{label:'İş Kazası',data:rows.map(r=>r[1]),borderColor:'#d9534f',backgroundColor:'#d9534f',tension:.25},{label:'Kayıp Gün',data:rows.map(r=>r[3]),borderColor:'#7167c7',backgroundColor:'#7167c7',tension:.25},{label:'Ramak Kala',data:rows.map(r=>r[2]),borderColor:'#1fa16d',backgroundColor:'#1fa16d',tension:.25}]);sec.push(ksReportSection(next(),'Sürekli İyileştirme / Yıllık Değerlendirme','Uzun dönem HSE performans yönünün yıllar bazında değerlendirilmesi.',ksReportImgHTML(img,'Yıllara Göre Performans Eğilimi','İş kazası, kayıp gün ve ramak kala kayıtlarının yıllık eğilimi.')+ksReportTable(['Yıl','İş Kazası','Ramak Kala','Kayıp Gün'],rows),`Yıllık eğilim; olay sayılarının yanı sıra proaktif bildirim, denetim ve aksiyon kapanma performansıyla birlikte yorumlanmalıdır.`));}
+
+  if(incl.actions){const rows=ksPrioritySort(hseTasks.filter(t=>!(t.status==='tamam'||t.doneAt))).slice(0,12).map((t,i)=>[i+1,ksEsc(t.hseIliski||'—'),ksEsc(t.text||'—'),ksEsc(t.hseTedbir||'—'),ksEsc(t.hseKritik||'—'),ksEsc(t.termin||'—'),ksEsc(t.hseKok? (kazaKokNedenKategori(t.hseKok)||t.hseKok):'—')]);sec.push(ksReportSection(next(),'Öncelikli Bulgular / Aksiyon Tablosu','Açık HSE görevlerinin kritiklik, tedbir türü ve termin bilgileriyle yönetim takip tablosu.',ksReportTable(['No','HSE Alanı','Bulgu / Görev','Kontrol / Tedbir','Kritiklik','Termin','Ana Kök Neden'],rows,'Açık HSE aksiyonu bulunmuyor.'),ksReportEvaluationText('actions')));}
+  if(incl.appendix){
+    const appendix=ksReportIncidentAppendix(liste);
+    sec.push(ksReportSection(next(),'Olay Detay Tabloları','İş kazası, ramak kala, ilk yardım ve maddi hasar kayıtları kendi standart tablolarında ve açıklamalarıyla gösterilir.',appendix||'<div class="hse-pr-empty">Seçili kapsamda olay kaydı bulunmuyor.</div>',''));
   }
 
-  if(incl.appendix) sec.push(ksEventTableHTML(liste,'Ek — Kaza / Ramak Kala Olay Listesi'));
+  const reportFab=document.getElementById('ks-f-fab')?.value||'tumu';
+  const nearMissLead=ksNearMissLeadingMetric(periodValue,reportFab);
+  const approachBase=ksReportApproachNarrative({
+    total:liste.length,kaza:kazaSay,ilk:ilkSay,ramak:ramakSay,maddi:maddiSay,
+    highPotential,criticalOverdue:criticalOverdue.length,nearMiss:nearMissLead
+  });
+  const approach=(summaryText && !approachBase.includes(summaryText)) ? `${approachBase} ${summaryText}` : approachBase;
 
   const el=ksHsePrintContainer();
-  el.innerHTML=`<div class="hse-pr-cover">
-    <h1>İSG PERFORMANS DEĞERLENDİRME RAPORU</h1>
-    <div class="hse-pr-meta"><b>${ksEsc(periodLabel)}</b> · ${ksEsc(fabLabel)} · ${ksEsc(turLabel)} · ${mode==='detail'?'Detaylı Analiz Raporu':'Yönetici Raporu'}</div>
-    <div class="hse-pr-approach"><b>Yaklaşım:</b> ISO 45004:2024 performans değerlendirme yaklaşımı esas alınarak hazırlanmıştır. Bu ifade belgelendirme veya standarda tam uygunluk iddiası değildir.</div>
-  </div>${sec.filter(Boolean).join('')}<div class="hse-pr-foot">Rapor kapsamı Kurumsal Rapor ekranında işaretlenen bölümlere göre oluşturulmuştur.</div>`;
-
+  el.innerHTML=`
+    <table class="hse-pr-doc-shell">
+      <thead><tr><td>
+        <div class="hse-pr-fixed-head">
+          <h1>İSG Performans Değerlendirme Raporu</h1>
+          <div>ISO 45004:2024 performans değerlendirme yaklaşımı</div>
+        </div>
+      </td></tr></thead>
+      <tbody><tr><td>
+        <main class="hse-pr-doc-body">
+          <div class="hse-pr-cover">
+        <table class="hse-pr-context">
+          <thead><tr><th>DÖNEM</th><th>FABRİKA</th><th>KAPSAM</th></tr></thead>
+          <tbody><tr><td>${ksEsc(periodLabel)}</td><td>${ksEsc(fabLabel)}</td><td>${ksEsc(turLabel==='Tüm Olay Türleri'?'Kaza / Olay + HSE':turLabel+' + HSE')}</td></tr></tbody>
+        </table>
+        <section class="hse-pr-approach-section">
+          <div class="hse-pr-section-head"><div class="hse-pr-section-title"><h2>1. Rapor Yaklaşımı</h2></div></div>
+          <div class="hse-pr-interpret warn"><b>Genel Değerlendirme</b><span>${ksEsc(approach)}</span></div>
+        </section>
+      </div>
+          ${sec.filter(Boolean).join('')}
+        </main>
+      </td></tr></tbody>
+    </table>
+  `;
   document.body.classList.add('print-hse-report');
-  // Aynı sayfada tek yazdırma akışı: yeni web sekmesi/popup oluşturulmaz.
-  setTimeout(()=>window.print(),120);
+  setTimeout(()=>window.print(),180);
   window.addEventListener('afterprint',ksCleanupHsePrint,{once:true});
-  setTimeout(()=>{ if(document.body.classList.contains('print-hse-report')) ksCleanupHsePrint(); },3000);
+  setTimeout(()=>{if(document.body.classList.contains('print-hse-report'))ksCleanupHsePrint();},5000);
 }
 function ksEventTableHTML(liste,title='Kaza / Ramak Kala Olay Listesi'){
   const rows = liste.slice().sort((a,b)=>(a.tarih||'').localeCompare(b.tarih||'')).map(k=>`
