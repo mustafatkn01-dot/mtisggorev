@@ -4726,11 +4726,17 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
   gap:0!important;
   background:#F7F9FB!important;
   border-radius:20px!important;
-  overflow:hidden!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  scrollbar-gutter:stable;
   box-shadow:0 24px 64px rgba(13,43,70,.24)!important;
 }
 .audit-finding-box{width:570px!important}
 .audit-modal-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:6!important;
   background:linear-gradient(135deg,#0D2B46,#153D5E)!important;
   padding:15px 17px!important;
   margin:0!important;
@@ -4904,7 +4910,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 
 
 <style id="audit-hse-link-v1">
-.audit-hse-layer{margin:14px 16px 2px!important;background:#EEF3F7!important;border:1px solid #D7E1E8!important;border-radius:14px!important;padding:12px!important}
+.audit-hse-layer{margin:14px 16px 12px!important;background:#EEF3F7!important;border:1px solid #D7E1E8!important;border-radius:14px!important;padding:12px!important}
 .audit-hse-layer .hse-task-layer-head{margin-bottom:9px}
 .audit-hse-layer .hse-task-layer-head b{font-size:12px;color:#17324A}
 .audit-hse-layer .hse-task-layer-head span{display:block;font-size:9.5px;color:#74818D;margin-top:2px}
