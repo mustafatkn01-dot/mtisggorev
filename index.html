@@ -4909,7 +4909,10 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 .audit-hse-layer .hse-task-layer-head b{font-size:12px;color:#17324A}
 .audit-hse-layer .hse-task-layer-head span{display:block;font-size:9.5px;color:#74818D;margin-top:2px}
 .audit-hse-layer .hse-task-extra{display:none}
-.audit-hse-layer .hse-task-extra.show{display:block}
+.audit-hse-layer .hse-task-extra.show{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media(max-width:899px){
+  .audit-hse-layer .hse-task-extra.show{grid-template-columns:1fr!important}
+}
 .dnk-linked-badge{display:inline-flex;align-items:center;gap:4px;border:1px solid #B9D9CB;background:#EDF8F3;color:#257A5A;border-radius:99px;padding:4px 8px;font-size:9px;font-weight:800}
 </style>
 
@@ -6192,6 +6195,10 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
         </select>
       </div>
       <div id="bg-m-hse-extra" class="hse-task-extra">
+        <div class="mfield">
+          <label>İSG Kritikliği</label>
+          <select id="bg-m-hse-kritik"><option>Düşük</option><option>Orta</option><option>Yüksek</option><option>Kritik</option></select>
+        </div>
         <div class="mfield"><label>Kontrol / Tedbir Türü</label>
           <select id="bg-m-hse-tedbir">
             <option>Tehlikenin Ortadan Kaldırılması</option><option>İkame</option>
@@ -15647,6 +15654,7 @@ function bulguOpen(editId, denetimId) {
   document.getElementById('bg-m-termin').value  = b ? (b.termin||'') : '';
   bulguHseKokDoldur();
   document.getElementById('bg-m-hse-iliski').value = b ? (b.hseIliski||'') : '';
+  document.getElementById('bg-m-hse-kritik').value = b ? (b.hseKritik||'Orta') : 'Orta';
   document.getElementById('bg-m-hse-tedbir').value = b ? (b.hseTedbir||'İdari / Organizasyonel Kontrol') : 'İdari / Organizasyonel Kontrol';
   document.getElementById('bg-m-hse-kok').value = b ? (b.hseKok||'') : '';
   bulguHseToggle();
@@ -15669,6 +15677,7 @@ function bulguSubmit() {
     sorumlu: document.getElementById('bg-m-sorumlu').value.trim(),
     termin:  document.getElementById('bg-m-termin').value,
     hseIliski: document.getElementById('bg-m-hse-iliski')?.value || '',
+    hseKritik: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-kritik')?.value || 'Orta') : '',
     hseTedbir: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-tedbir')?.value || '') : '',
     hseKok: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-kok')?.value || '') : '',
   };
@@ -15750,7 +15759,7 @@ function bulguYeniGorevOlustur(b,d) {
     sorumlu:b.sorumlu||'', termin:b.termin||'', talep:'',
     note:(b.oneri?'Öneri: '+b.oneri+'\n':'')+(d?'Denetim: '+d.ad+' ('+(d.tarih||'')+')':''),
     fab:dnFabListesi(d).join(', '), fabs:dnFabListesi(d), date:td(), addedAt:Date.now(), doneAt:null,
-    hseIliski:b.hseIliski||'', hseTedbir:b.hseTedbir||'', hseKok:b.hseKok||'',
+    hseIliski:b.hseIliski||'', hseKritik:b.hseKritik||'Orta', hseTedbir:b.hseTedbir||'', hseKok:b.hseKok||'',
     auditFindingIds:[b.id],
     auditLinks:[{findingId:b.id,auditId:b.denetimId,auditName:d?.ad||'',auditDate:d?.tarih||'',linkedAt:Date.now()}],
     auditRepeatCount:1
