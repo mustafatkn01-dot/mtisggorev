@@ -4398,8 +4398,48 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 }
 </style>
 
-\n<style id="hse-dash-reference-fix-stage1">\n/* HSE Performans — onaylı V4.1 dashboard ayrıntıları */\n.ks-hse-trend-card{\n  background:#fff!important;border:1px solid #dfe6ec!important;border-radius:19px!important;\n  padding:16px!important;box-shadow:0 5px 18px rgba(27,52,73,.04)!important;\n}\n.ks-hse-trend-wrap{height:310px!important;position:relative!important}\n.ks-priority-list.reference-priority{gap:8px!important}\n.ks-priority-item.reference-prio{\n  display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important;\n  border:1px solid #dfe6ec!important;border-radius:13px!important;padding:12px!important;background:#fff!important;\n}\n.ks-priority-rank{\n  width:30px!important;height:30px!important;border-radius:10px!important;display:grid!important;place-items:center!important;\n  background:#0d2b46!important;color:#fff!important;font-size:13px!important;font-weight:900!important;\n}\n.ks-priority-copy{min-width:0!important}\n.ks-priority-copy strong{\n  display:block!important;margin:0 0 4px!important;color:#152334!important;font-size:14.5px!important;line-height:1.25!important;font-weight:900!important;\n}\n.ks-priority-copy .ks-priority-task{\n  display:block!important;color:#53616e!important;font-size:11.5px!important;line-height:1.4!important;font-weight:650!important;\n}\n.ks-priority-copy small{\n  display:block!important;margin-top:5px!important;color:#6f7c89!important;font-size:10px!important;line-height:1.45!important;\n}\n.ks-priority-status{\n  align-self:center!important;font-size:10px!important;border-radius:999px!important;padding:5px 8px!important;font-weight:900!important;\n  background:#eef4f6!important;color:#455767!important;white-space:nowrap!important;\n}\n.ks-priority-status.high,.ks-priority-status.crit{background:#f7e7e7!important;color:#9a3232!important}\n.ks-priority-status.medium{background:#fff0d5!important;color:#8b630a!important}\n.ks-priority-status.low{backgroun
-d:#e9f5ef!important;color:#277454!important}\n@media(max-width:620px){\n  .ks-hse-trend-wrap{height:270px!important}\n  .ks-priority-item.reference-prio{grid-template-columns:34px minmax(0,1fr) auto!important;padding:11px!important}\n  .ks-priority-copy strong{font-size:13.5px!important}\n  .ks-priority-copy .ks-priority-task{font-size:10.5px!important}\n  .ks-priority-copy small{font-size:9.5px!important}\n}\n</style>\n
+<style id="hse-dash-reference-fix-stage1">
+/* HSE Performans — onaylı V4.1 dashboard ayrıntıları */
+.ks-hse-trend-card{
+  background:#fff!important;border:1px solid #dfe6ec!important;border-radius:19px!important;
+  padding:16px!important;box-shadow:0 5px 18px rgba(27,52,73,.04)!important;
+}
+.ks-hse-trend-wrap{height:310px!important;position:relative!important}
+.ks-priority-list.reference-priority{gap:8px!important}
+.ks-priority-item.reference-prio{
+  display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important;
+  border:1px solid #dfe6ec!important;border-radius:13px!important;padding:12px!important;background:#fff!important;
+}
+.ks-priority-rank{
+  width:30px!important;height:30px!important;border-radius:10px!important;display:grid!important;place-items:center!important;
+  background:#0d2b46!important;color:#fff!important;font-size:13px!important;font-weight:900!important;
+}
+.ks-priority-copy{min-width:0!important}
+.ks-priority-copy strong{
+  display:block!important;margin:0 0 4px!important;color:#152334!important;font-size:14.5px!important;line-height:1.25!important;font-weight:900!important;
+}
+.ks-priority-copy .ks-priority-task{
+  display:block!important;color:#53616e!important;font-size:11.5px!important;line-height:1.4!important;font-weight:650!important;
+}
+.ks-priority-copy small{
+  display:block!important;margin-top:5px!important;color:#6f7c89!important;font-size:10px!important;line-height:1.45!important;
+}
+.ks-priority-status{
+  align-self:center!important;font-size:10px!important;border-radius:999px!important;padding:5px 8px!important;font-weight:900!important;
+  background:#eef4f6!important;color:#455767!important;white-space:nowrap!important;
+}
+.ks-priority-status.high,.ks-priority-status.crit{background:#f7e7e7!important;color:#9a3232!important}
+.ks-priority-status.medium{background:#fff0d5!important;color:#8b630a!important}
+.ks-priority-status.low{background:#e9f5ef!important;color:#277454!important}
+@media(max-width:620px){
+  .ks-hse-trend-wrap{height:270px!important}
+  .ks-priority-item.reference-prio{grid-template-columns:34px minmax(0,1fr) auto!important;padding:11px!important}
+  .ks-priority-copy strong{font-size:13.5px!important}
+  .ks-priority-copy .ks-priority-task{font-size:10.5px!important}
+  .ks-priority-copy small{font-size:9.5px!important}
+}
+</style>
+
 
 <style id="general-analysis-chart-polish">
 #kaza-stats-body .ks-chart-subtitle{
@@ -5358,6 +5398,49 @@ d:#e9f5ef!important;color:#277454!important}\n@media(max-width:620px){\n  .ks-hs
     line-height:1.55!important;
     color:#6F7C89!important;
     margin:0!important;
+  }
+}
+</style>
+
+
+<style id="hse-priority-badge-final-fix">
+.ks-priority-status{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:max-content!important;
+  max-width:100%!important;
+  border-radius:999px!important;
+  padding:5px 10px!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  line-height:1.15!important;
+  white-space:nowrap!important;
+  border:1px solid transparent!important;
+}
+.ks-priority-status.high,.ks-priority-status.crit{
+  background:#F9EAEA!important;
+  color:#A33A3A!important;
+  border-color:#F0D1D1!important;
+}
+.ks-priority-status.medium{
+  background:#FFF3D9!important;
+  color:#8B630A!important;
+  border-color:#F1E0B6!important;
+}
+.ks-priority-status.low{
+  background:#EAF6F0!important;
+  color:#277454!important;
+  border-color:#D2EBDD!important;
+}
+@media(max-width:620px){
+  .ks-priority-item.reference-prio{
+    grid-template-columns:34px minmax(0,1fr)!important;
+    align-items:start!important;
+  }
+  .ks-priority-status{
+    grid-column:2!important;
+    margin-top:2px!important;
   }
 }
 </style>
@@ -13623,7 +13706,7 @@ function ksTurVeriHesapla(liste, yilFiltre) {
     const turMap = {};
     liste.forEach(k => { const v = (k.yaralanma||'').trim() || 'Belirtilmemiş'; turMap[v] = (turMap[v]||0)+1; });
     const turSirali = Object.entries(turMap).sort((a,b) => b[1]-a[1]);
-    return { tekYil:true, labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:turSirali.map((_,i)=>KS_ANALIZ_RENKLERI[i % KS_ANALIZ_RENKLERI.length]), borderRadius:7 }] };
+    return { tekYil:true, labels: turSirali.map(x=>x[0]), datasets:[{ label:'Adet', data: turSirali.map(x=>x[1]), backgroundColor:'#4285d4', borderRadius:7 }] };
   }
   const yillar = Array.from(new Set(liste.filter(k => k.tarih).map(k => k.tarih.slice(0,4)))).sort();
   const turToplam = {};
@@ -13637,7 +13720,7 @@ function ksTurVeriHesapla(liste, yilFiltre) {
         yilMap[v] = (yilMap[v]||0)+1;
       }
     });
-    return { label: yil, data: turListesi.map(t => yilMap[t] || 0), backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:7 };
+    return { label: yil, data: turListesi.map(t => yilMap[t] || 0), backgroundColor:'#4285d4', borderRadius:7 };
   });
   return { tekYil: (yillar.length <= 1), labels: turListesi, datasets };
 }
@@ -13666,13 +13749,13 @@ function ksAylikVeriHesapla(liste, yilFiltre) {
   if (yilFiltre !== 'tumu') {
     const ayMap = new Array(12).fill(0);
     liste.forEach(k => { if (k.tarih) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
-    return { tekYil:true, labels: KS_AY_ISIM, datasets: [{ label:'Olay', data: ayMap, backgroundColor:KS_AY_ISIM.map((_,i)=>KS_ANALIZ_RENKLERI[i % KS_ANALIZ_RENKLERI.length]), borderRadius:7 }] };
+    return { tekYil:true, labels: KS_AY_ISIM, datasets: [{ label:'Olay', data: ayMap, backgroundColor:'#4285d4', borderRadius:7 }] };
   }
   const yillar = Array.from(new Set(liste.filter(k => k.tarih).map(k => k.tarih.slice(0,4)))).sort();
   const datasets = yillar.map((yil, i) => {
     const ayMap = new Array(12).fill(0);
     liste.forEach(k => { if (k.tarih && k.tarih.startsWith(yil)) { const m = +k.tarih.slice(5,7)-1; if (m>=0 && m<12) ayMap[m]++; } });
-    return { label: yil, data: ayMap, backgroundColor: KS_YIL_RENKLERI[i % KS_YIL_RENKLERI.length], borderRadius:7 };
+    return { label: yil, data: ayMap, backgroundColor:'#4285d4', borderRadius:7 };
   });
   return { tekYil: (yillar.length <= 1), labels: KS_AY_ISIM, datasets };
 }
@@ -13788,7 +13871,7 @@ function ksParetoConfig(data) {
           type:'bar',
           label:'Adet',
           data:data.map(d=>d.val),
-          backgroundColor:data.map((_,i)=>KS_ANALIZ_RENKLERI[i % KS_ANALIZ_RENKLERI.length]),
+          backgroundColor:'#0d2b46',
           borderRadius:4,
           order:2,
           yAxisID:'y'
@@ -13797,10 +13880,10 @@ function ksParetoConfig(data) {
           type:'line',
           label:'Kümülatif %',
           data:data.map(d=>d.kumPct),
-          borderColor:'#C0392B',
-          backgroundColor:'#C0392B',
-          pointBackgroundColor:'#C0392B',
-          pointBorderColor:'#C0392B',
+          borderColor:'#f07a24',
+          backgroundColor:'#f07a24',
+          pointBackgroundColor:'#f07a24',
+          pointBorderColor:'#f07a24',
           pointRadius:3.5,
           pointHoverRadius:4.5,
           borderWidth:2,
