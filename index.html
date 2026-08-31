@@ -6763,11 +6763,11 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
         </div>
       </div>
       <div class="ks-root-grid">
-        <div class="ks-root-card"><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, ergonomi, ekipman tasarımı, fiziksel izolasyon.</span></div>
+        <div class="ks-root-card"><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, teknik güvenlik sistemleri, yangın koruma sistemleri, ekipman tasarımı ve fiziksel izolasyon.</span></div>
         <div class="ks-root-card"><b>İş Organizasyonu / Prosedür</b><span>İş yöntemi, EKED, görev planlama, vardiya, iş akışı ve prosedür eksiklikleri.</span></div>
         <div class="ks-root-card"><b>Yetkinlik / Eğitim</b><span>Eğitim, işe uygunluk, yeterlilik, talimatın anlaşılması ve uygulama bilgisi.</span></div>
         <div class="ks-root-card"><b>Gözetim / Yönetim Kontrolü</b><span>Saha gözetimi, kontrol sıklığı, uygunsuzluğun tekrarı, yönetim takibi.</span></div>
-        <div class="ks-root-card"><b>Çalışma Ortamı</b><span>Aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni, sıcaklık ve alan kısıtları.</span></div>
+        <div class="ks-root-card"><b>Çalışma Ortamı</b><span>Kimyasal muhafaza / maruziyet kontrolü, aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni, sıcaklık ve alan kısıtları.</span></div>
         <div class="ks-root-card"><b>İnsan Faktörü</b><span>Dikkat kaybı vb. tek başına son neden olarak değil; ilişkili sistem koşullarıyla birlikte kaydedilir.</span></div>
       </div>
     </div>
@@ -12562,6 +12562,9 @@ const KAZA_KOKNEDEN_VARSAYILAN = [
   'Düşme ve Denge Kaybı',
   'Yetersiz Eğitim, Denetim',
   'EKED/LOTO Eksikliği',
+  'Teknik Koruma / Güvenlik Sisteminin Yetersizliği',
+  'Yangın Koruma Sisteminin Eksik / Yetersiz Olması',
+  'Kimyasal Muhafaza / Maruziyet Kontrol Yetersizliği',
 ];
 const KAZA_KOKNEDEN_KATEGORI = {
   'İşi Bilinçsiz / Eğitimsiz Yapmak':        'İnsan Odaklı / Davranışsal',
@@ -12586,13 +12589,20 @@ const KAZA_KOKNEDEN_KATEGORI = {
   'Düşme ve Denge Kaybı':                     'Çevresel / Davranışsal',
   'Yetersiz Eğitim, Denetim':                 'Yönetsel / Organizasyonel',
   'EKED/LOTO Eksikliği':                      'Yönetsel / Organizasyonel',
+  'Teknik Koruma / Güvenlik Sisteminin Yetersizliği':'Mekanik / Ekipman Odaklı',
+  'Yangın Koruma Sisteminin Eksik / Yetersiz Olması':'Mekanik / Ekipman Odaklı',
+  'Kimyasal Muhafaza / Maruziyet Kontrol Yetersizliği':'Çevresel / Saha Odaklı',
 };
 let kazaKokNedenListesi = [];
 
 function kazaKokNedenYukle() {
   try {
     const kayitli = JSON.parse(localStorage.getItem(LS_KAZA_KOKNEDEN) || 'null');
-    kazaKokNedenListesi = (Array.isArray(kayitli) && kayitli.length) ? kayitli : [...KAZA_KOKNEDEN_VARSAYILAN];
+    const mevcut = (Array.isArray(kayitli) && kayitli.length) ? kayitli.slice() : [];
+    // Sürüm yükseltmelerinde yeni standart kök nedenler mevcut kullanıcı listesine de eklenir.
+    // Kullanıcının daha önce eklediği özel kayıtlar korunur; hiçbir eski değer silinmez.
+    kazaKokNedenListesi = [...new Set([...mevcut, ...KAZA_KOKNEDEN_VARSAYILAN])];
+    localStorage.setItem(LS_KAZA_KOKNEDEN, JSON.stringify(kazaKokNedenListesi));
   } catch(e) { kazaKokNedenListesi = [...KAZA_KOKNEDEN_VARSAYILAN]; }
 }
 function kazaKokNedenSaveLS() {
@@ -15058,11 +15068,11 @@ function ksPrintHSE(mode='management'){
     ].map(x=>`<div><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div></section>`);
 
   if(incl.rootClass) sec.push(`<section class="hse-pr-section"><h2>Sistematik Kök Neden Sınıflandırması</h2><div class="hse-pr-rootgrid">
-    <div><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, ergonomi, ekipman tasarımı, fiziksel izolasyon.</span></div>
+    <div><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, teknik güvenlik sistemleri, yangın koruma sistemleri, ekipman tasarımı ve fiziksel izolasyon.</span></div>
     <div><b>İş Organizasyonu / Prosedür</b><span>İş yöntemi, EKED, görev planlama, vardiya, iş akışı ve prosedür eksiklikleri.</span></div>
     <div><b>Yetkinlik / Eğitim</b><span>Eğitim, işe uygunluk, yeterlilik ve talimatın anlaşılması.</span></div>
     <div><b>Gözetim / Yönetim Kontrolü</b><span>Saha gözetimi, kontrol sıklığı, uygunsuzluğun tekrarı ve yönetim takibi.</span></div>
-    <div><b>Çalışma Ortamı</b><span>Aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni ve alan kısıtları.</span></div>
+    <div><b>Çalışma Ortamı</b><span>Kimyasal muhafaza / maruziyet kontrolü, aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni ve alan kısıtları.</span></div>
     <div><b>İnsan Faktörü</b><span>Dikkat kaybı vb. sistem koşullarıyla birlikte değerlendirilir.</span></div>
   </div></section>`);
 
