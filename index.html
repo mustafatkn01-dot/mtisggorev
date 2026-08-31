@@ -7,6 +7,107 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+
+<meta name="app-version" content="8.4.4">
+<script id="app-version-cache-buster">
+(() => {
+  'use strict';
+
+  const APP_VERSION = '8.4.4';
+  const VERSION_PARAM = 'v';
+  const CHECK_INTERVAL_MS = 5 * 60 * 1000;
+
+  // Diğer kodların sürümü okuyabilmesi için yalnızca bilgi amaçlı dışa açılır.
+  window.APP_VERSION = APP_VERSION;
+
+  function forceVersionedUrl(version) {
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set(VERSION_PARAM, version);
+      // Aynı sürüm URL'sinin dahi tarayıcı ara belleğinden değil ağdan istenmesini sağlar.
+      u.searchParams.set('_cb', String(Date.now()));
+      window.location.replace(u.toString());
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isWebProtocol() {
+    return window.location.protocol === 'http:' || window.location.protocol === 'https:';
+  }
+
+  function ensureCurrentUrlIsVersioned() {
+    // İndirilen HTML dosyası file:// ile açıldığında URL'ye sorgu parametresi
+    // eklemek bazı Android dosya önizleyicilerinde "dosyaya erişilemedi" hatası üretir.
+    // Cache-busting yalnız gerçek web yayını üzerinde çalışır.
+    if (!isWebProtocol()) return false;
+    try {
+      const u = new URL(window.location.href);
+      if (u.searchParams.get(VERSION_PARAM) !== APP_VERSION) {
+        return forceVersionedUrl(APP_VERSION);
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  async function checkPublishedVersion() {
+    // Yerel file:// önizlemede ağ kontrolü yapılmaz.
+    if (!isWebProtocol()) return;
+    // Arka planda açık duran sayfa için gereksiz ağ isteği yapma.
+    if (document.visibilityState === 'hidden') return;
+
+    try {
+      // Her kontrolde benzersiz URL kullanılır ve fetch önbelleği açıkça kapatılır.
+      const checkUrl = new URL(window.location.href);
+      checkUrl.searchParams.delete(VERSION_PARAM);
+      checkUrl.searchParams.delete('_cb');
+      checkUrl.searchParams.set('_version_check', String(Date.now()));
+
+      const response = await fetch(checkUrl.toString(), {
+        method: 'GET',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (!response.ok) return;
+
+      const html = await response.text();
+      const match = html.match(/<meta\s+name=["']app-version["']\s+content=["']([^"']+)["']/i);
+      const publishedVersion = match ? match[1].trim() : '';
+
+      if (publishedVersion && publishedVersion !== APP_VERSION) {
+        forceVersionedUrl(publishedVersion);
+      }
+    } catch (e) {
+      // Çevrimdışı/bağlantı hatasında mevcut sürüm kesintisiz çalışmaya devam eder.
+    }
+  }
+
+  // İlk girişte kök URL yerine sürümlü URL kullan.
+  // Bu işlem localStorage/Firebase verilerini etkilemez; yalnız URL önbellek anahtarını değiştirir.
+  if (ensureCurrentUrlIsVersioned()) return;
+
+  // BFCache'den geri dönüldüğünde, sekme yeniden görünür olduğunda ve periyodik olarak
+  // GitHub Pages üzerindeki yayınlanmış sürümü önbelleksiz kontrol et.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) checkPublishedVersion();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkPublishedVersion();
+  });
+
+  window.addEventListener('load', () => {
+    setTimeout(checkPublishedVersion, 1500);
+    setInterval(checkPublishedVersion, CHECK_INTERVAL_MS);
+  });
+})();
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Görev Takip</title>
 <script>
