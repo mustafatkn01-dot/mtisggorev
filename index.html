@@ -16564,12 +16564,21 @@ window.addEventListener('resize', calMobInit);
       doldur(kazaItems, d.kaza.items);
       if (d.kaza.ayar) kazaAyar = d.kaza.ayar;
       if (Array.isArray(d.kaza.yaralanmaListesi) && d.kaza.yaralanmaListesi.length) {
-        doldur(kazaYaralanmaListesi, d.kaza.yaralanmaListesi);
+        // Firebase listesini varsayılanlarla birleştir — kod güncellenince yeni
+        // varsayılanlar eski bulut verisini ezmez, her zaman listeye eklenir.
+        const birlesik = [...new Set([...d.kaza.yaralanmaListesi, ...(typeof KAZA_YARALANMA_VARSAYILAN !== 'undefined' ? KAZA_YARALANMA_VARSAYILAN : [])])];
+        doldur(kazaYaralanmaListesi, birlesik);
         kazaRenderYaralanmaListesi();
       }
       if (Array.isArray(d.kaza.kokNedenListesi) && d.kaza.kokNedenListesi.length) {
-        doldur(kazaKokNedenListesi, d.kaza.kokNedenListesi);
+        // Firebase'deki eski liste + kodda tanımlı yeni varsayılanlar → birleştir.
+        // Bu sayede GitHub'a yeni varsayılan eklendiğinde, Firebase'de eski liste
+        // olsa bile yeni maddeler her açılışta listeye dahil edilir ve üzerine yazılır.
+        const birlesik = [...new Set([...d.kaza.kokNedenListesi, ...(typeof KAZA_KOKNEDEN_VARSAYILAN !== 'undefined' ? KAZA_KOKNEDEN_VARSAYILAN : [])])];
+        doldur(kazaKokNedenListesi, birlesik);
         kazaRenderKokNedenListesi();
+        // Birleştirilmiş listeyi buluta geri yaz (Firebase'deki eski listeyi güncelle)
+        if (window._fbSaveKaza) window._fbSaveKaza();
       }
       window._kazaReady = true;     // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
