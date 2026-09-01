@@ -5687,7 +5687,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 #kaza-stats-body .ks-canvas-wrap{
   width:100%!important;
   min-width:0!important;
-  min-height:260px!important;
+  min-height:300px!important;
   flex:0 0 auto!important;
   position:relative!important;
 }
@@ -5766,7 +5766,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
     grid-template-columns:22px minmax(80px,1fr) 38px 44px!important;
   }
   #kaza-stats-body .ks-canvas-wrap{
-    min-height:250px!important;
+    min-height:300px!important;
   }
 }
 
@@ -14337,6 +14337,7 @@ function ksParetoYEksenMax(vals) {
 }
 
 function ksBarOptions(vals, legendOn) {
+  const isMobile = window.matchMedia('(max-width: 620px)').matches;
   return {
     responsive:true, maintainAspectRatio:false,
     plugins:{
@@ -14344,7 +14345,17 @@ function ksBarOptions(vals, legendOn) {
       ksDataLabel:{ enabled:true }
     },
     scales:{
-      x:{ ticks:{ color:'#444', font:{ size:10 } }, grid:{ display:false } },
+      x:{
+        ticks:{
+          color:'#444',
+          font:{ size: isMobile ? 8 : 8.5 },
+          maxRotation: 65,
+          minRotation: 45,
+          autoSkip:false,
+          padding: isMobile ? 3 : 2
+        },
+        grid:{ display:false }
+      },
       y:{ beginAtZero:true, min:0, max: ksYEksenMax(vals), ticks:{ color:'#444', stepSize:1, precision:0 }, grid:{ color:'#eee' } }
     }
   };
@@ -14384,7 +14395,7 @@ function ksKokHorizontalOptions(vals, legendOn) {
   };
 }
 
-function ksChartLabelWrap(label, maxChars=18) {
+function ksChartLabelWrap(label, maxChars=14) {
   const s = String(label ?? '');
   if (s.length <= maxChars) return s;
 
@@ -14406,9 +14417,10 @@ function ksChartLabelWrap(label, maxChars=18) {
 
 function ksParetoConfig(data) {
   const vals = data.map(d => d.val);
+  const isMobile = window.matchMedia('(max-width: 620px)').matches;
   return {
     data:{
-      labels:data.map(d=>ksChartLabelWrap(d.label, 16)),
+      labels:data.map(d=>ksChartLabelWrap(d.label, isMobile ? 12 : 14)),
       datasets:[
         {
           type:'bar',
@@ -14416,6 +14428,7 @@ function ksParetoConfig(data) {
           data:data.map(d=>d.val),
           backgroundColor:'#0d2b46',
           borderRadius:4,
+          maxBarThickness: isMobile ? 28 : 38,
           order:2,
           yAxisID:'y'
         },
@@ -14439,7 +14452,7 @@ function ksParetoConfig(data) {
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      layout:{padding:{top:20,right:4}},
+      layout:{padding:{top:20, right:4, bottom: isMobile ? 14 : 8}},
       plugins:{
         legend:{
           display:true,
@@ -14453,11 +14466,11 @@ function ksParetoConfig(data) {
         x:{
           ticks:{
             color:'#444',
-            font:{size:9.5},
-            maxRotation: window.matchMedia('(max-width: 620px)').matches ? 38 : 42,
-            minRotation: window.matchMedia('(max-width: 620px)').matches ? 38 : 0,
+            font:{size: isMobile ? 8 : 8.5},
+            maxRotation: 65,
+            minRotation: 45,
             autoSkip:false,
-            padding: window.matchMedia('(max-width: 620px)').matches ? 5 : 3
+            padding: isMobile ? 3 : 2
           },
           grid:{display:false}
         },
