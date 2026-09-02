@@ -6736,7 +6736,7 @@ px}
         <div id="kaza-report-status" class="kaza-report-status">Henüz rapor oluşturulmadı.</div>
         <section class="kaza-report-card"><h4>Taslak sürümleri</h4><div id="kaza-report-versions" class="kaza-report-versions"><span>Henüz rapor oluşturulmadı.</span></div></section>
       </aside>
-      <main class="kaza-report-main"><nav class="kaza-report-tabs"><button type="button" class="active" data-report-tab="preview" onclick="kazaRaporTab(this)">A4 Ön İzleme</button><button type="button" data-report-tab="analysis" onclick="kazaRaporTab(this)">Analiz Düzenle</button></nav><div id="kaza-report-preview" class="kaza-report-preview"><div class="kaza-empty-report"><b>Rapor ön izlemeye hazır değil</b><span>Rapor taslağı oluşturun.</span></div></div><div id="kaza-report-analysis" class="kaza-report-analysis" hidden></div><footer class="kaza-report-bottom"><button type="button" id="kaza-report-select" disabled>Taslağı Seç</button><button type="button" id="kaza-report-regenerate" disabled onclick="kazaRaporGenerate(true)">Yeniden Oluştur</button><button type="button" id="kaza-report-pdf" disabled onclick="kazaRaporPdf()">PDF Oluştur</button></footer></main>
+      <main class="kaza-report-main"><nav class="kaza-report-tabs"><button type="button" class="active" data-report-tab="preview" onclick="kazaRaporTab(this)">A4 Ön İzleme</button><button type="button" data-report-tab="analysis" onclick="kazaRaporTab(this)">Analiz Düzenle</button></nav><div id="kaza-report-preview" class="kaza-report-preview"><div class="kaza-empty-report"><b>Rapor ön izlemeye hazır değil</b><span>Rapor taslağı oluşturun.</span></div></div><div id="kaza-report-analysis" class="kaza-report-analysis" hidden></div><footer class="kaza-report-bottom"><button type="button" id="kaza-report-save" disabled onclick="kazaRaporKaydet()">Kaydet</button><button type="button" id="kaza-report-regenerate" disabled onclick="kazaRaporGenerate(true)">Yeniden Oluştur</button><button type="button" id="kaza-report-pdf" disabled onclick="kazaRaporPdf()">PDF Oluştur</button></footer></main>
     </div>
   </div>
 </div>
@@ -17331,6 +17331,40 @@ window.addEventListener('resize', calMobInit);
   window._fbSavePer     = () => yaz('per',     () => ({ tasks: perTasks, persons: perPersons, fabs: perFabs }));
   window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs }));
   window._fbSaveKaza    = () => yaz('kaza',    () => ({ items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }));
+
+  // ── Kaza / Olay raporları — cihazlar arası bulut deposu ─────
+  // Raporlar ana kaza kaydından ayrı tutulur. Böylece rapor sürümü,
+  // analiz snapshot'ı ve olay görseli başka cihazlarda aynı şekilde açılabilir.
+  window._fbKazaRaporCache = window._fbKazaRaporCache || {};
+
+  window._fbGetKazaRaporlar = function(incidentId) {
+    const key = String(incidentId || '');
+    const bucket = window._fbKazaRaporCache && window._fbKazaRaporCache[key];
+    if (!bucket || typeof bucket !== 'object') return [];
+    return Object.values(bucket)
+      .filter(Boolean)
+      .sort((a,b) => String(a.savedAt || a.updatedAt || a.generatedAt || '').localeCompare(String(b.savedAt || b.updatedAt || b.generatedAt || '')));
+  };
+
+  window._fbSaveKazaRapor = async function(payload) {
+    const user = AUTH.currentUser;
+    if (!hazir || !user || user.uid !== AUTHORIZED_UID) {
+      throw new Error('Bulut bağlantısı hazır değil veya Firebase oturumu bulunmuyor.');
+    }
+    const incidentId = String(payload && payload.incidentId || '').trim();
+    const reportId = String(payload && payload.reportId || '').trim();
+    if (!incidentId || !reportId) throw new Error('Rapor kimliği oluşturulamadı.');
+
+    const clean = temizle(payload);
+    await ROOT.child('kazaRaporlari').child(incidentId).child(reportId).set(clean);
+
+    window._fbKazaRaporCache[incidentId] = window._fbKazaRaporCache[incidentId] || {};
+    window._fbKazaRaporCache[incidentId][reportId] = clean;
+    nokta(true, 'Rapor Firebase bulutuna kaydedildi ✓');
+    try { window.dispatchEvent(new CustomEvent('kazaRaporBulutGuncellendi', {detail:{incidentId,reportId}})); } catch(e) {}
+    return clean;
+  };
+
   window._fbSaveDenetim = () => yaz('denetim', () => ({ denetimler, bulgular }));
 
   window._fbReady = true;
@@ -17372,6 +17406,11 @@ window.addEventListener('resize', calMobInit);
       doldur(kontrolFabs,  d.kontrol.fabs);
       window._kontrolReady = true;  // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
+    // Rapor deposu ana kaza kaydından bağımsızdır; başka cihazda oluşturulan
+    // kayıtlar gerçek zamanlı olarak bu önbelleğe düşer.
+    window._fbKazaRaporCache = (d.kazaRaporlari && typeof d.kazaRaporlari === 'object') ? d.kazaRaporlari : {};
+    try { window.dispatchEvent(new CustomEvent('kazaRaporBulutGuncellendi')); } catch(e) {}
+
     if (!yazimBekliyor['kaza'] && d.kaza) {
       doldur(kazaItems, d.kaza.items);
       if (d.kaza.ayar) kazaAyar = d.kaza.ayar;
@@ -17657,6 +17696,17 @@ window.addEventListener('resize', calMobInit);
 <style id="kaza-classification-ai-v2">
 .kaza-ai-meta{display:block;margin-top:5px;color:#7A8791;font-size:8px;line-height:1.35}
 .kaza-ai-btn:disabled{opacity:.65;cursor:wait}
+</style>
+
+
+<style id="kaza-cloud-report-save-v1">
+#kaza-report-save{
+  border-color:#1f8a5b!important;
+  color:#176846!important;
+  background:#f3fbf7!important;
+}
+#kaza-report-save:not(:disabled):active{transform:translateY(1px)}
+#kaza-report-versions button span{white-space:normal}
 </style>
 
 <script id="kaza-ai-engine-v1">
@@ -18110,7 +18160,76 @@ let kazaReportImageBackup = '';
 const kazaDraftStore = (typeof KazaAIRaporMotoru!=='undefined' && KazaAIRaporMotoru.createDraftStore)
   ? KazaAIRaporMotoru.createDraftStore(kazaSafeStorage())
   : {list:()=>[],save:d=>d,select:()=>null};
-function kazaKayitRaporVar(id){try{return kazaDraftStore.list(String(id)).length>0}catch(_){return false}}
+
+function kazaBulutRaporlar(id){
+  try{return (typeof window._fbGetKazaRaporlar==='function')?window._fbGetKazaRaporlar(String(id)):[]}
+  catch(_){return []}
+}
+function kazaBulutSonRapor(id){
+  const arr=kazaBulutRaporlar(id);
+  return arr.length?arr[arr.length-1]:null;
+}
+function kazaKayitRaporVar(id){
+  try{
+    return kazaBulutRaporlar(id).length>0 || kazaDraftStore.list(String(id)).length>0;
+  }catch(_){return false}
+}
+function kazaRaporBulutPayload(draft,inc){
+  const now=new Date().toISOString();
+  const cleanInc=JSON.parse(JSON.stringify(inc||{}));
+  if(cleanInc && Array.isArray(cleanInc.images)) delete cleanInc.images;
+  const reportId=String(draft?.reportDraftId || ('report_'+Date.now()));
+  return {
+    reportId,
+    incidentId:String(inc?.incidentId || draft?.incidentId || ''),
+    status:'saved',
+    savedAt:now,
+    updatedAt:now,
+    generatedAt:draft?.generatedAt || now,
+    version:Number(draft?.version||1),
+    reportDraftId:String(draft?.reportDraftId||reportId),
+    schemaVersion:draft?.schemaVersion||'kaza-ai-report-v1',
+    engineVersion:draft?.engineVersion||'',
+    reviewApplied:!!draft?.reviewApplied,
+    incidentSnapshot:cleanInc,
+    primaryImageData:(typeof kazaPrimaryImageData!=='undefined'?kazaPrimaryImageData:'')||'',
+    draft:JSON.parse(JSON.stringify(draft||{}))
+  };
+}
+async function kazaRaporKaydet(){
+  const btn=document.getElementById('kaza-report-save');
+  const status=document.getElementById('kaza-report-status');
+  if(!kazaActiveDraft){
+    alert('Kaydetmek için önce rapor taslağını oluşturun.');
+    return;
+  }
+  if(typeof window._fbSaveKazaRapor!=='function'){
+    alert('Firebase rapor kaydetme servisi hazır değil.');
+    return;
+  }
+
+  try{
+    if(btn){btn.disabled=true;btn.textContent='Kaydediliyor…'}
+    const inc=kazaFormIncident();
+    kazaRaporApplyAnalysisEdits(kazaActiveDraft);
+    try{kazaDraftStore.save(kazaActiveDraft)}catch(_){}
+    const payload=kazaRaporBulutPayload(kazaActiveDraft,inc);
+    await window._fbSaveKazaRapor(payload);
+
+    // Buluta kaydedilen metinsel düzenlemeler ön izleme ile aynı olsun.
+    kazaRaporRender(kazaActiveDraft,inc);
+    kazaRaporVersions(inc.incidentId);
+    if(typeof kazaRender==='function')kazaRender();
+    if(status)status.textContent='Rapor Firebase bulutuna kaydedildi. Diğer cihazlardan görüntülenebilir.';
+    if(btn){btn.textContent='✓ Kaydedildi';setTimeout(()=>{if(btn){btn.textContent='Kaydet';btn.disabled=false}},1400)}
+  }catch(e){
+    console.error('Rapor bulut kaydı hatası:',e);
+    if(status)status.textContent='Rapor kaydedilemedi: '+e.message;
+    alert('Rapor kaydedilemedi: '+e.message);
+    if(btn){btn.textContent='Kaydet';btn.disabled=false}
+  }
+}
+
 function kazaLegacyInjuryRows(text){return text?[{bodyRegion:'',damageType:text,detail:''}]:[{bodyRegion:'',damageType:'',detail:''}]}
 const KAZA_HASAR_TURLERI = [
   'Kesik / Yırtılma',
@@ -18181,7 +18300,60 @@ function kazaPhotoRender(){const p=document.getElementById('kaza-photo-preview')
 function kazaPhotoPick(input){const file=input.files&&input.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);kazaPrimaryImageData=c.toDataURL('image/jpeg',.72);kazaPhotoRender()};img.src=reader.result};reader.readAsDataURL(file)}
 function kazaFormIncident(){if(kazaReportIncidentOverride)return KazaAIRaporMotoru.normalizeIncident(kazaReportIncidentOverride);const injuries=kazaInjuryRead();return KazaAIRaporMotoru.normalizeIncident({incidentId:kazaEditId||kazaReportIncidentId||('new_'+Date.now()),revision:1,tur:kazaMTur,tarih:document.getElementById('kaza-m-tarih').value,saat:document.getElementById('kaza-m-saat').value,kayip:document.getElementById('kaza-m-kayip').value,fab:document.getElementById('kaza-m-fab').value,bolum:document.getElementById('kaza-m-bolum').value,kisi:document.getElementById('kaza-m-kisi').value,calisanGorevi:document.getElementById('kaza-m-gorev').value,aciklama:document.getElementById('kaza-m-aciklama').value,injuries,potansiyelSiddet:document.getElementById('kaza-m-potansiyel').value,kokNeden:document.getElementById('kaza-m-koknedan').value,onlem:document.getElementById('kaza-m-onlem').value,images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]})}
 function kazaRaporOpen(){kazaReportIncidentOverride=null;const inc=kazaFormIncident();if(!inc.narrative){alert('Rapor oluşturmak için olay anlatımını yazın.');return}document.getElementById('kaza-report-bg').style.display='block';kazaRaporPrecheck(inc);kazaRaporVersions(inc.incidentId)}
-function kazaKayitOnizle(id){const k=kazaItems.find(x=>String(x.id)===String(id));if(!k)return;kazaReportImageBackup=kazaPrimaryImageData;kazaPrimaryImageData=k.primaryImageData||'';kazaReportIncidentOverride={...k,incidentId:String(k.id),injuries:Array.isArray(k.injuries)&&k.injuries.length?k.injuries:kazaLegacyInjuryRows(k.yaralanma||''),images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]};const inc=kazaFormIncident();document.getElementById('kaza-report-bg').style.display='block';kazaRaporPrecheck(inc);kazaRaporVersions(inc.incidentId);const drafts=kazaDraftStore.list(inc.incidentId);if(drafts.length){kazaActiveDraft=drafts[drafts.length-1];kazaRaporRender(kazaActiveDraft,inc);['kaza-report-select','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>document.getElementById(x).disabled=false)}else{document.getElementById('kaza-report-preview').innerHTML='<div class="kaza-empty-report"><b>Bu kayıt için rapor taslağı bulunmuyor</b><span>Yukarıdaki bilgilerle hızlı veya derin rapor oluşturabilirsiniz.</span></div>';document.getElementById('kaza-report-analysis').innerHTML='';['kaza-report-select','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>document.getElementById(x).disabled=true)}}
+function kazaKayitOnizle(id){
+  const k=kazaItems.find(x=>String(x.id)===String(id));
+  if(!k)return;
+
+  kazaReportImageBackup=kazaPrimaryImageData;
+  const cloud=kazaBulutSonRapor(id);
+
+  if(cloud && cloud.draft){
+    kazaPrimaryImageData=cloud.primaryImageData||k.primaryImageData||'';
+    const snap=cloud.incidentSnapshot||{};
+    kazaReportIncidentOverride={
+      ...k,
+      ...snap,
+      incidentId:String(k.id),
+      injuries:Array.isArray(snap.injuries)&&snap.injuries.length
+        ? snap.injuries
+        : (Array.isArray(k.injuries)&&k.injuries.length?k.injuries:kazaLegacyInjuryRows(k.yaralanma||'')),
+      images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]
+    };
+    document.getElementById('kaza-report-bg').style.display='block';
+    const inc=kazaFormIncident();
+    kazaRaporPrecheck(inc);
+    kazaActiveDraft=JSON.parse(JSON.stringify(cloud.draft));
+    kazaRaporRender(kazaActiveDraft,inc);
+    kazaRaporVersions(inc.incidentId);
+    ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=false});
+    const status=document.getElementById('kaza-report-status');
+    if(status)status.textContent='Firebase bulutunda kayıtlı rapor açıldı.';
+    return;
+  }
+
+  // Bulutta kayıt yoksa bu cihazdaki yerel taslağa geri dön.
+  kazaPrimaryImageData=k.primaryImageData||'';
+  kazaReportIncidentOverride={
+    ...k,
+    incidentId:String(k.id),
+    injuries:Array.isArray(k.injuries)&&k.injuries.length?k.injuries:kazaLegacyInjuryRows(k.yaralanma||''),
+    images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]
+  };
+  const inc=kazaFormIncident();
+  document.getElementById('kaza-report-bg').style.display='block';
+  kazaRaporPrecheck(inc);
+  kazaRaporVersions(inc.incidentId);
+  const drafts=kazaDraftStore.list(inc.incidentId);
+  if(drafts.length){
+    kazaActiveDraft=drafts[drafts.length-1];
+    kazaRaporRender(kazaActiveDraft,inc);
+    ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=false});
+  }else{
+    document.getElementById('kaza-report-preview').innerHTML='<div class="kaza-empty-report"><b>Bu kayıt için rapor bulunmuyor</b><span>Yukarıdaki bilgilerle hızlı veya derin rapor oluşturabilirsiniz.</span></div>';
+    document.getElementById('kaza-report-analysis').innerHTML='';
+    ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=true});
+  }
+}
 function kazaRaporClose(){document.getElementById('kaza-report-bg').style.display='none';if(kazaReportIncidentOverride){kazaPrimaryImageData=kazaReportImageBackup;kazaReportIncidentOverride=null}}
 function kazaRaporDepth(btn){document.querySelectorAll('.kaza-report-modes button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.getElementById('kaza-report-depth').value=btn.dataset.depth}
 function kazaRaporChip(btn){const el=document.getElementById('kaza-report-directive'),t=btn.textContent.trim();el.value=el.value.trim()?(el.value.trim()+'. '+t):t}
@@ -18207,8 +18379,49 @@ function kazaRaporApplyAnalysisEdits(draft){
   }
   return draft;
 }
-async function kazaRaporGenerate(regenerate){const btn=document.getElementById('kaza-report-generate'),status=document.getElementById('kaza-report-status'),inc=kazaFormIncident(),deep=document.getElementById('kaza-report-depth').value==='deep',directive=document.getElementById('kaza-report-directive').value.trim();if(!inc.narrative){alert('Olay anlatımı zorunludur.');return}btn.disabled=true;btn.textContent=deep?'🔎 Derin analiz hazırlanıyor…':'⚡ Hızlı rapor hazırlanıyor…';status.textContent=deep?'Analist taslağı ve bağımsız gözden geçirme hazırlanıyor…':'Hızlı ön analiz hazırlanıyor…';try{const previous=regenerate?kazaRaporApplyAnalysisEdits(kazaActiveDraft):null;const draft=await KazaAIRaporMotoru.generateDraft({incident:inc,userDirective:directive,previousDraft:previous,skipReview:!deep,aiCall:(prompt,tokens)=>geminiUret(prompt,tokens)});kazaDraftStore.save(draft);kazaActiveDraft=draft;kazaRaporRender(draft,inc);kazaRaporVersions(inc.incidentId);if(kazaReportIncidentOverride)kazaRender();status.textContent='Taslak v'+draft.version+' hazır. Bulguları saha kanıtlarıyla doğrulayın.';['kaza-report-select','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>document.getElementById(id).disabled=false)}catch(e){status.textContent='Rapor üretilemedi: '+e.message;alert(e.message)}finally{btn.disabled=false;btn.textContent='✨ Rapor Taslağı Oluştur'}}
-function kazaRaporVersions(id){const items=kazaDraftStore.list(id),el=document.getElementById('kaza-report-versions');el.innerHTML=items.length?items.slice().reverse().map(x=>'<button type="button" data-draft="'+x.reportDraftId+'"><b>Sürüm '+x.version+'</b><span>'+new Date(x.generatedAt).toLocaleString('tr-TR')+' · '+(x.reviewApplied?'Denetimli':'Hızlı')+'</span></button>').join(''):'<span>Henüz rapor oluşturulmadı.</span>';el.querySelectorAll('button').forEach(b=>b.onclick=()=>{kazaActiveDraft=items.find(x=>x.reportDraftId===b.dataset.draft);kazaRaporRender(kazaActiveDraft,kazaFormIncident())})}
+async function kazaRaporGenerate(regenerate){const btn=document.getElementById('kaza-report-generate'),status=document.getElementById('kaza-report-status'),inc=kazaFormIncident(),deep=document.getElementById('kaza-report-depth').value==='deep',directive=document.getElementById('kaza-report-directive').value.trim();if(!inc.narrative){alert('Olay anlatımı zorunludur.');return}btn.disabled=true;btn.textContent=deep?'🔎 Derin analiz hazırlanıyor…':'⚡ Hızlı rapor hazırlanıyor…';status.textContent=deep?'Analist taslağı ve bağımsız gözden geçirme hazırlanıyor…':'Hızlı ön analiz hazırlanıyor…';try{const previous=regenerate?kazaRaporApplyAnalysisEdits(kazaActiveDraft):null;const draft=await KazaAIRaporMotoru.generateDraft({incident:inc,userDirective:directive,previousDraft:previous,skipReview:!deep,aiCall:(prompt,tokens)=>geminiUret(prompt,tokens)});kazaDraftStore.save(draft);kazaActiveDraft=draft;kazaRaporRender(draft,inc);kazaRaporVersions(inc.incidentId);if(kazaReportIncidentOverride)kazaRender();status.textContent='Taslak v'+draft.version+' hazır. Bulguları saha kanıtlarıyla doğrulayın.';['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>document.getElementById(id).disabled=false)}catch(e){status.textContent='Rapor üretilemedi: '+e.message;alert(e.message)}finally{btn.disabled=false;btn.textContent='✨ Rapor Taslağı Oluştur'}}
+function kazaRaporVersions(id){
+  const local=kazaDraftStore.list(id).map(d=>({draft:d,cloud:false,savedAt:d.generatedAt||'',key:d.reportDraftId}));
+  const cloud=kazaBulutRaporlar(id).filter(x=>x&&x.draft).map(x=>({draft:x.draft,cloud:true,savedAt:x.savedAt||x.updatedAt||x.generatedAt||'',key:x.reportId||x.reportDraftId}));
+
+  // Aynı draft hem yerelde hem bulutta varsa bulut kaydı tek kez gösterilir.
+  const map=new Map();
+  local.forEach(x=>map.set(String(x.draft.reportDraftId||x.key),x));
+  cloud.forEach(x=>map.set(String(x.draft.reportDraftId||x.key),x));
+  const items=[...map.values()].sort((a,b)=>String(a.savedAt).localeCompare(String(b.savedAt)));
+
+  const el=document.getElementById('kaza-report-versions');
+  if(!el)return;
+  el.innerHTML=items.length
+    ? items.slice().reverse().map((x,i)=>`<button type="button" data-version-key="${kazaEsc(String(x.draft.reportDraftId||x.key))}"><b>Sürüm ${kazaEsc(x.draft.version||1)} ${x.cloud?'☁':''}</b><span>${new Date(x.savedAt||Date.now()).toLocaleString('tr-TR')} · ${x.cloud?'Bulut':'Yerel'} · ${x.draft.reviewApplied?'Denetimli':'Hızlı'}</span></button>`).join('')
+    : '<span>Henüz rapor oluşturulmadı.</span>';
+
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const key=b.dataset.versionKey;
+    const hit=items.find(x=>String(x.draft.reportDraftId||x.key)===String(key));
+    if(!hit)return;
+    kazaActiveDraft=JSON.parse(JSON.stringify(hit.draft));
+    if(hit.cloud){
+      const cp=cloud.find(x=>String(x.draft.reportDraftId||x.key)===String(key));
+      const raw=kazaBulutRaporlar(id).find(x=>String(x.reportId||x.reportDraftId)===String(cp?.key));
+      if(raw){
+        kazaPrimaryImageData=raw.primaryImageData||kazaPrimaryImageData;
+        if(raw.incidentSnapshot){
+          kazaReportIncidentOverride={...raw.incidentSnapshot,incidentId:String(id),images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]};
+        }
+      }
+    }
+    kazaRaporRender(kazaActiveDraft,kazaFormIncident());
+  });
+}
+
+
+if(!window.__kazaRaporBulutListener){
+  window.__kazaRaporBulutListener=true;
+  window.addEventListener('kazaRaporBulutGuncellendi',()=>{
+    try{if(typeof kazaRender==='function')kazaRender()}catch(e){}
+  });
+}
 
 function kazaRaporPdf(){
   const source=document.querySelector('#kaza-report-preview .kaza-a4');
