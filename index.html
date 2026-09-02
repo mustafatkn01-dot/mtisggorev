@@ -7123,6 +7123,14 @@ px}
           <button onclick="aiKeyTest()" style="padding:7px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;">Test Et</button>
         </div>
         <div id="ai-key-durum" style="font-size:11px;margin-top:6px;color:var(--text3);"></div>
+
+        <div id="settings-auth-logout" class="settings-auth-logout">
+          <div class="settings-auth-logout-copy">
+            <b>🔐 Oturum Güvenliği</b>
+            <span>Bu cihazdaki Firebase oturumunu kapatır. Sonraki açılışta e-posta ve parola ile yeniden giriş gerekir.</span>
+          </div>
+          <button type="button" onclick="fbGuvenliCikis()">Çıkış Yap</button>
+        </div>
       </div>
     </div>
   </div>
@@ -17255,6 +17263,48 @@ window.addEventListener('resize', calMobInit);
     }
   }
 
+
+  window.fbGuvenliCikis = async function() {
+    const btn = document.querySelector('#settings-auth-logout button');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Çıkış yapılıyor…';
+    }
+
+    try {
+      // Canlı Firebase dinleyicilerini hemen durdur.
+      try { ROOT.off(); } catch (e) {}
+      hazir = false;
+      cevrimici = false;
+      firebaseSyncBasladi = false;
+
+      // Firebase'in bu tarayıcı/cihaz için sakladığı kalıcı oturum belirtecini kaldır.
+      // Parola uygulama tarafından zaten saklanmıyor.
+      await AUTH.signOut();
+
+      // Giriş alanlarını boşalt. Tarayıcının kendi parola yöneticisi ayrı bir sistemdir.
+      const emailEl = document.getElementById('fb-auth-email');
+      const passEl = document.getElementById('fb-auth-password');
+      if (emailEl) emailEl.value = '';
+      if (passEl) passEl.value = '';
+
+      try {
+        if (typeof closeSettings === 'function') closeSettings();
+      } catch (e) {}
+
+      nokta(false, 'Firebase oturumu kapatıldı');
+      authGateGoster('Oturum güvenli biçimde kapatıldı. Yeniden giriş yapın.');
+    } catch (err) {
+      console.error('Firebase çıkış hatası:', err);
+      alert('Oturum kapatılamadı: ' + (err?.message || 'Bilinmeyen hata'));
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Çıkış Yap';
+      }
+    }
+  };
+
   function authHataMesaji(err) {
     const code = err && err.code ? err.code : '';
     if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found')
@@ -17868,6 +17918,61 @@ window.addEventListener('resize', calMobInit);
   }
   #settings-ai-section button{
     width:100%!important;
+  }
+}
+</style>
+
+
+<style id="settings-secure-logout-v1">
+#settings-auth-logout.settings-auth-logout{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.settings-auth-logout-copy{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.settings-auth-logout-copy b{
+  font-size:11px;
+  color:var(--text);
+}
+.settings-auth-logout-copy span{
+  font-size:9.5px;
+  line-height:1.4;
+  color:var(--text3);
+}
+#settings-auth-logout button{
+  flex:none;
+  min-height:40px;
+  padding:8px 14px;
+  border:1px solid #c94b45;
+  border-radius:var(--r);
+  background:#fff4f3;
+  color:#a93631;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+}
+#settings-auth-logout button:disabled{
+  opacity:.55;
+  cursor:wait;
+}
+@media(max-width:520px){
+  #settings-auth-logout.settings-auth-logout{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  #settings-auth-logout button{
+    width:100%;
+    min-height:46px;
+    font-size:13px;
   }
 }
 </style>
