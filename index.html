@@ -7107,7 +7107,7 @@ px}
         <div class="tema-grid" id="tema-grid"></div>
       </div>
 
-      <div class="set-section">
+      <div class="set-section" id="settings-ai-section">
         <div class="set-section-title">🤖 Yapay Zeka (Gemini)</div>
         <div style="font-size:11px;color:var(--text2);line-height:1.55;background:var(--surface2);padding:8px 10px;border-radius:var(--r);margin-bottom:8px;">
           Denetim bulgularında <b>Öneri / Düzeltici Faaliyet</b> ve kaza kayıtlarında
@@ -17346,6 +17346,26 @@ window.addEventListener('resize', calMobInit);
       .sort((a,b) => String(a.savedAt || a.updatedAt || a.generatedAt || '').localeCompare(String(b.savedAt || b.updatedAt || b.generatedAt || '')));
   };
 
+
+  function kazaRaporYaklasikByte(obj) {
+    try { return new Blob([JSON.stringify(obj)]).size; }
+    catch(e) {
+      try { return JSON.stringify(obj).length * 2; }
+      catch(_) { return 0; }
+    }
+  }
+
+  function kazaRaporBasitHash(obj) {
+    let str='';
+    try { str=JSON.stringify(obj); } catch(e) { str=String(Date.now()); }
+    let h=2166136261;
+    for (let i=0;i<str.length;i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return ('00000000'+(h>>>0).toString(16)).slice(-8);
+  }
+
   window._fbSaveKazaRapor = async function(payload) {
     const user = AUTH.currentUser;
     if (!hazir || !user || user.uid !== AUTHORIZED_UID) {
@@ -17356,10 +17376,38 @@ window.addEventListener('resize', calMobInit);
     if (!incidentId || !reportId) throw new Error('Rapor kimliği oluşturulamadı.');
 
     const clean = temizle(payload);
-    await ROOT.child('kazaRaporlari').child(incidentId).child(reportId).set(clean);
+    clean.storageMeta = clean.storageMeta || {};
+    clean.storageMeta.approxBytes = kazaRaporYaklasikByte(clean);
+    clean.storageMeta.imageBytes = clean.primaryImageData ? Math.round(String(clean.primaryImageData).length * 0.75) : 0;
+    clean.storageMeta.contentHash = kazaRaporBasitHash({
+      draft:clean.draft,
+      incidentSnapshot:clean.incidentSnapshot,
+      primaryImageData:clean.primaryImageData
+    });
+
+    const ref = ROOT.child('kazaRaporlari').child(incidentId).child(reportId);
+
+    // Aynı sürüm tekrar "Kaydet" ile basılırsa yeni kayıt oluşturma ya da
+    // gereksiz Firebase yazımı yapma. reportId zaten sürüm kimliğidir.
+    const cached = window._fbKazaRaporCache?.[incidentId]?.[reportId];
+    if (cached?.storageMeta?.contentHash === clean.storageMeta.contentHash) {
+      window._fbKazaRaporCache[incidentId] = window._fbKazaRaporCache[incidentId] || {};
+      window._fbKazaRaporCache[incidentId][reportId] = {...cached, updatedAt:clean.updatedAt, savedAt:clean.savedAt};
+      nokta(true, 'Rapor zaten bulutta güncel ✓');
+      return window._fbKazaRaporCache[incidentId][reportId];
+    }
+
+    await ref.set(clean);
 
     window._fbKazaRaporCache[incidentId] = window._fbKazaRaporCache[incidentId] || {};
     window._fbKazaRaporCache[incidentId][reportId] = clean;
+
+    const versionCount = Object.keys(window._fbKazaRaporCache[incidentId]).length;
+    if (versionCount >= 25) {
+      console.info('Kaza raporu sürüm sayısı yüksek:', incidentId, versionCount,
+        'Eski sürümler otomatik silinmez; arşiv/politika aşamasında yönetilecektir.');
+    }
+
     nokta(true, 'Rapor Firebase bulutuna kaydedildi ✓');
     try { window.dispatchEvent(new CustomEvent('kazaRaporBulutGuncellendi', {detail:{incidentId,reportId}})); } catch(e) {}
     return clean;
@@ -17481,30 +17529,86 @@ window.addEventListener('resize', calMobInit);
     window._fbSaveDenetim();
   }
 
-  // ── CANLI DİNLEYİCİ: buluttaki HERHANGİ bir değişiklik anında buraya düşer ──
-  // (once yerine on kullanıyoruz — bağlantı açık kaldığı sürece Firebase
-  //  kendisi push ediyor, sayfa yenilemeye ya da sekme değişimine gerek yok)
+  // ── CANLI DİNLEYİCİLER ───────────────────────────────────────
+  // Rapor verisi zaman içinde büyüyebileceği için artık tüm /isg ağacını
+  // her değişiklikte yeniden indirmiyoruz. Uygulama modülleri kendi child
+  // yolundan; raporlar ise incident bazında ayrı dinlenir.
   let ilkOkumaBitti = false;
+  const FB_MODULLER = ['tasks','settings','archive','takvim','per','kontrol','kaza','denetim'];
 
-  function firebaseSyncBaslat() {
+  function fbModulUygula(key, value) {
+    const d={};
+    d[key]=value;
+    try {
+      uygula(d);
+      hazir=true;
+      yenidenCiz();
+    } catch(e) {
+      console.error('Firebase modül uygulama hatası:', key, e);
+    }
+  }
+
+  function fbRaporIncidentUygula(snap) {
+    const incidentId=String(snap.key||'');
+    if(!incidentId)return;
+    const val=snap.val();
+    if(val && typeof val==='object') {
+      window._fbKazaRaporCache[incidentId]=val;
+    } else {
+      delete window._fbKazaRaporCache[incidentId];
+    }
+    try { window.dispatchEvent(new CustomEvent('kazaRaporBulutGuncellendi',{detail:{incidentId}})); } catch(e) {}
+  }
+
+  async function firebaseSyncBaslat() {
     if (firebaseSyncBasladi) return;
     firebaseSyncBasladi = true;
 
-    ROOT.on('value', (snap) => {
-      const d = snap.val();
-      if (d && Object.keys(d).length) {
-        uygula(d);
-        hazir = true;
-        yenidenCiz();
-      } else if (!ilkOkumaBitti) {
-        ilkYukleme();          // bulut boş → yerel veriyi yukarı taşı (sadece ilk seferde)
+    try {
+      // Sadece ilk kurulum/migrasyon kararını vermek için tek seferlik okuma.
+      const first = await ROOT.once('value');
+      const rootData = first.val();
+
+      if (!rootData || !Object.keys(rootData).length) {
+        ilkYukleme();
+      } else {
+        // İlk ekranı bekletmeden mevcut küçük/orta modülleri uygula.
+        FB_MODULLER.forEach(key=>{
+          if(Object.prototype.hasOwnProperty.call(rootData,key)) fbModulUygula(key,rootData[key]);
+        });
+        if(rootData.kazaRaporlari && typeof rootData.kazaRaporlari==='object') {
+          window._fbKazaRaporCache=rootData.kazaRaporlari;
+          try { window.dispatchEvent(new CustomEvent('kazaRaporBulutGuncellendi')); } catch(e) {}
+        }
+        hazir=true;
       }
-      ilkOkumaBitti = true;
+      ilkOkumaBitti=true;
+
+      // Bundan sonrası modül-bazlı canlı senkronizasyon.
+      FB_MODULLER.forEach(key=>{
+        ROOT.child(key).on('value', snap=>fbModulUygula(key,snap.val()), err=>{
+          console.error('Firebase '+key+' okuma hatası:',err);
+          nokta(false,'Bulut erişimi reddedildi veya bağlantı yok');
+        });
+      });
+
+      const raporRef=ROOT.child('kazaRaporlari');
+      raporRef.on('child_added', fbRaporIncidentUygula, err=>{
+        console.error('Firebase rapor okuma hatası:',err);
+      });
+      raporRef.on('child_changed', fbRaporIncidentUygula, err=>{
+        console.error('Firebase rapor güncelleme hatası:',err);
+      });
+      raporRef.on('child_removed', fbRaporIncidentUygula, err=>{
+        console.error('Firebase rapor silme hatası:',err);
+      });
+
       nokta(true, 'Bulut bağlantısı aktif ve kimlik doğrulandı ✓');
-    }, (err) => {
-      console.error('Firebase okuma hatası:', err);
-      nokta(false, 'Bulut erişimi reddedildi veya bağlantı yok');
-    });
+    } catch(err) {
+      console.error('Firebase ilk okuma hatası:',err);
+      firebaseSyncBasladi=false;
+      nokta(false,'Bulut erişimi reddedildi veya bağlantı yok');
+    }
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -17707,6 +17811,65 @@ window.addEventListener('resize', calMobInit);
 }
 #kaza-report-save:not(:disabled):active{transform:translateY(1px)}
 #kaza-report-versions button span{white-space:normal}
+</style>
+
+
+<style id="settings-ai-mobile-access-v1">
+#settings-ai-section{
+  scroll-margin-top:72px;
+  scroll-margin-bottom:120px;
+}
+@media(max-width:899px){
+  #settings-panel{
+    height:100dvh!important;
+    max-height:100dvh!important;
+  }
+  #settings-panel>h2{
+    position:sticky!important;
+    top:0!important;
+    z-index:4!important;
+    background:var(--surface)!important;
+  }
+  #settings-panel .set-body{
+    padding-bottom:calc(128px + env(safe-area-inset-bottom))!important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  #settings-ai-section{
+    margin-bottom:24px!important;
+    scroll-margin-top:84px!important;
+    scroll-margin-bottom:160px!important;
+  }
+  #settings-ai-section>div[style*="display:flex"]{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto auto!important;
+    gap:8px!important;
+    align-items:center!important;
+  }
+  #settings-ai-section #ai-key-input{
+    min-width:0!important;
+    width:100%!important;
+    min-height:46px!important;
+    padding:10px 12px!important;
+    font-size:14px!important;
+  }
+  #settings-ai-section button{
+    min-height:46px!important;
+    padding:9px 13px!important;
+    white-space:nowrap!important;
+  }
+}
+@media(max-width:520px){
+  #settings-ai-section>div[style*="display:flex"]{
+    grid-template-columns:1fr 1fr!important;
+  }
+  #settings-ai-section #ai-key-input{
+    grid-column:1 / -1!important;
+  }
+  #settings-ai-section button{
+    width:100%!important;
+  }
+}
 </style>
 
 <script id="kaza-ai-engine-v1">
@@ -18165,6 +18328,23 @@ function kazaBulutRaporlar(id){
   try{return (typeof window._fbGetKazaRaporlar==='function')?window._fbGetKazaRaporlar(String(id)):[]}
   catch(_){return []}
 }
+
+function kazaBulutDepolamaOzeti(){
+  const cache=window._fbKazaRaporCache||{};
+  let incidents=0,reports=0,approxBytes=0,imageBytes=0;
+  Object.values(cache).forEach(bucket=>{
+    if(!bucket||typeof bucket!=='object')return;
+    incidents++;
+    Object.values(bucket).forEach(r=>{
+      if(!r)return;
+      reports++;
+      approxBytes+=Number(r?.storageMeta?.approxBytes||0);
+      imageBytes+=Number(r?.storageMeta?.imageBytes||0);
+    });
+  });
+  return {incidents,reports,approxBytes,imageBytes};
+}
+
 function kazaBulutSonRapor(id){
   const arr=kazaBulutRaporlar(id);
   return arr.length?arr[arr.length-1]:null;
@@ -18191,6 +18371,8 @@ function kazaRaporBulutPayload(draft,inc){
     schemaVersion:draft?.schemaVersion||'kaza-ai-report-v1',
     engineVersion:draft?.engineVersion||'',
     reviewApplied:!!draft?.reviewApplied,
+    retentionPolicy:'keep-until-user-delete',
+    appVersion:(typeof APP_VERSION!=='undefined'?APP_VERSION:''),
     incidentSnapshot:cleanInc,
     primaryImageData:(typeof kazaPrimaryImageData!=='undefined'?kazaPrimaryImageData:'')||'',
     draft:JSON.parse(JSON.stringify(draft||{}))
@@ -18727,6 +18909,22 @@ function kazaRaporRender(draft,inc){
   }
 }
 </style>
+
+
+<script id="settings-ai-mobile-focus-v1">
+window.addEventListener('DOMContentLoaded',()=>{
+  const input=document.getElementById('ai-key-input');
+  const section=document.getElementById('settings-ai-section');
+  if(!input||!section)return;
+  input.addEventListener('focus',()=>{
+    if(window.matchMedia('(max-width:899px)').matches){
+      setTimeout(()=>{
+        try{section.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'})}catch(e){}
+      },180);
+    }
+  });
+});
+</script>
 
 </body>
 </html>
