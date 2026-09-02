@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.4.6">
+<meta name="app-version" content="8.5.0">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.4.6';
+  const APP_VERSION = '8.5.0';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -5894,6 +5894,17 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 }
 </style>
 
+<style id="kaza-ai-phase5-css">
+.kaza-phase5-modal{position:fixed;inset:0;background:rgba(11,24,38,.62);z-index:60;align-items:stretch;justify-content:center;padding:0}.kaza-phase5-box{background:var(--surface);width:min(1060px,100%);height:100dvh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.28)}.kaza-phase5-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:#123f63;color:#fff}.kaza-phase5-head h3{font-size:18px;margin:0;color:#fff}.kaza-phase5-head button,.kaza-report-shell>header button{border:0;background:none;color:inherit;font-size:28px;cursor:pointer}.kaza-phase5-scroll{flex:1;overflow:auto;padding:18px 24px 96px}.kaza-form-section{padding:16px 0;border-bottom:1px solid var(--border);display:grid;gap:12px}.kaza-form-section:first-child{padding-top:0}.kaza-form-section h4{font-size:13px;color:#123f63;margin:0}.kaza-type-row{display:flex;gap:6px;flex-wrap:wrap}.kaza-date-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.kaza-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.kaza-injury-rows{display:grid;gap:9px}.kaza-injury-row{display:grid;grid-template-columns:1fr 1fr 1.3fr auto;gap:8px;align-items:end;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}.kaza-injury-remove{height:36px;width:36px;border:1px solid #d7a39f;background:#fff4f2;color:#a93226;border-radius:8px;cursor:pointer}.kaza-photo-grid{display:grid;grid-template-columns:1fr 180px;gap:16px;align-items:stretch}.kaza-photo-preview{height:150px;border:1px dashed var(--border2);border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text3);font-size:11px}.kaza-photo-preview img{width:100%;height:100%;object-fit:contain}.kaza-action-label{display:flex!important;align-items:center;gap:8px;flex-wrap:wrap}.kaza-check{display:flex;align-items:center;gap:7px;font-size:12px}.kaza-outlin
+e-btn,.kaza-phase5-actions button{padding:9px 15px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:600;cursor:pointer}.kaza-phase5-actions{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:13px 24px;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -4px 18px rgba(0,0,0,.06)}.kaza-phase5-actions>div{display:flex;gap:9px}.kaza-phase5-actions .kaza-report-btn{border-color:#287f86;color:#1e7177}.kaza-phase5-actions .kaza-save-btn,.kaza-save-btn{background:#378ADD;color:#fff;border:0;padding:10px 17px;border-radius:8px;font-weight:700;cursor:pointer}.kaza-report-bg{position:fixed;inset:0;z-index:80;background:#e9edf1}.kaza-report-shell{height:100dvh;display:flex;flex-direction:column}.kaza-report-shell>header{height:64px;flex:0 0 auto;background:#fff;border-bottom:1px solid #ccd3d9;display:flex;align-items:center;justify-content:space-between;padding:0 22px;color:#172634}.kaza-report-shell>header div{display:flex;flex-direction:column}.kaza-report-shell>header span{font-size:11px;color:#6d7882}.kaza-report-workspace{min-height:0;flex:1;display:grid;grid-template-columns:310px 1fr}.kaza-report-workspace>aside{background:#fff;border-right:1px solid #ccd3d9;padding:18px;overflow:auto;display:flex;flex-direction:column;gap:12px}.kaza-report-workspace label{font-size:11px;font-weight:700;display:grid;gap:6px}.kaza-report-workspace textarea{min-height:90px}.kaza-report-workspace select,.kaza-report-workspace textarea{width:100%;border:1px solid #cbd3da;border-radius:7px;padding:9px;font:inherit}.kaza-report-status,.kaza-report-precheck{font-size:11px;padding:10px;border-radius:7px;background:#f3f6f8;color:#52616d}.kaza-report-preview{overflow:auto;padding:26px;display:grid;gap:20px;justify-content:center;align-content:start}.kaza-empty-report{width:min(210mm,calc(100vw - 370px));min-height:297mm;background:white;box-shadow:0 3px 18px rgba(0,0,0,.12);display:flex;
+flex-direction:column;align-items:center;justify-content:center;color:#7c8790}.kaza-a4{box-sizing:border-box;width:210mm;min-height:297mm;background:#fff;box-shadow:0 3px 18px rgba(0,0,0,.13);padding:15mm 14mm;font:10pt Arial;color:#26323b}.kaza-a4 h1{text-align:center;font-size:15pt;border-bottom:1px solid #333;padding-bottom:7mm}.kaza-a4 h2{font-size:12pt;margin:7mm 0 3mm}.kaza-a4 table{width:100%;border-collapse:collapse;font-size:9pt}.kaza-a4 th,.kaza-a4 td{border:1px solid #cbd0d4;padding:5px;vertical-align:top}.kaza-a4 th{background:#f0f2f4;text-align:left}.kaza-a4 .facts{display:grid;grid-template-columns:1fr 55mm;gap:4mm;align-items:stretch}.kaza-a4 .facts .photo{border:1px solid #cbd0d4;display:flex;align-items:center;justify-content:center;min-height:55mm}.kaza-a4 .facts img{max-width:100%;max-height:60mm}.kaza-fishbone-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.kaza-fishbone-card{border:1px solid #4b9298;border-radius:7px;padding:7px;min-height:0;overflow-wrap:anywhere}.kaza-fishbone-card b{display:block;margin-bottom:3px}.kaza-report-versions button{display:block;width:100%;text-align:left;border:1px solid #d8dee3;background:#fff;border-radius:6px;padding:7px;margin-top:5px;cursor:pointer}
+@media(max-width:700px){.kaza-phase5-scroll{padding:14px 14px 96px}.kaza-phase5-head,.kaza-phase5-actions{padding-left:14px;padding-right:14px}.kaza-date-row{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,.9fr);gap:7px}.kaza-date-row input{min-width:0;padding-left:7px;padding-right:4px}.kaza-injury-row{grid-template-columns:1fr 1fr auto}.kaza-injury-row .injury-detail{grid-column:1/-1}.kaza-photo-grid{grid-template-columns:1fr}.kaza-photo-preview{height:180px}.kaza-phase5-actions .kaza-report-btn{padding:9px;font-size:11px}.kaza-report-workspace{display:block}.kaza-report-workspace>aside{max-height:46dvh;border-right:0;border-bottom:1px solid #ccd3d9}.kaza-report-preview{padding:12px;justify-content:start}.kaza-a4{width:210mm;transform-origin:top left;zoom:.43}.kaza-empty-report{width:100%;min-height:50dvh}.mrow2{grid-template-columns:1fr}}
+@media print{body>*{display:none!important}#kaza-report-bg,#kaza-report-bg *{display:revert!important}.kaza-report-shell>header,.kaza-report-workspace>aside{display:none!important}.kaza-report-workspace{display:block}.kaza-report-preview{padding:0;display:block}.kaza-a4{box-shadow:none;page-break-after:always}}
+</style><style id="kaza-ai-report-mobile-css">
+.kaza-report-mobile-head{background:linear-gradient(135deg,#0d2b46,#163d5e)!important;color:#fff!important;height:76px!important;justify-content:flex-start!important;gap:12px}.kaza-report-mobile-head .kaza-report-back{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.12);font-size:28px}.kaza-report-mobile-head div{flex:1}.kaza-report-mobile-head b{font-size:18px}.kaza-report-mobile-head span{color:#fff!important;opacity:.78}.kaza-report-mobile-head em{font-style:normal;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:8px 12px;font-size:10px}.kaza-report-workspace>aside{background:#f6f8f9;gap:11px}.kaza-report-card{background:#fff;border:1px solid #d8e1e8;border-radius:14px;padding:14px}.kaza-report-card h4{font-size:12px;color:#0d2b46;margin:0 0 10px}.kaza-report-card h4 span{font-weight:500;color:#75838c}.kaza-report-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kaza-report-modes button{border:1px solid #b8c7d0;background:#fff;border-radius:10px;padding:11px 7px;font-size:11px;font-weight:800;color:#53626d;cursor:pointer}.kaza-report-modes button.active{background:#e8f3fb;border-color:#378add;color:#176aa8}.kaza-report-card textarea{width:100%;min-height:94px;border:1px solid #d8e1e8;border-radius:11px;padding:10px;resize:vertical}.kaza-report-chips{display:flex;gap:5px;overflow:auto;margin-top:8px}.kaza-report-chips button{flex:none;border:1px solid #cdd9df;background:#fff;border-radius:999px;padding:6px 9px;font-size:9px;color:#52636d}.kaza-report-generate{width:100%;border:0;border-radius:11px;background:#378add;color:#fff;padding:13px;font-size:12px;font-weight:850;cursor:pointer}.kaza-report-precheck{padding:0;background:none}.kaza-report-precheck .precheck-item{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #edf1f3}.kaza-report-precheck .precheck-item:last-child{border:0}.kaza-report-precheck i{width:20px;height:20px;flex:none;border-radius:50%;display:grid;place-items:cente
+r;background:#3c8053;color:#fff;font-style:normal}.kaza-report-precheck i.warn{background:#f07a24}.kaza-report-status{display:none}.kaza-report-main{min-width:0;min-height:0;display:flex;flex-direction:column}.kaza-report-tabs{flex:none;background:#fff;border-bottom:1px solid #d8e1e8;display:flex;overflow:auto;padding:0 14px}.kaza-report-tabs button{border:0;background:none;padding:14px 12px;font-weight:800;color:#71808a;border-bottom:3px solid transparent;white-space:nowrap}.kaza-report-tabs button.active{color:#0d2b46;border-color:#378add}.kaza-report-analysis,.kaza-report-json{flex:1;overflow:auto;padding:20px}.kaza-report-json{background:#101820;color:#d8e7ee;white-space:pre-wrap;margin:0}.kaza-report-bottom{flex:none;background:#fff;border-top:1px solid #d8e1e8;padding:10px 14px;display:flex;gap:8px;justify-content:flex-end}.kaza-report-bottom button{border:1px solid #aebbc3;background:#fff;border-radius:9px;padding:10px 13px;font-weight:750}.kaza-report-bottom button:nth-child(2){background:#0d2b46;color:#fff}.kaza-report-bottom button:last-child{background:#378add;border-color:#378add;color:#fff}.kaza-report-bottom button:disabled{opacity:.45}.kaza-report-versions>span{font-size:10px;color:#7a8790}.kaza-preview-icon{width:32px;height:30px;display:inline-grid;place-items:center;border:1px solid #9fc5d1;border-radius:7px;background:#f4fafb;color:#176f79;cursor:pointer;line-height:1}.kaza-preview-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.kaza-preview-icon:hover{background:#dff1f4;border-color:#287f86}.kaza-preview-icon:focus-visible{outline:2px solid #378add;outline-offset:2px}.kaza-record-actions{min-height:30px}
+@media(max-width:700px){.kaza-report-mobile-head{padding:10px 12px!important}.kaza-report-mobile-head em{display:none}.kaza-report-workspace{display:block;overflow:auto}.kaza-report-workspace>aside{max-height:none;border:0;padding:11px}.kaza-report-main{min-height:780px}.kaza-report-tabs{position:sticky;top:0;z-index:3}.kaza-report-bottom{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr 1fr}.kaza-report-bottom button{padding:10px 4px;font-size:10px}}
+</style>
 </head>
 <body>
 <div id="app">
@@ -6615,93 +6626,83 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 </div>
 
 <!-- Olay Ekle / Düzenle Modal -->
-<div id="kaza-modal-bg" class="kaza-modal-bg" onclick="if(event.target===this)kazaCloseAdd()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center;">
-  <div class="kaza-modal-box" style="background:var(--surface);border-radius:12px;padding:20px;width:520px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
-    <div class="kaza-modal-head" style="display:flex;align-items:center;justify-content:space-between;">
-      <h3 id="kaza-modal-h" style="font-size:14px;font-weight:700;color:var(--text);">Yeni Kaza / Olay Kaydı</h3>
-      <button onclick="kazaCloseAdd()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
-    </div>
-    <div>
-      <label class="kz-lbl">Olay Türü *</label>
-      <div id="kaza-m-tur" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-    </div>
-    <div class="mrow3">
-      <div class="mfield"><label>Tarih *</label><input type="date" id="kaza-m-tarih"/></div>
-      <div class="mfield"><label>Saat</label><input type="time" id="kaza-m-saat"/></div>
-      <div class="mfield"><label>İş Günü Kaybı</label><input type="number" id="kaza-m-kayip" min="0" value="0"/></div>
-    </div>
-    <div class="mrow2">
-      <div class="mfield"><label>Fabrika *</label><select id="kaza-m-fab"></select></div>
-      <div class="mfield"><label>Bölüm / Birim</label><input id="kaza-m-bolum" placeholder="örn: Presler, Depo"/></div>
-    </div>
-    <div class="mfield">
-      <label>Kişi <span style="color:var(--text3);font-weight:400">(zorunlu değil)</span></label>
-      <input id="kaza-m-kisi" placeholder="baş harf yeterli — örn: A.Y."/>
-    </div>
-    <div class="mfield"><label>Olayın Anlatımı *</label><textarea id="kaza-m-aciklama" placeholder="Ne oldu, nasıl oldu?"></textarea></div>
-
-    <div class="mrow2 kaza-classification-row">
-      <div class="mfield">
-        <label>Yaralanma / Hasar Türü</label>
-        <select id="kaza-m-yaralanma">
-          <option value="">Seçiniz</option>
-        </select>
-        <datalist id="kaza-yaralanma-list"></datalist>
-      </div>
-      <div class="mfield">
-        <label>Kök Neden</label>
-        <select id="kaza-m-koknedan">
-          <option value="">Seçiniz</option>
-        </select>
-        <datalist id="kaza-kokneden-list"></datalist>
-      </div>
-    </div>
-    <div class="mfield kaza-potential-field">
-      <label>Potansiyel Şiddet <span style="font-weight:400;color:var(--text3)">(makul en ciddi sonuç)</span></label>
-      <select id="kaza-m-potansiyel">
-        <option value="">Değerlendirilmedi</option>
-        <option value="1">Çok Düşük</option>
-        <option value="2">Düşük</option>
-        <option value="3">Orta</option>
-        <option value="4">Yüksek</option>
-        <option value="5">Çok Yüksek</option>
-      </select>
-      <small>Gerçekleşen sonucu değil, olayın makul en ciddi potansiyel sonucunu değerlendirin.</small>
-    </div>
-
-    <div class="kaza-ai-assist">
-      <div class="kaza-ai-head">
-        <div>
-          <b>Kayıt Sınıflandırma Desteği</b>
-          <span>Yukarıdaki alanları seçmediyseniz olay anlatımına göre standart listelerden öneri oluşturur.</span>
+<div id="kaza-modal-bg" class="kaza-modal-bg kaza-phase5-modal" onclick="if(event.target===this)kazaCloseAdd()" style="display:none;">
+  <div class="kaza-modal-box kaza-phase5-box">
+    <header class="kaza-phase5-head">
+      <h3 id="kaza-modal-h">Yeni Olay Kaydı</h3>
+      <button type="button" onclick="kazaCloseAdd()" aria-label="Kapat">×</button>
+    </header>
+    <main class="kaza-phase5-scroll">
+      <section class="kaza-form-section">
+        <h4>Olayın Temel Bilgileri</h4>
+        <div><label class="kz-lbl">Olay Türü *</label><div id="kaza-m-tur" class="kaza-type-row"></div></div>
+        <div class="kaza-date-row">
+          <div class="mfield"><label>Tarih *</label><input type="date" id="kaza-m-tarih"/></div>
+          <div class="mfield"><label>Saat</label><input type="time" id="kaza-m-saat"/></div>
+          <div class="mfield"><label>İş Günü Kaybı</label><input type="number" id="kaza-m-kayip" min="0" value="0"/></div>
         </div>
-        <button type="button" onclick="kazaAnalizEt()" class="kaza-ai-btn">✨ Analiz Et</button>
-      </div>
-      <div id="kaza-ai-result" class="kaza-ai-result">
-        <div><span>Yaralanma / Hasar Türü</span><b>—</b></div>
-        <div><span>Kök Neden</span><b>—</b></div>
-        <div><span>Ana Kök Neden</span><b>—</b></div>
-        <div><span>Potansiyel Şiddet</span><b>—</b></div>
-      </div>
-      <div id="kaza-ai-note" class="kaza-ai-note">Henüz analiz edilmedi.</div>
-    </div>
-    <div class="mfield">
-      <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Alınan / Alınacak Önlem
-        <button type="button" onclick="aiKazaOneri(this)" title="Yaralanma türü, olay anlatımı ve kök nedene göre yapay zeka önerisi üret"
-          style="padding:3px 10px;font-size:11px;font-weight:600;border:none;border-radius:6px;background:#378ADD;color:#fff;cursor:pointer;">✨ Öneri Oluştur</button>
-      </label>
-      <textarea id="kaza-m-onlem" placeholder="Tekrarını önlemek için ne yapıldı?" style="min-height:50px"></textarea>
-    </div>
-    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;">
-      <input type="checkbox" id="kaza-m-onlem-tamam" style="accent-color:#639922;width:14px;height:14px;"> Önlem tamamlandı
-    </label>
-    <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:10px;">
-      <button class="mbtn-cancel" onclick="kazaCloseAdd()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
-      <button onclick="kazaSubmit()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">Kaydet</button>
-    </div>
+        <div class="mrow2">
+          <div class="mfield"><label>Fabrika *</label><select id="kaza-m-fab"></select></div>
+          <div class="mfield"><label>Bölüm / Birim</label><input id="kaza-m-bolum" placeholder="örn: Presler, Depo"/></div>
+        </div>
+        <div class="mrow2">
+          <div class="mfield"><label>Kazazede <span>(zorunlu değil)</span></label><input id="kaza-m-kisi" placeholder="Baş harf yeterli — örn: A.Y."/></div>
+          <div class="mfield"><label>Çalışanın Görevi</label><input id="kaza-m-gorev" placeholder="örn: Forklift operatörü"/></div>
+        </div>
+        <div class="mfield"><label>Olayın Anlatımı *</label><textarea id="kaza-m-aciklama" placeholder="Ne oldu, nasıl oldu? Görülen ve bildirilen gerçekleri yazın."></textarea></div>
+      </section>
+
+      <section class="kaza-form-section">
+        <div class="kaza-section-title"><h4>Yaralanma / Hasar Bilgileri</h4><button type="button" class="kaza-outline-btn" onclick="kazaInjuryAdd()">+ Yaralanma Satırı</button></div>
+        <div id="kaza-injury-rows" class="kaza-injury-rows"></div>
+        <select id="kaza-m-yaralanma" aria-hidden="true" tabindex="-1" style="display:none"><option value="">Seçiniz</option></select>
+        <datalist id="kaza-yaralanma-list"></datalist>
+      </section>
+
+      <section class="kaza-form-section">
+        <h4>İlk Sınıflandırma</h4>
+        <div class="mrow2 kaza-classification-row">
+          <div class="mfield"><label>Kök Neden (ön seçim)</label><select id="kaza-m-koknedan"><option value="">Seçiniz</option></select><datalist id="kaza-kokneden-list"></datalist></div>
+          <div class="mfield"><label>Potansiyel Şiddet</label><select id="kaza-m-potansiyel"><option value="">Değerlendirilmedi</option><option value="1">Çok Düşük</option><option value="2">Düşük</option><option value="3">Orta</option><option value="4">Yüksek</option><option value="5">Çok Yüksek</option></select></div>
+        </div>
+        <small>Gerçekleşen sonucu değil, olayın makul en ciddi potansiyel sonucunu değerlendirin.</small>
+        <div class="kaza-ai-assist">
+          <div class="kaza-ai-head"><div><b>Kayıt Sınıflandırma Desteği</b><span>Olay anlatımına göre standart listelerden ön değerlendirme üretir.</span></div><button type="button" onclick="kazaAnalizEt()" class="kaza-ai-btn">✨ Analiz Et</button></div>
+          <div id="kaza-ai-result" class="kaza-ai-result"><div><span>Yaralanma / Hasar Türü</span><b>—</b></div><div><span>Kök Neden</span><b>—</b></div><div><span>Ana Kök Neden</span><b>—</b></div><div><span>Potansiyel Şiddet</span><b>—</b></div></div>
+          <div id="kaza-ai-note" class="kaza-ai-note">Henüz analiz edilmedi.</div>
+        </div>
+      </section>
+
+      <section class="kaza-form-section">
+        <h4>Görsel ve Önlemler</h4>
+        <div class="kaza-photo-grid"><div class="mfield"><label>Kaza / Olay Ana Görseli</label><input type="file" id="kaza-m-photo" accept="image/*" onchange="kazaPhotoPick(this)"/><small>Raporun ön bilgi tablosunun sağında kullanılır.</small></div><div id="kaza-photo-preview" class="kaza-photo-preview"><span>Görsel eklenmedi</span></div></div>
+        <div class="mfield"><label class="kaza-action-label">Alınan / Alınacak Önlem <button type="button" onclick="aiKazaOneri(this)" class="kaza-ai-btn">✨ Öneri Oluştur</button></label><textarea id="kaza-m-onlem" placeholder="Tekrarını önlemek için ne yapıldı veya ne yapılacak?"></textarea></div>
+        <label class="kaza-check"><input type="checkbox" id="kaza-m-onlem-tamam"> Önlem tamamlandı</label>
+      </section>
+    </main>
+    <footer class="kaza-phase5-actions">
+      <button type="button" class="kaza-report-btn" onclick="kazaRaporOpen()">📄 Rapor Oluştur</button>
+      <div><button type="button" class="mbtn-cancel" onclick="kazaCloseAdd()">İptal</button><button type="button" class="kaza-save-btn" onclick="kazaSubmit()">Kaydet</button></div>
+    </footer>
   </div>
 </div>
 
+<div id="kaza-report-bg" class="kaza-report-bg" style="display:none">
+  <div class="kaza-report-shell">
+    <header class="kaza-report-mobile-head"><button type="button" class="kaza-report-back" onclick="kazaRaporClose()">‹</button><div><b>Kaza / Olay Raporu</b><span>Yapay zekâ destekli ön hazırlık ve kullanıcı doğrulama ekranı</span></div><em>Taslak · karar değildir</em></header>
+    <div class="kaza-report-workspace">
+      <aside>
+        <section class="kaza-report-card"><h4>Rapor türü</h4><div class="kaza-report-modes"><button type="button" class="active" data-depth="quick" onclick="kazaRaporDepth(this)">⚡ Hızlı Ön Rapor</button><button type="button" data-depth="deep" onclick="kazaRaporDepth(this)">🔎 Derin Analiz</button></div><select id="kaza-report-depth" hidden><option value="quick" selected>Hızlı</option><option value="deep">Derin</option></select></section>
+        <section class="kaza-report-card"><h4>Rapor ön kontrolü</h4><div id="kaza-report-precheck" class="kaza-report-precheck"></div></section>
+        <section class="kaza-report-card"><h4>Yapay zekâya ek yönlendirme <span>(isteğe bağlı)</span></h4><textarea id="kaza-report-directive" placeholder="Örn: Yerleşim ve fiziksel trafik ayrımına ağırlık ver."></textarea><div class="kaza-report-chips"><button type="button" onclick="kazaRaporChip(this)">Yerleşime odaklan</button><button type="button" onclick="kazaRaporChip(this)">İkincil yaralanmayı ayır</button><button type="button" onclick="kazaRaporChip(this)">Davranış yerine sistemi sorgula</button></div></section>
+        <button type="button" id="kaza-report-generate" class="kaza-report-generate" onclick="kazaRaporGenerate()">✨ Rapor Taslağı Oluştur</button>
+        <div id="kaza-report-status" class="kaza-report-status">Henüz rapor oluşturulmadı.</div>
+        <section class="kaza-report-card"><h4>Taslak sürümleri</h4><div id="kaza-report-versions" class="kaza-report-versions"><span>Henüz rapor oluşturulmadı.</span></div></section>
+      </aside>
+      <main class="kaza-report-main"><nav class="kaza-report-tabs"><button type="button" class="active" data-report-tab="preview" onclick="kazaRaporTab(this)">A4 Ön İzleme</button><button type="button" data-report-tab="analysis" onclick="kazaRaporTab(this)">Analiz Düzenle</button><button type="button" data-report-tab="json" onclick="kazaRaporTab(this)">Yapılandırılmış Veri</button></nav><div id="kaza-report-preview" class="kaza-report-preview"><div class="kaza-empty-report"><b>Rapor ön izlemeye hazır değil</b><span>Rapor taslağı oluşturun.</span></div></div><div id="kaza-report-analysis" class="kaza-report-analysis" hidden></div><pre id="kaza-report-json" class="kaza-report-json" hidden></pre><footer class="kaza-report-bottom"><button type="button" id="kaza-report-select" disabled>Taslağı Seç</button><button type="button" id="kaza-report-regenerate" disabled onclick="kazaRaporGenerate(true)">Yeniden Oluştur</button><button type="button" id="kaza-report-pdf" disabled onclick="window.print()">PDF Oluştur</button></footer></main>
+    </div>
+  </div>
+</div>
 <!-- KAZA EXCEL/CSV İÇE AKTARMA -->
 <div id="kaza-import-bg" onclick="if(event.target===this)kazaImportKapat()" ondragover="event.preventDefault()" ondrop="event.preventDefault()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:62;align-items:center;justify-content:center;">
   <div style="background:var(--surface);border-radius:12px;padding:20px;width:640px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:94vh;overflow:auto;">
@@ -13288,17 +13289,15 @@ function kazaRender() {
       ${k.kisi ? alan('Kişi', k.kisi) : ''}
       ${alan('Yaralanma/Hasar', k.yaralanma)}
       ${alan('Kök neden', k.kokNeden)}
-      ${k.onlem ? `<div class="kaza-onlem-kutu">💡 <b>Alınan / Alınacak Önlem:</b> ${esc(k.onlem)}</div>
-        <div class="kaza-onlem-alt">
-          ${(k.linkedTaskId && tasks.some(t=>String(t.id)===String(k.linkedTaskId)))
-            ? `<span class="kaza-linked-badge" title="Bu olay görev panosundaki bir görevle bağlantılı">🔗 Göreve Bağlı</span>`
-            : `<button onclick="kazaOnlemGorev('${k.id}')" title="Bu önlemi görev panosuna ekle" class="kaza-onlem-gorev-btn">📋 Göreve Ekle</button>`}
-          <div style="flex:1"></div>
-          <select class="kaza-onlem-sel ${k.onlemTamam?'tamam':'acik'}" onchange="kazaOnlemDurum('${k.id}',this.value)">
-            <option value="acik"${!k.onlemTamam?' selected':''}>Açık</option>
-            <option value="kapali"${k.onlemTamam?' selected':''}>Kapalı</option>
-          </select>
-        </div>` : ''}
+      ${k.onlem ? `<div class="kaza-onlem-kutu">💡 <b>Alınan / Alınacak Önlem:</b> ${esc(k.onlem)}</div>` : ''}
+      <div class="kaza-onlem-alt kaza-record-actions">
+        ${k.onlem ? ((k.linkedTaskId && tasks.some(t=>String(t.id)===String(k.linkedTaskId)))
+          ? `<span class="kaza-linked-badge" title="Bu olay görev panosundaki bir görevle bağlantılı">🔗 Göreve Bağlı</span>`
+          : `<button onclick="kazaOnlemGorev('${k.id}')" title="Bu önlemi görev panosuna ekle" class="kaza-onlem-gorev-btn">📋 Göreve Ekle</button>`) : ''}
+        ${(typeof kazaKayitRaporVar==='function' && kazaKayitRaporVar(k.id)) ? `<button type="button" onclick="kazaKayitOnizle('${k.id}')" class="kaza-preview-icon" title="Rapor ön izlemesi" aria-label="Rapor ön izlemesi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h9l4 4V12M14 3.5v4h4M5 3.5v17h7"/><circle cx="16" cy="16" r="3.5"/><path d="m18.6 18.6 2.4 2.4M8 9h5M8 13h3"/></svg></button>` : ''}
+        <div style="flex:1"></div>
+        ${k.onlem ? `<select class="kaza-onlem-sel ${k.onlemTamam?'tamam':'acik'}" onchange="kazaOnlemDurum('${k.id}',this.value)"><option value="acik"${!k.onlemTamam?' selected':''}>Açık</option><option value="kapali"${k.onlemTamam?' selected':''}>Kapalı</option></select>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -13318,6 +13317,10 @@ function kazaOpenAdd(editId) {
   document.getElementById('kaza-m-kayip').value      = k ? (k.kayip||0) : 0;
   document.getElementById('kaza-m-bolum').value      = k ? (k.bolum||'') : '';
   document.getElementById('kaza-m-kisi').value       = k ? (k.kisi||'') : '';
+  document.getElementById('kaza-m-gorev').value      = k ? (k.calisanGorevi||'') : '';
+  kazaReportIncidentId = k ? String(k.id) : ('new_' + Date.now());
+  kazaPrimaryImageData = k ? (k.primaryImageData||'') : '';
+  kazaPhotoRender();
   document.getElementById('kaza-m-aciklama').value   = k ? (k.aciklama||'') : '';
   document.getElementById('kaza-m-onlem').value      = k ? (k.onlem||'') : '';
   document.getElementById('kaza-m-onlem-tamam').checked = k ? !!k.onlemTamam : false;
@@ -13328,6 +13331,7 @@ function kazaOpenAdd(editId) {
 
   kazaRenderYaralanmaListesi();
   kazaRenderKokNedenListesi();
+  kazaInjuryRender(k && Array.isArray(k.injuries) && k.injuries.length ? k.injuries : kazaLegacyInjuryRows(k ? (k.yaralanma||'') : ''));
   document.getElementById('kaza-m-yaralanma').value = k ? (k.yaralanma||'') : '';
   document.getElementById('kaza-m-koknedan').value  = k ? (k.kokNeden||'') : '';
   document.getElementById('kaza-m-potansiyel').value = k && k.potansiyelSiddet ? String(k.potansiyelSiddet) : '';
@@ -13365,7 +13369,10 @@ function kazaSubmit() {
     fab:        document.getElementById('kaza-m-fab').value,
     bolum:      document.getElementById('kaza-m-bolum').value.trim(),
     kisi:       document.getElementById('kaza-m-kisi').value.trim(),
-    yaralanma:  document.getElementById('kaza-m-yaralanma').value.trim(),
+    calisanGorevi: document.getElementById('kaza-m-gorev').value.trim(),
+    injuries:   kazaInjuryRead(),
+    yaralanma:  kazaInjuryDisplay(kazaInjuryRead()),
+    primaryImageData: kazaPrimaryImageData,
     aciklama,
     kokNeden:   document.getElementById('kaza-m-koknedan').value.trim(),
     potansiyelSiddet: parseInt(document.getElementById('kaza-m-potansiyel').value) || null,
@@ -17386,5 +17393,460 @@ window.addEventListener('resize', calMobInit);
 }
 </style>
 
+<script id="kaza-ai-engine-v1">
+/*
+ * Kaza / Olay Yapay Zeka Rapor Motoru v1.0
+ * Sağlayıcıdan bağımsız analiz, doğrulama ve taslak sürüm altyapısı.
+ * Mevcut uygulamadaki geminiUret(prompt, maxToken) fonksiyonuna bağlanabilir.
+ */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  root.KazaAIRaporMotoru = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  const ENGINE_VERSION = '1.0.0';
+  const SCHEMA_VERSION = 'kaza-ai-report-v1';
+  const STORE_PREFIX = 'isg_kaza_ai_drafts_v1:';
+  const CAUSE_CATEGORIES = [
+    'Mühendislik / Teknik Kontrol',
+    'Organizasyon / Prosedür',
+    'Yetkinlik / Eğitim',
+    'Gözetim / Yönetim',
+    'Çalışma Ortamı',
+    'İnsan Faktörü'
+  ];
+  const EVIDENCE_STATES = ['verified', 'reported', 'observed', 'hypothesis', 'to_verify'];
+
+  function str(v) { return v == null ? '' : String(v).trim(); }
+  function arr(v) { return Array.isArray(v) ? v : []; }
+  function clone(v) { return JSON.parse(JSON.stringify(v)); }
+  function nowIso() { return new Date().toISOString(); }
+  function id(prefix) {
+    const rnd = Math.random().toString(36).slice(2, 9);
+    return (prefix || 'id') + '_' + Date.now().toString(36) + '_' + rnd;
+  }
+  function uniq(values) { return [...new Set(arr(values).map(str).filter(Boolean))]; }
+
+  function stableStringify(value) {
+    if (Array.isArray(value)) return '[' + value.map(stableStringify).join(',') + ']';
+    if (value && typeof value === 'object') {
+      return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stableStringify(value[k])).join(',') + '}';
+    }
+    return JSON.stringify(value);
+  }
+
+  function simpleHash(value) {
+    const s = stableStringify(value);
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return ('00000000' + (h >>> 0).toString(16)).slice(-8);
+  }
+
+  function injuryDisplay(injury) {
+    const region = str(injury.bodyRegion || injury.region);
+    const damage = str(injury.damageType || injury.type);
+    const detail = str(injury.detail || injury.description);
+    const main = [region, damage ? (region ? damage.toLocaleLowerCase('tr-TR') : damage) : ''].filter(Boolean).join(' bölgesinde ');
+    return detail ? (main ? main + ' (' + detail + ')' : detail) : main;
+  }
+
+  function normalizeIncident(input) {
+    const source = input || {};
+    const injuries = arr(source.injuries).map((x, i) => ({
+      id: str(x.id) || 'injury_' + (i + 1),
+      bodyRegion: str(x.bodyRegion || x.region),
+      damageType: str(x.damageType || x.type),
+      detail: str(x.detail || x.description),
+      displayText: str(x.displayText) || injuryDisplay(x)
+    })).filter(x => x.bodyRegion || x.damageType || x.detail);
+
+    return {
+      incidentId: str(source.incidentId || source.id) || id('incident'),
+      revision: Number(source.revision || 1),
+      incidentType: str(source.incidentType || source.tur),
+      date: str(source.date || source.tarih),
+      time: str(source.time || source.saat),
+      lostDays: Number(source.lostDays ?? source.kayip ?? 0) || 0,
+      factory: str(source.factory || source.fab),
+      department: str(source.department || source.bolum),
+      locationDetail: str(source.locationDetail),
+      injuredPersonName: str(source.injuredPersonName || source.kisi),
+      injuredPersonRole: str(source.injuredPersonRole || source.calisanGorevi),
+      whatHappened: str(source.whatHappened || source.neOldu),
+      narrative: str(source.narrative || source.aciklama),
+      preEventActivity: str(source.preEventActivity),
+      triggerEvent: str(source.triggerEvent),
+      immediateResponse: str(source.immediateResponse),
+      injuries,
+      potentialSeverity: str(source.potentialSeverity || source.potansiyelSiddet),
+      selectedRootCause: str(source.selectedRootCause || source.kokNeden),
+      existingMeasures: str(source.existingMeasures || source.onlem),
+      images: arr(source.images).map((x, i) => ({
+        id: str(x.id) || 'image_' + (i + 1),
+        caption: str(x.caption),
+        isPrimary: !!x.isPrimary,
+        // Görsel baytları veya URL'leri yapay zeka metin paketine doğrudan eklenmez.
+        hasImage: !!(x.url || x.dataUrl || x.fileRef)
+      }))
+    };
+  }
+
+  function prepareIncidentForAI(incident, options) {
+    const opts = options || {};
+    const clean = normalizeIncident(incident);
+    const localIdentity = clean.injuredPersonName;
+    clean.injuredPersonName = localIdentity ? 'Kazazede-1' : '';
+    if (opts.removeFactory !== false && clean.factory) clean.factory = 'Fabrika-1';
+    clean.images = clean.images.map(x => ({ id: x.id, caption: x.caption, isPrimary: x.isPrimary, hasImage: x.hasImage }));
+    return { aiIncident: clean, localIdentity };
+  }
+
+  function buildEvidencePacket(incident) {
+    const n = normalizeIncident(incident);
+    const verified = [];
+    const reported = [];
+    function add(list, field, value) { if (str(value)) list.push({ field, value: str(value), status: list === verified ? 'verified' : 'reported' }); }
+    add(verified, 'incidentType', n.incidentType);
+    add(verified, 'date', n.date);
+    add(verified, 'time', n.time);
+    add(verified, 'department', n.department);
+    add(verified, 'locationDetail', n.locationDetail);
+    n.injuries.forEach((x, i) => add(verified, 'injuries[' + i + ']', x.displayText));
+    add(reported, 'whatHappened', n.whatHappened);
+    add(reported, 'narrative', n.narrative);
+    add(reported, 'preEventActivity', n.preEventActivity);
+    add(reported, 'triggerEvent', n.triggerEvent);
+    add(reported, 'immediateResponse', n.immediateResponse);
+    add(reported, 'existingMeasures', n.existingMeasures);
+    return { verified, reported, observed: [], hypotheses: [], toVerify: [] };
+  }
+
+  function requiredQuestionCandidates(incident) {
+    const n = normalizeIncident(incident);
+    const qs = [];
+    if (!n.time) qs.push({ priority: 'critical', key: 'time', question: 'Olayın yaklaşık saati nedir?', blocksReport: false });
+    if (!n.department) qs.push({ priority: 'critical', key: 'department', question: 'Olay hangi bölüm veya birimde meydana geldi?', blocksReport: false });
+    if (!n.narrative) qs.push({ priority: 'critical', key: 'narrative', question: 'Olay nasıl meydana geldi?', blocksReport: true });
+    if (!n.preEventActivity) qs.push({ priority: 'deepening', key: 'preEventActivity', question: 'Olaydan hemen önce hangi iş yapılıyordu?', blocksReport: false });
+    if (!n.triggerEvent) qs.push({ priority: 'deepening', key: 'triggerEvent', question: 'Olayı başlatan ilk sapma veya tetikleyici hareket neydi?', blocksReport: false });
+    if (!n.injuries.length && /kaza|ilk yardım/i.test(n.incidentType)) qs.push({ priority: 'critical', key: 'injuries', question: 'Yaralanan anatomik bölge ve hasar türü nedir?', blocksReport: false });
+    if (!n.images.some(x => x.hasImage)) qs.push({ priority: 'optional', key: 'image', question: 'Olay yerini veya yerleşimi gösteren bir görsel var mı?', blocksReport: false });
+    return qs;
+  }
+
+  function analystOutputTemplate() {
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      eventSummary: '',
+      detailedNarrative: '',
+      evidence: { verified: [], reported: [], observed: [], hypotheses: [], toVerify: [] },
+      eventChain: [],
+      missingInformation: [],
+      directCause: '',
+      contributingFactors: [],
+      barrierAnalysis: [],
+      rootCauses: [],
+      mainRootCause: { text: '', category: '', evidenceStatus: 'to_verify', confidence: 'low' },
+      whyAnalysisBranches: [],
+      controlHierarchy: { elimination: [], substitution: [], engineering: [], administrative: [], ppe: [] },
+      fishbone: { applicable: false, reason: '', categories: [], conclusion: '' },
+      correctiveActions: [],
+      reportWarnings: [],
+      analysisStatus: 'draft_requires_user_validation'
+    };
+  }
+
+  function jsonContractText() {
+    return `ÇIKTI SÖZLEŞMESİ - yalnız geçerli JSON döndür:
+{
+ "schemaVersion":"${SCHEMA_VERSION}",
+ "eventSummary":"string",
+ "detailedNarrative":"string",
+ "evidence":{"verified":[],"reported":[],"observed":[],"hypotheses":[],"toVerify":[]},
+ "eventChain":[{"order":1,"event":"string","evidenceStatus":"verified|reported|observed|hypothesis|to_verify"}],
+ "missingInformation":[{"priority":"critical|deepening|optional","question":"string","whyItMatters":"string"}],
+ "directCause":"string",
+ "contributingFactors":[{"text":"string","category":"string","evidenceStatus":"string"}],
+ "barrierAnalysis":[{"barrierType":"string","expectedBarrier":"string","finding":"string","status":"missing|failed|weak|unknown","evidenceStatus":"string"}],
+ "rootCauses":[{"text":"string","category":"${CAUSE_CATEGORIES.join('|')}","evidenceStatus":"string","confidence":"low|medium|high"}],
+ "mainRootCause":{"text":"string","category":"string","evidenceStatus":"string","confidence":"low|medium|high"},
+ "whyAnalysisBranches":[{"question":"string","items":[{"order":1,"why":"string","recommendation":"string","category":"string","evidenceStatus":"string"}],"systemResult":"string","priorityRecommendation":"string"}],
+ "controlHierarchy":{"elimination":[],"substitution":[],"engineering":[],"administrative":[],"ppe":[]},
+ "fishbone":{"applicable":true,"reason":"string","categories":[{"name":"string","prefix":"string","causes":[{"code":"string","text":"string","evidenceStatus":"string"}]}],"conclusion":"string"},
+ "correctiveActions":[{"action":"string","targetsCause":"string","hierarchyLevel":"elimination|substitution|engineering|administrative|ppe","priority":"immediate|high|medium|low","effectivenessMeasure":"string"}],
+ "reportWarnings":[],
+ "analysisStatus":"draft_requires_user_validation"
+}`;
+  }
+
+  function buildAnalystPrompt(incident, options) {
+    const opts = options || {};
+    const prepared = prepareIncidentForAI(incident, opts.privacy);
+    const evidence = buildEvidencePacket(prepared.aiIncident);
+    const questions = requiredQuestionCandidates(prepared.aiIncident);
+    const previous = opts.previousDraft ? JSON.stringify(opts.previousDraft.analysis || opts.previousDraft) : '';
+    const directive = str(opts.userDirective);
+    return `ROL: Deneyimli bir iş güvenliği uzmanı ve kaza araştırma analistisin.
+AMAÇ: Kullanıcının doğrulanmış olay verilerini değiştirmeden hızlı fakat sistemsel bir ÖN RAPOR analizi üret.
+
+ZORUNLU ANALİZ KURALLARI:
+1. Verilmeyen bilgiyi uydurma. Kesin olmayanı hypothesis veya to_verify olarak işaretle.
+2. Gözlenen, bildirilen ve analitik çıkarımı ayır.
+3. Dikkatsizlik, tedbirsizlik veya operatör hatasında durma; davranışın kazaya dönüşmesine izin veren bariyeri sorgula.
+4. Temas nedeni ile yaralanmayı ağırlaştıran ikincil sonucu ayrı incele.
+5. Gerekliyse birden fazla Neden-Neden kolu oluştur. Her why satırında kısa ve doğrudan recommendation zorunludur.
+6. Önlemleri kontrol hiyerarşisine göre değerlendir; yalnız eğitim/uyarı/KKD ile yetinme.
+7. Balık kılçığını yalnız en az 3 anlamlı neden kategorisi ve çok faktörlü etkileşim varsa applicable=true yap.
+8. Kök neden ana kategorisi yalnız standart listeden seçilsin: ${CAUSE_CATEGORIES.join(', ')}.
+9. Rapor nihai karar değildir; analysisStatus her zaman draft_requires_user_validation olmalıdır.
+10. Uzun iç muhakeme veya düşünce zinciri yazma; yalnız yapılandırılmış bulguları ve kısa teknik gerekçeleri ver.
+
+KULLANICI EK YÖNLENDİRMESİ:
+${directive || 'Yok - standart sistemsel analiz uygula.'}
+
+OLAY VERİSİ (kişisel bilgiler maskelenmiştir):
+${JSON.stringify(prepared.aiIncident, null, 2)}
+
+BAŞLANGIÇ KANIT PAKETİ:
+${JSON.stringify(evidence, null, 2)}
+
+EKSİK BİLGİ SORU ADAYLARI:
+${JSON.stringify(questions, null, 2)}
+${previous ? '\nÖNCEKİ TASLAK - kopyalama; kullanıcı yönlendirmesine göre eleştir ve yeniden kur:\n' + previous : ''}
+
+${jsonContractText()}`;
+  }
+
+  function buildReviewerPrompt(incident, analysis, options) {
+    const prepared = prepareIncidentForAI(incident, (options || {}).privacy);
+    return `ROL: İkinci bağımsız İSG analiz denetleyicisisin.
+GÖREV: Aşağıdaki taslağı gerçek olay verisine karşı denetle ve düzeltilmiş TAM JSON döndür.
+
+DENETİM LİSTESİ:
+- Kullanıcı tarafından verilmeyen bilgi gerçek gibi yazılmış mı?
+- Olay verisi ile analiz çelişiyor mu?
+- Davranış tek başına kök neden yapılmış mı?
+- Temas ve ikincil yaralanma sonuçları ayrılmış mı?
+- Her Neden satırında nedeni hedefleyen somut öneri var mı?
+- Öneriler kontrol hiyerarşisinin üst basamaklarına öncelik veriyor mu?
+- Balık kılçığı kararı en az üç anlamlı kategoriyle destekleniyor mu?
+- Tekrarlı, genel veya uygulanamaz ifadeler var mı?
+- Kanıt yetersizse confidence düşürülmüş ve to_verify kullanılmış mı?
+Uzun düşünce zinciri yazma. Yalnız düzeltilmiş JSON'u döndür.
+
+GERÇEK OLAY VERİSİ:
+${JSON.stringify(prepared.aiIncident, null, 2)}
+
+ANALİST TASLAĞI:
+${JSON.stringify(analysis, null, 2)}
+
+${jsonContractText()}`;
+  }
+
+  function extractJson(text) {
+    const raw = str(text).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    try { return JSON.parse(raw); } catch (_) {}
+    const start = raw.indexOf('{');
+    const end = raw.lastIndexOf('}');
+    if (start >= 0 && end > start) return JSON.parse(raw.slice(start, end + 1));
+    throw new Error('Yapay zeka yanıtında geçerli JSON bulunamadı.');
+  }
+
+  function normalizeEvidenceItem(x, fallbackStatus) {
+    if (typeof x === 'string') return { text: str(x), evidenceStatus: fallbackStatus || 'to_verify' };
+    return { ...x, text: str(x && (x.text || x.value)), evidenceStatus: EVIDENCE_STATES.includes(x && x.evidenceStatus) ? x.evidenceStatus : (fallbackStatus || 'to_verify') };
+  }
+
+  function normalizeAnalysis(raw) {
+    const base = analystOutputTemplate();
+    const x = raw && typeof raw === 'object' ? raw : {};
+    const out = { ...base, ...x };
+    out.schemaVersion = SCHEMA_VERSION;
+    out.eventSummary = str(out.eventSummary);
+    out.detailedNarrative = str(out.detailedNarrative);
+    out.evidence = { ...base.evidence, ...(out.evidence || {}) };
+    EVIDENCE_STATES.forEach(state => {
+      const key = state === 'to_verify' ? 'toVerify' : state;
+      out.evidence[key] = arr(out.evidence[key]).map(v => normalizeEvidenceItem(v, state)).filter(v => v.text);
+    });
+    out.eventChain = arr(out.eventChain).map((v, i) => ({ order: Number(v.order || i + 1), event: str(v.event || v.text), evidenceStatus: EVIDENCE_STATES.includes(v.evidenceStatus) ? v.evidenceStatus : 'to_verify' })).filter(v => v.event);
+    out.missingInformation = arr(out.missingInformation).map(v => ({ priority: str(v.priority) || 'deepening', question: str(v.question), whyItMatters: str(v.whyItMatters) })).filter(v => v.question);
+    out.directCause = str(out.directCause);
+    out.contributingFactors = arr(out.contributingFactors).map(v => normalizeEvidenceItem(v, 'to_verify')).filter(v => v.text);
+    out.barrierAnalysis = arr(out.barrierAnalysis).map(v => ({ barrierType: str(v.barrierType), expectedBarrier: str(v.expectedBarrier), finding: str(v.finding), status: str(v.status) || 'unknown', evidenceStatus: EVIDENCE_STATES.includes(v.evidenceStatus) ? v.evidenceStatus : 'to_verify' })).filter(v => v.finding || v.expectedBarrier);
+    out.rootCauses = arr(out.rootCauses).map(v => ({ text: str(v.text), category: CAUSE_CATEGORIES.includes(str(v.category)) ? str(v.category) : 'Organizasyon / Prosedür', evidenceStatus: EVIDENCE_STATES.includes(v.evidenceStatus) ? v.evidenceStatus : 'to_verify', confidence: ['low','medium','high'].includes(v.confidence) ? v.confidence : 'low' })).filter(v => v.text);
+    out.mainRootCause = { ...base.mainRootCause, ...(out.mainRootCause || {}) };
+    out.mainRootCause.text = str(out.mainRootCause.text);
+    out.mainRootCause.category = CAUSE_CATEGORIES.includes(str(out.mainRootCause.category)) ? str(out.mainRootCause.category) : '';
+    out.mainRootCause.evidenceStatus = EVIDENCE_STATES.includes(out.mainRootCause.evidenceStatus) ? out.mainRootCause.evidenceStatus : 'to_verify';
+    out.mainRootCause.confidence = ['low','medium','high'].includes(out.mainRootCause.confidence) ? out.mainRootCause.confidence : 'low';
+    out.whyAnalysisBranches = arr(out.whyAnalysisBranches).map(branch => ({
+      question: str(branch.question),
+      items: arr(branch.items).map((v, i) => ({ order: Number(v.order || i + 1), why: str(v.why), recommendation: str(v.recommendation), category: CAUSE_CATEGORIES.includes(str(v.category)) ? str(v.category) : '', evidenceStatus: EVIDENCE_STATES.includes(v.evidenceStatus) ? v.evidenceStatus : 'to_verify' })).filter(v => v.why),
+      systemResult: str(branch.systemResult),
+      priorityRecommendation: str(branch.priorityRecommendation)
+    })).filter(v => v.question && v.items.length);
+    out.controlHierarchy = { ...base.controlHierarchy, ...(out.controlHierarchy || {}) };
+    Object.keys(base.controlHierarchy).forEach(k => { out.controlHierarchy[k] = uniq(out.controlHierarchy[k]); });
+    out.fishbone = { ...base.fishbone, ...(out.fishbone || {}) };
+    out.fishbone.categories = arr(out.fishbone.categories).map((cat, ci) => {
+      const prefix = str(cat.prefix) || ('K' + (ci + 1));
+      return { name: str(cat.name), prefix, causes: arr(cat.causes).map((v, i) => ({ code: str(v.code) || prefix + (i + 1), text: str(v.text), evidenceStatus: EVIDENCE_STATES.includes(v.evidenceStatus) ? v.evidenceStatus : 'to_verify' })).filter(v => v.text) };
+    }).filter(v => v.name && v.causes.length);
+    if (out.fishbone.categories.length < 3) { out.fishbone.applicable = false; out.fishbone.categories = []; }
+    out.fishbone.reason = str(out.fishbone.reason);
+    out.fishbone.conclusion = str(out.fishbone.conclusion);
+    out.correctiveActions = arr(out.correctiveActions).map(v => ({ action: str(v.action), targetsCause: str(v.targetsCause), hierarchyLevel: ['elimination','substitution','engineering','administrative','ppe'].includes(v.hierarchyLevel) ? v.hierarchyLevel : 'administrative', priority: ['immediate','high','medium','low'].includes(v.priority) ? v.priority : 'medium', effectivenessMeasure: str(v.effectivenessMeasure) })).filter(v => v.action);
+    out.reportWarnings = uniq(out.reportWarnings);
+    out.analysisStatus = 'draft_requires_user_validation';
+    return out;
+  }
+
+  function validateAnalysis(analysis) {
+    const a = normalizeAnalysis(analysis);
+    const errors = [], warnings = [];
+    if (!a.eventSummary) errors.push('Olay özeti eksik.');
+    if (!a.directCause) warnings.push('Doğrudan neden eksik.');
+    if (!a.rootCauses.length) warnings.push('Kök neden adayı oluşturulmamış.');
+    a.whyAnalysisBranches.forEach((b, bi) => b.items.forEach((x, xi) => {
+      if (!x.recommendation) errors.push(`Neden-Neden ${bi + 1}.${xi + 1} için öneri eksik.`);
+    }));
+    if (a.fishbone.applicable && a.fishbone.categories.length < 3) errors.push('Balık kılçığı için en az üç kategori gerekir.');
+    if (a.mainRootCause.confidence === 'high' && ['hypothesis','to_verify'].includes(a.mainRootCause.evidenceStatus)) {
+      warnings.push('Doğrulanmamış ana kök neden için yüksek güven seviyesi düşürülmelidir.');
+      a.mainRootCause.confidence = 'low';
+    }
+    const actionCauses = new Set(a.correctiveActions.map(x => x.targetsCause).filter(Boolean));
+    if (a.rootCauses.length && !actionCauses.size) warnings.push('Düzeltici faaliyetler hedefledikleri kök nedenlerle açıkça eşleştirilmemiş.');
+    return { valid: errors.length === 0, errors, warnings, analysis: a };
+  }
+
+  async function defaultAiCall(prompt, maxToken) {
+    if (typeof globalThis.geminiUret === 'function') return globalThis.geminiUret(prompt, maxToken || 8192);
+    throw new Error('Yapay zeka sağlayıcısı bağlı değil. aiCall fonksiyonu verin veya geminiUret bağlantısını yükleyin.');
+  }
+
+  async function generateDraft(params) {
+    const p = params || {};
+    const incident = normalizeIncident(p.incident);
+    if (!incident.narrative) throw new Error('Rapor oluşturmak için olay anlatımı gereklidir.');
+    const aiCall = p.aiCall || defaultAiCall;
+    const sourceHash = simpleHash(incident);
+    const analystPrompt = buildAnalystPrompt(incident, { userDirective: p.userDirective, previousDraft: p.previousDraft, privacy: p.privacy });
+    const analystRaw = extractJson(await aiCall(analystPrompt, p.maxToken || 8192));
+    const analystAnalysis = normalizeAnalysis(analystRaw);
+    let finalAnalysis = analystAnalysis;
+    let reviewApplied = false;
+    if (p.skipReview !== true) {
+      const reviewerPrompt = buildReviewerPrompt(incident, analystAnalysis, { privacy: p.privacy });
+      const reviewerRaw = extractJson(await aiCall(reviewerPrompt, p.maxToken || 8192));
+      finalAnalysis = normalizeAnalysis(reviewerRaw);
+      reviewApplied = true;
+    }
+    const checked = validateAnalysis(finalAnalysis);
+    const previousVersion = Number(p.previousDraft && p.previousDraft.version || 0);
+    return {
+      reportDraftId: id('draft'),
+      incidentId: incident.incidentId,
+      sourceIncidentRevision: incident.revision,
+      sourceIncidentHash: sourceHash,
+      schemaVersion: SCHEMA_VERSION,
+      engineVersion: ENGINE_VERSION,
+      version: previousVersion + 1,
+      generatedAt: nowIso(),
+      userDirective: str(p.userDirective),
+      previousDraftId: str(p.previousDraft && p.previousDraft.reportDraftId),
+      reviewApplied,
+      status: 'draft',
+      validation: { valid: checked.valid, errors: checked.errors, warnings: checked.warnings },
+      analysis: checked.analysis
+    };
+  }
+
+  function createDraftStore(storage) {
+    const s = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    function key(incidentId) { return STORE_PREFIX + str(incidentId); }
+    function list(incidentId) {
+      if (!s) return [];
+      try { return arr(JSON.parse(s.getItem(key(incidentId)) || '[]')); } catch (_) { return []; }
+    }
+    function save(draft) {
+      if (!s) return draft;
+      const items = list(draft.incidentId);
+      const at = items.findIndex(x => x.reportDraftId === draft.reportDraftId);
+      if (at >= 0) items[at] = draft; else items.push(draft);
+      s.setItem(key(draft.incidentId), JSON.stringify(items));
+      return draft;
+    }
+    function select(incidentId, draftId) {
+      const items = list(incidentId).map(x => ({ ...x, status: x.reportDraftId === draftId ? 'selected' : (x.status === 'selected' ? 'archived' : x.status) }));
+      if (s) s.setItem(key(incidentId), JSON.stringify(items));
+      return items.find(x => x.reportDraftId === draftId) || null;
+    }
+    return { list, save, select };
+  }
+
+  function incidentFromCurrentForm(doc) {
+    const d = doc || (typeof document !== 'undefined' ? document : null);
+    if (!d) return {};
+    const val = sel => str(d.querySelector(sel) && d.querySelector(sel).value);
+    const injuryRows = [...d.querySelectorAll('[data-injury-row]')].map(row => ({
+      bodyRegion: str(row.querySelector('[data-body-region]') && row.querySelector('[data-body-region]').value),
+      damageType: str(row.querySelector('[data-damage-type]') && row.querySelector('[data-damage-type]').value),
+      detail: str(row.querySelector('[data-injury-detail]') && row.querySelector('[data-injury-detail]').value)
+    })).filter(x => x.bodyRegion || x.damageType || x.detail);
+    const legacyInjury = val('#kaza-m-yaralanma');
+    if (!injuryRows.length && legacyInjury) injuryRows.push({ bodyRegion: '', damageType: legacyInjury, detail: '' });
+    return normalizeIncident({
+      incidentId: val('#kaza-m-id') || (typeof globalThis.kazaEditId !== 'undefined' ? globalThis.kazaEditId : ''),
+      incidentType: typeof globalThis.kazaMTur !== 'undefined' ? globalThis.kazaMTur : '',
+      date: val('#kaza-m-tarih'), time: val('#kaza-m-saat'), lostDays: val('#kaza-m-kayip'),
+      factory: val('#kaza-m-fab'), department: val('#kaza-m-bolum'), injuredPersonName: val('#kaza-m-kisi'),
+      injuredPersonRole: val('#kaza-m-gorev'), whatHappened: val('#kaza-m-ne-oldu'), narrative: val('#kaza-m-aciklama'),
+      injuries: injuryRows, potentialSeverity: val('#kaza-m-potansiyel'), selectedRootCause: val('#kaza-m-koknedan'), existingMeasures: val('#kaza-m-onlem')
+    });
+  }
+
+  return {
+    ENGINE_VERSION, SCHEMA_VERSION, CAUSE_CATEGORIES, EVIDENCE_STATES,
+    normalizeIncident, prepareIncidentForAI, buildEvidencePacket, requiredQuestionCandidates,
+    analystOutputTemplate, buildAnalystPrompt, buildReviewerPrompt, extractJson,
+    normalizeAnalysis, validateAnalysis, generateDraft, createDraftStore,
+    incidentFromCurrentForm, simpleHash
+  };
+});
+
+</script>
+<script id="kaza-ai-phase5-js">
+let kazaPrimaryImageData = '';
+let kazaActiveDraft = null;
+let kazaReportIncidentId = '';
+let kazaReportIncidentOverride = null;
+let kazaReportImageBackup = '';
+const kazaDraftStore = KazaAIRaporMotoru.createDraftStore(localStorage);
+function kazaKayitRaporVar(id){try{return kazaDraftStore.list(String(id)).length>0}catch(_){return false}}
+function kazaLegacyInjuryRows(text){return text?[{bodyRegion:'',damageType:text,detail:''}]:[{bodyRegion:'',damageType:'',detail:''}]}
+function kazaInjuryAdd(data){const wrap=document.getElementById('kaza-injury-rows');if(!wrap)return;const d=data||{};const row=document.createElement('div');row.className='kaza-injury-row';row.setAttribute('data-injury-row','');row.innerHTML='<div class="mfield"><label>Yaralanma Bölgesi</label><input data-body-region placeholder="örn: Sol ayak bileği"></div><div class="mfield"><label>Hasar Türü</label><input data-damage-type placeholder="örn: Kırık"></div><div class="mfield injury-detail"><label>Açıklama</label><input data-injury-detail placeholder="örn: Kapalı kırık, doktor tanısı"></div><button type="button" class="kaza-injury-remove" title="Satırı kaldır">×</button>';row.querySelector('[data-body-region]').value=d.bodyRegion||'';row.querySelector('[data-damage-type]').value=d.damageType||'';row.querySelector('[data-injury-detail]').value=d.detail||'';row.querySelector('button').onclick=()=>{row.remove();if(!wrap.children.length)kazaInjuryAdd()};wrap.appendChild(row)}
+function kazaInjuryRender(rows){const wrap=document.getElementById('kaza-injury-rows');if(!wrap)return;wrap.innerHTML='';(rows&&rows.length?rows:[{}]).forEach(kazaInjuryAdd)}
+function kazaInjuryRead(){return [...document.querySelectorAll('#kaza-injury-rows [data-injury-row]')].map(r=>({bodyRegion:r.querySelector('[data-body-region]').value.trim(),damageType:r.querySelector('[data-damage-type]').value.trim(),detail:r.querySelector('[data-injury-detail]').value.trim()})).filter(x=>x.bodyRegion||x.damageType||x.detail)}
+function kazaInjuryDisplay(rows){return (rows||[]).map(x=>{let s=[x.bodyRegion,x.damageType].filter(Boolean).join(' - ');return x.detail?(s?s+' ('+x.detail+')':x.detail):s}).filter(Boolean).join('; ')}
+function kazaPhotoRender(){const p=document.getElementById('kaza-photo-preview');if(!p)return;p.innerHTML=kazaPrimaryImageData?'<img alt="Kaza olay görseli" src="'+kazaPrimaryImageData+'">':'<span>Görsel eklenmedi</span>'}
+function kazaPhotoPick(input){const file=input.files&&input.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);kazaPrimaryImageData=c.toDataURL('image/jpeg',.72);kazaPhotoRender()};img.src=reader.result};reader.readAsDataURL(file)}
+function kazaFormIncident(){if(kazaReportIncidentOverride)return KazaAIRaporMotoru.normalizeIncident(kazaReportIncidentOverride);const injuries=kazaInjuryRead();return KazaAIRaporMotoru.normalizeIncident({incidentId:kazaEditId||kazaReportIncidentId||('new_'+Date.now()),revision:1,tur:kazaMTur,tarih:document.getElementById('kaza-m-tarih').value,saat:document.getElementById('kaza-m-saat').value,kayip:document.getElementById('kaza-m-kayip').value,fab:document.getElementById('kaza-m-fab').value,bolum:document.getElementById('kaza-m-bolum').value,kisi:document.getElementById('kaza-m-kisi').value,calisanGorevi:document.getElementById('kaza-m-gorev').value,aciklama:document.getElementById('kaza-m-aciklama').value,injuries,potansiyelSiddet:document.getElementById('kaza-m-potansiyel').value,kokNeden:document.getElementById('kaza-m-koknedan').value,onlem:document.getElementById('kaza-m-onlem').value,images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]})}
+function kazaRaporOpen(){kazaReportIncidentOverride=null;const inc=kazaFormIncident();if(!inc.narrative){alert('Rapor oluşturmak için olay anlatımını yazın.');return}document.getElementById('kaza-report-bg').style.display='block';kazaRaporPrecheck(inc);kazaRaporVersions(inc.incidentId)}
+function kazaKayitOnizle(id){const k=kazaItems.find(x=>String(x.id)===String(id));if(!k)return;kazaReportImageBackup=kazaPrimaryImageData;kazaPrimaryImageData=k.primaryImageData||'';kazaReportIncidentOverride={...k,incidentId:String(k.id),injuries:Array.isArray(k.injuries)&&k.injuries.length?k.injuries:kazaLegacyInjuryRows(k.yaralanma||''),images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]};const inc=kazaFormIncident();document.getElementById('kaza-report-bg').style.display='block';kazaRaporPrecheck(inc);kazaRaporVersions(inc.incidentId);const drafts=kazaDraftStore.list(inc.incidentId);if(drafts.length){kazaActiveDraft=drafts[drafts.length-1];kazaRaporRender(kazaActiveDraft,inc);['kaza-report-select','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>document.getElementById(x).disabled=false)}else{document.getElementById('kaza-report-preview').innerHTML='<div class="kaza-empty-report"><b>Bu kayıt için rapor taslağı bulunmuyor</b><span>Yukarıdaki bilgilerle hızlı veya derin rapor oluşturabilirsiniz.</span></div>';document.getElementById('kaza-report-analysis').innerHTML='';document.getElementById('kaza-report-json').textContent='';['kaza-report-select','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>document.getElementById(x).disabled=true)}}
+function kazaRaporClose(){document.getElementById('kaza-report-bg').style.display='none';if(kazaReportIncidentOverride){kazaPrimaryImageData=kazaReportImageBackup;kazaReportIncidentOverride=null}}
+function kazaRaporDepth(btn){document.querySelectorAll('.kaza-report-modes button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.getElementById('kaza-report-depth').value=btn.dataset.depth}
+function kazaRaporChip(btn){const el=document.getElementById('kaza-report-directive'),t=btn.textContent.trim();el.value=el.value.trim()?(el.value.trim()+'. '+t):t}
+function kazaRaporTab(btn){const tab=btn.dataset.reportTab;document.querySelectorAll('.kaza-report-tabs button').forEach(x=>x.classList.toggle('active',x===btn));document.getElementById('kaza-report-preview').hidden=tab!=='preview';document.getElementById('kaza-report-analysis').hidden=tab!=='analysis';document.getElementById('kaza-report-json').hidden=tab!=='json'}
+function kazaRaporPrecheck(inc){const qs=KazaAIRaporMotoru.requiredQuestionCandidates(inc),items=[{ok:!!inc.narrative,text:'Olay anlatımı ve temel bilgiler tamamlandı.'},{ok:inc.injuries.length>0,text:inc.injuries.length+' yaralanma/hasar kaydı mevcut.'},{ok:!!kazaPrimaryImageData,text:kazaPrimaryImageData?'Ana olay görseli rapora hazır.':'Ana olay görseli eklenmedi; rapor üretimini engellemez.'}];qs.filter(x=>x.key!=='narrative'&&x.key!=='injuries'&&x.key!=='image').slice(0,3).forEach(x=>items.push({ok:false,text:x.question+'; rapor üretimini engellemez.'}));document.getElementById('kaza-report-precheck').innerHTML=items.map(x=>'<div class="precheck-item"><i class="'+(x.ok?'':'warn')+'">'+(x.ok?'✓':'!')+'</i><span>'+kazaEsc(x.text)+'</span></div>').join('')}
+function kazaEsc(v){return String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+async function kazaRaporGenerate(regenerate){const btn=document.getElementById('kaza-report-generate'),status=document.getElementById('kaza-report-status'),inc=kazaFormIncident(),deep=document.getElementById('kaza-report-depth').value==='deep',directive=document.getElementById('kaza-report-directive').value.trim();if(!inc.narrative){alert('Olay anlatımı zorunludur.');return}btn.disabled=true;btn.textContent=deep?'🔎 Derin analiz hazırlanıyor…':'⚡ Hızlı rapor hazırlanıyor…';status.textContent=deep?'Analist taslağı ve bağımsız gözden geçirme hazırlanıyor…':'Hızlı ön analiz hazırlanıyor…';try{const previous=regenerate?kazaActiveDraft:null;const draft=await KazaAIRaporMotoru.generateDraft({incident:inc,userDirective:directive,previousDraft:previous,skipReview:!deep,aiCall:(prompt,tokens)=>geminiUret(prompt,tokens)});kazaDraftStore.save(draft);kazaActiveDraft=draft;kazaRaporRender(draft,inc);kazaRaporVersions(inc.incidentId);if(kazaReportIncidentOverride)kazaRender();status.textContent='Taslak v'+draft.version+' hazır. Bulguları saha kanıtlarıyla doğrulayın.';['kaza-report-select','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>document.getElementById(id).disabled=false)}catch(e){status.textContent='Rapor üretilemedi: '+e.message;alert(e.message)}finally{btn.disabled=false;btn.textContent='✨ Rapor Taslağı Oluştur'}}
+function kazaRaporVersions(id){const items=kazaDraftStore.list(id),el=document.getElementById('kaza-report-versions');el.innerHTML=items.length?items.slice().reverse().map(x=>'<button type="button" data-draft="'+x.reportDraftId+'"><b>Sürüm '+x.version+'</b><span>'+new Date(x.generatedAt).toLocaleString('tr-TR')+' · '+(x.reviewApplied?'Denetimli':'Hızlı')+'</span></button>').join(''):'<span>Henüz rapor oluşturulmadı.</span>';el.querySelectorAll('button').forEach(b=>b.onclick=()=>{kazaActiveDraft=items.find(x=>x.reportDraftId===b.dataset.draft);kazaRaporRender(kazaActiveDraft,kazaFormIncident())})}
+function kazaRaporRender(draft,inc){const a=draft.analysis||{},whys=a.whyAnalysisBranches||[],roots=a.rootCauses||[],acts=a.correctiveActions||[],fish=a.fishbone||{},inj=kazaInjuryDisplay(inc.injuries)||'—';const whyRows=[];(Array.isArray(whys)?whys:[]).forEach(branch=>{(branch.items||[]).forEach((w,i)=>whyRows.push('<tr><td>'+kazaEsc(branch.question)+(i?' · '+(i+1):'')+'</td><td>'+kazaEsc(w.why||'')+'</td><td>'+kazaEsc(w.recommendation||'')+'</td></tr>'))});const fishHtml=fish.applicable&&Array.isArray(fish.categories)?'<h2>6. BALIK KILÇIĞI (ISHIKAWA) ANALİZİ</h2><div class="kaza-fishbone-grid">'+fish.categories.map(c=>'<div class="kaza-fishbone-card"><b>'+kazaEsc(c.name)+'</b>'+kazaEsc((c.causes||[]).map(x=>x.text).join(' • '))+'</div>').join('')+'</div>':'';const photo=kazaPrimaryImageData?'<img alt="Olay görseli" src="'+kazaPrimaryImageData+'">':'Görsel yok';document.getElementById('kaza-report-preview').innerHTML='<article class="kaza-a4"><h1>KAZA / OLAY ARAŞTIRMA RAPORU</h1><h2>1. OLAYIN TEMEL BİLGİLERİ</h2><div class="facts"><table><tr><th>Kazazede</th><td>'+kazaEsc(inc.injuredPersonName||'—')+'</td></tr><tr><th>Bölüm / Görev</th><td>'+kazaEsc([inc.department,inc.injuredPersonRole].filter(Boolean).join(' / ')||'—')+'</td></tr><tr><th>Ne zaman?</th><td>'+kazaEsc([inc.date,inc.time].filter(Boolean).join(' ')||'—')+'</td></tr><tr><th>Ne oldu?</th><td>'+kazaEsc(inc.narrative)+'</td></tr><tr><th>Yaralanma / Hasar</th><td>'+kazaEsc(inj)+'</td></tr></table><div class="photo">'+photo+'</div></div><h2>2. KÖK NEDEN ANALİZİ</h2><table><tr><th>Sınıflandırma</th><th>Tespit / değerlendirme</th></tr><tr><td>Doğrudan neden</td><td>'+kazaEsc(a.directCause||'—')+'</td></tr>'+roots.map((r,i)=>'<tr><td>Kök neden '+(i+1)+'</td><td>'+kazaEsc(r.text||'')+'</td></tr>').join('')+'<tr><td>Ana kök neden</td><td>'+kazaEsc(a.mainRootCause&&a.mainRootCause.text||'—')+'</td></tr></table><h2>3. NEDEN–NEDEN ANALİZİ</h2><table><tr><th>Neden</th><th>Tespit</th><th>Öneri</th></tr>'+whyRows.join('')+'</table>'+fishHtml+'<h2>7. ÖNERİLEN DÜZELTİCİ / ÖNLEYİCİ FAALİYETLER</h2><table><tr><th>No</th><th>Faaliyet</th><th>Öncelik</th></tr>'+acts.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+kazaEsc(x.action||'')+'</td><td>'+kazaEsc(x.priority||'—')+'</td></tr>').join('')+'</table><p style="margin-top:10mm;font-size:8pt;color:#707b84">Yapay zekâ destekli ön hazırlık taslağıdır. Nihai karar değildir; kullanıcı ve analiz ekibi doğrulaması gerektirir.</p></article>';document.getElementById('kaza-report-analysis').innerHTML='<section class="kaza-report-card"><h4>Olay özeti</h4><textarea>'+kazaEsc(a.eventSummary||'')+'</textarea></section><section class="kaza-report-card"><h4>Ana kök neden</h4><textarea>'+kazaEsc(a.mainRootCause&&a.mainRootCause.text||'')+'</textarea></section><section cl
+ass="kaza-report-card"><h4>Kullanıcı gerçekleri · değiştirilemez</h4><p>'+kazaEsc(inc.narrative)+'</p></section>';document.getElementById('kaza-report-json').textContent=JSON.stringify(draft,null,2);document.querySelector('[data-report-tab="preview"]').click()}
+</script>
 </body>
 </html>
