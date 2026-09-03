@@ -17781,24 +17781,203 @@ window.addEventListener('resize', calMobInit);
 
 
 
+
+<style id="kaza-precheck-icon-center-v2">
+.kaza-report-precheck .precheck-item{
+  align-items:center!important;
+}
+.kaza-report-precheck i{
+  box-sizing:border-box!important;
+  width:25px!important;
+  height:25px!important;
+  min-width:25px!important;
+  min-height:25px!important;
+  padding:0!important;
+  margin:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  text-indent:0!important;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-style:normal!important;
+  font-variant:normal!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  line-height:25px!important;
+  letter-spacing:0!important;
+}
+.kaza-report-precheck i.warn{
+  font-size:17px!important;
+  line-height:25px!important;
+}
+</style>
+
 <style id="kaza-fishbone-approved-template">
-.kaza-fishbone-intro{margin:0 0 3mm!important;font-size:8.8pt!important;line-height:1.4!important;color:#465763!important}
-.kaza-fishbone-diagram{position:relative;width:100%;height:102mm;margin:2mm 0 3mm;background:#fff;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
-.kaza-fishbone-diagram .fb-spine{position:absolute;left:8%;right:18%;top:50%;height:1.3px;background:#244955}
-.kaza-fishbone-diagram .fb-bone{position:absolute;width:17%;height:1.2px;background:#2b7f83;transform-origin:right center}
-.kaza-fishbone-diagram .fb-top{transform:rotate(55deg)}.kaza-fishbone-diagram .fb-bottom{transform:rotate(-55deg)}
-.kaza-fishbone-diagram .fb-b1{left:18%;top:35%}.kaza-fishbone-diagram .fb-b2{left:40%;top:35%}.kaza-fishbone-diagram .fb-b3{left:62%;top:35%}
-.kaza-fishbone-diagram .fb-b4{left:18%;top:65%}.kaza-fishbone-diagram .fb-b5{left:40%;top:65%}.kaza-fishbone-diagram .fb-b6{left:62%;top:65%}
-.kaza-fishbone-diagram .fb-cat{position:absolute;width:25%;height:38%;color:#26323b;font-size:7.1pt;line-height:1.18;overflow:hidden}
-.kaza-fishbone-diagram .fb-cat b{display:block;width:78%;margin:0 auto 4px;padding:5px 3px;text-align:center;background:#f8fbfb;border:1.2px solid #2b8b8e;border-radius:5px;font-size:8pt}
-.kaza-fishbone-diagram .fb-cat ul{margin:0;padding:0 4px 0 16px}.kaza-fishbone-diagram .fb-cat li{margin:0 0 3px;overflow-wrap:anywhere}.kaza-fishbone-diagram .fb-cat li.fb-empty{color:#8a949b;font-style:italic}
-.kaza-fishbone-diagram .fb-human{left:1%;top:0}.kaza-fishbone-diagram .fb-machine{left:28%;top:0}.kaza-fishbone-diagram .fb-method{left:55%;top:0}
-.kaza-fishbone-diagram .fb-material{left:1%;bottom:0}.kaza-fishbone-diagram .fb-environment{left:28%;bottom:0}.kaza-fishbone-diagram .fb-management{left:55%;bottom:0}
-.kaza-fishbone-diagram .fb-head{position:absolute;right:0;top:39%;width:17%;min-height:22%;display:flex;align-items:center;justify-content:center;text-align:center;padding:7px;color:#fff;background:#b43b2d;border-radius:5px;font-size:7.5pt;font-weight:700;line-height:1.25;overflow:hidden}
-.kaza-fishbone-diagram .fb-head span{display:block;overflow-wrap:anywhere;hyphens:auto}
-.kaza-fishbone-result{margin:2mm 0 0;break-inside:avoid;page-break-inside:avoid}.kaza-fishbone-result b{display:block;margin-bottom:3px;color:#2b7f83;font-size:9.5pt}.kaza-fishbone-result p{margin:0;font-size:8.5pt;line-height:1.45;color:#26323b}
-@media(max-width:620px){.kaza-fishbone-diagram{height:108mm}.kaza-fishbone-diagram .fb-cat{font-size:6.7pt}.kaza-fishbone-diagram .fb-head{font-size:7pt}}
-@media print{.kaza-fishbone-diagram{height:102mm!important}}
+.kaza-fishbone-intro{
+  margin:0 0 3mm!important;
+  font-size:8.8pt!important;
+  line-height:1.4!important;
+  color:#465763!important;
+}
+.kaza-fishbone-diagram.fb-flex-layout{
+  width:100%;
+  margin:2mm 0 3mm;
+  padding:0;
+  background:#fff;
+  break-inside:avoid;
+  page-break-inside:avoid;
+  overflow:visible;
+}
+.kaza-fishbone-diagram .fb-cause-row{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  column-gap:5.5%;
+  align-items:start;
+  width:81%;
+  margin-left:1%;
+}
+.kaza-fishbone-diagram .fb-group{
+  min-width:0;
+  color:#26323b;
+  font-size:7.15pt;
+  line-height:1.26;
+}
+.kaza-fishbone-diagram .fb-group>b{
+  display:block;
+  width:82%;
+  margin:0 auto 4px;
+  padding:5px 4px;
+  text-align:center;
+  background:#f8fbfb;
+  border:1.2px solid #2b8b8e;
+  border-radius:5px;
+  color:#26323b;
+  font-size:8pt;
+  font-weight:700;
+  line-height:1.15;
+}
+.kaza-fishbone-diagram .fb-group ul{
+  margin:0;
+  padding:0 5px 0 16px;
+}
+.kaza-fishbone-diagram .fb-group li{
+  margin:0 0 3px;
+  overflow-wrap:break-word;
+  word-break:normal;
+  hyphens:none;
+}
+.kaza-fishbone-diagram .fb-group li.fb-empty{
+  color:#8a949b;
+  font-style:italic;
+}
+
+/* Çizgiler yalnız bu geometri bandında bulunur; neden metinleriyle çakışamaz. */
+.kaza-fishbone-diagram .fb-geometry{
+  position:relative;
+  width:100%;
+  height:42mm;
+  margin:2.5mm 0;
+}
+.kaza-fishbone-diagram .fb-svg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+.kaza-fishbone-diagram .fb-svg-spine{
+  stroke:#244955;
+  stroke-width:1.45;
+  vector-effect:non-scaling-stroke;
+}
+.kaza-fishbone-diagram .fb-svg-bone{
+  stroke:#2b8b8e;
+  stroke-width:1.2;
+  vector-effect:non-scaling-stroke;
+}
+.kaza-fishbone-diagram .fb-head{
+  position:absolute;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  width:16.5%;
+  min-height:21mm;
+  max-height:29mm;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:7px;
+  color:#fff;
+  background:#b43b2d;
+  border-radius:5px;
+  font-size:7.5pt;
+  font-weight:700;
+  line-height:1.25;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+.kaza-fishbone-diagram .fb-head span{
+  display:block;
+  width:100%;
+  overflow-wrap:break-word;
+  word-break:normal;
+  hyphens:none;
+}
+
+/* Alt satır üst satırla aynı grid eksenlerini kullanır: Malzeme-Çevre-Yönetim tam simetrik. */
+.kaza-fishbone-diagram .fb-cause-row-bottom{
+  align-items:start;
+}
+.kaza-fishbone-result{
+  margin:2mm 0 0;
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+.kaza-fishbone-result b{
+  display:block;
+  margin-bottom:3px;
+  color:#2b7f83;
+  font-size:9.5pt;
+}
+.kaza-fishbone-result p{
+  margin:0;
+  font-size:8.5pt;
+  line-height:1.45;
+  color:#26323b;
+}
+
+@media(max-width:620px){
+  .kaza-fishbone-diagram .fb-cause-row{
+    width:82%;
+    column-gap:4%;
+  }
+  .kaza-fishbone-diagram .fb-group{
+    font-size:6.65pt;
+    line-height:1.22;
+  }
+  .kaza-fishbone-diagram .fb-group>b{
+    width:86%;
+    font-size:7.4pt;
+    padding:4px 3px;
+  }
+  .kaza-fishbone-diagram .fb-geometry{
+    height:44mm;
+  }
+  .kaza-fishbone-diagram .fb-head{
+    width:17%;
+    font-size:6.8pt;
+  }
+}
+@media print{
+  .kaza-fishbone-diagram.fb-flex-layout{
+    overflow:visible!important;
+  }
+  .kaza-fishbone-diagram .fb-geometry{
+    height:42mm!important;
+  }
+}
 </style>
 
 <style id="kaza-ai-report-print-final">
@@ -18753,16 +18932,27 @@ function kazaFishboneReportHTML(fish,inc,a){
   const norm=v=>String(v||'').toLocaleLowerCase('tr-TR');
   const byName=(keys)=>cats.find(c=>keys.some(k=>norm(c.name).includes(k)))||{name:'',causes:[]};
   const groups=[
-    ['İNSAN',byName(['insan','human'])],['MAKİNE',byName(['makine','machine','ekipman'])],['METOT',byName(['metot','method','yöntem','prosedür'])],
-    ['MALZEME',byName(['malzeme','material'])],['ÇEVRE',byName(['çevre','ortam','environment'])],['YÖNETİM',byName(['yönetim','management','organizasyon','gözetim'])]
+    ['İNSAN',byName(['insan','human'])],
+    ['MAKİNE',byName(['makine','machine','ekipman'])],
+    ['METOT',byName(['metot','method','yöntem','prosedür'])],
+    ['MALZEME',byName(['malzeme','material'])],
+    ['ÇEVRE',byName(['çevre','ortam','environment'])],
+    ['YÖNETİM',byName(['yönetim','management','organizasyon','gözetim'])]
   ];
   const safe=v=>kazaEsc(v||'—');
   const cleanCause=t=>String(t||'').replace(/^[-•\s]+/,'').trim();
   const causeList=c=>{
     const seen=new Set();
-    const vals=(c.causes||[]).map(x=>cleanCause(x.text)).filter(Boolean).filter(x=>{const k=norm(x);if(seen.has(k))return false;seen.add(k);return true}).slice(0,3);
-    return vals.length?vals.map(x=>`<li>${safe(x)}</li>`).join(''):'<li class="fb-empty">Kanıtlanmış neden yok</li>';
+    const vals=(c.causes||[])
+      .map(x=>cleanCause(x.text))
+      .filter(Boolean)
+      .filter(x=>{const k=norm(x);if(seen.has(k))return false;seen.add(k);return true})
+      .slice(0,3);
+    return vals.length
+      ? vals.map(x=>`<li>${safe(x)}</li>`).join('')
+      : '<li class="fb-empty">Kanıtlanmış neden yok</li>';
   };
+
   const generic=/^(olay\s*\/\s*kaza|olay|kaza|iş kazası)$/i;
   let head=String(fish&&fish.problemStatement||'').trim();
   if(!head || generic.test(head)){
@@ -18773,16 +18963,47 @@ function kazaFishboneReportHTML(fish,inc,a){
     head=text?`${type}: ${text}`:String(type);
     if(head.length>74) head=head.slice(0,71).replace(/\s+\S*$/,'')+'…';
   }
-  const conclusion=String(fish&&fish.conclusion||'').trim() || String(a&&a.mainRootCause&&a.mainRootCause.text||'').trim() || 'Olay, birden fazla sistem faktörünün birlikte etkisiyle değerlendirilmelidir.';
-  const cls=['fb-human','fb-machine','fb-method','fb-material','fb-environment','fb-management'];
-  return `<div class="kaza-fishbone-diagram" aria-label="Balık kılçığı kök neden diyagramı">
-    <div class="fb-spine"></div>
-    <div class="fb-bone fb-top fb-b1"></div><div class="fb-bone fb-top fb-b2"></div><div class="fb-bone fb-top fb-b3"></div>
-    <div class="fb-bone fb-bottom fb-b4"></div><div class="fb-bone fb-bottom fb-b5"></div><div class="fb-bone fb-bottom fb-b6"></div>
-    ${groups.map((g,i)=>`<div class="fb-cat ${cls[i]}"><b>${g[0]}</b><ul>${causeList(g[1])}</ul></div>`).join('')}
-    <div class="fb-head"><span>${safe(head)}</span></div>
+
+  const conclusion=String(fish&&fish.conclusion||'').trim()
+    || String(a&&a.mainRootCause&&a.mainRootCause.text||'').trim()
+    || 'Olay, birden fazla sistem faktörünün birlikte etkisiyle değerlendirilmelidir.';
+
+  const groupHtml=(g,cls)=>`
+    <div class="fb-group ${cls}">
+      <b>${g[0]}</b>
+      <ul>${causeList(g[1])}</ul>
+    </div>`;
+
+  return `<div class="kaza-fishbone-diagram fb-flex-layout" aria-label="Balık kılçığı kök neden diyagramı">
+    <div class="fb-cause-row fb-cause-row-top">
+      ${groupHtml(groups[0],'fb-human')}
+      ${groupHtml(groups[1],'fb-machine')}
+      ${groupHtml(groups[2],'fb-method')}
+    </div>
+
+    <div class="fb-geometry" aria-hidden="true">
+      <svg class="fb-svg" viewBox="0 0 1000 260" preserveAspectRatio="none">
+        <line class="fb-svg-spine" x1="85" y1="130" x2="835" y2="130"></line>
+        <line class="fb-svg-bone" x1="210" y1="12" x2="305" y2="130"></line>
+        <line class="fb-svg-bone" x1="445" y1="12" x2="505" y2="130"></line>
+        <line class="fb-svg-bone" x1="680" y1="12" x2="705" y2="130"></line>
+        <line class="fb-svg-bone" x1="210" y1="248" x2="305" y2="130"></line>
+        <line class="fb-svg-bone" x1="445" y1="248" x2="505" y2="130"></line>
+        <line class="fb-svg-bone" x1="680" y1="248" x2="705" y2="130"></line>
+      </svg>
+      <div class="fb-head"><span>${safe(head)}</span></div>
+    </div>
+
+    <div class="fb-cause-row fb-cause-row-bottom">
+      ${groupHtml(groups[3],'fb-material')}
+      ${groupHtml(groups[4],'fb-environment')}
+      ${groupHtml(groups[5],'fb-management')}
+    </div>
   </div>
-  <div class="kaza-fishbone-result"><b>6.1 Balık Kılçığı Sonucu</b><p>${safe(conclusion)}</p></div>`;
+  <div class="kaza-fishbone-result">
+    <b>6.1 Balık Kılçığı Sonucu</b>
+    <p>${safe(conclusion)}</p>
+  </div>`;
 }
 function kazaRaporRender(draft,inc){
   const a=draft&&draft.analysis?draft.analysis:{};
