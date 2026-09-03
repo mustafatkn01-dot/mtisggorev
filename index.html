@@ -7135,6 +7135,19 @@ px}
     </div>
   </div>
 </div>
+
+<div id="kaza-report-delete-bg" class="kaza-report-delete-bg" aria-hidden="true">
+  <div class="kaza-report-delete-box" role="dialog" aria-modal="true" aria-labelledby="kaza-report-delete-title">
+    <div class="kaza-report-delete-icon">🗑</div>
+    <h3 id="kaza-report-delete-title">Raporu silmek istediğinize emin misiniz?</h3>
+    <p id="kaza-report-delete-text">Seçilen rapor kaydı kaldırılacaktır. Bu işlem geri alınamaz.</p>
+    <div class="kaza-report-delete-actions">
+      <button type="button" class="cancel" onclick="kazaRaporSilIptal()">İptal</button>
+      <button type="button" class="continue" id="kaza-report-delete-confirm" onclick="kazaRaporSilDevam()">Devam Et</button>
+    </div>
+  </div>
+</div>
+
 <div id="archive-wrap">
   <div id="archive-topbar">
     <h2>📦 Arşiv</h2>
@@ -17463,6 +17476,24 @@ window.addEventListener('resize', calMobInit);
     return clean;
   };
 
+
+  window._fbDeleteKazaRapor = async function(incidentId, reportId) {
+    const user = AUTH.currentUser;
+    if (!hazir || !user || user.uid !== AUTHORIZED_UID)
+      throw new Error('Bulut bağlantısı hazır değil veya Firebase oturumu bulunmuyor.');
+    const iid = String(incidentId || '').trim();
+    const rid = String(reportId || '').trim();
+    if (!iid || !rid) throw new Error('Silinecek rapor kimliği bulunamadı.');
+    await ROOT.child('kazaRaporlari').child(iid).child(rid).remove();
+    if (window._fbKazaRaporCache?.[iid]) {
+      delete window._fbKazaRaporCache[iid][rid];
+      if (!Object.keys(window._fbKazaRaporCache[iid]).length) delete window._fbKazaRaporCache[iid];
+    }
+    nokta(true, 'Rapor buluttan kaldırıldı ✓');
+    try { window.dispatchEvent(new CustomEvent('kazaRaporBulutGuncellendi',{detail:{incidentId:iid,reportId:rid,deleted:true}})); } catch(e) {}
+    return true;
+  };
+
   window._fbSaveDenetim = () => yaz('denetim', () => ({ denetimler, bulgular }));
 
   window._fbReady = true;
@@ -17781,6 +17812,46 @@ window.addEventListener('resize', calMobInit);
 
 
 
+
+
+<style id="kaza-report-version-delete-v1">
+#kaza-report-versions{display:flex;flex-direction:column;gap:7px}
+.kaza-report-version-row{display:grid;grid-template-columns:minmax(0,1fr) 42px;gap:7px;align-items:stretch}
+.kaza-report-version-open{min-width:0;width:100%;text-align:left}
+.kaza-report-version-delete{
+  display:flex;align-items:center;justify-content:center;
+  min-width:42px;min-height:42px;padding:0;
+  border:1.5px solid #d9534f!important;border-radius:10px!important;
+  background:#fff7f6!important;color:#c53e39!important;
+  font-size:19px!important;line-height:1!important;cursor:pointer
+}
+.kaza-report-version-delete:hover{background:#fdebea!important}
+.kaza-report-delete-bg{
+  display:none;position:fixed;inset:0;z-index:220;
+  background:rgba(12,27,39,.52);align-items:center;justify-content:center;padding:18px
+}
+.kaza-report-delete-bg.on{display:flex}
+.kaza-report-delete-box{
+  width:min(390px,94vw);background:#fff;border-radius:16px;
+  box-shadow:0 16px 44px rgba(0,0,0,.25);padding:22px;text-align:center
+}
+.kaza-report-delete-icon{
+  width:48px;height:48px;margin:0 auto 10px;border:1.5px solid #d9534f;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:#fff4f3;font-size:23px
+}
+.kaza-report-delete-box h3{margin:0 0 8px;color:#18334a;font-size:16px;line-height:1.3}
+.kaza-report-delete-box p{margin:0;color:#65737e;font-size:12px;line-height:1.5}
+.kaza-report-delete-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
+.kaza-report-delete-actions button{min-height:44px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
+.kaza-report-delete-actions .cancel{border:1px solid #cbd3d9;background:#fff;color:#34495a}
+.kaza-report-delete-actions .continue{border:1px solid #c43c37;background:#d9534f;color:#fff}
+.kaza-report-delete-actions button:disabled{opacity:.55;cursor:wait}
+@media(max-width:520px){
+  .kaza-report-version-row{grid-template-columns:minmax(0,1fr) 46px}
+  .kaza-report-version-delete{min-width:46px;min-height:46px}
+}
+</style>
 
 <style id="kaza-precheck-icon-center-v2">
 .kaza-report-precheck .precheck-item{
@@ -18846,11 +18917,95 @@ function kazaRaporApplyAnalysisEdits(draft){
   return draft;
 }
 async function kazaRaporGenerate(regenerate){const btn=document.getElementById('kaza-report-generate'),status=document.getElementById('kaza-report-status'),inc=kazaFormIncident(),deep=document.getElementById('kaza-report-depth').value==='deep',directive=document.getElementById('kaza-report-directive').value.trim();if(!inc.narrative){alert('Olay anlatımı zorunludur.');return}btn.disabled=true;btn.textContent=deep?'🔎 Derin analiz hazırlanıyor…':'⚡ Hızlı rapor hazırlanıyor…';status.textContent=deep?'Analist taslağı ve bağımsız gözden geçirme hazırlanıyor…':'Hızlı ön analiz hazırlanıyor…';try{const previous=regenerate?kazaRaporApplyAnalysisEdits(kazaActiveDraft):null;const draft=await KazaAIRaporMotoru.generateDraft({incident:inc,userDirective:directive,previousDraft:previous,skipReview:!deep,aiCall:(prompt,tokens)=>geminiUret(prompt,tokens)});kazaDraftStore.save(draft);kazaActiveDraft=draft;kazaRaporRender(draft,inc);kazaRaporVersions(inc.incidentId);if(kazaReportIncidentOverride)kazaRender();status.textContent='Taslak v'+draft.version+' hazır. Bulguları saha kanıtlarıyla doğrulayın.';['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>document.getElementById(id).disabled=false)}catch(e){status.textContent='Rapor üretilemedi: '+e.message;alert(e.message)}finally{btn.disabled=false;btn.textContent='✨ Rapor Taslağı Oluştur'}}
+
+let kazaRaporSilBekleyen=null;
+
+function kazaLocalDraftSil(incidentId,draftId){
+  try{
+    const key='isg_kaza_ai_drafts_v1:'+String(incidentId||'');
+    const raw=localStorage.getItem(key);
+    if(!raw)return false;
+    const arr=JSON.parse(raw);
+    if(!Array.isArray(arr))return false;
+    const next=arr.filter(x=>String(x?.reportDraftId||'')!==String(draftId||''));
+    if(next.length===arr.length)return false;
+    if(next.length)localStorage.setItem(key,JSON.stringify(next));
+    else localStorage.removeItem(key);
+    return true;
+  }catch(e){console.warn('Yerel rapor silme hatası:',e);return false}
+}
+
+function kazaRaporSilIste(incidentId,key,isCloud){
+  kazaRaporSilBekleyen={incidentId:String(incidentId||''),key:String(key||''),cloud:!!isCloud};
+  const bg=document.getElementById('kaza-report-delete-bg');
+  const text=document.getElementById('kaza-report-delete-text');
+  if(text)text.textContent=isCloud
+    ? 'Seçilen bulut raporu ve aynı raporun bu cihazdaki yerel kopyası kaldırılacaktır. Bu işlem geri alınamaz.'
+    : 'Seçilen yerel rapor taslağı bu cihazdan kaldırılacaktır. Bu işlem geri alınamaz.';
+  if(bg){bg.classList.add('on');bg.setAttribute('aria-hidden','false')}
+}
+
+function kazaRaporSilIptal(){
+  kazaRaporSilBekleyen=null;
+  const bg=document.getElementById('kaza-report-delete-bg');
+  if(bg){bg.classList.remove('on');bg.setAttribute('aria-hidden','true')}
+}
+
+async function kazaRaporSilDevam(){
+  const req=kazaRaporSilBekleyen;
+  if(!req)return;
+  const btn=document.getElementById('kaza-report-delete-confirm');
+  try{
+    if(btn){btn.disabled=true;btn.textContent='Siliniyor…'}
+    if(req.cloud){
+      if(typeof window._fbDeleteKazaRapor!=='function')throw new Error('Firebase rapor silme servisi hazır değil.');
+      await window._fbDeleteKazaRapor(req.incidentId,req.key);
+      kazaLocalDraftSil(req.incidentId,req.key);
+    }else{
+      kazaLocalDraftSil(req.incidentId,req.key);
+    }
+
+    if(String(kazaActiveDraft?.reportDraftId||'')===String(req.key)){
+      const cloudLeft=kazaBulutRaporlar(req.incidentId).filter(x=>x&&x.draft);
+      const localLeft=kazaDraftStore.list(req.incidentId);
+      const nextCloud=cloudLeft.length?cloudLeft[cloudLeft.length-1]:null;
+      const nextLocal=localLeft.length?localLeft[localLeft.length-1]:null;
+      if(nextCloud?.draft){
+        kazaActiveDraft=JSON.parse(JSON.stringify(nextCloud.draft));
+        kazaPrimaryImageData=nextCloud.primaryImageData||kazaPrimaryImageData;
+        if(nextCloud.incidentSnapshot){
+          kazaReportIncidentOverride={...nextCloud.incidentSnapshot,incidentId:String(req.incidentId),images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]};
+        }
+        kazaRaporRender(kazaActiveDraft,kazaFormIncident());
+      }else if(nextLocal){
+        kazaActiveDraft=JSON.parse(JSON.stringify(nextLocal));
+        kazaRaporRender(kazaActiveDraft,kazaFormIncident());
+      }else{
+        kazaActiveDraft=null;
+        const preview=document.getElementById('kaza-report-preview');
+        const analysis=document.getElementById('kaza-report-analysis');
+        if(preview)preview.innerHTML='<div class="kaza-empty-report"><b>Rapor kaydı kaldırıldı</b><span>Yeni bir rapor oluşturabilirsiniz.</span></div>';
+        if(analysis)analysis.innerHTML='';
+        ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=true});
+      }
+    }
+
+    kazaRaporVersions(req.incidentId);
+    if(typeof kazaRender==='function')kazaRender();
+    const status=document.getElementById('kaza-report-status');
+    if(status)status.textContent=req.cloud?'Bulut raporu kaldırıldı.':'Yerel rapor taslağı kaldırıldı.';
+    kazaRaporSilIptal();
+  }catch(e){
+    console.error('Rapor silme hatası:',e);
+    alert('Rapor silinemedi: '+e.message);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Devam Et'}
+  }
+}
+
 function kazaRaporVersions(id){
   const local=kazaDraftStore.list(id).map(d=>({draft:d,cloud:false,savedAt:d.generatedAt||'',key:d.reportDraftId}));
   const cloud=kazaBulutRaporlar(id).filter(x=>x&&x.draft).map(x=>({draft:x.draft,cloud:true,savedAt:x.savedAt||x.updatedAt||x.generatedAt||'',key:x.reportId||x.reportDraftId}));
-
-  // Aynı draft hem yerelde hem bulutta varsa bulut kaydı tek kez gösterilir.
   const map=new Map();
   local.forEach(x=>map.set(String(x.draft.reportDraftId||x.key),x));
   cloud.forEach(x=>map.set(String(x.draft.reportDraftId||x.key),x));
@@ -18859,10 +19014,19 @@ function kazaRaporVersions(id){
   const el=document.getElementById('kaza-report-versions');
   if(!el)return;
   el.innerHTML=items.length
-    ? items.slice().reverse().map((x,i)=>`<button type="button" data-version-key="${kazaEsc(String(x.draft.reportDraftId||x.key))}"><b>Sürüm ${kazaEsc(x.draft.version||1)} ${x.cloud?'☁':''}</b><span>${new Date(x.savedAt||Date.now()).toLocaleString('tr-TR')} · ${x.cloud?'Bulut':'Yerel'} · ${x.draft.reviewApplied?'Denetimli':'Hızlı'}</span></button>`).join('')
+    ? items.slice().reverse().map(x=>{
+        const key=String(x.draft.reportDraftId||x.key);
+        return `<div class="kaza-report-version-row">
+          <button type="button" class="kaza-report-version-open" data-version-key="${kazaEsc(key)}">
+            <b>Sürüm ${kazaEsc(x.draft.version||1)} ${x.cloud?'☁':''}</b>
+            <span>${new Date(x.savedAt||Date.now()).toLocaleString('tr-TR')} · ${x.cloud?'Bulut':'Yerel'} · ${x.draft.reviewApplied?'Denetimli':'Hızlı'}</span>
+          </button>
+          <button type="button" class="kaza-report-version-delete" data-delete-key="${kazaEsc(key)}" data-delete-cloud="${x.cloud?'1':'0'}" title="Raporu sil" aria-label="Raporu sil">🗑</button>
+        </div>`;
+      }).join('')
     : '<span>Henüz rapor oluşturulmadı.</span>';
 
-  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  el.querySelectorAll('.kaza-report-version-open').forEach(b=>b.onclick=()=>{
     const key=b.dataset.versionKey;
     const hit=items.find(x=>String(x.draft.reportDraftId||x.key)===String(key));
     if(!hit)return;
@@ -18878,6 +19042,11 @@ function kazaRaporVersions(id){
       }
     }
     kazaRaporRender(kazaActiveDraft,kazaFormIncident());
+  });
+
+  el.querySelectorAll('.kaza-report-version-delete').forEach(b=>b.onclick=(ev)=>{
+    ev.preventDefault();ev.stopPropagation();
+    kazaRaporSilIste(id,b.dataset.deleteKey,b.dataset.deleteCloud==='1');
   });
 }
 
