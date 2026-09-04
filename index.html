@@ -17910,6 +17910,27 @@ window.addEventListener('resize', calMobInit);
 }
 </style>
 
+
+<style id="kaza-fishbone-icon-quality-v2">
+.kaza-fishbone-diagram .fb-pro-icon svg,
+.kaza-fishbone-diagram .fb-pro-result-icon svg{
+  display:block;
+  width:24px;
+  height:24px;
+  color:#fff;
+}
+.kaza-fishbone-diagram .fb-pro-result-icon{
+  width:38px!important;
+  height:34px!important;
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.10)!important;
+}
+.kaza-fishbone-diagram .fb-pro-result-icon svg{
+  width:30px;
+  height:30px;
+}
+</style>
+
 <style id="kaza-fishbone-approved-template">
 .kaza-fishbone-intro{margin:0 0 3mm!important;font-size:8.8pt!important;line-height:1.4!important;color:rgb(82,101,117)!important}
 .kaza-fishbone-diagram.fb-pro{
@@ -18330,7 +18351,7 @@ window.addEventListener('resize', calMobInit);
  "mainRootCause":{"text":"string","category":"string","evidenceStatus":"string","confidence":"low|medium|high"},
  "whyAnalysisBranches":[{"question":"string","items":[{"order":1,"why":"string","recommendation":"string","category":"string","evidenceStatus":"string"}],"systemResult":"string","priorityRecommendation":"string"}],
  "controlHierarchy":{"elimination":[],"substitution":[],"engineering":[],"administrative":[],"ppe":[]},
- "fishbone":{"applicable":true,"reason":"string","problemStatement":"Kazayı/olayı 4-10 kelimede somut tanımlayan sonuç ifadesi; OLAY/KAZA gibi genel ifade kullanma","categories":[{"name":"string","prefix":"string","causes":[{"code":"string","text":"string","evidenceStatus":"string"}]}],"conclusion":"string"},
+ "fishbone":{"applicable":true,"reason":"string","problemStatement":"Kazayı/olayı 4-10 kelimede somut tanımlayan sonuç ifadesi; OLAY/KAZA gibi genel ifade kullanma","visualCue":{"type":"forklift_pedestrian|hand_crush|cut_laceration|electric_shock|fire_burn|slip_fall|head_impact|eye_foreign_body|chemical_exposure|hot_liquid_steam|vehicle_collision|generic_warning","label":"olayı kısa tanımlayan görsel etiketi","confidence":"high|medium|low","rationale":"görsel tipinin olayla bağını açıklayan kısa gerekçe"},"categories":[{"name":"string","prefix":"string","causes":[{"code":"string","text":"string","evidenceStatus":"string"}]}],"conclusion":"string"},
  "correctiveActions":[{"action":"string","targetsCause":"string","hierarchyLevel":"elimination|substitution|engineering|administrative|ppe","priority":"immediate|high|medium|low","effectivenessMeasure":"string"}],
  "reportWarnings":[],
  "analysisStatus":"draft_requires_user_validation"
@@ -18367,6 +18388,8 @@ ZORUNLU ANALİZ KURALLARI:
 7D. ÇEVRE kategorisinde görüş, kör nokta, trafik ayrımı, zemin, aydınlatma, gürültü ve çalışma alanı yerleşimini değerlendir.
 7E. YÖNETİM kategorisinde yalnız 'eğitim eksikliği' yazma; trafik planı, saha standardı, denetim, gözetim, prosedür, bakım sistemi ve değişiklik yönetimini değerlendir.
 7F. Her dolu kategoride en fazla 4 kısa, özgün ve olayla doğrudan ilişkili neden yaz. Aynı nedeni birden fazla kategoriye kopyalama. conclusion alanı tek davranışa indirgemeyen, ana sistem etkileşimini açıklayan 1-2 teknik cümle olsun.
+7G. Kırmızı sonuç kartındaki görsel için fishbone.visualCue alanını doldur. type yalnız izin verilen listeden seçilsin ve olayın GERÇEK mekanizmasını temsil etsin; örn. forklift-yaya olayında forklift_pedestrian, el sıkışmasında hand_crush, kesilmede cut_laceration, elektrik olayında electric_shock. Olayla ilgisiz genel ikon seçme.
+7H. visualCue.label en fazla 6-10 kelime olsun ve problemStatement ile aynı olay mekanizmasını anlatsın. confidence düşükse bunu açıkça low yaz.
 8. Kök neden ana kategorisi yalnız standart listeden seçilsin: ${CAUSE_CATEGORIES.join(', ')}.
 9. Rapor nihai karar değildir; analysisStatus her zaman draft_requires_user_validation olmalıdır.
 10. Uzun iç muhakeme veya düşünce zinciri yazma; yalnız yapılandırılmış bulguları ve kısa teknik gerekçeleri ver.
@@ -18402,6 +18425,8 @@ DENETİM LİSTESİ:
 - Balık kılçığı kararı en az üç anlamlı kategoriyle destekleniyor mu? problemStatement olayın somut adını/sonucunu söylüyor mu; genel 'OLAY / KAZA' ifadesi kullanılmışsa düzelt.
 - İnsan, Makine, Metot, Malzeme, Çevre ve Yönetim altı kategorisini tek tek yeniden denetle. Özellikle Malzeme, Çevre ve Yönetim için olay görseli, olay zinciri, bariyer analizi ve ikincil yaralanma mekanizmasından türetilebilecek fakat analistin atladığı makul katkıları ara.
 - Bir kategori 'neden yok' bırakılmışsa gerçekten bağ kurulamadığını doğrula; makul ama kesin olmayan katkıyı hypothesis/to_verify statüsüyle ekle.
+- fishbone.visualCue.type olay mekanizmasıyla doğrudan uyumlu mu kontrol et. Forklift-yaya olayı elektrik/yangın/kesilme görseline, elektrik olayı forklift görseline vb. düşüyorsa mutlaka düzelt.
+- visualCue.label ile problemStatement birbiriyle çelişmemeli; görsel tipi yalnız dekoratif değil olayın mekanizmasını temsil etmelidir.
 - Kategorilerde tekrar, uzun paragraf veya ilgisiz neden varsa sadeleştir.
 - Tekrarlı, genel veya uygulanamaz ifadeler var mı?
 - Kanıt durumu doğru mu? Açıkça bildirilen/gözlenen gerçekler hypothesis olarak etiketlenmişse düzelt; yalnız analitik çıkarımlar hypothesis olsun.
@@ -18471,6 +18496,13 @@ ${jsonContractText()}`;
     if (out.fishbone.categories.length < 3) { out.fishbone.applicable = false; out.fishbone.categories = []; }
     out.fishbone.reason = str(out.fishbone.reason);
     out.fishbone.problemStatement = str(out.fishbone.problemStatement);
+    const vc = out.fishbone.visualCue || {};
+    out.fishbone.visualCue = {
+      type: str(vc.type),
+      label: str(vc.label),
+      confidence: ['high','medium','low'].includes(str(vc.confidence)) ? str(vc.confidence) : 'low',
+      rationale: str(vc.rationale)
+    };
     out.fishbone.conclusion = str(out.fishbone.conclusion);
     out.correctiveActions = arr(out.correctiveActions).map(v => ({ action: str(v.action), targetsCause: str(v.targetsCause), hierarchyLevel: ['elimination','substitution','engineering','administrative','ppe'].includes(v.hierarchyLevel) ? v.hierarchyLevel : 'administrative', priority: ['immediate','high','medium','low'].includes(v.priority) ? v.priority : 'medium', effectivenessMeasure: str(v.effectivenessMeasure) })).filter(v => v.action);
     out.reportWarnings = uniq(out.reportWarnings);
@@ -18502,6 +18534,88 @@ ${jsonContractText()}`;
     throw new Error('Yapay zeka sağlayıcısı bağlı değil. aiCall fonksiyonu verin veya geminiUret bağlantısını yükleyin.');
   }
 
+
+  const VISUAL_TYPES = [
+    'forklift_pedestrian','hand_crush','cut_laceration','electric_shock',
+    'fire_burn','slip_fall','head_impact','eye_foreign_body',
+    'chemical_exposure','hot_liquid_steam','vehicle_collision','generic_warning'
+  ];
+
+  function visualTypeFromIncident(incident) {
+    const t = [
+      incident && incident.incidentType,
+      incident && incident.narrative,
+      incident && incident.whatHappened,
+      ...(Array.isArray(incident && incident.injuries)
+        ? incident.injuries.map(x => `${x.bodyRegion||''} ${x.damageType||''} ${x.detail||''}`) : [])
+    ].join(' ').toLocaleLowerCase('tr-TR');
+
+    if (/(forklift|transpalet).*(yaya|personel)|(yaya|personel).*(forklift|transpalet)/.test(t)) return 'forklift_pedestrian';
+    if (/(sıkış|ezil|pres|iki parça arasında|el sıkış)/.test(t)) return 'hand_crush';
+    if (/(kesik|kesil|bıçak|sac kenarı|levha kenarı|laserasyon)/.test(t)) return 'cut_laceration';
+    if (/(elektrik|elektrik çarp|ark flaşı|ark parlaması)/.test(t)) return 'electric_shock';
+    if (/(yangın|alev|tutuş|yanma|termal yanık)/.test(t)) return 'fire_burn';
+    if (/(kayma|takıl|yüksekten düş|düştü|düşme|denge kayb)/.test(t)) return 'slip_fall';
+    if (/(kafa darbe|baş bölgesi|başını çarp|kafa travma)/.test(t)) return 'head_impact';
+    if (/(göze|göz yaralan|çapak|yabancı cisim)/.test(t)) return 'eye_foreign_body';
+    if (/(kimyasal|asit|alkali|solvent|tiner|sıçra|maruziyet)/.test(t)) return 'chemical_exposure';
+    if (/(buhar|sıcak su|kaynar|sıcak sıvı)/.test(t)) return 'hot_liquid_steam';
+    if (/(araç çarp|çarpış|kamyon|otomobil|yükleyici)/.test(t)) return 'vehicle_collision';
+    return 'generic_warning';
+  }
+
+  function validateVisualCue(incident, analysis) {
+    const expected = visualTypeFromIncident(incident);
+    const cue = analysis && analysis.fishbone && analysis.fishbone.visualCue || {};
+    const got = str(cue.type);
+    const allowed = VISUAL_TYPES.includes(got);
+    const compatible = allowed && (expected === 'generic_warning' || got === expected);
+    return {
+      ok: compatible,
+      expected,
+      got: allowed ? got : '',
+      reason: !allowed ? 'visualCue.type eksik veya geçersiz'
+        : compatible ? 'uyumlu'
+        : `olay mekanizması ${expected}, seçilen görsel ${got}`
+    };
+  }
+
+  function buildVisualRetryPrompt(incident, analysis, qa) {
+    return `ROL: İSG raporu görsel kalite denetleyicisisin.
+GÖREV: Sadece balık kılçığı kırmızı sonuç kartında kullanılacak olay görsel tipini yeniden seç.
+
+İZİN VERİLEN visualCue.type DEĞERLERİ:
+${VISUAL_TYPES.join(', ')}
+
+KALİTE KURALLARI:
+- Görsel tipi olayın gerçek mekanizmasını temsil etmeli; dekoratif/genel seçim yapma.
+- Forklift-yaya = forklift_pedestrian
+- El/uzuv sıkışması = hand_crush
+- Kesilme = cut_laceration
+- Elektrik çarpması/ark = electric_shock
+- Yangın/alev/yanık = fire_burn
+- Kayma/takılma/düşme = slip_fall
+- Kafa darbesi = head_impact
+- Göze çapak/yabancı cisim = eye_foreign_body
+- Kimyasal temas/maruziyet = chemical_exposure
+- Sıcak sıvı/buhar = hot_liquid_steam
+- Araç çarpışması = vehicle_collision
+- Hiçbiri net değilse generic_warning.
+- Olay metninde geçmeyen bir mekanizmayı seçme.
+
+İLK KALİTE KONTROLÜ:
+${JSON.stringify(qa)}
+
+OLAY:
+${JSON.stringify(incident, null, 2)}
+
+MEVCUT BALIK KILÇIĞI:
+${JSON.stringify(analysis && analysis.fishbone || {}, null, 2)}
+
+SADECE ŞU JSON'U DÖNDÜR:
+{"visualCue":{"type":"allowed_type","label":"6-10 kelimelik olay etiketi","confidence":"high|medium|low","rationale":"tek kısa gerekçe"}}`;
+  }
+
   async function generateDraft(params) {
     const p = params || {};
     const incident = normalizeIncident(p.incident);
@@ -18519,6 +18633,31 @@ ${jsonContractText()}`;
       finalAnalysis = normalizeAnalysis(reviewerRaw);
       reviewApplied = true;
     }
+
+    // Görsel kalite kapısı: olay bağlamından uzak bir sonuç ikonu seçilmişse
+    // AI'ya yalnız görsel kararı için bir kez daha denetim yaptır.
+    let visualQA = validateVisualCue(incident, finalAnalysis);
+    if (!visualQA.ok) {
+      try {
+        const retryRaw = extractJson(await aiCall(buildVisualRetryPrompt(incident, finalAnalysis, visualQA), 1200));
+        const retryCue = retryRaw && retryRaw.visualCue;
+        if (retryCue && VISUAL_TYPES.includes(str(retryCue.type))) {
+          finalAnalysis.fishbone = finalAnalysis.fishbone || {};
+          finalAnalysis.fishbone.visualCue = {
+            type: str(retryCue.type),
+            label: str(retryCue.label),
+            confidence: ['high','medium','low'].includes(str(retryCue.confidence)) ? str(retryCue.confidence) : 'low',
+            rationale: str(retryCue.rationale)
+          };
+        }
+        visualQA = validateVisualCue(incident, finalAnalysis);
+      } catch (visualErr) {
+        // API tekrar denemesi başarısız olursa rapor üretimi durmaz;
+        // renderer olay metninden deterministik güvenli görsele döner.
+        visualQA = {...visualQA, retryError:str(visualErr && visualErr.message)};
+      }
+    }
+
     const checked = validateAnalysis(finalAnalysis);
     const previousVersion = Number(p.previousDraft && p.previousDraft.version || 0);
     return {
@@ -18533,6 +18672,7 @@ ${jsonContractText()}`;
       userDirective: str(p.userDirective),
       previousDraftId: str(p.previousDraft && p.previousDraft.reportDraftId),
       reviewApplied,
+      visualQA,
       status: 'draft',
       validation: { valid: checked.valid, errors: checked.errors, warnings: checked.warnings },
       analysis: checked.analysis
@@ -19036,44 +19176,96 @@ function kazaRaporPdf(){
 }
 
 function kazaFishboneSvgIcon(kind){
-  const common='viewBox="0 0 48 48" width="24" height="24" aria-hidden="true" focusable="false"';
-  const stroke='stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"';
-  const icons={
-    human:`<svg ${common}><circle cx="18" cy="16" r="5" ${stroke}/><circle cx="31" cy="17" r="4" ${stroke}/><path d="M8 36c1-8 6-12 10-12s9 4 10 12M27 27c5 0 9 3 11 9" ${stroke}/></svg>`,
-    machine:`<svg ${common}><circle cx="24" cy="24" r="8" ${stroke}/><path d="M24 5v6M24 37v6M5 24h6M37 24h6M11 11l5 5M32 32l5 5M37 11l-5 5M16 32l-5 5" ${stroke}/></svg>`,
-    method:`<svg ${common}><path d="M14 7h20v34H14z" ${stroke}/><path d="M19 15h10M19 22h10M19 29h10" ${stroke}/></svg>`,
-    material:`<svg ${common}><path d="M12 18l12-7 12 7-12 7zM12 18v13l12 7 12-7V18M24 25v13" ${stroke}/></svg>`,
-    environment:`<svg ${common}><path d="M37 10C22 12 11 21 11 32c7 1 16-2 21-9 3-4 4-8 5-13z" ${stroke}/><path d="M13 34c6-8 12-13 20-18" ${stroke}/></svg>`,
-    management:`<svg ${common}><circle cx="24" cy="13" r="5" ${stroke}/><circle cx="12" cy="19" r="4" ${stroke}/><circle cx="36" cy="19" r="4" ${stroke}/><path d="M15 39c1-8 5-12 9-12s8 4 9 12M4 39c1-7 4-11 8-11M44 39c-1-7-4-11-8-11" ${stroke}/></svg>`,
-    forklift:`<svg ${common}><path d="M7 31h25M10 31V17h13l5 8h7M35 14v17M39 14v17M6 35h34" ${stroke}/><circle cx="14" cy="35" r="4" ${stroke}/><circle cx="29" cy="35" r="4" ${stroke}/><circle cx="42" cy="16" r="3" ${stroke}/><path d="M42 19v9M38 24h8M42 28l-4 7M42 28l4 7" ${stroke}/></svg>`,
-    electric:`<svg ${common}><path d="M28 5L13 27h10l-3 16 15-23H25z" fill="currentColor"/></svg>`,
-    fire:`<svg ${common}><path d="M27 5c2 8-5 10-1 17 2-4 6-5 7-10 6 7 8 13 5 20-3 7-10 11-17 9-8-2-13-9-11-17 2-8 9-11 17-19z" ${stroke}/></svg>`,
-    cut:`<svg ${common}><circle cx="14" cy="34" r="6" ${stroke}/><circle cx="34" cy="34" r="6" ${stroke}/><path d="M18 30L36 10M30 30L12 10" ${stroke}/></svg>`,
-    crush:`<svg ${common}><path d="M8 15h32M8 33h32M18 12v24M30 12v24" ${stroke}/><path d="M21 22h6v7h-6z" ${stroke}/></svg>`,
-    eye:`<svg ${common}><path d="M5 24s7-11 19-11 19 11 19 11-7 11-19 11S5 24 5 24z" ${stroke}/><circle cx="24" cy="24" r="5" ${stroke}/></svg>`,
-    fall:`<svg ${common}><circle cx="18" cy="10" r="4" ${stroke}/><path d="M18 14l4 10 9 4M22 24l-8 8M22 24l4 12M31 28l8-2" ${stroke}/></svg>`,
-    head:`<svg ${common}><path d="M16 39c-4-5-6-10-6-16 0-9 6-15 14-15 9 0 15 7 15 16 0 5-2 9-5 12l-5 5H16z" ${stroke}/><path d="M29 15l-5 8h6l-5 9" ${stroke}/></svg>`,
-    chemical:`<svg ${common}><path d="M18 6h12M21 6v10L11 35c-2 4 1 7 5 7h16c4 0 7-3 5-7L27 16V6" ${stroke}/><path d="M16 31h16" ${stroke}/></svg>`,
-    hot:`<svg ${common}><path d="M13 8c-5 6 5 8 0 14s5 8 0 14M24 8c-5 6 5 8 0 14s5 8 0 14M35 8c-5 6 5 8 0 14s5 8 0 14" ${stroke}/></svg>`,
-    generic:`<svg ${common}><path d="M24 5l19 35H5z" ${stroke}/><path d="M24 17v11M24 34h.01" ${stroke}/></svg>`
-  };
-  return icons[kind]||icons.generic;
-}
+  const common='viewBox="0 0 48 48" width="25" height="25" aria-hidden="true" focusable="false"';
+  const st='stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
 
-function kazaFishboneEventIcon(inc,a){
+  // Kategori ikonları raporda farklı tarayıcı/PDF motorlarında aynı görünmesi için
+  // emoji/font yerine tamamen inline SVG ile çizilir.
+  const icons={
+    human:`<svg ${common}><circle cx="17" cy="15" r="5" ${st}/><circle cx="31" cy="16" r="4.5" ${st}/><path d="M7 37c1-8 6-12 10-12s9 4 10 12M27 27c5 0 10 3 12 10" ${st}/></svg>`,
+
+    // Gerçek dişli silueti: radyal çizgi/güneş görünümü yok.
+    machine:`<svg ${common}>
+      <path d="M20 5h8l1.4 5.1 4.1 1.7 4.6-2.6 5.7 5.7-2.6 4.6 1.7 4.1L48 24l-5.1 1.4-1.7 4.1 2.6 4.6-5.7 5.7-4.6-2.6-4.1 1.7L28 44h-8l-1.4-5.1-4.1-1.7-4.6 2.6-5.7-5.7 2.6-4.6-1.7-4.1L0 24l5.1-1.4 1.7-4.1-2.6-4.6 5.7-5.7 4.6 2.6 4.1-1.7z" fill="currentColor" transform="scale(.78) translate(6.8 6.8)"/>
+      <circle cx="24" cy="24" r="7.2" fill="rgb(10,100,136)"/>
+      <circle cx="24" cy="24" r="4.6" fill="white"/>
+    </svg>`,
+
+    method:`<svg ${common}><rect x="13" y="6" width="22" height="36" rx="2" ${st}/><path d="M18 15h12M18 22h12M18 29h12M18 36h8" ${st}/></svg>`,
+
+    // Üç istif kutusu; malzeme/istif anlamı net.
+    material:`<svg ${common}>
+      <path d="M8 27l10-6 10 6-10 6zM8 27v10l10 6 10-6V27M18 33v10" ${st}/>
+      <path d="M22 15l9-5 9 5-9 5zM22 15v9l9 5 9-5v-9M31 20v9" ${st}/>
+      <path d="M3 14l7-4 7 4-7 4zM3 14v8l7 4 7-4v-8M10 18v8" ${st}/>
+    </svg>`,
+
+    // Çevre = saha/rota + yaprak; tek başına soyut yaprak değil.
+    environment:`<svg ${common}>
+      <path d="M8 38c5-10 10-17 18-25" ${st}/>
+      <path d="M35 7C23 8 15 14 14 23c6 1 13-1 17-6 3-3 4-6 4-10z" ${st}/>
+      <path d="M7 39h9M21 39h8M34 39h7" ${st}/>
+    </svg>`,
+
+    management:`<svg ${common}><circle cx="24" cy="12" r="4.5" ${st}/><circle cx="11" cy="20" r="4" ${st}/><circle cx="37" cy="20" r="4" ${st}/><path d="M16 40c1-8 4-12 8-12s7 4 8 12M3 40c1-7 4-11 8-11M45 40c-1-7-4-11-8-11" ${st}/><path d="M24 20v6M15 24l6 4M33 24l-6 4" ${st}/></svg>`,
+
+    // Sonuç kartı görselleri: sade, kurumsal, yüz detaysız piktogram.
+    forklift_pedestrian:`<svg ${common}>
+      <path d="M5 31h25V17H13v14M13 17h10l6 8h6M35 11v20M39 11v20M35 18h4" ${st}/>
+      <circle cx="13" cy="35" r="4" ${st}/><circle cx="28" cy="35" r="4" ${st}/>
+      <circle cx="42" cy="15" r="2.8" fill="currentColor"/><path d="M42 18v9M38 22h8M42 27l-4 8M42 27l4 8" ${st}/>
+    </svg>`,
+    hand_crush:`<svg ${common}><path d="M7 12h34v8H7zM7 30h34v8H7z" ${st}/><path d="M18 27v-9M22 27V15M26 27V16M30 27v-7M18 27c0 8 5 12 10 12" ${st}/></svg>`,
+    cut_laceration:`<svg ${common}><path d="M9 34l30-20M12 12l24 24" ${st}/><circle cx="12" cy="36" r="5" ${st}/><circle cx="36" cy="36" r="5" ${st}/></svg>`,
+    electric_shock:`<svg ${common}><path d="M28 4L12 27h11l-3 17 16-25H25z" fill="currentColor"/></svg>`,
+    fire_burn:`<svg ${common}><path d="M27 5c2 8-5 10-1 17 2-4 6-5 7-10 6 7 8 13 5 20-3 7-10 11-17 9-8-2-13-9-11-17 2-8 9-11 17-19z" ${st}/></svg>`,
+    slip_fall:`<svg ${common}><circle cx="16" cy="10" r="3.5" fill="currentColor"/><path d="M17 15l6 9 9 3M23 24l-10 8M23 24l5 12M31 27l10-2" ${st}/></svg>`,
+    head_impact:`<svg ${common}><path d="M15 40c-4-5-6-10-6-16 0-10 7-17 16-17 9 0 15 7 15 16 0 6-2 10-6 13l-4 4z" ${st}/><path d="M32 12l-6 9h7l-6 10" ${st}/></svg>`,
+    eye_foreign_body:`<svg ${common}><path d="M5 24s7-11 19-11 19 11 19 11-7 11-19 11S5 24 5 24z" ${st}/><circle cx="24" cy="24" r="5" ${st}/><path d="M39 10l-5 6M43 17l-7 2" ${st}/></svg>`,
+    chemical_exposure:`<svg ${common}><path d="M18 6h12M21 6v10L11 35c-2 4 1 7 5 7h16c4 0 7-3 5-7L27 16V6" ${st}/><path d="M16 31h16" ${st}/></svg>`,
+    hot_liquid_steam:`<svg ${common}><path d="M13 7c-5 6 5 8 0 14s5 8 0 14M24 7c-5 6 5 8 0 14s5 8 0 14M35 7c-5 6 5 8 0 14s5 8 0 14" ${st}/></svg>`,
+    vehicle_collision:`<svg ${common}><path d="M5 29h16l4-8H12zM43 29H27l-4-8h13z" ${st}/><circle cx="11" cy="33" r="3.5" ${st}/><circle cx="37" cy="33" r="3.5" ${st}/><path d="M22 16l2 5 2-5M21 25h6" ${st}/></svg>`,
+    generic_warning:`<svg ${common}><path d="M24 5l19 35H5z" ${st}/><path d="M24 17v11M24 34h.01" ${st}/></svg>`
+  };
+  return icons[kind]||icons.generic_warning;
+}
+function kazaFishboneContextVisualType(inc,a){
   const text=[inc?.incidentType,inc?.narrative,a?.directCause,a?.eventSummary,
     ...(Array.isArray(inc?.injuries)?inc.injuries.map(x=>`${x.bodyRegion||''} ${x.damageType||''} ${x.detail||''}`):[])
   ].join(' ').toLocaleLowerCase('tr-TR');
   const rules=[
-    [/(forklift|transpalet|araç).*(yaya|personel)|(yaya|personel).*(forklift|transpalet|araç)/,'forklift'],
-    [/(elektrik|ark flaşı|elektrik çarp)/,'electric'],[/(yangın|alev|tutuş|yanma)/,'fire'],
-    [/(kesik|kesil|bıçak|sac kenarı|levha kenarı)/,'cut'],[/(sıkış|ezil|pres|iki parça arasında)/,'crush'],
-    [/(göze|göz yaralan|çapak|yabancı cisim)/,'eye'],[/(kayma|takıl|düşme|düştü|denge kayb)/,'fall'],
-    [/(baş bölgesi|kafa darbe|başını çarp)/,'head'],[/(kimyasal|asit|alkali|solvent|tiner|sıçra)/,'chemical'],
-    [/(buhar|sıcak su|kaynar|sıcak sıvı)/,'hot']
+    [/(forklift|transpalet).*(yaya|personel)|(yaya|personel).*(forklift|transpalet)/,'forklift_pedestrian'],
+    [/(sıkış|ezil|pres|iki parça arasında|el sıkış)/,'hand_crush'],
+    [/(kesik|kesil|bıçak|sac kenarı|levha kenarı|laserasyon)/,'cut_laceration'],
+    [/(elektrik|elektrik çarp|ark flaşı|ark parlaması)/,'electric_shock'],
+    [/(yangın|alev|tutuş|yanma|termal yanık)/,'fire_burn'],
+    [/(kayma|takıl|yüksekten düş|düştü|düşme|denge kayb)/,'slip_fall'],
+    [/(kafa darbe|baş bölgesi|başını çarp|kafa travma)/,'head_impact'],
+    [/(göze|göz yaralan|çapak|yabancı cisim)/,'eye_foreign_body'],
+    [/(kimyasal|asit|alkali|solvent|tiner|sıçra|maruziyet)/,'chemical_exposure'],
+    [/(buhar|sıcak su|kaynar|sıcak sıvı)/,'hot_liquid_steam'],
+    [/(araç çarp|çarpış|kamyon|otomobil|yükleyici)/,'vehicle_collision']
   ];
   const hit=rules.find(r=>r[0].test(text));
-  return kazaFishboneSvgIcon(hit?hit[1]:'generic');
+  return hit?hit[1]:'generic_warning';
+}
+
+function kazaFishboneEventIcon(inc,a,fish){
+  const allowed=[
+    'forklift_pedestrian','hand_crush','cut_laceration','electric_shock','fire_burn',
+    'slip_fall','head_impact','eye_foreign_body','chemical_exposure',
+    'hot_liquid_steam','vehicle_collision','generic_warning'
+  ];
+  const contextType=kazaFishboneContextVisualType(inc,a);
+  const aiType=String(fish?.visualCue?.type||'');
+  const aiAllowed=allowed.includes(aiType);
+
+  // Kalite kapısı: AI seçimi olay bağlamına ters düşerse rapora geçirilmez.
+  // Bağlam belirgin değilse geçerli AI seçimi kullanılabilir.
+  const useType=(aiAllowed && (contextType==='generic_warning'||aiType===contextType))
+    ? aiType : contextType;
+
+  return kazaFishboneSvgIcon(useType);
 }
 function kazaFishboneReportHTML(fish,inc,a){
   const cats=Array.isArray(fish&&fish.categories)?fish.categories:[];
