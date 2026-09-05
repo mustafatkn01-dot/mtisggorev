@@ -6008,6 +6008,13 @@ px}
       <button class="ikon-btn" onclick="openSettings()"     title="Ayarlar">⚙️</button>
     </div>
   </div>
+  <div id="board-focus-bar" class="board-focus-bar">
+    <div class="board-focus-copy">
+      <span>Odaklanan görev</span>
+      <b id="board-focus-text"></b>
+    </div>
+    <button type="button" onclick="boardShowAllFromFocus()">Tüm Liste</button>
+  </div>
   <div id="navbar"></div>
 
   <!-- Hidden print-only header, shown via CSS print rule -->
@@ -6686,7 +6693,7 @@ px}
           <div class="mfield"><label>Kazazede <span>(zorunlu değil)</span></label><input id="kaza-m-kisi" placeholder="Baş harf yeterli — örn: A.Y."/></div>
           <div class="mfield"><label>Çalışanın Görevi</label><input id="kaza-m-gorev" placeholder="örn: Forklift operatörü"/></div>
         </div>
-        <div class="mfield"><label>Olayın Anlatımı *</label><textarea id="kaza-m-aciklama" placeholder="Ne oldu, nasıl oldu? Görülen ve bildirilen gerçekleri yazın."></textarea></div>
+        <div class="mfield"><label>Olayın Anlatımı *</label><textarea id="kaza-m-aciklama" rows="5" placeholder="Ne oldu, nasıl oldu? Görülen ve bildirilen gerçekleri yazın."></textarea></div>
       </section>
 
       <section class="kaza-form-section">
@@ -8568,7 +8575,7 @@ function renderListView(tasksToShow) {
     const ti = terminInfo(t.termin);
     const terminCls = ti ? (ti.cls === 'overdue' ? 'overdue' : ti.cls === 'due-soon' ? 'due-soon' : '') : '';
     const rowCls = terminCls === 'overdue' ? 'lv-overdue' : terminCls === 'due-soon' ? 'lv-due-soon' : '';
-    return `<tr class="${rowCls}">
+    return `<tr class="${rowCls}" data-task-id="${esc(String(t.id))}">
       <td class="lv-sno">${i+1}</td>
       <td class="lv-text">${cellEditable('text', t.id, t.text, esc(t.text))}</td>
       <td class="lv-nowrap" style="position:relative">
@@ -8672,7 +8679,7 @@ function render() {
           const cardCls = ti ? (ti.cls==='overdue'?'overdue':ti.cls==='due-soon'?'due-soon':'') : '';
           const prio = t.prio || 'normal';
           const hasNote = !!(t.note && t.note.trim());
-          return `<div class="card ${prioClass[prio]||'prio-normal'} ${cardCls}">
+          return `<div class="card ${prioClass[prio]||'prio-normal'} ${cardCls}" data-task-id="${esc(String(t.id))}">
             ${hasNote ? `<div class="note-tooltip">${esc(t.note)}</div>` : ''}
             <div class="ctop">
               <span class="cdott" style="background:${col.color}"></span>
@@ -9318,6 +9325,8 @@ function switchTab(tab) {
   if (cw) cw.style.display = tab === 'cal' ? 'flex' : 'none';
   const pw = document.getElementById('per-wrap');
   if (pw) pw.style.display = tab === 'per' ? 'flex' : 'none';
+  const fbFocus = document.getElementById('board-focus-bar');
+  if (fbFocus && tab !== 'board') fbFocus.classList.remove('on');
   const nb = document.getElementById('navbar');
   if (nb) nb.style.display = tab === 'board' ? '' : 'none';
   const sb = document.getElementById('search-bar');
@@ -12939,7 +12948,7 @@ function dashTaskRow(t, today, accentColor) {
   const fabList = t.fabs && t.fabs.length ? t.fabs : (t.fab ? [t.fab] : []);
   const dateDisp = d.toLocaleDateString('tr-TR',{day:'numeric',month:'short'});
   const diffLbl  = diff < 0 ? `${Math.abs(diff)}g gecikti` : diff === 0 ? 'Bugün' : `${diff}g kaldı`;
-  return `<div class="dash-task-modern" onclick="dashGoToTask('${jsSafe(t.text)}')">
+  return `<div class="dash-task-modern" onclick="dashGoToTask('${jsSafe(String(t.id))}')">
     <div class="dash-task-copy">
       <b>${esc(t.text)}</b>
       <small>${fabList.slice(0,2).map(f=>esc(f)).join(', ')} · ${dateDisp}</small>
@@ -12948,15 +12957,76 @@ function dashTaskRow(t, today, accentColor) {
   </div>`;
 }
 
-// Özet kartındaki bir göreve tıklanınca Board'a geç ve SADECE o görevi göster
-// (arama kutusuna görev metnini yazıp filtreler — tüm görevler değil, tıklanan görev)
-function dashGoToTask(text) {
-  switchTab('board');
-  const inp    = document.getElementById('search-inp');
-  const mobInp = document.getElementById('mob-search-inp');
-  if (inp)    inp.value    = text;
-  if (mobInp) mobInp.value = text;
+// Özet/Takvim gibi dış ekranlardan Board görevine geçiş:
+// Arama kutusunu navigasyon için kullanmaz; taskId ile satırı/kartı bulur,
+// listeyi filtrelemeden yalnızca hedef görevi kısa süre vurgular.
+let boardDeepLinkTaskId = null;
+let boardDeepLinkTimer = null;
+
+function boardClearDeepLinkFocus(){
+  boardDeepLinkTaskId = null;
+  document.querySelectorAll('.task-deep-focus').forEach(el=>el.classList.remove('task-deep-focus'));
+  const bar=document.getElementById('board-focus-bar');
+  if(bar)bar.classList.remove('on');
+  if(boardDeepLinkTimer){clearTimeout(boardDeepLinkTimer);boardDeepLinkTimer=null}
+}
+
+function boardShowAllFromFocus(){
+  boardClearDeepLinkFocus();
+  const inp=document.getElementById('search-inp');
+  const mobInp=document.getElementById('mob-search-inp');
+  if(inp)inp.value='';
+  if(mobInp)mobInp.value='';
+  searchFilter='all';
+  listFilters={};
+  openFilterCol=null;
+  curView='all';
   render();
+}
+
+function boardFocusTask(taskId){
+  const id=String(taskId||'');
+  if(!id)return;
+  boardDeepLinkTaskId=id;
+
+  // Eski otomatik arama kalıntılarını temizle. Dış navigasyon filtre oluşturmaz.
+  const inp=document.getElementById('search-inp');
+  const mobInp=document.getElementById('mob-search-inp');
+  if(inp)inp.value='';
+  if(mobInp)mobInp.value='';
+  searchFilter='all';
+  listFilters={};
+  openFilterCol=null;
+  curView='all';
+
+  switchTab('board');
+  render();
+
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const selector=`[data-task-id="${CSS.escape(id)}"]`;
+      const target=document.querySelector(selector);
+      if(!target)return;
+      document.querySelectorAll('.task-deep-focus').forEach(el=>el.classList.remove('task-deep-focus'));
+      target.classList.add('task-deep-focus');
+      try{target.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'})}catch(e){target.scrollIntoView()}
+
+      const bar=document.getElementById('board-focus-bar');
+      const task=tasks.find(t=>String(t.id)===id);
+      const txt=document.getElementById('board-focus-text');
+      if(txt)txt.textContent=task?task.text:'Seçili görev';
+      if(bar)bar.classList.add('on');
+
+      if(boardDeepLinkTimer)clearTimeout(boardDeepLinkTimer);
+      boardDeepLinkTimer=setTimeout(()=>{
+        target.classList.remove('task-deep-focus');
+      },4500);
+    });
+  });
+}
+
+function dashGoToTask(taskId){
+  boardFocusTask(taskId);
 }
 
 // Özet ekranı akordeon kartları: bir karta dokununca aşağı açılır (+→−),
@@ -17911,6 +17981,68 @@ window.addEventListener('resize', calMobInit);
 </style>
 
 
+
+
+
+<style id="board-deeplink-focus-v853">
+.board-focus-bar{
+  display:none;
+  align-items:center;
+  gap:10px;
+  padding:7px 12px;
+  background:rgb(239,247,251);
+  border-bottom:1px solid rgb(199,219,228);
+}
+.board-focus-bar.on{display:flex}
+.board-focus-copy{min-width:0;display:flex;align-items:center;gap:7px;flex:1}
+.board-focus-copy span{
+  flex:none;font-size:10px;font-weight:800;color:rgb(24,54,77);
+}
+.board-focus-copy b{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:10.5px;color:rgb(55,75,91);
+}
+.board-focus-bar button{
+  flex:none;border:1px solid rgb(55,138,221);background:#fff;color:rgb(24,95,165);
+  border-radius:7px;padding:5px 9px;font-size:10px;font-weight:700;cursor:pointer;
+}
+.task-deep-focus{
+  position:relative;
+  outline:3px solid rgba(55,138,221,.50)!important;
+  outline-offset:2px;
+  box-shadow:0 0 0 6px rgba(55,138,221,.10),0 6px 18px rgba(24,54,77,.16)!important;
+  animation:taskDeepPulse .8s ease-in-out 2;
+}
+@keyframes taskDeepPulse{
+  0%,100%{filter:none}
+  50%{filter:brightness(1.06)}
+}
+#list-tbody tr.task-deep-focus td{background:rgb(242,248,253)!important}
+@media(max-width:620px){
+  .board-focus-bar{padding:7px 10px}
+  .board-focus-copy{display:block}
+  .board-focus-copy span{display:block;margin-bottom:1px}
+  .board-focus-copy b{display:block}
+  .board-focus-bar button{min-height:36px}
+}
+</style>
+
+<style id="kaza-narrative-textarea-v853">
+#kaza-m-aciklama{
+  min-height:116px!important;
+  height:116px;
+  max-height:230px;
+  line-height:1.42!important;
+  resize:vertical;
+  overflow-y:auto;
+}
+@media(max-width:620px){
+  #kaza-m-aciklama{
+    min-height:122px!important;
+    height:122px;
+  }
+}
+</style>
 
 <style id="kaza-action-textarea-v853">
 #kaza-m-onlem{
