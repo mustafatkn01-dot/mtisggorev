@@ -109,7 +109,7 @@
 </script>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Görev Takip</title>
+<title>İSG Yönetim & Performans</title>
 <script>
 // ── DOKUNMATİK DÜZEN SINIRI ─────────────────────────────────
 // Bu genişliğin altında telefon/tablet-dikey düzeni (tek sütun + alt sekmeler),
@@ -6883,7 +6883,7 @@ px}
 <div id="per-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;background:var(--bg);">
   <!-- Personel topbar -->
   <div id="per-topbar" style="flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 14px;">
-    <span style="font-size:13px;font-weight:700;color:var(--text);">👥 Personel Görev Takip</span>
+    <span style="font-size:13px;font-weight:700;color:var(--text);">👥 Personel Görev Yönetimi</span>
     <div style="flex:1"></div>
     <button onclick="perOpenAddTask()" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">+ Görev Ekle</button>
     <button onclick="perPrint()" style="padding:5px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;">🖨 Rapor</button>
@@ -11064,7 +11064,7 @@ function perPrint() {
   if (!el) { el = document.createElement('div'); el.id = 'modul-print'; document.body.appendChild(el); }
   const PRI = { high:'Acil', medium:'Normal', low:'Düşük' };
   el.innerHTML = `
-    <h1>Personel Görev Takip Raporu</h1>
+    <h1>Personel Görev Yönetimi Raporu</h1>
     <div class="mp-meta">${liste.length} görev · Rapor tarihi: ${perEsc(simdi)}</div>
     <table>
       <thead><tr><th style="width:24px">#</th><th>Görev</th><th style="width:52px">Öncelik</th>
@@ -19356,7 +19356,7 @@ function kazaRaporPdf(){
   window.addEventListener('afterprint',cleanup,{once:true});
 
   // Resim/data-URL ve layout hesaplarının baskı ağacına tamamen oturmasını bekle.
-  requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>printWithManagedTitle('Kaza Olay Araştırma Raporu','',()=>window.print())));
   setTimeout(cleanup,60000);
 }
 
@@ -19864,6 +19864,39 @@ window.addEventListener('DOMContentLoaded',()=>{
       },180);
     }
   });
+});
+</script>
+
+
+<script id="print-title-manager-v853">
+(function(){
+  const APP_TITLE='İSG Yönetim & Performans';
+  let restoreTimer=null;
+  window.setPrintDocumentTitle=function(reportName,context){
+    const clean=v=>String(v||'').replace(/[\\/:*?"<>|]+/g,' ').replace(/\s+/g,' ').trim();
+    const parts=[APP_TITLE,clean(reportName),clean(context)].filter(Boolean);
+    document.title=parts.join(' - ');
+    if(restoreTimer)clearTimeout(restoreTimer);
+  };
+  window.restoreAppDocumentTitle=function(){
+    if(restoreTimer)clearTimeout(restoreTimer);
+    document.title=APP_TITLE;
+  };
+  window.printWithManagedTitle=function(reportName,context,fn){
+    window.setPrintDocumentTitle(reportName,context);
+    try{(typeof fn==='function'?fn:()=>window.print())();}
+    finally{restoreTimer=setTimeout(()=>window.restoreAppDocumentTitle(),1200);}
+  };
+  window.addEventListener('afterprint',()=>window.restoreAppDocumentTitle());
+})();
+</script>
+
+
+<script id="print-title-fallback-v853">
+window.addEventListener('beforeprint',()=>{
+  if(!document.title || /^Görev Takip$/i.test(document.title.trim())){
+    document.title='İSG Yönetim & Performans';
+  }
 });
 </script>
 
