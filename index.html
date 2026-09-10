@@ -5916,32 +5916,93 @@ flex-direction:column;align-items:center;justify-content:center;color:#7c8790}.k
 .kaza-report-docfoot{margin-top:8mm;padding-top:3mm;border-top:1px solid #cbd0d4;font-size:7.8pt;line-height:1.45;color:#68747d}
 .kaza-report-versions button{display:block;width:100%;text-align:left;border:1px solid #d8dee3;background:#fff;border-radius:6px;padding:7px;margin-top:5px;cursor:pointer}
 @media(max-width:700px){.kaza-phase5-scroll{padding:14px 14px 96px}.kaza-phase5-head,.kaza-phase5-actions{padding-left:14px;padding-right:14px}.kaza-date-row{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,.9fr);gap:7px}.kaza-date-row input{min-width:0;padding-left:7px;padding-right:4px}.kaza-injury-row{grid-template-columns:1fr 1fr auto}.kaza-injury-row .injury-detail{grid-column:1/-1}.kaza-photo-grid{grid-template-columns:1fr}.kaza-photo-preview{height:180px}.kaza-phase5-actions .kaza-report-btn{padding:9px;font-size:11px}.kaza-report-workspace{display:block}.kaza-report-workspace>aside{max-height:46dvh;border-right:0;border-bottom:1px solid #ccd3d9}.kaza-report-preview{padding:12px;justify-content:start}.kaza-a4{width:210mm;transform-origin:top left;zoom:.43}.kaza-empty-report{width:100%;min-height:50dvh}.mrow2{grid-template-columns:1fr}}
-@media print{
-  @page{size:A4 portrait;margin:12mm 11mm 14mm 11mm}
-  body>*{display:none!important}
-  #kaza-report-bg,#kaza-report-bg *{display:revert!important}
-  .kaza-report-shell>header,.kaza-report-workspace>aside,.kaza-report-tabs,.kaza-report-bottom{display:none!important}
-  .kaza-report-workspace,.kaza-report-main{display:block!important;overflow:visible!important}
-  .kaza-report-preview{padding:0!important;display:block!important;overflow:visible!important}
-  .kaza-a4{
-    width:auto!important;min-height:0!important;padding:0!important;margin:0!important;
-    box-shadow:none!important;page-break-after:auto!important;
-    font-family:Arial,Helvetica,sans-serif!important;font-size:9.3pt!important;color:#26323b!important;
-  }
-  .kaza-a4 table{font-size:8.3pt!important}
-  .kaza-a4 h2{break-after:avoid-page;page-break-after:avoid;margin-top:5.5mm!important}
-  .kaza-a4 h3{break-after:avoid-page;page-break-after:avoid}
-  .kaza-a4 tr,.kaza-a4 .facts,.kaza-a4 .kaza-report-note,.kaza-a4 .kaza-fishbone-card{
-    break-inside:avoid;page-break-inside:avoid
-  }
-  .kaza-a4 thead{display:table-header-group}
-}
+/* Legacy global Kaza/Olay print block removed.
+   Kaza/Olay A4 PDF is now isolated exclusively by body.kaza-pdf-mode
+   in #kaza-pdf-print-isolation-final. */
 </style><style id="kaza-ai-report-mobile-css">
 .kaza-report-mobile-head{background:linear-gradient(135deg,#0d2b46,#163d5e)!important;color:#fff!important;height:76px!important;justify-content:flex-start!important;gap:12px}.kaza-report-mobile-head .kaza-report-back{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.12);font-size:28px}.kaza-report-mobile-head div{flex:1}.kaza-report-mobile-head b{font-size:18px}.kaza-report-mobile-head span{color:#fff!important;opacity:.78}.kaza-report-mobile-head em{font-style:normal;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:8px 12px;font-size:10px}.kaza-report-workspace>aside{background:#f6f8f9;gap:11px}.kaza-report-card{background:#fff;border:1px solid #d8e1e8;border-radius:14px;padding:14px}.kaza-report-card h4{font-size:12px;color:#0d2b46;margin:0 0 10px}.kaza-report-card h4 span{font-weight:500;color:#75838c}.kaza-report-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kaza-report-modes button{border:1px solid #b8c7d0;background:#fff;border-radius:10px;padding:11px 7px;font-size:11px;font-weight:800;color:#53626d;cursor:pointer}.kaza-report-modes button.active{background:#e8f3fb;border-color:#378add;color:#176aa8}.kaza-report-card textarea{width:100%;min-height:94px;border:1px solid #d8e1e8;border-radius:11px;padding:10px;resize:vertical}.kaza-report-chips{display:flex;gap:5px;overflow:auto;margin-top:8px}.kaza-report-chips button{flex:none;border:1px solid #cdd9df;background:#fff;border-radius:999px;padding:6px 9px;font-size:9px;color:#52636d}.kaza-report-generate{width:100%;border:0;border-radius:11px;background:#378add;color:#fff;padding:13px;font-size:12px;font-weight:850;cursor:pointer}.kaza-report-precheck{padding:0;background:none}.kaza-report-precheck .precheck-item{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #edf1f3}.kaza-report-precheck .precheck-item:last-child{border:0}.kaza-report-precheck i{width:24px;height:24px;flex:none;border-radius:50%;display:grid;place-items:cente
 r;background:#2f8f5b;color:#fff;font-style:normal;font-size:15px;font-weight:900;line-height:1;border:2px solid #247247;box-shadow:0 1px 2px rgba(0,0,0,.08)}.kaza-report-precheck i.warn{background:#f58220;border-color:#d96b12;color:#fff;font-size:16px}.kaza-report-precheck .precheck-item.ok span{color:#31424e}.kaza-report-precheck .precheck-item.warning span{color:#5e5147}.kaza-report-status{display:none}.kaza-report-main{min-width:0;min-height:0;display:flex;flex-direction:column}.kaza-report-tabs{flex:none;background:#fff;border-bottom:1px solid #d8e1e8;display:flex;overflow:auto;padding:0 14px}.kaza-report-tabs button{border:0;background:none;padding:14px 12px;font-weight:800;color:#71808a;border-bottom:3px solid transparent;white-space:nowrap}.kaza-report-tabs button.active{color:#0d2b46;border-color:#378add}.kaza-report-analysis,.kaza-report-json{flex:1;overflow:auto;padding:20px}.kaza-report-json{background:#101820;color:#d8e7ee;white-space:pre-wrap;margin:0}.kaza-report-bottom{flex:none;background:#fff;border-top:1px solid #d8e1e8;padding:10px 14px;display:flex;gap:8px;justify-content:flex-end}.kaza-report-bottom button{border:1px solid #aebbc3;background:#fff;border-radius:9px;padding:10px 13px;font-weight:750}.kaza-report-bottom button:nth-child(2){background:#0d2b46;color:#fff}.kaza-report-bottom button:last-child{background:#378add;border-color:#378add;color:#fff}.kaza-report-bottom button:disabled{opacity:.45}.kaza-report-versions>span{font-size:10px;color:#7a8790}.kaza-preview-icon{width:32px;height:30px;display:inline-grid;place-items:center;border:1px solid #9fc5d1;border-radius:7px;background:#f4fafb;color:#176f79;cursor:pointer;line-height:1}.kaza-preview-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.kaza-preview-icon:hover{background:#dff1f4;border-color:#287f86}.kaza-preview-icon:focus-visible{outline:2px solid #378add;outline-offset:2px}.kaza-record-actions{min-height:30
 px}
 @media(max-width:700px){.kaza-report-mobile-head{padding:10px 12px!important}.kaza-report-mobile-head em{display:none}.kaza-report-workspace{display:block;overflow:auto}.kaza-report-workspace>aside{max-height:none;border:0;padding:11px}.kaza-report-main{min-height:780px}.kaza-report-tabs{position:sticky;top:0;z-index:3}.kaza-report-bottom{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr 1fr}.kaza-report-bottom button{padding:10px 4px;font-size:10px}}
 </style>
+
+<style id="board-print-isolation-final-v853">
+@media print{
+  /* Board print must never inherit another module's print root. */
+  body.print-board-durum > #kaza-report-bg,
+  body.print-board-durum > #kaza-pdf-print-root,
+  body.print-board-durum > #kaza-print,
+  body.print-board-durum > #hse-print,
+  body.print-board-durum > #modul-print,
+  body.print-board-durum > #denetim-print,
+  body.print-board-liste > #kaza-report-bg,
+  body.print-board-liste > #kaza-pdf-print-root,
+  body.print-board-liste > #kaza-print,
+  body.print-board-liste > #hse-print,
+  body.print-board-liste > #modul-print,
+  body.print-board-liste > #denetim-print{
+    display:none!important;
+  }
+
+  body.print-board-durum > #app,
+  body.print-board-liste > #app{
+    display:block!important;
+    position:static!important;
+    width:auto!important;
+    height:auto!important;
+    overflow:visible!important;
+    background:#fff!important;
+  }
+
+  body.print-board-durum #print-header,
+  body.print-board-durum #print-meta,
+  body.print-board-liste #print-header,
+  body.print-board-liste #print-meta{
+    display:block!important;
+  }
+
+  /* Durum Tablosu */
+  body.print-board-durum #board-wrap{display:block!important}
+  body.print-board-durum #board{display:block!important}
+  body.print-board-durum #list-view-wrap{display:none!important}
+  body.print-board-durum #scroll-track,
+  body.print-board-liste #scroll-track{display:none!important}
+
+  /* Liste */
+  body.print-board-liste #board-wrap{display:none!important}
+  body.print-board-liste #list-view-wrap{
+    display:block!important;
+    visibility:visible!important;
+    overflow:visible!important;
+    max-height:none!important;
+  }
+  body.print-board-liste #list-table{
+    display:table!important;
+    visibility:visible!important;
+    width:100%!important;
+    border-collapse:collapse!important;
+  }
+
+  /* Non-board application modules are hidden only while Board is printing. */
+  body.print-board-durum #dash-wrap,
+  body.print-board-durum #archive-wrap,
+  body.print-board-durum #stats-panel-wrap,
+  body.print-board-durum #per-wrap,
+  body.print-board-durum #kontrol-wrap,
+  body.print-board-durum #denetim-wrap,
+  body.print-board-durum #kaza-wrap,
+  body.print-board-liste #dash-wrap,
+  body.print-board-liste #archive-wrap,
+  body.print-board-liste #stats-panel-wrap,
+  body.print-board-liste #per-wrap,
+  body.print-board-liste #kontrol-wrap,
+  body.print-board-liste #denetim-wrap,
+  body.print-board-liste #kaza-wrap{
+    display:none!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="app">
