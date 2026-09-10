@@ -6596,6 +6596,24 @@ px}
         </select>
       </div>
     </div>
+    <div class="denetim-import-guide">
+      <div class="denetim-import-guide-title">Excel / CSV şablon sütunları</div>
+      <div class="denetim-import-guide-cols">
+        <b>Denetim Türü</b><span>|</span>
+        <b>Denetim Adı</b><span>|</span>
+        <b>Tarih</b><span>|</span>
+        <b>Denetçi</b><span>|</span>
+        <b>Fabrika</b><span>|</span>
+        <b>Tespit</b><span>|</span>
+        <b>Öneri</b><span>|</span>
+        <b>Tür</b><span>|</span>
+        <b>Önem</b><span>|</span>
+        <b>Sorumlu</b><span>|</span>
+        <b>Termin</b><span>|</span>
+        <b>Durum</b>
+      </div>
+      <small>Dosyanın veya Excel'den yapıştırılan tablonun ilk satırı bu başlıkları içermelidir. <b>Tespit</b> sütunu zorunludur; diğer sütunlar boş bırakılabilir.</small>
+    </div>
     <div class="mrow3">
       <div class="mfield"><label>Hepsinin Türü</label>
         <select id="tp-tur"><option value="uygunsuzluk">Uygunsuzluk</option><option value="oneri">Öneri</option><option value="gozlem">Gözlem</option></select>
@@ -6618,12 +6636,13 @@ px}
     </div>
     <div style="display:flex;align-items:center;gap:8px;color:var(--text3);font-size:11px;">
       <div style="flex:1;height:1px;background:var(--border);"></div>
-      <span>veya metni yapıştır</span>
+      <span>veya Excel satırlarını / metni yapıştır</span>
       <div style="flex:1;height:1px;background:var(--border);"></div>
     </div>
     <div class="mfield">
       <label>Metni buraya yapıştır *</label>
-      <textarea id="tp-metin" oninput="topluOnizle()" placeholder="1. Yangın söndürücünün önü kapalı&#10;2. Acil çıkış levhası yanmıyor → LED levha ile değiştirilecek&#10;3. Depo rafında etiketsiz kimyasal var" style="min-height:150px;font-family:inherit;"></textarea>
+      <textarea id="tp-metin" oninput="topluOnizle()" placeholder="Denetim Türü | Denetim Adı | Tarih | Denetçi | Fabrika | Tespit | Öneri | Tür | Önem | Sorumlu | Termin | Durum&#10;İç Denetim | 2026 1. Dönem İç Denetim | 09.09.2026 | Ahmet Y. | ADANA METAL | Acil çıkış önü kapalı | Alan boşaltılmalı | Uygunsuzluk | Yüksek | Bölüm Sorumlusu | 15.09.2026 | Açık"
+        style="min-height:150px;font-family:ui-monospace,Menlo,monospace;font-size:11px;"></textarea>
     </div>
     <div id="tp-onizleme" style="font-size:12px;color:var(--text2);"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;border-top:1px solid var(--border);padding-top:10px;flex-wrap:wrap;">
@@ -6711,7 +6730,7 @@ px}
         </div>
         <small>Gerçekleşen sonucu değil, olayın makul en ciddi potansiyel sonucunu değerlendirin.</small>
         <div class="kaza-ai-assist">
-          <div class="kaza-ai-head"><div><b>Kayıt Sınıflandırma Desteği</b><span>Olay anlatımına göre standart listelerden ön değerlendirme üretir.</span></div><button type="button" onclick="kazaAnalizEt()" class="kaza-ai-btn">✨ Analiz Et</button></div>
+          <div class="kaza-ai-head"><div><b>Kayıt Sınıflandırma Desteği</b><span>Olay anlatımına göre standart listelerden ön değerlendirme üretir.</span></div><button type="button" id="kaza-ai-analyze-btn" onclick="kazaAnalizEt()" class="kaza-ai-btn">✨ Analiz Et</button></div>
           <div id="kaza-ai-result" class="kaza-ai-result"><div><span>Yaralanma / Hasar Türü</span><b>—</b></div><div><span>Kök Neden</span><b>—</b></div><div><span>Ana Kök Neden</span><b>—</b></div><div><span>Potansiyel Şiddet</span><b>—</b></div></div>
           <div id="kaza-ai-note" class="kaza-ai-note">Henüz analiz edilmedi.</div>
         </div>
@@ -13060,6 +13079,54 @@ let kazaFTur   = null;          // null = tüm türler
 window._kazaReady = window._kazaReady || false;
 let kazaMTur   = 'kaza';        // modalda seçili tür
 
+let kazaAnalizState={attempt:0,lastResult:null,applied:false,appliedAt:'',source:'',incidentId:''};
+
+function kazaAnalizStateReset(k){
+  const saved=k&&k.classificationAssist&&typeof k.classificationAssist==='object'?k.classificationAssist:null;
+  kazaAnalizState={
+    attempt:Number(saved?.attempt||0),
+    lastResult:saved?.lastResult?{...saved.lastResult}:null,
+    applied:!!saved?.applied,
+    appliedAt:String(saved?.appliedAt||''),
+    source:String(saved?.source||''),
+    incidentId:k?String(k.id||''):''
+  };
+}
+function kazaAnalizStateSnapshot(){
+  return {attempt:Number(kazaAnalizState.attempt||0),lastResult:kazaAnalizState.lastResult?{...kazaAnalizState.lastResult}:null,
+    applied:!!kazaAnalizState.applied,appliedAt:kazaAnalizState.appliedAt||'',source:kazaAnalizState.source||''};
+}
+function kazaAnalizRenderSavedState(){
+  const res=document.getElementById('kaza-ai-result');
+  const note=document.getElementById('kaza-ai-note');
+  const btn=document.getElementById('kaza-ai-analyze-btn');
+  const d=kazaAnalizState.lastResult;
+  if(!d){
+    if(res)res.innerHTML='<div><span>Yaralanma / Hasar Türü</span><b>—</b></div><div><span>Kök Neden</span><b>—</b></div><div><span>Ana Kök Neden</span><b>—</b></div><div><span>Potansiyel Şiddet</span><b>—</b></div>';
+    if(note)note.textContent='Henüz analiz edilmedi.';
+    if(btn){btn.disabled=false;btn.textContent='✨ Analiz Et'}
+    return;
+  }
+  const siddetAd=({'1':'Çok Düşük','2':'Düşük','3':'Orta','4':'Yüksek','5':'Çok Yüksek'})[String(d.siddet||'')]||'Değerlendirilmedi';
+  if(res)res.innerHTML=`
+    <div><span>Yaralanma / Hasar Türü</span><b>${kazaEsc(d.hasar||'Yeterli bilgi yok')}</b></div>
+    <div><span>Kök Neden</span><b>${kazaEsc(d.kok||'Yeterli bilgi yok')}</b></div>
+    <div><span>Ana Kök Neden</span><b>${kazaEsc(d.ana||'—')}</b></div>
+    <div><span>Potansiyel Şiddet</span><b>${kazaEsc(siddetAd)}</b></div>`;
+  if(note){
+    const when=kazaAnalizState.appliedAt?new Date(kazaAnalizState.appliedAt).toLocaleString('tr-TR'):'';
+    if(kazaAnalizState.applied){
+      note.innerHTML=`<b class="kaza-ai-applied-ok">✓ Sınıflandırma önerisi daha önce uygulandı.</b>`+
+        (when?` <small class="kaza-ai-meta">${kazaEsc(when)}</small>`:'')+
+        `<small class="kaza-ai-meta"> İsterseniz olay bilgilerini değiştirip tekrar analiz edebilirsiniz.</small>`;
+    }else{
+      note.innerHTML=`${kazaEsc(d.gerekce||'Analiz sonucu hazır.')} <small class="kaza-ai-meta">Henüz forma uygulanmadı.</small> <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygulaSonucu()">Öneriyi Uygula</button>`;
+    }
+  }
+  if(btn){btn.disabled=false;btn.textContent='↻ Tekrar Analiz Et'}
+}
+
+
 // Kaza/Hasar Türü için varsayılan liste ("İŞ KAZASI OLAY VERİ KÜTÜPHANESİ.xlsx" →
 // "Kaza - Hasar Türleri" sayfası, B5:B21 referans alınarak)
 const KAZA_YARALANMA_VARSAYILAN = [
@@ -13469,10 +13536,8 @@ function kazaOpenAdd(editId) {
   document.getElementById('kaza-m-koknedan').value  = k ? (k.kokNeden||'') : '';
   document.getElementById('kaza-m-potansiyel').value = k && k.potansiyelSiddet ? String(k.potansiyelSiddet) : '';
 
-  const _kar = document.getElementById('kaza-ai-result');
-  if (_kar) _kar.innerHTML = '<div><span>Yaralanma / Hasar Türü</span><b>—</b></div><div><span>Kök Neden</span><b>—</b></div><div><span>Ana Kök Neden</span><b>—</b></div><div><span>Potansiyel Şiddet</span><b>—</b></div>';
-  const _kan = document.getElementById('kaza-ai-note');
-  if (_kan) _kan.textContent = 'Henüz analiz edilmedi.';
+  kazaAnalizStateReset(k);
+  kazaAnalizRenderSavedState();
 
   document.getElementById('kaza-modal-bg').style.display = 'flex';
   setTimeout(() => document.getElementById('kaza-m-aciklama').focus(), 80);
@@ -13512,6 +13577,7 @@ function kazaSubmit() {
     potansiyelSiddet: parseInt(document.getElementById('kaza-m-potansiyel').value) || null,
     onlem:      document.getElementById('kaza-m-onlem').value.trim(),
     onlemTamam: document.getElementById('kaza-m-onlem-tamam').checked,
+    classificationAssist: kazaAnalizStateSnapshot(),
   };
 
   if (kazaEditId) {
@@ -15029,20 +15095,47 @@ async function kazaAnalizEt(){
   const metin=(document.getElementById('kaza-m-aciklama')?.value||'').trim();
   const res=document.getElementById('kaza-ai-result');
   const note=document.getElementById('kaza-ai-note');
-  const btn=document.querySelector('.kaza-ai-btn');
-  if(!metin){if(note)note.textContent='Öneri için önce olay anlatımını yazın.';return}
+  const btn=document.getElementById('kaza-ai-analyze-btn');
+  if(!metin){
+    if(note)note.textContent='Analiz için önce olay anlatımını yazın.';
+    if(btn){btn.disabled=false;btn.textContent='✨ Analiz Et'}
+    return;
+  }
 
   const injuryRows=(typeof kazaInjuryRead==='function'?kazaInjuryRead():[]);
   const mevcutKok=document.getElementById('kaza-m-koknedan')?.value||'';
   const mevcutSiddet=document.getElementById('kaza-m-potansiyel')?.value||'';
+  const mevcutOnlem=(document.getElementById('kaza-m-onlem')?.value||'').trim();
   const hasarList=kazaAnalizHasarListesi();
   const kokList=kazaAnalizKokListesi();
 
-  if(btn){btn.disabled=true;btn.textContent='Analiz ediliyor…'}
-  if(note){note.textContent='Olay anlatımı, yaralanma kayıtları ve varsa görsel birlikte değerlendiriliyor…'}
+  const previous=kazaAnalizState.lastResult?{...kazaAnalizState.lastResult}:null;
+  const attempt=Number(kazaAnalizState.attempt||0)+1;
+  kazaAnalizState.attempt=attempt;
+  kazaAnalizState.applied=false;
+  kazaAnalizState.appliedAt='';
 
-  let sonuc=null, aiUsed=false;
+  if(btn){btn.disabled=true;btn.textContent=attempt>1?'Yeniden analiz ediliyor…':'Analiz ediliyor…'}
+  if(note)note.textContent=attempt>1
+    ? 'Önceki sonuç yeterli bulunmamış olabilir. Olay ve mevcut bulgular baştan değerlendiriliyor…'
+    : 'Olay anlatımı, yaralanma kayıtları ve varsa görsel birlikte değerlendiriliyor…';
+
+  let sonuc=null,aiUsed=false;
   try{
+    const repeatInstruction=attempt>1?`
+TEKRAR ANALİZ TALİMATI:
+- Bu olay daha önce ${attempt-1} kez analiz edildi.
+- Kullanıcının tekrar "Analiz Et" seçmesi, önceki önerinin yeterince isabetli bulunmamış olabileceği anlamına gelir.
+- Önceki sonucu mekanik biçimde tekrar etme.
+- Olay anlatımını, yaralanma/hasar kayıtlarını, mevcut kök neden/şiddet seçimlerini, önlem metnini ve varsa görseli BAŞTAN çapraz kontrol et.
+- Önceki sonuç doğruysa ancak olay zinciriyle bağını güçlü biçimde yeniden kurabiliyorsan aynı sonucu koru.
+- Önceki sonuç olaydan uzaksa veya daha güçlü sistem/çevre/mekanik bulgu varsa düzelt.
+- Sırf farklı cevap vermek için kategori değiştirme; amaç daha farklı değil, daha doğru sonuçtur.
+
+ÖNCEKİ ANALİZ SONUCU:
+${JSON.stringify(previous||{},null,2)}
+`: '';
+
     const prompt=`Sen endüstriyel iş sağlığı ve güvenliği olay sınıflandırma uzmanısın.
 Görevin SADECE verilen olaya dayanarak kayıt ön sınıflandırması yapmaktır.
 
@@ -15053,21 +15146,24 @@ KRİTİK KURALLAR:
 4. Görsel olay anlatımıyla çelişirse bunu gerekçede belirt; tek başına görsele dayanıp kök neden uydurma.
 5. Hasar türünü yalnız aşağıdaki HASAR LİSTESİNDEN seç.
 6. Kök nedeni yalnız aşağıdaki KÖK NEDEN LİSTESİNDEN seç.
-7. Davranışsal kök nedenleri (dalgınlık, dikkatsizlik vb.) ancak anlatımda açık kanıt varsa seç. Sistem/yerleşim/koruyucu eksikliği daha güçlü kanıtlanıyorsa onu tercih et.
-8. "Ana kök neden" ayrı seçim değildir; seçtiğin standart kök nedenin kategori eşlemesi sistem tarafından yapılacaktır.
+7. Davranışsal kök nedenleri ancak anlatımda açık kanıt varsa seç. Sistem/yerleşim/koruyucu eksikliği daha güçlü kanıtlanıyorsa onu tercih et.
+8. "Ana kök neden" ayrı seçim değildir; standart kök neden kategori eşlemesi sistem tarafından yapılacaktır.
 9. Potansiyel şiddet gerçekleşen yaralanmaya göre değil, makul en ciddi potansiyel sonuca göre 1-5 seç.
-10. Birden fazla yaralanma kaydı varsa olayı tek bir hasar türüne zorlamadan, olayın baskın/ana kayıt hasarını seç; diğer yaralanmalar zaten ayrı satırlarda tutulur.
+10. Birden fazla yaralanma kaydı varsa baskın/ana kayıt hasarını seç; diğer yaralanmalar ayrı satırlarda tutulur.
 11. Yeterli kanıt yoksa boş string döndür; rastgele sınıflandırma yapma.
+12. Kök neden seçimi olayın gerçek mekanizmasına ve olay zincirindeki en güçlü kanıta dayanmalıdır.
+${repeatInstruction}
 
 OLAY ANLATIMI:
 ${metin}
 
-MEVCUT YARALANMA SATIRLARI:
+MEVCUT YARALANMA / HASAR SATIRLARI:
 ${JSON.stringify(injuryRows)}
 
-KULLANICININ MEVCUT ÖN SEÇİMİ:
+KULLANICININ MEVCUT FORM SEÇİMLERİ:
 Kök neden: ${mevcutKok||'—'}
 Potansiyel şiddet: ${mevcutSiddet||'—'}
+Alınan / Alınacak Önlem: ${mevcutOnlem||'—'}
 
 HASAR LİSTESİ:
 ${hasarList.map(x=>'- '+x).join('\n')}
@@ -15080,7 +15176,7 @@ SADECE BU JSON NESNESİNİ DÖNDÜR:
   "hasarTuru": "listedeki tam değer veya boş string",
   "kokNeden": "listedeki tam değer veya boş string",
   "potansiyelSiddet": 1,
-  "gerekce": "en fazla 2 kısa cümle; olayla doğrudan bağlantıyı açıkla",
+  "gerekce": "en fazla 2 kısa cümle; seçimin olay zinciriyle doğrudan bağını açıkla",
   "guven": "yüksek|orta|düşük",
   "gorselKullanildi": true
 }`;
@@ -15092,48 +15188,73 @@ SADECE BU JSON NESNESİNİ DÖNDÜR:
     sonuc=kazaAnalizFallback(metin);
   }
 
+  kazaAnalizState.lastResult={...sonuc};
+  kazaAnalizState.source=aiUsed?'ai':'fallback';
+
   const siddetAd=({'1':'Çok Düşük','2':'Düşük','3':'Orta','4':'Yüksek','5':'Çok Yüksek'})[sonuc.siddet]||'Değerlendirilmedi';
-  if(res) res.innerHTML=`
+  if(res)res.innerHTML=`
     <div><span>Yaralanma / Hasar Türü</span><b>${kazaEsc(sonuc.hasar||'Yeterli bilgi yok')}</b></div>
     <div><span>Kök Neden</span><b>${kazaEsc(sonuc.kok||'Yeterli bilgi yok')}</b></div>
     <div><span>Ana Kök Neden</span><b>${kazaEsc(sonuc.ana||'—')}</b></div>
     <div><span>Potansiyel Şiddet</span><b>${kazaEsc(siddetAd)}</b></div>`;
 
-  const meta = aiUsed
-    ? `Güven: ${kazaEsc(sonuc.guven||'belirtilmedi')}${sonuc.imageUsed?' · Görsel destekleyici olarak değerlendirildi':''}.`
-    : 'Canlı analiz servisi kullanılamadığı için muhafazakâr yedek sınıflandırma kullanıldı.';
-  const applyData=encodeURIComponent(JSON.stringify({hasar:sonuc.hasar,kok:sonuc.kok,siddet:sonuc.siddet}));
-  if(note) note.innerHTML=`${kazaEsc(sonuc.gerekce||'Sonucu olay anlatımı ve saha koşullarıyla doğrulayın.')} <small class="kaza-ai-meta">${meta}</small>`+
-    ((sonuc.hasar||sonuc.kok||sonuc.siddet)
-      ? ` <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygulaEncoded('${applyData}')">Öneriyi Uygula</button>`:'');
-  if(btn){btn.disabled=false;btn.textContent='✨ Analiz Et'}
+  const meta=aiUsed
+    ? `Güven: ${kazaEsc(sonuc.guven||'belirtilmedi')}${sonuc.imageUsed?' · Görsel destekleyici olarak değerlendirildi':''} · Analiz ${attempt}.`
+    : `Canlı analiz servisi kullanılamadığı için muhafazakâr yedek sınıflandırma kullanıldı · Analiz ${attempt}.`;
+  const repeatMsg=attempt>1?'<small class="kaza-ai-meta kaza-ai-repeat-note"> Önceki sonuç da dikkate alınarak olay baştan değerlendirildi.</small>':'';
+  if(note)note.innerHTML=`${kazaEsc(sonuc.gerekce||'Sonucu olay anlatımı ve saha koşullarıyla doğrulayın.')} <small class="kaza-ai-meta">${meta}</small>${repeatMsg}`+
+    ((sonuc.hasar||sonuc.kok||sonuc.siddet)?` <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygulaSonucu()">Öneriyi Uygula</button>`:'');
+  if(btn){btn.disabled=false;btn.textContent='↻ Tekrar Analiz Et'}
 }
 
 function kazaAnalizUygulaEncoded(encoded){
   let d={};
   try{d=JSON.parse(decodeURIComponent(encoded))}catch(e){return}
+  const ana=d.kok?(kazaKokNedenKategori(d.kok)||'Kategori eşleşmesi yok'):'—';
+  kazaAnalizState.lastResult={hasar:d.hasar||'',kok:d.kok||'',siddet:String(d.siddet||''),ana,gerekce:'',guven:'',imageUsed:false};
   kazaAnalizUygula(d.hasar||'',d.kok||'',d.siddet||'');
 }
 
 function kazaAnalizUygula(hasar,kok,siddet){
-  // Hasar türü artık görünür yaralanma satırındaki dropdown'a uygulanır.
-  // İlk boş satır tercih edilir; tüm dolu satırlar asla sessizce ezilmez.
+  let appliedCount=0;
   if(hasar){
     const rows=[...document.querySelectorAll('#kaza-injury-rows [data-injury-row]')];
-    let target=rows.find(r=>!(r.querySelector('[data-damage-type]')?.value||'').trim()) || rows[0];
+    let target=rows.find(r=>!(r.querySelector('[data-damage-type]')?.value||'').trim())||rows[0];
     if(target){
       const sel=target.querySelector('[data-damage-type]');
-      if(sel){
-        if([...sel.options].some(o=>o.value===hasar)) sel.value=hasar;
+      if(sel&&[...sel.options].some(o=>o.value===hasar)){
+        sel.value=hasar;sel.dispatchEvent(new Event('change',{bubbles:true}));appliedCount++;
       }
     }
   }
   const k=document.getElementById('kaza-m-koknedan');
   const p=document.getElementById('kaza-m-potansiyel');
-  if(k&&kok&&[...k.options].some(o=>o.value===kok)) k.value=kok;
-  if(p&&siddet) p.value=String(siddet);
-}
+  if(k&&kok&&[...k.options].some(o=>o.value===kok)){k.value=kok;k.dispatchEvent(new Event('change',{bubbles:true}));appliedCount++}
+  if(p&&siddet){p.value=String(siddet);p.dispatchEvent(new Event('change',{bubbles:true}));appliedCount++}
 
+  kazaAnalizState.applied=appliedCount>0;
+  kazaAnalizState.appliedAt=appliedCount>0?new Date().toISOString():'';
+  const note=document.getElementById('kaza-ai-note');
+
+  if(appliedCount>0){
+    if(note)note.innerHTML='<b class="kaza-ai-applied-ok">✓ Sınıflandırma önerisi uygulandı.</b> <small class="kaza-ai-meta">Değerler kayıt formuna aktarıldı. Kalıcı kayıt için alttaki Kaydet butonunu kullanın; isterseniz tekrar Analiz Et ile yeniden değerlendirebilirsiniz.</small>';
+    if(typeof toast==='function')toast('Sınıflandırma önerisi uygulandı ✓');
+  }else{
+    if(note)note.textContent='Uygulanabilir sınıflandırma değeri bulunamadı.';
+    if(typeof toast==='function')toast('Uygulanabilir öneri bulunamadı');
+  }
+  const btn=document.getElementById('kaza-ai-analyze-btn');
+  if(btn){btn.disabled=false;btn.textContent='↻ Tekrar Analiz Et'}
+}
+function kazaAnalizUygulaSonucu(){
+  const d=kazaAnalizState.lastResult;
+  if(!d){
+    const note=document.getElementById('kaza-ai-note');
+    if(note)note.textContent='Uygulanacak analiz sonucu bulunamadı.';
+    return;
+  }
+  kazaAnalizUygula(d.hasar||'',d.kok||'',d.siddet||'');
+}
 
 function ksIsoCreateTask(finding, action){
   openAddModal();
@@ -16672,12 +16793,48 @@ function topluAyristir(metin, sekil) {
   }).filter(Boolean);
 }
 
+
+function topluMetinTabloAyir(metin){
+  const lines=String(metin||'').split(/\r?\n/).filter(x=>x.trim());
+  if(!lines.length)return [];
+  const first=lines[0];
+  const candidates=[
+    {sep:'\t', count:(first.match(/\t/g)||[]).length},
+    {sep:';',  count:(first.match(/;/g)||[]).length},
+    {sep:'|',  count:(first.match(/\|/g)||[]).length},
+    {sep:',',  count:(first.match(/,/g)||[]).length}
+  ].sort((a,b)=>b.count-a.count);
+  const sep=candidates[0].count ? candidates[0].sep : '';
+  if(!sep)return [];
+  return lines.map(line=>kazaSatirAyir(line,sep));
+}
+function topluMetinTabloMu(metin){
+  const rows=topluMetinTabloAyir(metin);
+  if(rows.length<2)return false;
+  const heads=(rows[0]||[]).map(dnNorm);
+  const expected=['denetimturu','denetimadi','tarih','denetci','fabrika','tespit','oneri','tur','onem','sorumlu','termin','durum'];
+  const hit=expected.filter(x=>heads.some(h=>h===x||h.includes(x))).length;
+  return heads.some(h=>h==='tespit'||h.includes('tespit')||h.includes('bulgu')) && hit>=3;
+}
+
 function topluOnizle() {
   const metin = document.getElementById('tp-metin').value;
   const sekil = document.getElementById('tp-ayirma').value;
   const el = document.getElementById('tp-onizleme');
   const btn = document.getElementById('tp-kaydet');
   if (!metin.trim()) { el.innerHTML = ''; btn.textContent = 'Hepsini Ekle'; return; }
+
+  if (topluMetinTabloMu(metin)) {
+    const rows=topluMetinTabloAyir(metin);
+    const n=Math.max(0,rows.length-1);
+    el.innerHTML=`<div style="background:var(--surface2);border-radius:var(--r);padding:9px 11px;">
+      <div style="font-weight:700;color:var(--text);">📊 Excel şablon tablosu algılandı</div>
+      <div style="color:var(--text3);margin-top:3px;">${n} veri satırı bulundu. İlk satır sütun başlığı olarak kullanılacak.</div>
+    </div>`;
+    btn.textContent=`${n} Satırı İçe Aktar`;
+    return;
+  }
+
   const list = topluAyristir(metin, sekil);
   const oneriSay = list.filter(x => x.oneri).length;
   el.innerHTML = `
@@ -16695,6 +16852,11 @@ function topluOnizle() {
 
 function topluKaydet() {
   const metin = document.getElementById('tp-metin').value;
+  if (topluMetinTabloMu(metin)) {
+    const rows=topluMetinTabloAyir(metin);
+    topluDosyaIsle(rows);
+    return;
+  }
   const sekil = document.getElementById('tp-ayirma').value;
   const list  = topluAyristir(metin, sekil);
   if (!list.length) { alert('Ayrıştırılacak satır bulunamadı.'); return; }
