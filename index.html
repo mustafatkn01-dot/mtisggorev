@@ -7631,12 +7631,12 @@ function printReport() {
   document.getElementById('print-header').textContent = 'İSG Yönetim & Performans Raporu — ' + viewLabel;
   document.getElementById('print-meta').textContent = 'Rapor tarihi: ' + dateStr + '  |  Filtre: ' + viewLabel + '  |  Görünüm: ' + gorunumLabel;
 
-  // Aktif görünüme göre yazdırma formatını seç (Durum Tablosu ↔ Liste)
-  document.body.classList.remove('print-board-durum', 'print-board-liste');
-  document.body.classList.add(viewMode === 'list' ? 'print-board-liste' : 'print-board-durum');
-
-  window.print();
-  setTimeout(() => document.body.classList.remove('print-board-durum', 'print-board-liste'), 800);
+  // Yalnız Board baskı modu açılır; diğer modüllerin baskı durumları önce temizlenir.
+  const modeClass=viewMode === 'list' ? 'print-board-liste' : 'print-board-durum';
+  isgPrintNow(modeClass,{
+    title:'Board Görev Raporu',
+    context:gorunumLabel+' - '+viewLabel
+  },()=>window.print());
 }
 
 // ── Ayarlar verisi (localStorage) ──────────────────────────────
@@ -11100,9 +11100,7 @@ function perPrint() {
           <td>${perIsTaskDone(t) ? 'Tamamlandı' : 'Devam'}</td></tr>`;
       }).join('') || '<tr><td colspan="6">Kayıt yok</td></tr>'}</tbody>
     </table>`;
-  document.body.classList.add('print-modul');
-  window.print();
-  setTimeout(() => document.body.classList.remove('print-modul'), 800);
+  isgPrintNow('print-modul',{title:'Personel Görev Yönetimi Raporu'},()=>window.print());
 }
 
 function perEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -12801,9 +12799,7 @@ function kontrolPrintRun() {
   `;
 
   kontrolRaporClose();
-  document.body.classList.add('print-modul');
-  window.print();
-  setTimeout(() => document.body.classList.remove('print-modul'), 800);
+  isgPrintNow('print-modul',{title:'Kontrol ve Takip Raporu',context:String(fab)},()=>window.print());
 }
 
 // ── End Kontrol Modülü ──
@@ -14148,11 +14144,9 @@ function kazaPrint() {
       cfg.options = {...cfg.options, responsive:false, animation:false};
       new Chart(document.getElementById('kp-canvas-kok-pareto').getContext('2d'), cfg);
     }
-    document.body.classList.add('print-kaza');
-    // Grafiklerin canvas'a çizilmesi için bir sonraki kareyi bekle, sonra yazdır
+    // Grafikler hazırlandıktan sonra yalnız Kaza/Olay liste raporu baskı modu açılır.
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      window.print();
-      setTimeout(() => document.body.classList.remove('print-kaza'), 800);
+      isgPrintNow('print-kaza',{title:'Kaza Olay Kayıtları Raporu'},()=>window.print());
     }));
   };
   cizVeYazdir();
@@ -16223,10 +16217,11 @@ function ksPrintHSE(mode='management'){
       </td></tr></tbody>
     </table>
   `;
-  document.body.classList.add('print-hse-report');
+  isgBeginPrintMode('print-hse-report',{
+    title:mode==='management'?'İSG Performans Değerlendirme Yönetici Raporu':'İSG Performans Değerlendirme Detaylı Raporu',
+    context:periodLabel+' - '+fabLabel
+  });
   setTimeout(()=>window.print(),180);
-  window.addEventListener('afterprint',ksCleanupHsePrint,{once:true});
-  setTimeout(()=>{if(document.body.classList.contains('print-hse-report'))ksCleanupHsePrint();},5000);
 }
 function ksEventTableHTML(liste,title='Kaza / Ramak Kala Olay Listesi'){
   const rows = liste.slice().sort((a,b)=>(a.tarih||'').localeCompare(b.tarih||'')).map(k=>`
@@ -16251,10 +16246,11 @@ function ksPrintEventList(){
   el.innerHTML=`<div class="hse-pr-cover"><h1>KAZA / RAMAK KALA OLAY LİSTESİ</h1>
     <div class="hse-pr-meta">${ksEsc(periodLabel)} · ${ksEsc(fabLabel)} · ${ksEsc(turLabel)} · ${liste.length} kayıt</div></div>
     ${ksEventTableHTML(liste,'Olay Kayıtları')}`;
-  document.body.classList.add('print-hse-report');
+  isgBeginPrintMode('print-hse-report',{
+    title:'Kaza Ramak Kala Olay Listesi',
+    context:periodLabel+' - '+fabLabel
+  });
   setTimeout(()=>window.print(),120);
-  window.addEventListener('afterprint',ksCleanupHsePrint,{once:true});
-  setTimeout(()=>{ if(document.body.classList.contains('print-hse-report')) ksCleanupHsePrint(); },3000);
 }
 
 // ── V8.2: Mobil görev FAB kesin görünürlük kontrolü ─────────────
@@ -17121,9 +17117,7 @@ function denetimPrint() {
           <td>${BG_DURUM[b.durum]||'-'}</td></tr>`).join('')}</tbody>
       </table>`;
     }).join('') || '<p>Kayıt yok</p>'}`;
-  document.body.classList.add('print-denetim');
-  window.print();
-  setTimeout(() => document.body.classList.remove('print-denetim'), 800);
+  isgPrintNow('print-denetim',{title:'İSG Denetim Bulguları Raporu'},()=>window.print());
 }
 // ── End Denetimler Modülü ──
 </script>
@@ -19507,19 +19501,11 @@ function kazaRaporPdf(){
   clone.removeAttribute('style');
   root.appendChild(clone);
 
-  document.body.classList.add('kaza-pdf-mode');
-  let cleaned=false;
-  const cleanup=()=>{
-    if(cleaned)return;
-    cleaned=true;
-    document.body.classList.remove('kaza-pdf-mode');
-    root.innerHTML='';
-  };
-  window.addEventListener('afterprint',cleanup,{once:true});
+  // Merkezi baskı yöneticisi diğer tüm modül baskı durumlarını temizler.
+  isgBeginPrintMode('kaza-pdf-mode',{title:'Kaza Olay Araştırma Raporu'});
 
   // Resim/data-URL ve layout hesaplarının baskı ağacına tamamen oturmasını bekle.
-  requestAnimationFrame(()=>requestAnimationFrame(()=>printWithManagedTitle('Kaza Olay Araştırma Raporu','',()=>window.print())));
-  setTimeout(cleanup,60000);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
 }
 
 function kazaFishboneSvgIcon(kind){
@@ -20030,6 +20016,84 @@ window.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 
+
+<script id="print-mode-manager-v853">
+(function(){
+  const PRINT_CLASSES=[
+    'kaza-pdf-mode','print-kaza','print-board-durum','print-board-liste',
+    'print-modul','print-denetim','print-hse-report'
+  ];
+  let activeCleanup=null;
+  let fallbackTimer=null;
+
+  function clearTransientRoots(keepClass){
+    if(keepClass!=='kaza-pdf-mode'){
+      const el=document.getElementById('kaza-pdf-print-root'); if(el)el.innerHTML='';
+    }
+    if(keepClass!=='print-hse-report'){
+      const el=document.getElementById('hse-print'); if(el)el.innerHTML='';
+    }
+    if(keepClass!=='print-kaza'){
+      const el=document.getElementById('kaza-print'); if(el)el.innerHTML='';
+    }
+    if(keepClass!=='print-denetim'){
+      const el=document.getElementById('denetim-print'); if(el)el.innerHTML='';
+    }
+    if(keepClass!=='print-modul'){
+      const el=document.getElementById('modul-print'); if(el)el.innerHTML='';
+    }
+  }
+
+  window.isgResetPrintModes=function(keepClass){
+    PRINT_CLASSES.forEach(c=>{if(c!==keepClass)document.body.classList.remove(c)});
+    clearTransientRoots(keepClass||'');
+  };
+
+  window.isgBeginPrintMode=function(modeClass,opts){
+    const options=opts||{};
+    if(activeCleanup){try{activeCleanup(true)}catch(e){} activeCleanup=null}
+    if(fallbackTimer){clearTimeout(fallbackTimer);fallbackTimer=null}
+
+    window.isgResetPrintModes(modeClass);
+    if(modeClass)document.body.classList.add(modeClass);
+
+    if(options.title&&typeof window.setPrintDocumentTitle==='function'){
+      window.setPrintDocumentTitle(options.title,options.context||'');
+    }
+
+    let finished=false;
+    const cleanup=function(){
+      if(finished)return;
+      finished=true;
+      if(modeClass)document.body.classList.remove(modeClass);
+
+      if(modeClass==='kaza-pdf-mode'){
+        const el=document.getElementById('kaza-pdf-print-root'); if(el)el.innerHTML='';
+      }
+      if(modeClass==='print-hse-report'){
+        const el=document.getElementById('hse-print'); if(el)el.innerHTML='';
+      }
+
+      if(typeof window.restoreAppDocumentTitle==='function')window.restoreAppDocumentTitle();
+      if(fallbackTimer){clearTimeout(fallbackTimer);fallbackTimer=null}
+      if(activeCleanup===cleanup)activeCleanup=null;
+    };
+
+    activeCleanup=cleanup;
+    window.addEventListener('afterprint',cleanup,{once:true});
+    fallbackTimer=setTimeout(cleanup,60000);
+    return cleanup;
+  };
+
+  window.isgPrintNow=function(modeClass,opts,fn){
+    const cleanup=window.isgBeginPrintMode(modeClass,opts||{});
+    try{typeof fn==='function'?fn():window.print()}
+    catch(e){cleanup();throw e}
+    return cleanup;
+  };
+})();
+</script>
+
 <script id="print-title-manager-v853">
 (function(){
   const APP_TITLE='İSG Yönetim & Performans';
@@ -20053,6 +20117,13 @@ window.addEventListener('DOMContentLoaded',()=>{
 })();
 </script>
 
+
+
+<script id="print-mode-initial-reset-v853">
+window.addEventListener('DOMContentLoaded',()=>{
+  try{if(typeof window.isgResetPrintModes==='function')window.isgResetPrintModes('')}catch(e){}
+});
+</script>
 
 <script id="print-title-fallback-v853">
 window.addEventListener('beforeprint',()=>{
