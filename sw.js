@@ -3,7 +3,7 @@
    Bu dosya yalnızca PWA kurulum desteği için gereklidir.
    Offline çalışma: index.html önbellekte saklanır.
 */
-const CACHE_NAME = 'isg-takip-v1';
+const CACHE_NAME = 'isg-takip-v2';
 const STATIC = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 /* Kurulum: statik dosyaları önbellekle */
