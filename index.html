@@ -110,6 +110,16 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>İSG Yönetim & Performans</title>
+
+<!-- PWA Manifest & Mobil Kurulum -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#378ADD">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="İSG Takip">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <script>
 // ── DOKUNMATİK DÜZEN SINIRI ─────────────────────────────────
 // Bu genişliğin altında telefon/tablet-dikey düzeni (tek sütun + alt sekmeler),
@@ -7165,6 +7175,17 @@ px}
     <div class="kp-sheet-body">
       <div id="kaza-print-opts-meta"></div>
 
+      <!-- Tablo Filtresi -->
+      <div class="kp-section-title" style="margin-bottom:6px;">Tablo Filtresi</div>
+      <div class="kp-select-grid" style="margin-bottom:10px;">
+        <div class="kp-select-row">
+          <label class="kp-check">
+            <input type="checkbox" id="kp-opt-sadece-devam">
+            <span>Yalnızca Devam Edenleri Göster <span style="font-size:10px;color:var(--text3);font-weight:400;">(önlemi tamamlananları gizle)</span></span>
+          </label>
+        </div>
+      </div>
+
       <div class="kp-section-title">Rapora Eklenecek Analizler <span style="font-weight:400;text-transform:none;color:var(--text3);">(opsiyonel)</span></div>
 
       <div class="kp-select-grid">
@@ -7473,6 +7494,25 @@ px}
           </div>
           <button type="button" onclick="fbGuvenliCikis()">Çıkış Yap</button>
         </div>
+
+        <!-- PWA Kurulum Bölümü -->
+        <div id="settings-pwa-section" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+          <div class="set-section-title" style="margin-bottom:8px;">📲 Uygulamayı Kur</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.55;background:var(--surface2);padding:8px 10px;border-radius:var(--r);margin-bottom:8px;">
+            Bu programı telefonuna veya masaüstüne uygulama olarak kurabilirsin.
+            Kurulumdan sonra tarayıcı açmadan, ana ekrandan doğrudan başlatılabilir.
+          </div>
+          <div id="pwa-install-area">
+            <button id="pwa-install-btn" onclick="pwaCihazaKur()"
+              style="display:none;width:100%;padding:10px 14px;font-size:13px;font-weight:700;
+                     border:none;border-radius:var(--r);background:#378ADD;color:#fff;
+                     cursor:pointer;">
+              📲 Ana Ekrana / Masaüstüne Kur
+            </button>
+            <div id="pwa-install-status" style="font-size:11px;margin-top:6px;color:var(--text3);text-align:center;"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -14415,10 +14455,11 @@ function kazaPrintOpen() {
   const fab = document.getElementById('kaza-f-fab')?.value || 'Tüm fabrikalar';
   const liste = kazaFiltreli();
 
+  const tamListe = kazaFiltreli();
   document.getElementById('kaza-print-opts-meta').innerHTML =
-    `<b>Dönem:</b> ${esc(yil)} &nbsp;·&nbsp; <b>Kapsam:</b> ${esc(fab)} &nbsp;·&nbsp; <b>Kayıt:</b> ${liste.length}`;
+    `<b>Dönem:</b> ${esc(yil)} &nbsp;·&nbsp; <b>Kapsam:</b> ${esc(fab)} &nbsp;·&nbsp; <b>Kayıt:</b> ${tamListe.length}`;
 
-  ['kp-opt-tur','kp-opt-tur-pareto','kp-opt-ay','kp-opt-ay-pareto','kp-opt-kok','kp-opt-kok-pareto']
+  ['kp-opt-tur','kp-opt-tur-pareto','kp-opt-ay','kp-opt-ay-pareto','kp-opt-kok','kp-opt-kok-pareto','kp-opt-sadece-devam']
     .forEach(id => { const el=document.getElementById(id); if(el) el.checked=false; });
 
   document.getElementById('kaza-print-opts-bg').classList.add('on');
@@ -14435,7 +14476,13 @@ function kazaPrint() {
   const grafikKok    = document.getElementById('kp-opt-kok')?.checked;
   const paretoKok    = document.getElementById('kp-opt-kok-pareto')?.checked;
 
-  const liste = kazaFiltreli().sort((a,b) => (a.tarih||'').localeCompare(b.tarih||''));
+  const sadecaDevam = document.getElementById('kp-opt-sadece-devam')?.checked;
+  let liste = kazaFiltreli().sort((a,b) => (a.tarih||'').localeCompare(b.tarih||''));
+  if (sadecaDevam) {
+    // Önlemi olan kayıtlarda: onlemTamam===true olanları çıkar
+    // Önlemi olmayanlar (henüz önlem girilmemiş) her zaman dahil edilir
+    liste = liste.filter(k => !(k.onlem && k.onlemTamam === true));
+  }
   const yil   = document.getElementById('kaza-f-yil')?.value || 'Tüm yıllar';
   const fab   = document.getElementById('kaza-f-fab')?.value || 'Tüm fabrikalar';
   const kazaSay  = liste.filter(k => k.tur === 'kaza').length;
@@ -14472,11 +14519,12 @@ function kazaPrint() {
 
   let el = document.getElementById('kaza-print');
   if (!el) { el = document.createElement('div'); el.id = 'kaza-print'; document.body.appendChild(el); }
+  const sadecDevamEtiketi = sadecaDevam ? ' · <b style="color:#d97706;">⚠ Yalnızca Devam Eden Önlemler</b>' : '';
   el.innerHTML = `
     <h1>İSG Kaza & Ramak Kala Raporu</h1>
-    <div class="kp-meta">Dönem: ${esc(yil)} · Kapsam: ${esc(fab)} · Rapor tarihi: ${esc(simdi)}</div>
+    <div class="kp-meta">Dönem: ${esc(yil)} · Kapsam: ${esc(fab)} · Rapor tarihi: ${esc(simdi)}${sadecDevamEtiketi}</div>
     <div class="kp-ozet">
-      <div><b>Toplam olay:</b> ${liste.length}</div>
+      <div><b>Toplam olay:</b> ${liste.length}${sadecaDevam ? ` <span style="font-size:8.5px;color:#d97706;">(filtrelenmiş)</span>` : ''}</div>
       <div><b>İş kazası:</b> ${kazaSay}</div>
       <div><b>Ramak kala:</b> ${ramakSay}</div>
       <div><b>Kayıp iş günü:</b> ${kayipGun}</div>
@@ -20751,6 +20799,118 @@ window.addEventListener('beforeprint',()=>{
     document.title='İSG Yönetim & Performans';
   }
 });
+</script>
+
+<!-- ── PWA SERVICE WORKER + KURULUM ────────────────────────────────── -->
+<script id="pwa-install-script">
+(function(){
+  'use strict';
+
+  let _pwaPrompt = null; // beforeinstallprompt olayı burada tutulur
+
+  /* Service Worker kaydı */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js')
+        .then(function(reg) {
+          console.log('[PWA] Service Worker kayıtlı:', reg.scope);
+        })
+        .catch(function(err) {
+          console.warn('[PWA] Service Worker kaydı başarısız:', err);
+        });
+    });
+  }
+
+  /* Tarayıcı kurulum promtunu yakala */
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    _pwaPrompt = e;
+    _pwaGoster();
+  });
+
+  /* Kurulum tamamlandı */
+  window.addEventListener('appinstalled', function() {
+    _pwaPrompt = null;
+    const btn = document.getElementById('pwa-install-btn');
+    const st  = document.getElementById('pwa-install-status');
+    if (btn) btn.style.display = 'none';
+    if (st)  st.textContent = '✅ Uygulama başarıyla kuruldu! Ana ekrandan başlatabilirsin.';
+  });
+
+  /* Butonu görünür yap */
+  function _pwaGoster() {
+    const btn = document.getElementById('pwa-install-btn');
+    const st  = document.getElementById('pwa-install-status');
+    if (btn) { btn.style.display = 'block'; }
+    if (st)  { st.textContent = ''; }
+  }
+
+  /* Kurulum butonu tıklandığında */
+  window.pwaCihazaKur = async function() {
+    const btn = document.getElementById('pwa-install-btn');
+    const st  = document.getElementById('pwa-install-status');
+
+    /* iOS Safari — manuel yönlendirme */
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      if (st) st.textContent = '📱 Safari\'de: Alt menüdeki "Paylaş" → "Ana Ekrana Ekle" seçeneğini kullan.';
+      return;
+    }
+
+    if (!_pwaPrompt) {
+      /* Zaten kurulmuşsa veya desteklenmiyorsa bilgi ver */
+      if (st) {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+          || navigator.standalone === true;
+        st.textContent = isStandalone
+          ? '✅ Uygulama zaten kurulu.'
+          : 'ℹ️ Tarayıcın bu özelliği desteklemiyor. Chrome veya Edge kullanmanı öneririz.';
+      }
+      return;
+    }
+
+    try {
+      _pwaPrompt.prompt();
+      const { outcome } = await _pwaPrompt.userChoice;
+      if (outcome === 'accepted') {
+        if (st) st.textContent = '✅ Kurulum başlatıldı!';
+        if (btn) btn.style.display = 'none';
+      } else {
+        if (st) st.textContent = 'Kurulum iptal edildi.';
+      }
+      _pwaPrompt = null;
+    } catch(e) {
+      if (st) st.textContent = 'Kurulum sırasında hata oluştu: ' + e.message;
+    }
+  };
+
+  /* Ayarlar açıldığında PWA durumunu güncelle */
+  const _origOpenSettings = window.openSettings;
+  window.openSettings = function() {
+    if (typeof _origOpenSettings === 'function') _origOpenSettings.apply(this, arguments);
+    const btn = document.getElementById('pwa-install-btn');
+    const st  = document.getElementById('pwa-install-status');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || navigator.standalone === true;
+
+    if (isStandalone) {
+      if (btn) btn.style.display = 'none';
+      if (st)  st.textContent = '✅ Uygulama zaten kurulu ve çalışıyor.';
+    } else if (_pwaPrompt) {
+      if (btn) btn.style.display = 'block';
+      if (st)  st.textContent = '';
+    } else {
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+      if (btn) btn.style.display = 'block';
+      if (st) {
+        st.textContent = isIOS
+          ? '📱 iOS: Safari\'de "Paylaş" → "Ana Ekrana Ekle" seçeneğini kullan.'
+          : 'ℹ️ Kurulum için Chrome veya Edge kullanmanı öneririz.';
+      }
+    }
+  };
+
+})();
 </script>
 
 </body>
