@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.5.7">
+<meta name="app-version" content="8.5.8">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.5.7';
+  const APP_VERSION = '8.5.8';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -14035,6 +14035,7 @@ function kazaEdit(id) { kazaOpenAdd(id); }
 function kazaDel(id) {
   if (!confirm('Bu olay kaydı silinsin mi? Geri alınamaz.')) return;
   kazaItems = kazaItems.filter(x => x.id !== id);
+  if (window._hseDurumPlanla) window._hseDurumPlanla();
   kazaSave(); kazaRenderFiltreler(); kazaRender();
   toast('Kayıt silindi');
 }
@@ -14044,6 +14045,7 @@ function kazaOnlemDurum(id, deger) {
   const k = kazaItems.find(x => x.id === id);
   if (!k) return;
   k.onlemTamam = (deger === 'kapali');
+  if (window._hseDurumPlanla) window._hseDurumPlanla();
   kazaSave();
   kazaRender();
 }
@@ -14095,6 +14097,7 @@ function kazaOnlemGorev(id) {
     addedAt: Date.now(),
     doneAt: null
   };
+  if (k.hseKey) { task.hseKey = k.hseKey; task.hseKaynak = 'verim'; task.hseUrl = k.hseUrl || ''; task.note += '\nKaynak: HSE Verim' + (k.hseUrl ? '\nHSE: ' + k.hseUrl : ''); }
 
   tasks.push(task);
   k.linkedTaskId = taskId;
@@ -14104,6 +14107,7 @@ function kazaOnlemGorev(id) {
   save();
   render();
   kazaRender();
+  if (window._hseDurumPlanla) window._hseDurumPlanla();
   toast(`${tur.ad} kaydı görev panosuna eklendi ve bağlantı kuruldu`);
 }
 
@@ -18586,7 +18590,7 @@ window.addEventListener('resize', calMobInit);
     return String(id);
   }
   function hseVarMi(key) {
-    return tasks.some(t => t && t.hseKey === key) || archived.some(t => t && t.hseKey === key);
+    return tasks.some(t => t && t.hseKey === key) || archived.some(t => t && t.hseKey === key) || kazaItems.some(k => k && k.hseKey === key);
   }
 
   function hseGorevEkle(v, key, fab) {
@@ -18619,24 +18623,10 @@ window.addEventListener('resize', calMobInit);
       id: hseYeniId(), tur: 'kaza', tarih, saat: '', kayip: 0, fab, bolum: v.bolum || '', kisi: '',
       calisanGorevi: '', injuries: [], yaralanma: '', primaryImageData: '', aciklama,
       kokNeden: '', potansiyelSiddet: null, onlem: '', onlemTamam: false,
-      createdAt: Date.now(), kaynak: 'HSE Verim', hseKey: key
+      createdAt: Date.now(), kaynak: 'HSE Verim', hseKey: key, hseUrl: v.url || ''
     };
     kazaItems.unshift(k);
-    const tid = hseYeniId();
-    const kisa = aciklama.length > 110 ? aciklama.slice(0, 107) + '…' : aciklama;
-    const task = {
-      id: tid, text: `[İş Kazası] ${v.bolum ? v.bolum + ': ' : ''}${kisa}`,
-      status: (COLS[0] && COLS[0].id) || 'bekliyor', prio: 'high', sorumlu: '', termin: '', talep: '',
-      note: `Olay tarihi: ${tarih} — ${fab}\nOlay: ${aciklama}\nKaynak: HSE Verim${v.url ? '\nHSE: ' + v.url : ''}`,
-      hseIliski: 'Diğer İSG', hseKritik: 'Yüksek', hseTedbir: 'Diğer', hseKok: '',
-      incidentType: 'İş Kazası', incidentTypeId: 'kaza', incidentIds: [k.id],
-      incidentLinks: [{ incidentId: k.id, incidentType: 'kaza', incidentName: 'İş Kazası', incidentDate: tarih, linkedAt: Date.now() }],
-      fab, fabs: [fab], date: td(), addedAt: Date.now(), doneAt: null,
-      hseKey: key, hseKaynak: 'verim', hseUrl: v.url || ''
-    };
-    tasks.push(task);
-    k.linkedTaskId = task.id; k.linkedTaskAt = Date.now();
-    return task;
+    return k;
   }
 
   // Üstten kayan bilgi kartı: HSE Verim'den gelen kayıt (birkaç saniye görünür, dokununca kapanır)
@@ -18679,7 +18669,7 @@ window.addEventListener('resize', calMobInit);
       try { save(); } catch (e) {}
       try { render(); } catch (e) {}
       if (v.tip === 'kaza') { try { kazaSave(); } catch (e) {} try { kazaRender(); } catch (e) {} }
-      hseBilgi(v.tip === 'kaza' ? 'İş Kazası' : 'İSG Denetim', `${fab}${v.bolum ? ' · ' + v.bolum : ''}`, v.tip === 'kaza' ? 'Olay sayfasına ve göreve eklendi' : 'Board\'a görev olarak eklendi');
+      hseBilgi(v.tip === 'kaza' ? 'İş Kazası' : 'İSG Denetim', `${fab}${v.bolum ? ' · ' + v.bolum : ''}`, v.tip === 'kaza' ? 'Olay sayfasına eklendi · bilgileri tamamlayıp Göreve Ekle deyin' : 'Board\'a görev olarak eklendi');
       hseDurumPlanla();
       // Listeler buluta yazıldıktan sonra gelen kutusu kaydını sil (yazılmazsa bir sonraki açılışta yeniden işlenir)
       setTimeout(() => snap.ref.remove().catch(() => {}), 3500);
@@ -18692,19 +18682,30 @@ window.addEventListener('resize', calMobInit);
     clearTimeout(hseDurumZmn);
     hseDurumZmn = setTimeout(hseDurumYayinla, 900);
   }
+  window._hseDurumPlanla = hseDurumPlanla;
   function hseDurumYayinla() {
     if (!hazir || !hseKoprusuHazir || !AUTH.currentUser || AUTH.currentUser.uid !== AUTHORIZED_UID) return;
     const gor = new Set();
     [...tasks, ...archived].forEach(t => {
       if (!t || !t.hseKey) return;
       gor.add(t.hseKey);
-      const kapali = t.status === 'tamam' || !!t.doneAt;
+      const kz = (t.incidentIds && t.incidentIds[0]) ? kazaItems.find(x => String(x.id) === String(t.incidentIds[0])) : null;
+      const kapali = t.status === 'tamam' || !!t.doneAt || !!(kz && kz.hseKey === t.hseKey && kz.onlemTamam);
       const col = (typeof COLS !== 'undefined' ? COLS : []).find(c => c.id === t.status);
       const o = { durum: kapali ? 'kapali' : 'acik', durumAd: col ? col.label : '', sorumlu: t.sorumlu || '', termin: t.termin || '', kapanis: t.doneAt || null, gid: String(t.id) };
       const s = JSON.stringify(o);
       if (hseDurumSon[t.hseKey] === s) return;
       hseDurumSon[t.hseKey] = s;
       ROOT.child('hseDurum').child(t.hseKey).set({ ...o, at: Date.now() }).catch(e => console.error('HSE durum yazılamadı', e));
+    });
+    kazaItems.forEach(k => {
+      if (!k || !k.hseKey || gor.has(k.hseKey)) return;
+      gor.add(k.hseKey);
+      const o = { durum: 'kayit', durumAd: 'Olay kaydı', sorumlu: '', termin: '', kapanis: null, gid: String(k.id) };
+      const s2 = JSON.stringify(o);
+      if (hseDurumSon[k.hseKey] === s2) return;
+      hseDurumSon[k.hseKey] = s2;
+      ROOT.child('hseDurum').child(k.hseKey).set({ ...o, at: Date.now() }).catch(e => console.error('HSE durum yazılamadı', e));
     });
     Object.keys(hseDurumSon).forEach(k => {
       if (gor.has(k)) return;
