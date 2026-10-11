@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.5.5">
+<meta name="app-version" content="8.5.6">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.5.5';
+  const APP_VERSION = '8.5.6';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -8133,20 +8133,35 @@ function paramAdDegistir(i) {
   if (dizi.find((x,j) => j !== i && x.name.toLowerCase() === ad.toLowerCase())) { alert('Bu ad zaten kullanılıyor.'); return; }
   dizi[i].name = ad;
   if (paramAktif === 'personeller') dizi[i].init = ad.charAt(0).toUpperCase();
-  // Fabrika adı değiştiyse görevlerdeki etiketleri de güncelle
-  if (paramAktif === 'fabrikalar') {
-    tasks.forEach(t => {
-      if (Array.isArray(t.fabs) && t.fabs.includes(eskiAd)) {
-        t.fabs = t.fabs.map(f => f === eskiAd ? ad : f);
-        t.fab = t.fabs.join(', ');
-        if (window._fbUpdate) window._fbUpdate(t);
-      }
-    });
-    save();
-  }
+  // Fabrika adı değiştiyse adı kullanan tüm kayıtlar (görev, kontrol, denetim, kaza, personel) yeni ada taşınır
+  if (paramAktif === 'fabrikalar') fabrikaAdiTasi(eskiAd, ad);
   tanim.kaydet();
   paramRender(); renderSettingsPanel();
   toast('Ad güncellendi');
+}
+
+// Fabrika adı değişince adı kullanan her modüldeki kayıt yeni ada taşınır (veri kaybı olmaz)
+function fabrikaAdiTasi(eski, yeni) {
+  const m = x => x === eski ? yeni : x;
+  const fixFabs = o => {
+    if (Array.isArray(o.fabs) && o.fabs.includes(eski)) o.fabs = o.fabs.map(m);
+    if (o.fab === eski) o.fab = yeni;
+    else if (typeof o.fab === 'string' && o.fab.includes(',')) o.fab = o.fab.split(',').map(x => m(x.trim())).join(', ');
+  };
+  tasks.forEach(t => { const once = t.fab; fixFabs(t); if (t.fab !== once && window._fbUpdate) window._fbUpdate(t); });
+  archived.forEach(fixFabs);
+  kontrolItems.forEach(fixFabs);
+  kontrolFabs.forEach((f, i) => { if (f === eski) kontrolFabs[i] = yeni; });
+  if (kontrolFabFilter === eski) kontrolFabFilter = yeni;
+  denetimler.forEach(fixFabs);
+  kazaItems.forEach(fixFabs);
+  kazaItems.forEach(k => { if (k.factory === eski) k.factory = yeni; });
+  perFabs.forEach(f => { if (f.name === eski) f.name = yeni; });
+  perTasks.forEach(t => {
+    Object.keys(t.assignments || {}).forEach(pid => { t.assignments[pid] = t.assignments[pid].map(m); });
+    Object.keys(t.checks || {}).forEach(pid => { if (t.checks[pid] && eski in t.checks[pid]) { t.checks[pid][yeni] = t.checks[pid][eski]; delete t.checks[pid][eski]; } });
+  });
+  save(); kontrolSave(); if (typeof denetimSave === 'function') denetimSave(); if (typeof kazaSave === 'function') kazaSave(); perSave();
 }
 
 function saveFabrikalar() { localStorage.setItem('yeni_isg_fabrikalar', JSON.stringify(fabrikalar)); if(window._fbSaveSettings) window._fbSaveSettings(); }
@@ -18246,6 +18261,7 @@ window.addEventListener('resize', calMobInit);
   // yoksa yeni eklenen bir görev, kendi bekleyen yazması tamamlanmadan gelen eski
   // buluş anlık görüntüsü tarafından silinebilir (senkronun tamamen kopmasının nedeni buydu).
   const yazimBekliyor = {};
+  window._fbBekleyen = () => Object.values(yazimBekliyor).some(Boolean);
   function temizle(v) {
     try { return JSON.parse(JSON.stringify(v === undefined ? null : v)); }
     catch (e) { return null; }
@@ -21083,5 +21099,30 @@ window.addEventListener('beforeprint',()=>{
 })();
 </script>
 
+<script>
+// Aşağı çekerek yenile (sayfa kaydırması iç kutularda olduğu için tarayıcının kendi özelliği çalışmaz)
+(function () {
+  if (!('ontouchstart' in window)) return;
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;left:50%;top:0;transform:translate(-50%,-60px);z-index:99999;background:#185FA5;color:#fff;font:600 12px -apple-system,Segoe UI,sans-serif;padding:8px 16px;border-radius:0 0 12px 12px;transition:transform .15s;pointer-events:none';
+  document.body.appendChild(bar);
+  let y0 = 0, pull = 0, on = false;
+  const scrolled = el => { for (; el && el !== document.body; el = el.parentElement) { if (el.scrollTop > 0 && el.scrollHeight > el.clientHeight) return true; } return false; };
+  const blocked = el => !!el.closest('input,textarea,select,[contenteditable],.modal-overlay,[class*="modal"],[id$="-modal"],[id$="-overlay"]');
+  document.addEventListener('touchstart', e => { on = e.touches.length === 1 && !scrolled(e.target) && !blocked(e.target); y0 = e.touches[0].clientY; pull = 0; }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!on) return; pull = e.touches[0].clientY - y0;
+    if (pull < 0) { on = false; bar.style.transform = 'translate(-50%,-60px)'; return; }
+    if (pull > 20) { bar.textContent = pull > 90 ? 'Bırakınca yenilenir' : 'Yenilemek için aşağı çekin'; bar.style.transform = 'translate(-50%,' + Math.min(pull / 3, 34) + 'px)'; }
+  }, { passive: true });
+  document.addEventListener('touchend', () => {
+    if (!on) return; on = false;
+    if (pull > 90) {
+      if (window._fbBekleyen && window._fbBekleyen()) { bar.textContent = 'Kayıt sürüyor, biraz sonra tekrar deneyin'; setTimeout(() => bar.style.transform = 'translate(-50%,-60px)', 1800); return; }
+      bar.textContent = 'Yenileniyor…'; bar.style.transform = 'translate(-50%,0)'; setTimeout(() => location.reload(), 150);
+    } else bar.style.transform = 'translate(-50%,-60px)';
+  }, { passive: true });
+})();
+</script>
 </body>
 </html>
