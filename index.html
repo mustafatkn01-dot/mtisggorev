@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.5.4">
+<meta name="app-version" content="8.5.5">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.5.4';
+  const APP_VERSION = '8.5.5';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -18535,6 +18535,175 @@ window.addEventListener('resize', calMobInit);
     try { window.dispatchEvent(new CustomEvent('kazaRaporBulutGuncellendi',{detail:{incidentId}})); } catch(e) {}
   }
 
+  // ══ HSE Verim köprüsü ═══════════════════════════════════════════════════
+  // HSE Verim programı (ayrı proje) "Göreve ekle" dediğinde isg/hseGelen/{anahtar}
+  // altına küçük bir kayıt bırakır. Bu program kaydı KENDİ listelerine (tasks,
+  // kazaItems) kendisi ekler; böylece başka bir istemci tüm listeyi ezemez.
+  // Bağlı görevlerin Açık/Kapalı durumu isg/hseDurum/{anahtar} altına yazılır;
+  // HSE Verim bunu yalnızca okur (puanını etkilemez).
+  const HSE_ILISKI = {
+    'KKD Kullanmama': 'KKD',
+    'Makine, Ekipman ve Kaldırma-Taşıma Emniyeti': 'Makine / Ekipman Güvenliği',
+    'Arıza, Bakım ve İzinli İşler': 'EKED / LOTO',
+    'Elektrik Güvenliği': 'Elektrik Güvenliği',
+    'Yaya Yolu ve Acil Durum Ekipman/Çıkış Erişimi': 'Yangın / Acil Durum',
+    '5S Kurallarına Uymama': 'Çalışma Ortamı',
+    'Çevre ve Atık Yönetimine Uymama': 'Çalışma Ortamı',
+    'Kimyasal Güvenlik': 'Kimyasal Güvenlik'
+  };
+  const HSE_AYLAR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  // Büyük/küçük harf ve Türkçe karakter (İ/ı, ş, ğ…) farkları yok sayılır
+  const hseNorm = s => String(s || '').replace(/İ/g, 'i').replace(/I/g, 'i').toLowerCase()
+    .replace(/[ıçğöşü]/g, c => ({ 'ı': 'i', 'ç': 'c', 'ğ': 'g', 'ö': 'o', 'ş': 's', 'ü': 'u' }[c])).replace(/\s+/g, ' ').trim();
+  const hseDurumSon = {};          // anahtar → son yayınlanan durum (JSON)
+  let hseDurumZmn = null, hseKoprusuHazir = false;
+
+  function hseFabBul(ad) {
+    const n = hseNorm(ad);
+    const f = (typeof fabrikalar !== 'undefined' ? fabrikalar : []).find(x => hseNorm(x && x.name) === n);
+    return f ? f.name : null;
+  }
+  function hseYeniId() {
+    let id = Date.now();
+    const var_ = x => tasks.some(t => String(t.id) === String(x)) || archived.some(t => String(t.id) === String(x));
+    while (var_(id)) id++;
+    return String(id);
+  }
+  function hseVarMi(key) {
+    return tasks.some(t => t && t.hseKey === key) || archived.some(t => t && t.hseKey === key);
+  }
+
+  function hseGorevEkle(v, key, fab) {
+    const agr = +v.agirlik || 2;
+    const donem = HSE_AYLAR[(+v.ay || 1) - 1] + ' ' + v.yil;
+    const task = {
+      id: hseYeniId(),
+      text: `[İSG Denetim] ${v.bolum || ''}: ${v.metin || ''}`.trim(),
+      status: (COLS[0] && COLS[0].id) || 'bekliyor',
+      prio: agr >= 3 ? 'high' : agr === 1 ? 'low' : 'normal',
+      sorumlu: '', termin: '', talep: '',
+      note: `Kaynak: HSE Verim · ${v.fab} · ${donem}\nKategori: ${v.kategori || ''}\nMadde: ${v.madde || ''}${v.url ? '\nHSE: ' + v.url : ''}`,
+      hseIliski: HSE_ILISKI[v.kategori] || 'Diğer İSG',
+      hseKritik: agr >= 3 ? 'Yüksek' : agr === 1 ? 'Düşük' : 'Orta',
+      hseTedbir: 'Diğer', hseKok: '',
+      fab, fabs: [fab], date: td(), addedAt: Date.now(), doneAt: null,
+      hseKey: key, hseKaynak: 'verim', hseUrl: v.url || ''
+    };
+    tasks.push(task);
+    return task;
+  }
+
+  function hseKazaEkle(v, key, fab) {
+    const yil = +v.yil, ay = +v.ay, now = new Date(), p2 = n => String(n).padStart(2, '0');
+    const g = (now.getFullYear() === yil && now.getMonth() + 1 === ay) ? now : new Date(yil, ay, 0);
+    const tarih = g.getFullYear() + '-' + p2(g.getMonth() + 1) + '-' + p2(g.getDate());
+    const sinif = v.sinif ? `[${v.sinif}${+v.sayi > 1 ? ' · ' + v.sayi + ' kişi' : ''}] ` : '';
+    const aciklama = `${sinif}${v.metin || 'HSE Verim kaydından aktarıldı; ayrıntıyı giriniz.'}`;
+    const k = {
+      id: hseYeniId(), tur: 'kaza', tarih, saat: '', kayip: 0, fab, bolum: v.bolum || '', kisi: '',
+      calisanGorevi: '', injuries: [], yaralanma: '', primaryImageData: '', aciklama,
+      kokNeden: '', potansiyelSiddet: null, onlem: '', onlemTamam: false,
+      createdAt: Date.now(), kaynak: 'HSE Verim', hseKey: key
+    };
+    kazaItems.unshift(k);
+    const tid = hseYeniId();
+    const kisa = aciklama.length > 110 ? aciklama.slice(0, 107) + '…' : aciklama;
+    const task = {
+      id: tid, text: `[İş Kazası] ${v.bolum ? v.bolum + ': ' : ''}${kisa}`,
+      status: (COLS[0] && COLS[0].id) || 'bekliyor', prio: 'high', sorumlu: '', termin: '', talep: '',
+      note: `Olay tarihi: ${tarih} — ${fab}\nOlay: ${aciklama}\nKaynak: HSE Verim${v.url ? '\nHSE: ' + v.url : ''}`,
+      hseIliski: 'Diğer İSG', hseKritik: 'Yüksek', hseTedbir: 'Diğer', hseKok: '',
+      incidentType: 'İş Kazası', incidentTypeId: 'kaza', incidentIds: [k.id],
+      incidentLinks: [{ incidentId: k.id, incidentType: 'kaza', incidentName: 'İş Kazası', incidentDate: tarih, linkedAt: Date.now() }],
+      fab, fabs: [fab], date: td(), addedAt: Date.now(), doneAt: null,
+      hseKey: key, hseKaynak: 'verim', hseUrl: v.url || ''
+    };
+    tasks.push(task);
+    k.linkedTaskId = task.id; k.linkedTaskAt = Date.now();
+    return task;
+  }
+
+  async function hseIceAl(snap) {
+    const key = snap.key, v = snap.val();
+    if (!v || typeof v !== 'object' || v.islendi) return;
+    try {
+      // Aynı anda iki cihaz açıksa yalnız biri işler
+      const tx = await snap.ref.transaction(cur => {
+        if (!cur || cur.islendi) return;
+        if (cur.islemde && Date.now() - cur.islemde < 60000) return;
+        cur.islemde = Date.now();
+        return cur;
+      });
+      if (!tx.committed) return;
+      if (hseVarMi(key)) { hseDurumPlanla(); setTimeout(() => snap.ref.remove().catch(() => {}), 3000); return; }
+      const fab = hseFabBul(v.fab);
+      if (!fab) {
+        await ROOT.child('hseDurum').child(key).set({ durum: 'hata', neden: 'fab', at: Date.now() });
+        await snap.ref.update({ islendi: 'hata', islemde: null });
+        return;
+      }
+      if (v.tip === 'kaza') hseKazaEkle(v, key, fab); else hseGorevEkle(v, key, fab);
+      try { save(); } catch (e) {}
+      try { render(); } catch (e) {}
+      if (v.tip === 'kaza') { try { kazaSave(); } catch (e) {} try { kazaRender(); } catch (e) {} }
+      toast(v.tip === 'kaza' ? 'HSE Verim: kaza kaydı olay sayfasına ve göreve eklendi' : 'HSE Verim: yeni görev eklendi');
+      hseDurumPlanla();
+      // Listeler buluta yazıldıktan sonra gelen kutusu kaydını sil (yazılmazsa bir sonraki açılışta yeniden işlenir)
+      setTimeout(() => snap.ref.remove().catch(() => {}), 3500);
+    } catch (e) {
+      console.error('HSE köprüsü: kayıt alınamadı', key, e);
+    }
+  }
+
+  function hseDurumPlanla() {
+    clearTimeout(hseDurumZmn);
+    hseDurumZmn = setTimeout(hseDurumYayinla, 900);
+  }
+  function hseDurumYayinla() {
+    if (!hazir || !hseKoprusuHazir || !AUTH.currentUser || AUTH.currentUser.uid !== AUTHORIZED_UID) return;
+    const gor = new Set();
+    [...tasks, ...archived].forEach(t => {
+      if (!t || !t.hseKey) return;
+      gor.add(t.hseKey);
+      const kapali = t.status === 'tamam' || !!t.doneAt;
+      const col = (typeof COLS !== 'undefined' ? COLS : []).find(c => c.id === t.status);
+      const o = { durum: kapali ? 'kapali' : 'acik', durumAd: col ? col.label : '', sorumlu: t.sorumlu || '', termin: t.termin || '', kapanis: t.doneAt || null, gid: String(t.id) };
+      const s = JSON.stringify(o);
+      if (hseDurumSon[t.hseKey] === s) return;
+      hseDurumSon[t.hseKey] = s;
+      ROOT.child('hseDurum').child(t.hseKey).set({ ...o, at: Date.now() }).catch(e => console.error('HSE durum yazılamadı', e));
+    });
+    Object.keys(hseDurumSon).forEach(k => {
+      if (gor.has(k)) return;
+      const s = hseDurumSon[k];
+      if (s === 'silindi' || s === 'hata') return;
+      hseDurumSon[k] = 'silindi';
+      ROOT.child('hseDurum').child(k).set({ durum: 'silindi', at: Date.now() }).catch(() => {});
+    });
+  }
+
+  async function hseKoprusuBaslat() {
+    try {
+      ROOT.child('hseGelen').off();
+      const mevcut = (await ROOT.child('hseDurum').once('value')).val() || {};
+      Object.keys(mevcut).forEach(k => {
+        const m = mevcut[k] || {};
+        if (m.durum === 'silindi' || m.durum === 'hata') { hseDurumSon[k] = m.durum; return; }
+        hseDurumSon[k] = JSON.stringify({ durum: m.durum, durumAd: m.durumAd || '', sorumlu: m.sorumlu || '', termin: m.termin || '', kapanis: m.kapanis || null, gid: String(m.gid || '') });
+      });
+      hseKoprusuHazir = true;
+      ROOT.child('hseGelen').on('child_added', hseIceAl, err => console.error('HSE gelen kutusu okunamadı', err));
+      hseDurumPlanla();
+    } catch (e) { console.error('HSE köprüsü başlatılamadı', e); }
+  }
+  // Görev / arşiv kaydedildikçe durum aynasını güncelle
+  ['_fbSave', '_fbUpdate', '_fbDelete', '_fbSaveArchive'].forEach(ad => {
+    const eski = window[ad];
+    if (typeof eski !== 'function') return;
+    window[ad] = function () { const r = eski.apply(this, arguments); hseDurumPlanla(); return r; };
+  });
+  // ══ /HSE Verim köprüsü ══════════════════════════════════════════════════
+
   async function firebaseSyncBaslat() {
     if (firebaseSyncBasladi) return;
     firebaseSyncBasladi = true;
@@ -18579,6 +18748,7 @@ window.addEventListener('resize', calMobInit);
       });
 
       nokta(true, 'Bulut bağlantısı aktif ve kimlik doğrulandı ✓');
+      hseKoprusuBaslat();
     } catch(err) {
       console.error('Firebase ilk okuma hatası:',err);
       firebaseSyncBasladi=false;
