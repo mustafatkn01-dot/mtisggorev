@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.5.9">
+<meta name="app-version" content="8.6.0">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.5.9';
+  const APP_VERSION = '8.6.0';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -18726,7 +18726,7 @@ window.addEventListener('resize', calMobInit);
       const kz = (t.incidentIds && t.incidentIds[0]) ? kazaItems.find(x => String(x.id) === String(t.incidentIds[0])) : null;
       const kapali = t.status === 'tamam' || !!t.doneAt || !!(kz && kz.hseKey === t.hseKey && kz.onlemTamam);
       const col = (typeof COLS !== 'undefined' ? COLS : []).find(c => c.id === t.status);
-      const o = { durum: kapali ? 'kapali' : 'acik', durumAd: col ? col.label : '', sorumlu: t.sorumlu || '', termin: t.termin || '', kapanis: t.doneAt || null, gid: String(t.id) };
+      const o = { durum: kapali ? 'kapali' : 'acik', durumAd: col ? col.label : '', sorumlu: t.sorumlu || '', termin: t.termin || '', kapanis: t.doneAt || null, acilis: t.addedAt || null, gid: String(t.id) };
       const s = JSON.stringify(o);
       if (hseDurumSon[t.hseKey] === s) return;
       hseDurumSon[t.hseKey] = s;
@@ -18735,7 +18735,7 @@ window.addEventListener('resize', calMobInit);
     kazaItems.forEach(k => {
       if (!k || !k.hseKey || gor.has(k.hseKey)) return;
       gor.add(k.hseKey);
-      const o = { durum: 'kayit', durumAd: 'Olay kaydı', sorumlu: '', termin: '', kapanis: null, gid: String(k.id) };
+      const o = { durum: 'kayit', durumAd: 'Olay kaydı', sorumlu: '', termin: '', kapanis: null, acilis: k.createdAt || null, gid: String(k.id) };
       const s2 = JSON.stringify(o);
       if (hseDurumSon[k.hseKey] === s2) return;
       hseDurumSon[k.hseKey] = s2;
