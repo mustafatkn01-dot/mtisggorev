@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.5.8">
+<meta name="app-version" content="8.5.9">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.5.8';
+  const APP_VERSION = '8.5.9';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -7819,6 +7819,7 @@ function submitAdd() {
       if (status === 'tamam' && !wasDone) t.doneAt = Date.now();
       if (status !== 'tamam') t.doneAt = null;
       if (window._fbUpdate) window._fbUpdate(t);
+      kaynakDurumUygula(t);
       save();
     }
     closeAddModal(); render(); toast('Görev güncellendi');
@@ -7941,6 +7942,35 @@ function terminInfo(termin) {
 function add() {} // eski fonksiyon - artık submitAdd kullanılıyor
 
 
+// ── Görev ↔ kaynak kayıt durum eşitleme (görev Tamamlandı ⇄ kaza önlemi Kapalı ⇄ denetim bulgusu Kapalı) ──
+function gorevDurumUygula(t, tamam) {
+  if (!t) return false;
+  const bitti = t.status === 'tamam';
+  if (tamam && !bitti) { t.oncekiStatus = t.status; t.status = 'tamam'; t.doneAt = Date.now(); }
+  else if (!tamam && bitti) {
+    t.status = (t.oncekiStatus && t.oncekiStatus !== 'tamam' && COLS.some(c => c.id === t.oncekiStatus)) ? t.oncekiStatus : ((COLS[0] && COLS[0].id) || 'bekliyor');
+    t.doneAt = null;
+  } else return false;
+  if (window._fbUpdate) window._fbUpdate(t);
+  save(); render();
+  return true;
+}
+function kaynakDurumUygula(t) {
+  if (!t) return;
+  const tamam = t.status === 'tamam';
+  let kz = false, dn = false;
+  (t.incidentIds || []).forEach(id => {
+    const k = kazaItems.find(x => String(x.id) === String(id));
+    if (k && k.onlem && !!k.onlemTamam !== tamam) { k.onlemTamam = tamam; kz = true; }
+  });
+  bulgular.filter(b => b.linkedTaskId && String(b.linkedTaskId) === String(t.id)).forEach(b => {
+    if (tamam && b.durum !== 'kapali') { b.durum = 'kapali'; b.kapanis = Date.now(); dn = true; }
+    else if (!tamam && b.durum === 'kapali') { b.durum = 'acik'; b.kapanis = null; dn = true; }
+  });
+  if (kz) { kazaSave(); try { kazaRender(); } catch (e) {} }
+  if (dn) { denetimSave(); try { denetimRender(); } catch (e) {} }
+}
+
 function mv(id, s) {
   const t = tasks.find(x=>x.id===id);
   if(!t) return;
@@ -7949,6 +7979,7 @@ function mv(id, s) {
   if (s === 'tamam') t.doneAt = Date.now();
   else t.doneAt = null;
   if (window._fbUpdate) window._fbUpdate(t);
+  kaynakDurumUygula(t);
   save();
   render();
 }
@@ -8780,6 +8811,7 @@ function setTaskStatus(id, status) {
   if (status === 'tamam' && !wasDone) t.doneAt = Date.now();
   if (status !== 'tamam') t.doneAt = null;
   if (window._fbUpdate) window._fbUpdate(t);
+  kaynakDurumUygula(t);
   openInlineEdit = null;
   save(); render(); toast('Durum güncellendi');
 }
@@ -14024,7 +14056,7 @@ function kazaSubmit() {
 
   if (kazaEditId) {
     const k = kazaItems.find(x => x.id === kazaEditId);
-    if (k) Object.assign(k, veri);
+    if (k) { Object.assign(k, veri); if (k.linkedTaskId) gorevDurumUygula(tasks.find(t => String(t.id) === String(k.linkedTaskId)), !!k.onlemTamam); }
   } else {
     kazaItems.unshift({ id: Date.now()+'', ...veri, createdAt: Date.now() });
   }
@@ -14045,6 +14077,7 @@ function kazaOnlemDurum(id, deger) {
   const k = kazaItems.find(x => x.id === id);
   if (!k) return;
   k.onlemTamam = (deger === 'kapali');
+  if (k.linkedTaskId) gorevDurumUygula(tasks.find(t => String(t.id) === String(k.linkedTaskId)), k.onlemTamam);
   if (window._hseDurumPlanla) window._hseDurumPlanla();
   kazaSave();
   kazaRender();
@@ -17355,6 +17388,7 @@ function bulguDurumDegistir(id, durum) {
   if (!b) return;
   b.durum = durum;
   if (durum === 'kapali') b.kapanis = Date.now(); else b.kapanis = null;
+  if (b.linkedTaskId) gorevDurumUygula(tasks.find(t => String(t.id) === String(b.linkedTaskId)), durum === 'kapali');
   denetimSave(); denetimRender();
 }
 function bulguHseKokDoldur() {
