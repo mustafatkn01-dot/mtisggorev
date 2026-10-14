@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.6.1">
+<meta name="app-version" content="8.6.2">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.6.1';
+  const APP_VERSION = '8.6.2';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -18665,6 +18665,30 @@ window.addEventListener('resize', calMobInit);
     return k;
   }
 
+  // Ramak kala: olay sayfasına tur='ramak' kaydı olarak eklenir (kaza ile aynı akış)
+  function hseRamakBenzer(v, fab) {
+    const tk = x => hseNorm(x).split(/[^a-z0-9]+/).filter(w => w.length > 3);
+    const a = new Set(tk(v.metin)), gun = d => new Date(String(d) + 'T00:00:00').getTime();
+    return kazaItems.find(k => {
+      if (!k || k.tur !== 'ramak' || k.fab !== fab || k.hseKey) return false;
+      if (Math.abs(gun(k.tarih) - gun(v.tarih)) > 3 * 864e5) return false;
+      const b = tk(k.aciklama);
+      if (!a.size || !b.length) return false;
+      return b.filter(w => a.has(w)).length / Math.min(a.size, b.length) >= 0.5;
+    }) || null;
+  }
+  function hseRamakEkle(v, key, fab) {
+    const yer = v.yer ? `[${v.yer}] ` : '';
+    const k = {
+      id: hseYeniId(), tur: 'ramak', tarih: v.tarih, saat: '', kayip: 0, fab, bolum: v.bolum || '', kisi: v.kisi || '',
+      calisanGorevi: '', injuries: [], yaralanma: '', primaryImageData: '', aciklama: `${yer}${v.metin || ''}`.trim(),
+      kokNeden: '', potansiyelSiddet: null, onlem: v.oneri || '', onlemTamam: false,
+      createdAt: Date.now(), kaynak: 'HSE Verim', hseKey: key, hseUrl: v.url || ''
+    };
+    kazaItems.unshift(k);
+    return k;
+  }
+
   // Üstten kayan bilgi kartı: HSE Verim'den gelen kayıt (birkaç saniye görünür, dokununca kapanır)
   let hseBilgiEl = null, hseBilgiZmn = null, hseBilgiSay = 0;
   function hseBilgi(tur, yer, sonuc) {
@@ -18701,11 +18725,24 @@ window.addEventListener('resize', calMobInit);
         await snap.ref.update({ islendi: 'hata', islemde: null });
         return;
       }
-      if (v.tip === 'kaza') hseKazaEkle(v, key, fab); else hseGorevEkle(v, key, fab);
+      const olay = v.tip === 'kaza' || v.tip === 'ramak';
+      if (v.tip === 'ramak') {
+        const ex = hseRamakBenzer(v, fab);
+        if (ex) {
+          // Aynı olay zaten kayıtlı: ikinci kayıt açılmaz, mevcut kayıt bu HSE kaydına bağlanır
+          ex.hseKey = key; ex.hseMevcut = true; ex.hseUrl = v.url || '';
+          try { kazaSave(); } catch (e) {} try { kazaRender(); } catch (e) {}
+          hseBilgi('Ramak Kala', `${fab}${v.bolum ? ' · ' + v.bolum : ''}`, 'Zaten kayıtlı, ikinci kayıt açılmadı');
+          hseDurumPlanla();
+          setTimeout(() => snap.ref.remove().catch(() => {}), 3500);
+          return;
+        }
+        hseRamakEkle(v, key, fab);
+      } else if (v.tip === 'kaza') hseKazaEkle(v, key, fab); else hseGorevEkle(v, key, fab);
       try { save(); } catch (e) {}
       try { render(); } catch (e) {}
-      if (v.tip === 'kaza') { try { kazaSave(); } catch (e) {} try { kazaRender(); } catch (e) {} }
-      hseBilgi(v.tip === 'kaza' ? 'İş Kazası' : 'İSG Denetim', `${fab}${v.bolum ? ' · ' + v.bolum : ''}`, v.tip === 'kaza' ? 'Olay sayfasına eklendi · bilgileri tamamlayıp Göreve Ekle deyin' : 'Board\'a görev olarak eklendi');
+      if (olay) { try { kazaSave(); } catch (e) {} try { kazaRender(); } catch (e) {} }
+      hseBilgi(v.tip === 'kaza' ? 'İş Kazası' : v.tip === 'ramak' ? 'Ramak Kala' : 'İSG Denetim', `${fab}${v.bolum ? ' · ' + v.bolum : ''}`, olay ? 'Olay sayfasına eklendi · bilgileri tamamlayıp Göreve Ekle deyin' : 'Board\'a görev olarak eklendi');
       hseDurumPlanla();
       // Listeler buluta yazıldıktan sonra gelen kutusu kaydını sil (yazılmazsa bir sonraki açılışta yeniden işlenir)
       setTimeout(() => snap.ref.remove().catch(() => {}), 3500);
@@ -18738,6 +18775,7 @@ window.addEventListener('resize', calMobInit);
       if (!k || !k.hseKey || gor.has(k.hseKey)) return;
       gor.add(k.hseKey);
       const o = { durum: 'kayit', durumAd: 'Olay kaydı', sorumlu: '', termin: '', kapanis: null, acilis: k.createdAt || null, gid: String(k.id) };
+      if (k.hseMevcut) o.mevcut = true;
       const s2 = JSON.stringify(o);
       if (hseDurumSon[k.hseKey] === s2) return;
       hseDurumSon[k.hseKey] = s2;
