@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.6.2">
+<meta name="app-version" content="8.6.3">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.6.2';
+  const APP_VERSION = '8.6.3';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -18678,10 +18678,9 @@ window.addEventListener('resize', calMobInit);
     }) || null;
   }
   function hseRamakEkle(v, key, fab) {
-    const yer = v.yer ? `[${v.yer}] ` : '';
     const k = {
       id: hseYeniId(), tur: 'ramak', tarih: v.tarih, saat: '', kayip: 0, fab, bolum: v.bolum || '', kisi: v.kisi || '',
-      calisanGorevi: '', injuries: [], yaralanma: '', primaryImageData: '', aciklama: `${yer}${v.metin || ''}`.trim(),
+      calisanGorevi: '', injuries: [], yaralanma: '', primaryImageData: '', aciklama: `${v.metin || ''}${v.yer ? '\nOlay yeri: ' + v.yer : ''}`.trim(),
       kokNeden: '', potansiyelSiddet: null, onlem: v.oneri || '', onlemTamam: false,
       createdAt: Date.now(), kaynak: 'HSE Verim', hseKey: key, hseUrl: v.url || ''
     };
