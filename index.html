@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.6.3">
+<meta name="app-version" content="8.6.4">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.6.3';
+  const APP_VERSION = '8.6.4';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -18700,7 +18700,7 @@ window.addEventListener('resize', calMobInit);
     hseBilgiSay++;
     const ek = hseBilgiSay > 1 ? `<div style="font-weight:500;margin-top:2px">Bu oturumda ${hseBilgiSay} kayıt alındı</div>` : '';
     const esc_ = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    hseBilgiEl.innerHTML = `✓ HSE Verim'den ${esc_(tur)} aktarıldı<div style="font-weight:500">${esc_(yer)} — ${esc_(sonuc)}</div>${ek}`;
+    hseBilgiEl.innerHTML = `✓ HSE Verim'den ${esc_(tur)} aktarıldı<div style="font-weight:500">${esc_(yer)} — ${esc_(sonuc)}</div>${ek}<div style="font-weight:500;opacity:.7;font-size:11px;margin-top:2px">Görev takip v${esc_(window.APP_VERSION||'')}</div>`;
     hseBilgiEl.style.transform = 'translate(-50%,0)';
     clearTimeout(hseBilgiZmn); hseBilgiZmn = setTimeout(() => { hseBilgiEl.style.transform = 'translate(-50%,-120%)'; }, 6000);
   }
