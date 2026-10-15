@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.6.4">
+<meta name="app-version" content="8.6.5">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.6.4';
+  const APP_VERSION = '8.6.5';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -7511,6 +7511,7 @@ px}
             </button>
             <div id="pwa-install-status" style="font-size:11px;margin-top:6px;color:var(--text3);text-align:center;"></div>
           </div>
+          <div style="font-size:11px;margin-top:8px;color:var(--text3);text-align:center;">Sürüm <b><script>document.write(window.APP_VERSION||'')</script></b></div>
         </div>
 
       </div>
@@ -18707,11 +18708,11 @@ window.addEventListener('resize', calMobInit);
 
   async function hseIceAl(snap) {
     const key = snap.key, v = snap.val();
-    if (!v || typeof v !== 'object' || v.islendi) return;
+    if (!v || typeof v !== 'object' || (v.islendi && v.islendi !== 'ramak')) return;
     try {
       // Aynı anda iki cihaz açıksa yalnız biri işler
       const tx = await snap.ref.transaction(cur => {
-        if (!cur || cur.islendi) return;
+        if (!cur || (cur.islendi && cur.islendi !== 'ramak')) return;
         if (cur.islemde && Date.now() - cur.islemde < 60000) return;
         cur.islemde = Date.now();
         return cur;
