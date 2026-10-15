@@ -18681,7 +18681,7 @@ window.addEventListener('resize', calMobInit);
   function hseRamakEkle(v, key, fab) {
     const k = {
       id: hseYeniId(), tur: 'ramak', tarih: v.tarih, saat: '', kayip: 0, fab, bolum: v.bolum || '', kisi: v.kisi || '',
-      calisanGorevi: '', injuries: [], yaralanma: '', primaryImageData: '', aciklama: `${v.metin || ''}${v.yer ? '\nOlay yeri: ' + v.yer : ''}`.trim(),
+      calisanGorevi: '', injuries: [], yaralanma: '', primaryImageData: (typeof v.foto === 'string' && v.foto.indexOf('data:image/') === 0 && v.foto.length < 900000) ? v.foto : '', aciklama: `${v.metin || ''}${v.yer ? '\nOlay yeri: ' + v.yer : ''}`.trim(),
       kokNeden: '', potansiyelSiddet: null, onlem: v.oneri || '', onlemTamam: false,
       createdAt: Date.now(), kaynak: 'HSE Verim', hseKey: key, hseUrl: v.url || ''
     };
