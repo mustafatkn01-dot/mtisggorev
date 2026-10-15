@@ -13946,16 +13946,19 @@ function kazaRender() {
       ? `<div class="kaza-alan"><b>${etiket}:</b> ${esc(deger)}</div>` : '';
     const kzFabRenk = k.fab ? fabColor(k.fab) : '#888780';
     return `<div class="kaza-card kaza-fabserit" style="--kz-renk:${t.renk};--kz-fab:${kzFabRenk}">
-      <div style="display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+       <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;">
         <span class="kaza-tur-badge" style="background:${t.renk}">${t.ikon} ${t.ad}</span>
         <span style="font-size:11px;color:var(--text2);font-weight:600;">📅 ${tarihStr}${k.saat?' · '+esc(k.saat):''}</span>
         ${k.fab?`<span class="cfab-tag" style="background:${kzFabRenk};color:${contrastText(kzFabRenk)}">${esc(k.fab)}</span>`:''}
         ${k.bolum?`<span style="font-size:10px;color:var(--text3);">${esc(k.bolum)}</span>`:''}
         ${(parseInt(k.kayip)||0) > 0
           ? `<span style="font-size:10px;font-weight:700;color:#8B1A3A;background:#FFE0ED;padding:1px 7px;border-radius:99px;">${k.kayip} iş günü kaybı</span>` : ''}
-        <div style="flex:1"></div>
+       </div>
+       <div style="flex:0 0 auto;display:flex;gap:6px;">
         <button onclick="kazaEdit('${k.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;color:var(--text2);">✏️</button>
         <button onclick="kazaDel('${k.id}')" style="font-size:11px;padding:3px 8px;border:1px solid #fde8e8;border-radius:4px;background:transparent;cursor:pointer;color:#D4537E;">🗑</button>
+       </div>
       </div>
       <div style="margin-top:6px;font-size:12px;color:var(--text);line-height:1.5;">${esc(k.aciklama||'')}</div>
       ${k.kisi ? alan('Kişi', k.kisi) : ''}
