@@ -6725,6 +6725,7 @@ px}
     <div class="dn-head-actions">
       <button onclick="topluOpen()" class="dn-secondary">📥 Excel / Toplu Yükle</button>
       <button onclick="denetimPrint()" class="dn-secondary">🖨 Rapor</button>
+      <button onclick="denetimPrint(true)" class="dn-secondary" title="PDF hazırla ve cihaza kaydetmeden paylaş">↗ Paylaş</button>
     </div>
   </div>
   <div class="dn-scroll">
@@ -17823,7 +17824,7 @@ function topluDosyaIsle(satirlar) {
 }
 
 // ── Rapor ───────────────────────────────────────────────────
-function denetimPrint() {
+function denetimPrint(share) {
   const liste = dnFiltreliBulgular();
   const simdi = new Date().toLocaleString('tr-TR');
   const grup = {};
@@ -17851,6 +17852,7 @@ function denetimPrint() {
           <td>${BG_DURUM[b.durum]||'-'}</td></tr>`).join('')}</tbody>
       </table>`;
     }).join('') || '<p>Kayıt yok</p>'}`;
+  if (share === true) { isgSharePdf({ rootId:'denetim-print', bodyClass:'print-denetim', name:'Denetim Bulguları Raporu ' + new Date().toLocaleDateString('tr-TR'), width:733, mx:8, top:10, bottom:16 }); return; }
   isgPrintNow('print-denetim',{title:'İSG Denetim Bulguları Raporu'},()=>window.print());
 }
 // ── End Denetimler Modülü ──
