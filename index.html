@@ -3131,6 +3131,7 @@ html[data-tema="gokkusagi"] #topbar::after {
 }
 .kp-cancel{flex:.8;border:1px solid var(--border2);background:var(--surface2);color:var(--text);}
 .kp-print-btn{flex:1.5;border:none;background:#378ADD;color:#fff;}
+.kp-share-btn{flex:1.2;border:1px solid #378ADD;background:#fff;color:#378ADD;}
 
 @media(max-width:899px){
   .kp-sheet{
@@ -4374,6 +4375,8 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 .ks-report-actions .hse-btn{
   min-height:40px!important;
 }
+.ks-act-row{display:grid;grid-template-columns:1fr auto;gap:8px;width:100%}
+.ks-act-row .hse-btn:last-child{min-width:104px}
 .ks-report-preview{
   background:#fff!important;
   border:1px solid #dfe6ec!important;
@@ -7231,6 +7234,7 @@ px}
 
     <div class="kp-sheet-foot">
       <button class="kp-cancel" onclick="kazaPrintOptsClose()">İptal</button>
+      <button class="kp-share-btn" onclick="kazaPrint(true)" title="PDF hazırla ve cihaza kaydetmeden paylaş">↗ Paylaş</button>
       <button class="kp-print-btn" onclick="kazaPrint()">🖨 Yazdır</button>
     </div>
   </div>
@@ -14526,7 +14530,7 @@ function kazaPrintOptsClose() {
   document.getElementById('kaza-print-opts-bg').classList.remove('on');
 }
 
-function kazaPrint() {
+function kazaPrint(share) {
   const grafikTur    = document.getElementById('kp-opt-tur')?.checked;
   const paretoTur    = document.getElementById('kp-opt-tur-pareto')?.checked;
   const grafikAy     = document.getElementById('kp-opt-ay')?.checked;
@@ -14678,6 +14682,7 @@ function kazaPrint() {
     }
     // Grafikler hazırlandıktan sonra yalnız Kaza/Olay liste raporu baskı modu açılır.
     requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (share === true) { isgSharePdf({ rootId:'kaza-print', bodyClass:'print-kaza', name:'Kaza Olay Raporu ' + yil + ' - ' + fab, width:733, mx:8, top:10, bottom:16 }); return; }
       isgPrintNow('print-kaza',{title:'Kaza Olay Kayıtları Raporu'},()=>window.print());
     }));
   };
@@ -16610,9 +16615,9 @@ function ksRenderISO45004(liste) {
     </div>
 
     <div class="ks-report-actions">
-      <button class="hse-btn hse-btn-primary" onclick="ksPrintHSE('management')">🖨 Yönetici Raporu</button>
-      <button class="hse-btn hse-btn-ghost" onclick="ksPrintHSE('detail')">📊 Detaylı Analiz Raporu</button>
-      <button class="hse-btn hse-btn-ghost" onclick="ksPrintEventList()">📋 Olay Listesi Yazdır</button>
+      <div class="ks-act-row"><button class="hse-btn hse-btn-primary" onclick="ksPrintHSE('management')">🖨️ Yönetici Raporu</button><button class="hse-btn hse-btn-ghost" onclick="ksPrintHSE('management',true)" title="PDF hazırla ve cihaza kaydetmeden paylaş">↗ Paylaş</button></div>
+      <div class="ks-act-row"><button class="hse-btn hse-btn-ghost" onclick="ksPrintHSE('detail')">📊 Detaylı Analiz Raporu</button><button class="hse-btn hse-btn-ghost" onclick="ksPrintHSE('detail',true)" title="PDF hazırla ve cihaza kaydetmeden paylaş">↗ Paylaş</button></div>
+      <div class="ks-act-row"><button class="hse-btn hse-btn-ghost" onclick="ksPrintEventList()">📋 Olay Listesi Yazdır</button><button class="hse-btn hse-btn-ghost" onclick="ksPrintEventList(true)" title="PDF hazırla ve cihaza kaydetmeden paylaş">↗ Paylaş</button></div>
     </div>
 
     <div class="ks-report-preview">
@@ -16779,7 +16784,7 @@ function ksReportIncidentAppendix(liste){
   }).filter(Boolean).join('');
 }
 
-function ksPrintHSE(mode='management'){
+function ksPrintHSE(mode='management',share){
   const liste=kazaStatsFiltrele();
   const hseTasks=ksHseTasks();
   const kazaSay=liste.filter(k=>k.tur==='kaza').length;
@@ -16943,6 +16948,7 @@ function ksPrintHSE(mode='management'){
       </td></tr></tbody>
     </table>
   `;
+  if(share===true){isgResetPrintModes('');isgSharePdf({rootId:'hse-print',bodyClass:'print-hse-report',name:(mode==='management'?'Yonetici Raporu ':'Detayli Analiz Raporu ')+periodLabel+' - '+fabLabel,width:711,mx:11,top:8,bottom:12});return;}
   isgBeginPrintMode('print-hse-report',{
     title:mode==='management'?'İSG Performans Değerlendirme Yönetici Raporu':'İSG Performans Değerlendirme Detaylı Raporu',
     context:periodLabel+' - '+fabLabel
@@ -16963,7 +16969,7 @@ function ksEventTableHTML(liste,title='Kaza / Ramak Kala Olay Listesi'){
   return `<section><h2>${ksEsc(title)}</h2><table><tr><th>Tarih</th><th>Olay Türü</th><th>Fabrika</th><th>Bölüm</th><th>Hasar Türü</th><th>Kök Neden</th><th>Olay</th></tr>${rows||'<tr><td colspan="7">Seçili kapsamda olay kaydı yok.</td></tr>'}</table></section>`;
 }
 
-function ksPrintEventList(){
+function ksPrintEventList(share){
   const liste=kazaStatsFiltrele();
   const periodLabel=ksPeriodLabel(document.getElementById('ks-f-yil')?.value || 'ytd');
   const fabLabel=document.getElementById('ks-f-fab')?.selectedOptions?.[0]?.text || 'Tüm Fabrikalar';
@@ -16972,6 +16978,7 @@ function ksPrintEventList(){
   el.innerHTML=`<div class="hse-pr-cover"><h1>KAZA / RAMAK KALA OLAY LİSTESİ</h1>
     <div class="hse-pr-meta">${ksEsc(periodLabel)} · ${ksEsc(fabLabel)} · ${ksEsc(turLabel)} · ${liste.length} kayıt</div></div>
     ${ksEventTableHTML(liste,'Olay Kayıtları')}`;
+  if(share===true){isgSharePdf({rootId:'hse-print',bodyClass:'print-hse-report',name:'Olay Listesi '+periodLabel+' - '+fabLabel,width:711,mx:11,top:8,bottom:12});return;}
   isgBeginPrintMode('print-hse-report',{
     title:'Kaza Ramak Kala Olay Listesi',
     context:periodLabel+' - '+fabLabel
@@ -21039,6 +21046,85 @@ window.addEventListener('DOMContentLoaded',()=>{
     try{typeof fn==='function'?fn():window.print()}
     catch(e){cleanup();throw e}
     return cleanup;
+  };
+})();
+</script>
+<script id="share-pdf-v1">
+/* Paylaş: yazdırma raporunu PDF'e çevirip cihaza kaydetmeden paylaşır (Web Share API). */
+(function(){
+  var LIBS=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+  var busy=false;
+  function load(src){return new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=function(){no(new Error('Kütüphane yüklenemedi'))};document.head.appendChild(s)})}
+  function libs(){var p=Promise.resolve();if(!window.html2canvas)p=p.then(function(){return load(LIBS[0])});if(!(window.jspdf&&window.jspdf.jsPDF))p=p.then(function(){return load(LIBS[1])});return p}
+  function toast(m){try{if(typeof window.toast==='function')return window.toast(m)}catch(e){}alert(m)}
+  function overlay(msg){var d=document.createElement('div');d.id='isg-share-busy';d.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(15,30,45,.45);display:flex;align-items:center;justify-content:center';d.innerHTML='<div style="background:#fff;color:#23384a;border-radius:12px;padding:18px 22px;font:600 13px Arial,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25)">'+msg+'</div>';document.body.appendChild(d);return d}
+  function printCss(){
+    var out='';
+    function walk(rules,inPrint){for(var i=0;i<rules.length;i++){var r=rules[i];
+      if(r.type===4){var mt=(r.media&&r.media.mediaText||'');if(/print/.test(mt)&&!/not print/.test(mt))walk(r.cssRules,true);else if(!/print/.test(mt))out+=r.cssText;}
+      else if(r.type===6||r.type===5)continue;
+      else if(r.type===1||r.type===3||r.type===7||r.type===8||r.type===12)out+=r.cssText}}
+    for(var i=0;i<document.styleSheets.length;i++){try{walk(document.styleSheets[i].cssRules,false)}catch(e){}}
+    return out}
+  function build(opt){
+    var src=document.getElementById(opt.rootId);if(!src)throw new Error('Rapor bulunamadı');
+    var fr=document.createElement('iframe');fr.setAttribute('aria-hidden','true');
+    fr.style.cssText='position:fixed;left:-10000px;top:0;width:'+opt.width+'px;height:1200px;border:0;visibility:hidden';
+    document.body.appendChild(fr);
+    var d=fr.contentDocument;d.open();d.write('<!doctype html><html><head><meta charset="utf-8"><style>'+printCss()+'</style><style>html,body{margin:0!important;background:#fff!important}#'+opt.rootId+'{display:block!important}</style></head><body class="'+opt.bodyClass+'"></body></html>');d.close();
+    var clone=src.cloneNode(true);
+    var sc=src.querySelectorAll('canvas'),cc=clone.querySelectorAll('canvas');
+    for(var i=0;i<sc.length;i++){try{var im=d.createElement('img');im.src=sc[i].toDataURL('image/png');im.style.cssText='width:'+(sc[i].style.width||sc[i].clientWidth+'px')+';height:'+(sc[i].style.height||sc[i].clientHeight+'px');cc[i].parentNode.replaceChild(im,cc[i])}catch(e){}}
+    d.body.appendChild(clone);
+    return {fr:fr,doc:d,el:clone};
+  }
+  function dialog(blob,name){
+    var file=new File([blob],name,{type:'application/pdf'});
+    var can=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+    var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:100001;background:rgba(15,30,45,.5);display:flex;align-items:center;justify-content:center;padding:16px';
+    o.innerHTML='<div style="position:relative;background:#fff;color:#23384a;border-radius:14px;padding:22px 18px 16px;width:100%;max-width:340px;font-family:Arial,sans-serif;box-shadow:0 10px 36px rgba(0,0,0,.3)"><button data-x style="position:absolute;top:8px;right:8px;width:35px;height:35px;border:none;border-radius:8px;background:#D6382E;color:#fff;font-size:18px;cursor:pointer;line-height:1">✕</button><div style="font-weight:700;font-size:15px;margin:0 40px 4px 0">PDF hazır</div><div style="font-size:12px;color:#66798a;margin-bottom:14px;word-break:break-word">'+name.replace(/</g,'&lt;')+'</div><div style="display:flex;gap:8px">'+(can?'<button data-s style="flex:1;min-height:42px;border:none;border-radius:8px;background:#378ADD;color:#fff;font-weight:700;font-size:13px;cursor:pointer">↗ Paylaş</button>':'')+'<button data-d style="flex:1;min-height:42px;border:1px solid #cfd8e0;border-radius:8px;background:#f4f7fa;color:#23384a;font-weight:700;font-size:13px;cursor:pointer">⬇ İndir</button></div></div>';
+    document.body.appendChild(o);
+    function close(){o.remove()}
+    o.querySelector('[data-x]').onclick=close;
+    o.addEventListener('click',function(e){if(e.target===o)close()});
+    var s=o.querySelector('[data-s]');if(s)s.onclick=function(){navigator.share({files:[file],title:name}).then(close).catch(function(e){if(e&&e.name!=='AbortError')toast('Paylaşılamadı, İndir seçeneğini deneyin')})};
+    o.querySelector('[data-d]').onclick=function(){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000)};
+  }
+  window.isgSharePdf=function(opt){
+    if(busy)return;busy=true;var ov=overlay('PDF hazırlanıyor…'),b=null;
+    function done(){busy=false;if(ov)ov.remove();if(b&&b.fr)b.fr.remove()}
+    libs().then(function(){b=build(opt);return new Promise(function(r){setTimeout(r,350)})}).then(function(){
+      var el=b.el,W=opt.width,top=el.getBoundingClientRect().top;
+      var forced=[],cand=[];
+      el.querySelectorAll('tr,h1,h2,h3,h4,img,section,.hse-pr-section,.hse-pr-chart,p').forEach(function(n){
+        var y=n.getBoundingClientRect().top-top;if(y<=4)return;
+        var cs=b.doc.defaultView.getComputedStyle(n);
+        if(/always|page|left|right/.test(cs.breakBefore||cs.pageBreakBefore||''))forced.push(y);else cand.push(y)});
+      return window.html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:W}).then(function(cv){return {cv:cv,forced:forced,cand:cand}})
+    }).then(function(r){
+      var J=window.jspdf.jsPDF,pdf=new J({unit:'mm',format:'a4',orientation:'portrait'});
+      var PW=210,PH=297,mx=opt.mx||8,tp=opt.top||10,bt=opt.bottom||16;
+      var cv=r.cv,k=cv.width/opt.width,cw=PW-2*mx,ch=PH-tp-bt;
+      var pagePx=Math.floor(ch/cw*opt.width);
+      var total=cv.height/k,pages=[],y=0,guard=0;
+      while(y<total-2&&guard++<200){
+        var end=y+pagePx,f=r.forced.filter(function(v){return v>y+20&&v<end}).sort(function(a,b){return a-b})[0];
+        if(f!==undefined)end=f;
+        else if(end<total){var c=r.cand.filter(function(v){return v>y+pagePx*.5&&v<=end}).sort(function(a,b){return b-a})[0];if(c!==undefined)end=c}
+        else end=total;
+        if(end>total)end=total;
+        pages.push([y,end]);y=end}
+      pages.forEach(function(p,i){
+        if(i)pdf.addPage();
+        var sy=Math.round(p[0]*k),sh=Math.max(1,Math.round((p[1]-p[0])*k));
+        var pc=document.createElement('canvas');pc.width=cv.width;pc.height=sh;
+        var cx=pc.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,pc.width,sh);cx.drawImage(cv,0,sy,cv.width,sh,0,0,cv.width,sh);
+        pdf.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',mx,tp,cw,(p[1]-p[0])/opt.width*cw);
+        pdf.setFontSize(8);pdf.setTextColor(100);pdf.text('Sayfa '+(i+1)+'/'+pages.length,PW/2,PH-8,{align:'center'});
+      });
+      var name=(opt.name||'Rapor').replace(/[\\\/:*?"<>|]+/g,' ').trim()+'.pdf';
+      var blob=pdf.output('blob');done();dialog(blob,name);
+    }).catch(function(e){done();toast('PDF hazırlanamadı: '+(e&&e.message||e))});
   };
 })();
 </script>
