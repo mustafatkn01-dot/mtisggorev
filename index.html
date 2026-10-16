@@ -7059,7 +7059,7 @@ px}
         <div id="kaza-report-status" class="kaza-report-status">Henüz rapor oluşturulmadı.</div>
         <section class="kaza-report-card"><h4>Taslak sürümleri</h4><div id="kaza-report-versions" class="kaza-report-versions"><span>Henüz rapor oluşturulmadı.</span></div></section>
       </aside>
-      <main class="kaza-report-main"><nav class="kaza-report-tabs"><button type="button" class="active" data-report-tab="preview" onclick="kazaRaporTab(this)">A4 Ön İzleme</button><button type="button" data-report-tab="analysis" onclick="kazaRaporTab(this)">Analiz Düzenle</button></nav><div id="kaza-report-preview" class="kaza-report-preview"><div class="kaza-empty-report"><b>Rapor ön izlemeye hazır değil</b><span>Rapor taslağı oluşturun.</span></div></div><div id="kaza-report-analysis" class="kaza-report-analysis" hidden></div><footer class="kaza-report-bottom"><button type="button" id="kaza-report-save" disabled onclick="kazaRaporKaydet()">Kaydet</button><button type="button" id="kaza-report-regenerate" disabled onclick="kazaRaporGenerate(true)">Yeniden Oluştur</button><button type="button" id="kaza-report-pdf" disabled onclick="kazaRaporPdf()">PDF Oluştur</button></footer></main>
+      <main class="kaza-report-main"><nav class="kaza-report-tabs"><button type="button" class="active" data-report-tab="preview" onclick="kazaRaporTab(this)">A4 Ön İzleme</button><button type="button" data-report-tab="analysis" onclick="kazaRaporTab(this)">Analiz Düzenle</button></nav><div id="kaza-report-preview" class="kaza-report-preview"><div class="kaza-empty-report"><b>Rapor ön izlemeye hazır değil</b><span>Rapor taslağı oluşturun.</span></div></div><div id="kaza-report-analysis" class="kaza-report-analysis" hidden></div><footer class="kaza-report-bottom"><button type="button" id="kaza-report-save" disabled onclick="kazaRaporKaydet()">Kaydet</button><button type="button" id="kaza-report-regenerate" disabled onclick="kazaRaporGenerate(true)">Yeniden Oluştur</button><button type="button" id="kaza-report-share" disabled onclick="kazaRaporPaylas()">↗ Paylaş</button><button type="button" id="kaza-report-pdf" disabled onclick="kazaRaporPdf()">PDF Oluştur</button></footer></main>
     </div>
   </div>
 </div>
@@ -19898,7 +19898,7 @@ window.addEventListener('resize', calMobInit);
  "barrierAnalysis":[{"barrierType":"string","expectedBarrier":"string","finding":"string","status":"effective|present|missing|failed|weak|unknown","evidenceStatus":"string"}],
  "rootCauses":[{"text":"string","category":"${CAUSE_CATEGORIES.join('|')}","evidenceStatus":"string","confidence":"low|medium|high"}],
  "mainRootCause":{"text":"string","category":"string","evidenceStatus":"string","confidence":"low|medium|high"},
- "whyAnalysisBranches":[{"question":"string","items":[{"order":1,"why":"string","recommendation":"string","category":"string","evidenceStatus":"string"}],"systemResult":"string","priorityRecommendation":"string"}],
+ "whyAnalysisBranches":[{"question":"1. neden sorusu","items":[{"order":1,"ask":"bu basamağın Neden...? sorusu","why":"cevap/tespit","recommendation":"string","category":"string","evidenceStatus":"string"}],"systemResult":"zincirin kök nedeni","priorityRecommendation":"string"}],
  "controlHierarchy":{"elimination":[],"substitution":[],"engineering":[],"administrative":[],"ppe":[]},
  "fishbone":{"applicable":true,"reason":"string","problemStatement":"Kazayı/olayı 4-10 kelimede somut tanımlayan sonuç ifadesi; OLAY/KAZA gibi genel ifade kullanma","visualCue":{"type":"forklift_pedestrian|hand_crush|cut_laceration|electric_shock|fire_burn|slip_fall|head_impact|eye_foreign_body|chemical_exposure|hot_liquid_steam|vehicle_collision|generic_warning","label":"olayı kısa tanımlayan görsel etiketi","confidence":"high|medium|low","rationale":"görsel tipinin olayla bağını açıklayan kısa gerekçe"},"categories":[{"name":"string","prefix":"string","causes":[{"code":"string","text":"string","evidenceStatus":"string"}]}],"conclusion":"string"},
  "correctiveActions":[{"action":"string","targetsCause":"string","hierarchyLevel":"elimination|substitution|engineering|administrative|ppe","priority":"immediate|high|medium|low","effectivenessMeasure":"string"}],
@@ -19928,7 +19928,7 @@ ZORUNLU ANALİZ KURALLARI:
 2. Gözlenen, bildirilen ve analitik çıkarımı ayır.
 3. Dikkatsizlik, tedbirsizlik veya operatör hatasında durma; davranışın kazaya dönüşmesine izin veren bariyeri sorgula.
 4. Temas nedeni ile yaralanmayı ağırlaştıran ikincil sonucu ayrı incele.
-5. Gerekliyse birden fazla Neden-Neden kolu oluştur. Her why satırında kısa ve doğrudan recommendation zorunludur.
+5. NEDEN-NEDEN (5 WHY) ZORUNLU YÖNTEMİ: whyAnalysisBranches içinde ANA KOL zorunludur ve TAM 5 BASAMAKLI bir zincir olmalıdır (items.length=5). Zincir şöyle işler: 1. soru olayın doğrudan sonucunu sorar ("Personel neden düştü?"); her basamağın CEVABI bir sonraki "neden?" sorusunun konusu olur; 5. cevap sistemik bir kök nedendir (prosedür, ekipman/tasarım, planlama, bakım, gözetim, yönetim sistemi). Basamaklar birbirinden bağımsız yan bulgular DEĞİL, art arda neden-sonuç zinciridir; ilk iki cevap yüzeysel (davranış/temas), son iki cevap sistemseldir. Her item'da "ask" (o basamağın sorusu), "why" (cevap/tespit) ve o basamaktaki sorunu çözen kısa "recommendation" zorunludur. branch.systemResult = zincirin vardığı kök neden (mainRootCause.text ile tutarlı), branch.priorityRecommendation = en etkili tek öneri. İkinci kol YALNIZ gerçekten ayrı bir mekanizma varsa (örn. yaralanmayı ağırlaştıran faktör) eklenir; o da 3-5 basamak olmalıdır. Aynı soruyu "2" ekleyerek tekrar etme.
 6. Önlemleri kontrol hiyerarşisine göre değerlendir; yalnız eğitim/uyarı/KKD ile yetinme.
 7. Balık kılçığını yalnız en az 3 anlamlı neden kategorisi ve çok faktörlü etkileşim varsa applicable=true yap. Applicable=true ise balık kılçığını rapor için TAM hazırla: problemStatement alanına kazanın/olayın somut sonucunu 4-10 kelimede yaz (örn. 'Forklift–Yaya Teması', 'Pres Besleme Bölgesinde El Yaralanması'); 'OLAY / KAZA', 'İŞ KAZASI' gibi genel başlık kullanma.
 7A. İnsan, Makine, Metot, Malzeme, Çevre ve Yönetim kategorilerinin HER BİRİNİ olay anlatımı, olay görseli, olay zinciri, bariyer analizi, ikincil yaralanma mekanizması ve saha yerleşimi üzerinden ayrı ayrı değerlendir.
@@ -19968,6 +19968,29 @@ ${previous ? '\nÖNCEKİ TASLAK - kopyalama; kullanıcı yönlendirmesine göre 
 ${jsonContractText()}`;
   }
 
+  function buildWhyRetryPrompt(incident, analysis) {
+    const prepared = prepareIncidentForAI(incident);
+    return `ROL: Kaza araştırma uzmanısın. GÖREV: Aşağıdaki olay için 5 NEDEN (5 WHY) analizini doğru kur.
+
+KURALLAR:
+- ANA KOL: tam 5 basamak. 1. soru olayın doğrudan sonucunu sorar; her cevap bir sonraki "neden?" sorusunun konusudur; 5. cevap sistemik kök nedendir (prosedür, ekipman/tasarım, planlama, bakım, gözetim, yönetim sistemi).
+- Basamaklar art arda neden-sonuç zinciridir; ilk ikisi yüzeysel (davranış/temas), son ikisi sistemseldir. Yan yana bağımsız bulgu listesi YAZMA.
+- Her basamakta "ask" (Neden...? sorusu), "why" (cevap), "recommendation" (o basamağı çözen kısa somut öneri) zorunlu. Doğrulanmamış çıkarımlar için evidenceStatus "hypothesis" veya "to_verify", anlatımdan gelenler "reported".
+- systemResult = zincirin kök nedeni; priorityRecommendation = en etkili tek öneri (mümkünse mühendislik/ortadan kaldırma).
+- Gerçekten ayrı bir ağırlaştırıcı mekanizma yoksa ikinci kol ekleme. Verilmeyen bilgiyi uydurma.
+- Metinler kısa (tek cümle).
+
+OLAY:
+${JSON.stringify(prepared.aiIncident, null, 2)}
+
+MEVCUT ANA KÖK NEDEN: ${str(analysis && analysis.mainRootCause && analysis.mainRootCause.text)}
+MEVCUT (YETERSİZ) ZİNCİR:
+${JSON.stringify(analysis && analysis.whyAnalysisBranches || [], null, 1)}
+
+SADECE ŞU JSON'U DÖNDÜR:
+{"whyAnalysisBranches":[{"question":"1. neden sorusu","items":[{"order":1,"ask":"","why":"","recommendation":"","category":"${CAUSE_CATEGORIES.join('|')}","evidenceStatus":"reported|hypothesis|to_verify"}],"systemResult":"","priorityRecommendation":""}]}`;
+  }
+
   function buildReviewerPrompt(incident, analysis, options) {
     const prepared = prepareIncidentForAI(incident, (options || {}).privacy);
     return `ROL: İkinci bağımsız İSG analiz denetleyicisisin.
@@ -19978,6 +20001,7 @@ DENETİM LİSTESİ:
 - Olay verisi ile analiz çelişiyor mu?
 - Davranış tek başına kök neden yapılmış mı?
 - Temas ve ikincil yaralanma sonuçları ayrılmış mı?
+- 5 NEDEN zinciri gerçekten art arda neden-sonuç zinciri mi, ana kolda tam 5 basamak var mı, 5. cevap sistemik kök neden mi, her basamakta ask/why/recommendation dolu mu? Eksik/yüzeysel/yan yana bulgu listesi ise zinciri baştan kurup 5 basamağa tamamla. Neden-Neden sonucu mainRootCause ile tutarlı olmalı.
 - Her Neden satırında nedeni hedefleyen somut öneri var mı?
 - Öneriler kontrol hiyerarşisinin üst basamaklarına öncelik veriyor mu?
 - Balık kılçığı kararı en az üç anlamlı kategoriyle destekleniyor mu? problemStatement olayın somut adını/sonucunu söylüyor mu; genel 'OLAY / KAZA' ifadesi kullanılmışsa düzelt.
@@ -20060,7 +20084,7 @@ ${jsonContractText()}`;
     out.mainRootCause.confidence = ['low','medium','high'].includes(out.mainRootCause.confidence) ? out.mainRootCause.confidence : 'low';
     out.whyAnalysisBranches = arr(out.whyAnalysisBranches).map(branch => ({
       question: str(branch.question),
-      items: arr(branch.items).map((v, i) => ({ order: Number(v.order || i + 1), why: str(v.why), recommendation: str(v.recommendation), category: CAUSE_CATEGORIES.includes(str(v.category)) ? str(v.category) : '', evidenceStatus: EVIDENCE_STATES.includes(v.evidenceStatus) ? v.evidenceStatus : 'to_verify' })).filter(v => v.why),
+      items: arr(branch.items).map((v, i) => ({ order: Number(v.order || i + 1), ask: str(v.ask || v.question), why: str(v.why), recommendation: str(v.recommendation), category: CAUSE_CATEGORIES.includes(str(v.category)) ? str(v.category) : '', evidenceStatus: EVIDENCE_STATES.includes(v.evidenceStatus) ? v.evidenceStatus : 'to_verify' })).filter(v => v.why),
       systemResult: str(branch.systemResult),
       priorityRecommendation: str(branch.priorityRecommendation)
     })).filter(v => v.question && v.items.length);
@@ -20094,6 +20118,7 @@ ${jsonContractText()}`;
     if (!a.eventSummary) errors.push('Olay özeti eksik.');
     if (!a.directCause) warnings.push('Doğrudan neden eksik.');
     if (!a.rootCauses.length) warnings.push('Kök neden adayı oluşturulmamış.');
+    if (a.whyAnalysisBranches.length && a.whyAnalysisBranches[0].items.length < 5) warnings.push('5 Neden zinciri ' + a.whyAnalysisBranches[0].items.length + ' basamakta kaldı; derinleştirilmelidir.');
     a.whyAnalysisBranches.forEach((b, bi) => b.items.forEach((x, xi) => {
       if (!x.recommendation) errors.push(`Neden-Neden ${bi + 1}.${xi + 1} için öneri eksik.`);
     }));
@@ -20260,6 +20285,20 @@ SADECE ŞU JSON'U DÖNDÜR:
         finalAnalysis.reportWarnings = uniq([...(finalAnalysis.reportWarnings || []), reviewError]);
       }
     }
+
+    // 5 Neden kalite kapısı: ana zincir 5 basamağın altındaysa YALNIZ zinciri küçük bir çağrıyla derinleştir.
+    let whyRetried = false;
+    try {
+      const mainBranch = finalAnalysis.whyAnalysisBranches[0];
+      if (!mainBranch || mainBranch.items.length < 5) {
+        whyRetried = true;
+        const whyRaw = extractJson(await aiCall(buildWhyRetryPrompt(incident, finalAnalysis), 8000, { role: 'why' }));
+        const fixed = normalizeAnalysis({ whyAnalysisBranches: whyRaw && whyRaw.whyAnalysisBranches }).whyAnalysisBranches;
+        if (fixed.length && fixed[0].items.length >= Math.max(4, mainBranch ? mainBranch.items.length + 1 : 4)) {
+          finalAnalysis.whyAnalysisBranches = fixed;
+        }
+      }
+    } catch (whyErr) { /* zincir derinleştirilemezse mevcut zincir korunur */ }
 
     // Görsel kalite kapısı: tip + sonuç etiketi üçüncü şahıs açısından anlaşılır olmalı.
     // İlk sonuç kalite eşiğini geçmezse AI yalnız görsel kararını en fazla iki kez yeniden dener.
@@ -20577,7 +20616,7 @@ function kazaKayitOnizle(id){
     kazaActiveDraft=JSON.parse(JSON.stringify(cloud.draft));
     kazaRaporRender(kazaActiveDraft,inc);
     kazaRaporVersions(inc.incidentId);
-    ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=false});
+    ['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=false});
     const status=document.getElementById('kaza-report-status');
     if(status)status.textContent='Firebase bulutunda kayıtlı rapor açıldı.';
     return;
@@ -20599,11 +20638,11 @@ function kazaKayitOnizle(id){
   if(drafts.length){
     kazaActiveDraft=drafts[drafts.length-1];
     kazaRaporRender(kazaActiveDraft,inc);
-    ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=false});
+    ['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=false});
   }else{
     document.getElementById('kaza-report-preview').innerHTML='<div class="kaza-empty-report"><b>Bu kayıt için rapor bulunmuyor</b><span>Yukarıdaki bilgilerle hızlı veya derin rapor oluşturabilirsiniz.</span></div>';
     document.getElementById('kaza-report-analysis').innerHTML='';
-    ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=true});
+    ['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=true});
   }
 }
 function kazaRaporClose(){document.getElementById('kaza-report-bg').style.display='none';if(kazaReportIncidentOverride){kazaPrimaryImageData=kazaReportImageBackup;kazaReportIncidentOverride=null}}
@@ -20660,7 +20699,7 @@ async function kazaRaporGenerate(regenerate){
     if(kazaReportIncidentOverride)kazaRender();
     const sn=Math.round((Date.now()-t0)/1000);
     status.textContent='Taslak v'+draft.version+' hazır ('+sn+' sn). Bulguları saha kanıtlarıyla doğrulayın.'+(draft.reviewError?' ⚠ '+draft.reviewError:'');
-    ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>document.getElementById(id).disabled=false);
+    ['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-pdf'].forEach(id=>document.getElementById(id).disabled=false);
   }catch(e){
     status.textContent='Rapor üretilemedi: '+e.message;alert(e.message);
   }finally{
@@ -20737,7 +20776,7 @@ async function kazaRaporSilDevam(){
         const analysis=document.getElementById('kaza-report-analysis');
         if(preview)preview.innerHTML='<div class="kaza-empty-report"><b>Rapor kaydı kaldırıldı</b><span>Yeni bir rapor oluşturabilirsiniz.</span></div>';
         if(analysis)analysis.innerHTML='';
-        ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=true});
+        ['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-pdf'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=true});
       }
     }
 
@@ -20809,13 +20848,12 @@ if(!window.__kazaRaporBulutListener){
   });
 }
 
-function kazaRaporPdf(){
+function kazaRaporPdfKokuHazirla(){
   const source=document.querySelector('#kaza-report-preview .kaza-a4');
   if(!source){
     alert('PDF oluşturmak için önce rapor ön izlemesini hazırlayın.');
-    return;
+    return null;
   }
-
   let root=document.getElementById('kaza-pdf-print-root');
   if(!root){
     root=document.createElement('div');
@@ -20823,7 +20861,6 @@ function kazaRaporPdf(){
     document.body.appendChild(root);
   }
   root.innerHTML='';
-
   // PDF kaynağı sadece onaylanan A4 ön izleme şablonudur.
   // Ekran arayüzü, analiz düzenleme alanı, JSON/veri ekranı ve diğer uygulama
   // bileşenleri hiçbir zaman yazdırma ağacına taşınmaz.
@@ -20831,12 +20868,23 @@ function kazaRaporPdf(){
   clone.classList.add('kaza-pdf-document');
   clone.removeAttribute('style');
   root.appendChild(clone);
-
+  return root;
+}
+function kazaRaporPdf(){
+  if(!kazaRaporPdfKokuHazirla()) return;
   // Merkezi baskı yöneticisi diğer tüm modül baskı durumlarını temizler.
   isgBeginPrintMode('kaza-pdf-mode',{title:'Kaza Olay Araştırma Raporu'});
-
   // Resim/data-URL ve layout hesaplarının baskı ağacına tamamen oturmasını bekle.
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+}
+// Raporu PDF olarak hazırlayıp cihaza kaydetmeden paylaşır (Yazdır akışından bağımsız)
+function kazaRaporPaylas(){
+  if(!kazaRaporPdfKokuHazirla()) return;
+  const inc=(typeof kazaFormIncident==='function')?kazaFormIncident():{};
+  const tarih=(inc.date||'').split('-').reverse().join('.');
+  const ad='Olay Araştırma Raporu'+(tarih?' '+tarih:'')+(inc.factory?' - '+inc.factory:'')+(inc.incidentType&&typeof kazaTur==='function'?' ('+kazaTur(inc.incidentType).ad+')':'');
+  // @page: A4, kenar 11mm → içerik genişliği ≈ 711px; üst 12mm, alt 14mm
+  isgSharePdf({rootId:'kaza-pdf-print-root',bodyClass:'kaza-pdf-mode',name:ad,width:711,mx:11,top:12,bottom:14});
 }
 
 function kazaFishboneSvgIcon(kind){
@@ -21082,6 +21130,27 @@ function kazaFishboneReportHTML(fish,inc,a){
     <div class="fb-pro-grid fb-pro-bottom">${card(groups[3])}${card(groups[4])}${card(groups[5])}</div>
   </div><div class="kaza-fishbone-result"><b>6.1 Balık Kılçığı Sonucu</b><p>${safe(conclusion)}</p></div>`;
 }
+// Sayfa bütünlüğü: küçük tabloları bölünmez işaretler; başlığı, ardından gelen ilk bloğa (tablo/diyagram/not/paragraf) bağlar.
+function kazaRaporKeepFix(root){
+  if(!root) return;
+  root.querySelectorAll('.kaza-a4 table').forEach(t=>{
+    if(t.querySelectorAll('tbody tr').length<=7) t.classList.add('kz-short');
+  });
+  root.querySelectorAll('.kaza-a4 > h2').forEach(h=>{
+    if(h.parentElement.classList.contains('kaza-keep')) return;
+    const nxt=h.nextElementSibling;
+    if(!nxt) return;
+    const kisaTablo=nxt.tagName==='TABLE'&&nxt.classList.contains('kz-short');
+    const bloklar=nxt.matches('.kaza-fishbone-result,.kaza-report-note,.facts,.kaza-why-block,.kaza-report-mini-note,p,.kaza-report-narrative');
+    if(!(kisaTablo||bloklar)) return;
+    // başlık + ilk blok (+ varsa onu izleyen tablo) tek parça
+    const wrap=document.createElement('div');wrap.className='kaza-keep';
+    h.parentNode.insertBefore(wrap,h);
+    wrap.appendChild(h);wrap.appendChild(nxt);
+    const n2=wrap.nextElementSibling;
+    if(nxt.matches('.kaza-report-mini-note')&&n2&&n2.tagName==='TABLE'&&n2.classList.contains('kz-short')) wrap.appendChild(n2);
+  });
+}
 function kazaRaporRender(draft,inc){
   const a=draft&&draft.analysis?draft.analysis:{};
   const whys=Array.isArray(a.whyAnalysisBranches)?a.whyAnalysisBranches:[];
@@ -21117,17 +21186,24 @@ function kazaRaporRender(draft,inc){
   const rootRows=roots.map((r,i)=>`<tr><td>Kök neden ${i+1}</td><td>${safe(r.text)}</td><td>${safe(r.category)}</td><td>${evidenceLabel(r.evidenceStatus)}</td></tr>`).join('');
   const barrierRows=barriers.map((b,i)=>`<tr><td>${i+1}</td><td>${safe(b.expectedBarrier||b.barrierType)}</td><td>${safe(b.finding)}</td><td>${barrierStatusLabel(b.status)}</td></tr>`).join('');
   const factorRows=factors.map((f,i)=>`<tr><td>${i+1}</td><td>${safe(f.text)}</td><td>${safe(f.category)}</td><td>${evidenceLabel(f.evidenceStatus)}</td></tr>`).join('');
-  const whyRows=[];
-  whys.forEach(branch=>{
-    (branch.items||[]).forEach((w,i)=>whyRows.push(
-      `<tr><td>${safe(branch.question)}${i?' · '+(i+1):''}</td><td>${safe(w.why)}</td><td>${safe(w.recommendation)}</td><td>${evidenceLabel(w.evidenceStatus)}</td></tr>`
-    ));
+  // 5 Neden: her kol için ayrı, art arda numaralı zincir tablosu (basamak sorusu → cevap → öneri → kanıt)
+  const whyBlocks=whys.map((branch,bi)=>{
+    const items=branch.items||[];
+    const rows=items.map((w,i)=>{
+      const son=(i===items.length-1&&items.length>1);
+      return `<tr${son?' class="why-root"':''}><td><b>${i+1}. Neden${son?' · Kök':''}</b><br><span class="why-ask">${safe(w.ask||(i===0?branch.question:'Bu durum neden oluştu?'))}</span></td><td>${safe(w.why)}</td><td>${safe(w.recommendation)}</td><td>${evidenceLabel(w.evidenceStatus)}</td></tr>`;
+    }).join('');
+    const sonuc=(branch.systemResult||branch.priorityRecommendation)
+      ? `<div class="kaza-report-note why-result">${branch.systemResult?`<b>Zincirin vardığı kök neden</b>${safe(branch.systemResult)}`:''}${branch.priorityRecommendation?`<br><b>Öncelikli öneri</b>${safe(branch.priorityRecommendation)}`:''}</div>`:'';
+    const baslik=whys.length>1?`<h3 class="why-branch-h">${bi===0?'Ana kol':'Ek kol'}: ${safe(branch.question)}</h3>`:`<p class="why-main-q"><b>Ana soru:</b> ${safe(branch.question)}</p>`;
+    return `<div class="kaza-why-block">${baslik}<table class="why-table"><thead><tr><th style="width:23%">Soru</th><th>Cevap / Tespit</th><th>Öneri</th><th style="width:15%">Kanıt Durumu</th></tr></thead><tbody>${rows}</tbody></table>${sonuc}</div>`;
   });
+  const whyRows=whyBlocks;
 
   const fishHtml=(fish.applicable && Array.isArray(fish.categories) && fish.categories.length>=3)
-    ? `<h2>6. BALIK KILÇIĞI (ISHIKAWA) ANALİZİ</h2>
+    ? `<div class="kaza-keep kaza-keep-fish"><h2>6. BALIK KILÇIĞI (ISHIKAWA) ANALİZİ</h2>
        <p class="kaza-fishbone-intro">Bu olayda insan, makine, metot, çevre, malzeme ve yönetim faktörleri birlikte değerlendirilmiştir.</p>
-       ${kazaFishboneReportHTML(fish,inc,a)}`
+       ${kazaFishboneReportHTML(fish,inc,a)}</div>`
     : `<h2>6. BALIK KILÇIĞI (ISHIKAWA) ANALİZİ</h2>
        <div class="kaza-report-note muted"><b>Uygulanabilirlik</b>${safe(fish.reason||'Mevcut kanıtlar en az üç anlamlı neden kategorisini desteklemediği için balık kılçığı analizi zorunlu tutulmamıştır.')}</div>`;
 
@@ -21187,7 +21263,7 @@ function kazaRaporRender(draft,inc){
       `<div class="kaza-report-note muted">Bariyer / kontrol analizi için ayrı bir bulgu kaydı oluşturulmamıştır.</div>`}
 
     <h2>5. NEDEN-NEDEN ANALİZİ</h2>
-    ${whyRows.length?`<table><thead><tr><th>Neden Kolu</th><th>Tespit</th><th>Öneri</th><th>Kanıt Durumu</th></tr></thead><tbody>${whyRows.join('')}</tbody></table>`:
+    ${whyRows.length?whyRows.join(''):
       `<div class="kaza-report-note muted">Mevcut veriyle güvenilir bir Neden-Neden zinciri oluşturulmamıştır; eksik kanıtlar tamamlandıktan sonra derinleştirilmelidir.</div>`}
 
     ${fishHtml}
@@ -21202,6 +21278,7 @@ function kazaRaporRender(draft,inc){
       `<div class="kaza-report-note good"><b>Kontrol</b>Rapor motorunun işaretlediği ek kritik bilgi sorusu bulunmamaktadır.</div>`}
 
   </article>`;
+  kazaRaporKeepFix(document.getElementById('kaza-report-preview'));
 
   document.getElementById('kaza-report-analysis').innerHTML=
     `<section class="kaza-report-card"><h4>Olay özeti</h4><textarea data-analysis-edit="eventSummary">${kazaEsc(a.eventSummary||'')}</textarea></section>
@@ -21215,6 +21292,11 @@ function kazaRaporRender(draft,inc){
 
 <style id="kaza-pdf-isolated-print-v1">
 #kaza-pdf-print-root{display:none}
+.kaza-a4 .why-root td{background:#eef6fb;font-weight:600}
+.kaza-a4 .why-ask{font-size:.82em;color:#52616b;font-weight:400}
+.kaza-a4 .why-branch-h{margin:10px 0 4px;font-size:.95em}
+.kaza-a4 .why-main-q{margin:2px 0 6px}
+.kaza-a4 .why-result{margin-top:6px}
 @media print{
   @page kazaIncidentReport{
     size:A4 portrait;
@@ -21295,6 +21377,17 @@ function kazaRaporRender(draft,inc){
     break-after:avoid-page!important;
     page-break-after:avoid!important;
   }
+  /* Bütünlük: başlık + (diyagram | küçük tablo | not) aynı sayfada kalır; metinde en az 3 satır. */
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .kaza-keep,
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .kaza-why-block,
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 table.kz-short{
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 p,
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .kaza-report-narrative{orphans:3;widows:3}
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .why-root td{background:#eef6fb!important;font-weight:600}
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .why-ask{font-size:8pt;color:#52616b;font-weight:400}
 
   /* Fotoğraf sadece 1. bölümdeki ayrılmış sağ hücrede kalır; sabit/fixed değildir,
      dolayısıyla sonraki sayfalarda tekrarlanamaz. */
@@ -21472,10 +21565,19 @@ window.addEventListener('DOMContentLoaded',()=>{
     libs().then(function(){b=build(opt);return new Promise(function(r){setTimeout(r,350)})}).then(function(){
       var el=b.el,W=opt.width,top=el.getBoundingClientRect().top;
       var forced=[],cand=[];
-      el.querySelectorAll('tr,h1,h2,h3,h4,img,section,.hse-pr-section,.hse-pr-chart,p').forEach(function(n){
+      var keeps=[],heads=[];
+      el.querySelectorAll('.kaza-keep,.kaza-why-block,.kaza-fishbone-diagram,.facts,.kaza-report-note,table.kz-short').forEach(function(n){
+        var r=n.getBoundingClientRect();keeps.push([r.top-top,r.bottom-top]);});
+      el.querySelectorAll('h1,h2,h3,h4').forEach(function(n){heads.push(n.getBoundingClientRect().top-top)});
+      el.querySelectorAll('tr,h1,h2,h3,h4,img,section,.hse-pr-section,.hse-pr-chart,p,.kaza-keep,.kaza-why-block').forEach(function(n){
         var y=n.getBoundingClientRect().top-top;if(y<=4)return;
         var cs=b.doc.defaultView.getComputedStyle(n);
-        if(/always|page|left|right/.test(cs.breakBefore||cs.pageBreakBefore||''))forced.push(y);else cand.push(y)});
+        if(/always|page|left|right/.test(cs.breakBefore||cs.pageBreakBefore||'')){forced.push(y);return}
+        // bölünmez blok (diyagram/küçük tablo/not) içine kesme koyma
+        for(var k=0;k<keeps.length;k++){if(y>keeps[k][0]+3&&y<keeps[k][1]-3)return}
+        // başlıktan hemen sonra (en az ~3 satır içerik gelmeden) kesme koyma
+        for(var h=0;h<heads.length;h++){if(y>heads[h]+3&&y<heads[h]+75)return}
+        cand.push(y)});
       return window.html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:W}).then(function(cv){return {cv:cv,forced:forced,cand:cand}})
     }).then(function(r){
       var J=window.jspdf.jsPDF,pdf=new J({unit:'mm',format:'a4',orientation:'portrait'});
@@ -21486,7 +21588,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       while(y<total-2&&guard++<200){
         var end=y+pagePx,f=r.forced.filter(function(v){return v>y+20&&v<end}).sort(function(a,b){return a-b})[0];
         if(f!==undefined)end=f;
-        else if(end<total){var c=r.cand.filter(function(v){return v>y+pagePx*.5&&v<=end}).sort(function(a,b){return b-a})[0];if(c!==undefined)end=c}
+        else if(end<total){var c=r.cand.filter(function(v){return v>y+pagePx*.3&&v<=end}).sort(function(a,b){return b-a})[0];if(c!==undefined)end=c}
         else end=total;
         if(end>total)end=total;
         pages.push([y,end]);y=end}
