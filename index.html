@@ -20795,7 +20795,7 @@ function kazaRaporDurum(msg,tip){
   if(tip==='done'||tip==='err')kazaBusyTimer=setTimeout(()=>{b.hidden=true},tip==='err'?9000:4500);
 }
 async function kazaRaporGenerate(regenerate){
-  const btn=document.getElementById('kaza-report-generate'),status=document.getElementById('kaza-report-status'),inc=kazaFormIncident();
+  const btn=document.getElementById('kaza-report-generate'),inc=kazaFormIncident();
   const deep=document.getElementById('kaza-report-depth').value==='deep',directive=document.getElementById('kaza-report-directive').value.trim();
   if(!inc.narrative){alert('Olay anlatımı zorunludur.');return}
   if(btn.disabled)return;
