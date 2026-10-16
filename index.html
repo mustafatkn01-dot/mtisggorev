@@ -14580,20 +14580,27 @@ function kazaPrint(share) {
   });
   const kpKokParetoData = ksParetoVerisi(Object.entries(kpKokMap));
 
+  const rTur = (typeof kazaFTur !== 'undefined' && kazaFTur) ? kazaFTur : null;
+  const devamSay = liste.filter(k => !(k.onlem && k.onlemTamam === true)).length;
+  const saatTxt  = saat ? saat.toLocaleString('tr-TR') : 'girilmedi';
+  const rBaslik  = rTur === 'kaza' ? 'İSG İş Kazası Raporu' : rTur === 'ramak' ? 'İSG Ramak Kala Raporu'
+                 : rTur === 'ilkyardim' ? 'İSG İlk Yardım Olayları Raporu' : rTur === 'maddi' ? 'İSG Maddi Hasar Raporu'
+                 : 'İSG Kaza & Ramak Kala Raporu';
+  const filtEt = sadecaDevam ? ' <span style="font-size:8.5px;color:#d97706;">(filtrelenmiş)</span>' : '';
+  let ozetKutular;
+  if (rTur === 'kaza') ozetKutular = [['Kaza adedi', liste.length + filtEt], ['Toplam kayıp iş günü', kayipGun], ['Sıklık oranı', siklik], ['Ağırlık oranı', agirlik], ['Çalışma saati', saatTxt]];
+  else if (rTur === 'ramak') ozetKutular = [['Ramak kala sayısı', liste.length + filtEt], ['Devam eden ramak kala', devamSay]];
+  else if (rTur) ozetKutular = [['Toplam kayıt', liste.length + filtEt], ['Devam eden', devamSay]];
+  else ozetKutular = [['Toplam olay', liste.length + filtEt], ['İş kazası', kazaSay], ['Ramak kala', ramakSay], ['Kayıp iş günü', kayipGun], ['Sıklık oranı', siklik], ['Ağırlık oranı', agirlik], ['Çalışma saati', saatTxt]];
+
   let el = document.getElementById('kaza-print');
   if (!el) { el = document.createElement('div'); el.id = 'kaza-print'; document.body.appendChild(el); }
   const sadecDevamEtiketi = sadecaDevam ? ' · <b style="color:#d97706;">⚠ Yalnızca Devam Eden Önlemler</b>' : '';
   el.innerHTML = `
-    <h1>İSG Kaza & Ramak Kala Raporu</h1>
+    <h1>${esc(rBaslik)}</h1>
     <div class="kp-meta">Dönem: ${esc(yil)} · Kapsam: ${esc(fab)} · Rapor tarihi: ${esc(simdi)}${sadecDevamEtiketi}</div>
     <div class="kp-ozet">
-      <div><b>Toplam olay:</b> ${liste.length}${sadecaDevam ? ` <span style="font-size:8.5px;color:#d97706;">(filtrelenmiş)</span>` : ''}</div>
-      <div><b>İş kazası:</b> ${kazaSay}</div>
-      <div><b>Ramak kala:</b> ${ramakSay}</div>
-      <div><b>Kayıp iş günü:</b> ${kayipGun}</div>
-      <div><b>Sıklık oranı:</b> ${siklik}</div>
-      <div><b>Ağırlık oranı:</b> ${agirlik}</div>
-      <div><b>Çalışma saati:</b> ${saat ? saat.toLocaleString('tr-TR') : 'girilmedi'}</div>
+      ${ozetKutular.map(([e,v]) => `<div><b>${e}:</b> ${v}</div>`).join('')}
     </div>
     <table>
       <thead><tr>
