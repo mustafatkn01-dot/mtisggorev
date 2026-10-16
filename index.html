@@ -14683,7 +14683,7 @@ function kazaPrint(share) {
     }
     // Grafikler hazırlandıktan sonra yalnız Kaza/Olay liste raporu baskı modu açılır.
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (share === true) { isgSharePdf({ rootId:'kaza-print', bodyClass:'print-kaza', name:'Kaza Olay Raporu ' + yil + ' - ' + fab, width:733, mx:8, top:10, bottom:16 }); return; }
+      if (share === true) { isgSharePdf({ rootId:'kaza-print', bodyClass:'print-kaza', name:'Olay Raporu ' + (document.getElementById('kaza-f-yil')?.selectedOptions?.[0]?.text || yil) + ' - ' + (document.getElementById('kaza-f-fab')?.selectedOptions?.[0]?.text || fab) + ' (' + (kazaFTur ? kazaTur(kazaFTur).ad : 'Tüm Olaylar') + ')', width:733, mx:8, top:10, bottom:16 }); return; }
       isgPrintNow('print-kaza',{title:'Kaza Olay Kayıtları Raporu'},()=>window.print());
     }));
   };
