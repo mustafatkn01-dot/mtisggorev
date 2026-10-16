@@ -8576,6 +8576,9 @@ async function kazaRaporMotorTest(deep) {
       if (!a.fishbone.applicable || a.fishbone.categories.length < 3) sorunlar.push('balık kılçığı eksik');
       if (!a.mainRootCause.text) sorunlar.push('ana kök neden boş');
       if (!a.whyAnalysisBranches.length) sorunlar.push('neden-neden yok');
+      else if (a.whyAnalysisBranches[0].items.length < 5) sorunlar.push('5 neden zinciri ' + a.whyAnalysisBranches[0].items.length + ' basamak');
+      else for (let k = 1; k <= 5; k++) { if (!a.correctiveActions.some(x => Number(x.whyStep) === k)) { sorunlar.push(k + '. nedene faaliyet yok'); break; } }
+      if (KazaAIRaporMotoru.genericActionRatio(inc, a).ratio > 0.5) sorunlar.push('faaliyetler şablon/genel');
       if (a.correctiveActions.length < 2) sorunlar.push('önlem az');
       if (!a.correctiveActions.some(x => ['elimination','substitution','engineering'].includes(x.hierarchyLevel))) sorunlar.push('mühendislik/ortadan kaldırma önlemi yok');
       if (!d.visualQA.ok) sorunlar.push('görsel tipi uyumsuz (' + (d.visualQA.got || '-') + ')');
@@ -19901,7 +19904,7 @@ window.addEventListener('resize', calMobInit);
  "whyAnalysisBranches":[{"question":"1. neden sorusu","items":[{"order":1,"ask":"bu basamağın Neden...? sorusu","why":"cevap/tespit","recommendation":"string","category":"string","evidenceStatus":"string"}],"systemResult":"zincirin kök nedeni","priorityRecommendation":"string"}],
  "controlHierarchy":{"elimination":[],"substitution":[],"engineering":[],"administrative":[],"ppe":[]},
  "fishbone":{"applicable":true,"reason":"string","problemStatement":"Kazayı/olayı 4-10 kelimede somut tanımlayan sonuç ifadesi; OLAY/KAZA gibi genel ifade kullanma","visualCue":{"type":"forklift_pedestrian|hand_crush|cut_laceration|electric_shock|fire_burn|slip_fall|head_impact|eye_foreign_body|chemical_exposure|hot_liquid_steam|vehicle_collision|generic_warning","label":"olayı kısa tanımlayan görsel etiketi","confidence":"high|medium|low","rationale":"görsel tipinin olayla bağını açıklayan kısa gerekçe"},"categories":[{"name":"string","prefix":"string","causes":[{"code":"string","text":"string","evidenceStatus":"string"}]}],"conclusion":"string"},
- "correctiveActions":[{"action":"string","targetsCause":"string","hierarchyLevel":"elimination|substitution|engineering|administrative|ppe","priority":"immediate|high|medium|low","effectivenessMeasure":"string"}],
+ "correctiveActions":[{"action":"string","targetsCause":"string","whyStep":1,"hierarchyLevel":"elimination|substitution|engineering|administrative|ppe","priority":"immediate|high|medium|low","effectivenessMeasure":"string"}],
  "reportWarnings":[],
  "analysisStatus":"draft_requires_user_validation"
 }`;
@@ -19929,7 +19932,7 @@ ZORUNLU ANALİZ KURALLARI:
 3. Dikkatsizlik, tedbirsizlik veya operatör hatasında durma; davranışın kazaya dönüşmesine izin veren bariyeri sorgula.
 4. Temas nedeni ile yaralanmayı ağırlaştıran ikincil sonucu ayrı incele.
 5. NEDEN-NEDEN (5 WHY) ZORUNLU YÖNTEMİ: whyAnalysisBranches içinde ANA KOL zorunludur ve TAM 5 BASAMAKLI bir zincir olmalıdır (items.length=5). Zincir şöyle işler: 1. soru olayın doğrudan sonucunu sorar ("Personel neden düştü?"); her basamağın CEVABI bir sonraki "neden?" sorusunun konusu olur; 5. cevap sistemik bir kök nedendir (prosedür, ekipman/tasarım, planlama, bakım, gözetim, yönetim sistemi). Basamaklar birbirinden bağımsız yan bulgular DEĞİL, art arda neden-sonuç zinciridir; ilk iki cevap yüzeysel (davranış/temas), son iki cevap sistemseldir. Her item'da "ask" (o basamağın sorusu), "why" (cevap/tespit) ve o basamaktaki sorunu çözen kısa "recommendation" zorunludur. branch.systemResult = zincirin vardığı kök neden (mainRootCause.text ile tutarlı), branch.priorityRecommendation = en etkili tek öneri. İkinci kol YALNIZ gerçekten ayrı bir mekanizma varsa (örn. yaralanmayı ağırlaştıran faktör) eklenir; o da 3-5 basamak olmalıdır. Aynı soruyu "2" ekleyerek tekrar etme.
-6. Önlemleri kontrol hiyerarşisine göre değerlendir; yalnız eğitim/uyarı/KKD ile yetinme.
+6. DÜZELTİCİ FAALİYETLER 5 NEDEN ZİNCİRİNE BAĞLI OLMALIDIR: ana zincirin HER basamağı (1-5) için en az bir correctiveAction üret ve "whyStep" alanına o basamağın numarasını yaz (5 = kök neden). Basamak 1-2 için acil/kontrol önlemi (hemen alınacak), basamak 3-4 için süreç/ekipman/yerleşim düzeltmesi, basamak 5 (kök) için KALICI sistemsel çözüm (ortadan kaldırma/mühendislik/prosedür-sistem) yaz. Önlemleri kontrol hiyerarşisine göre değerlendir; yalnız eğitim/uyarı/KKD ile yetinme. Her faaliyet emir kipinde, uygulanabilir, olaydaki somut ekipman/alan/işe atıf yapan tek cümle olsun; targetsCause alanına hedeflenen nedenin kısa metnini, effectivenessMeasure alanına ölçülebilir bir doğrulama ölçütü (sayı, sıklık, kontrol yöntemi) yaz.
 7. Balık kılçığını yalnız en az 3 anlamlı neden kategorisi ve çok faktörlü etkileşim varsa applicable=true yap. Applicable=true ise balık kılçığını rapor için TAM hazırla: problemStatement alanına kazanın/olayın somut sonucunu 4-10 kelimede yaz (örn. 'Forklift–Yaya Teması', 'Pres Besleme Bölgesinde El Yaralanması'); 'OLAY / KAZA', 'İŞ KAZASI' gibi genel başlık kullanma.
 7A. İnsan, Makine, Metot, Malzeme, Çevre ve Yönetim kategorilerinin HER BİRİNİ olay anlatımı, olay görseli, olay zinciri, bariyer analizi, ikincil yaralanma mekanizması ve saha yerleşimi üzerinden ayrı ayrı değerlendir.
 7B. Yalnız kullanıcının cümlelerini kopyalama; makul sistem katkılarını türet. Türetilmiş bulguyu kesin gerçek gibi sunma; evidenceStatus değerini hypothesis veya to_verify olarak işaretle.
@@ -19950,6 +19953,7 @@ ZORUNLU ANALİZ KURALLARI:
    - Makine koruyucu yok / devre dışı: sabit-hareketli koruyucu, ışık perdesi, emniyet kilidi, by-pass nedeni, bakım ve LOTO, risk değerlendirmesi ve makine uygunluğu.
    - Araç-yaya: trafik ayrımı, bariyer, kör nokta/ayna, hız sınırı, sesli-ışıklı ikaz, geçiş kuralları.
    - Kimyasal / sıcak / elektrik: kapalı sistem, ikame, havalandırma, etiketleme/SDS, acil duş-göz yıkama, izolasyon.
+14. OLAY BAĞLANTISI KURALI: Rapordaki her neden, bulgu ve faaliyet olay anlatımındaki somut bir unsura (ekipman, alan, iş adımı, çalışan rolü, malzeme) bağlanmalıdır. Başka her olaya uyabilecek şablon cümleler ("eğitim verilecek", "denetim artırılacak", "prosedür güncellenecek") tek başına YAZILMAZ; yazılacaksa olaya özgü konu belirtilir (hangi prosedür, hangi alanda, ne sıklıkla).
 13. Olay görseli de gönderildiyse yalnız görselde AÇIKÇA görülen fiziksel bulguları "observed" olarak kullan; görselde görünmeyen şeyi uydurma.
 
 KULLANICI EK YÖNLENDİRMESİ:
@@ -19966,6 +19970,92 @@ ${JSON.stringify(questions, null, 2)}
 ${previous ? '\nÖNCEKİ TASLAK - kopyalama; kullanıcı yönlendirmesine göre eleştir ve yeniden kur:\n' + previous : ''}
 
 ${jsonContractText()}`;
+  }
+
+  // ── 5 Neden ↔ Düzeltici faaliyet bağı ──────────────────────────
+  function stems(text) {
+    return uniq(String(text || '').toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü0-9\s]/g, ' ').split(/\s+/)
+      .filter(w => w.length >= 5).map(w => w.slice(0, 5)));
+  }
+  const STOP_STEMS = new Set(['olarak','yapıl','edilm','sağla','bulun','kulla','olması','güven','sistem','prosed','eğitim','denet','kontr','talim','uygun','gerek','yönet']);
+  function guessHierarchy(text) {
+    const t = String(text || '').toLocaleLowerCase('tr-TR');
+    if (/(ortadan kaldır|ikame|gerekmeyecek|yerine .*(kullan|geç))/.test(t)) return 'elimination';
+    if (/(prosedür|talimat|eğitim|denetim|süreç|kontrol listesi|sorumluluk)/.test(t)) return 'administrative';
+    if (/(gözlük|eldiven|baret|kkd|kişisel koruyucu)/.test(t)) return 'ppe';
+    if (/(koruyucu|bariyer|sensör|ışık perde|kilit|platform|merdiven|korkuluk|aparat|ayna|havaland|izolasyon|tasarım|yerleşim|ekipman|sehpa)/.test(t)) return 'engineering';
+    return 'administrative';
+  }
+  // Her 5 Neden basamağı için en az bir faaliyet olmasını GARANTİ eder (AI atlamışsa basamağın önerisinden türetir)
+  function ensureWhyActions(analysis) {
+    const a = analysis, main = a.whyAnalysisBranches && a.whyAnalysisBranches[0];
+    if (!main || !main.items.length) return 0;
+    const n = main.items.length;
+    // whyStep'i boş olan faaliyetleri hedef neden metnine en çok benzeyen basamağa eşle
+    a.correctiveActions.forEach(act => {
+      if (act.whyStep) return;
+      const as = stems(act.targetsCause + ' ' + act.action);
+      let best = 0, bestScore = 0;
+      main.items.forEach((it, i) => {
+        const sc = stems(it.why + ' ' + it.ask).filter(x => as.includes(x)).length;
+        if (sc > bestScore) { bestScore = sc; best = i + 1; }
+      });
+      if (best && bestScore >= 1) act.whyStep = best;
+    });
+    let added = 0;
+    main.items.forEach((it, i) => {
+      const step = i + 1;
+      if (a.correctiveActions.some(x => Number(x.whyStep) === step)) return;
+      const rec = str(it.recommendation);
+      if (!rec || a.correctiveActions.some(x => x.action === rec)) return;
+      a.correctiveActions.push({
+        action: rec, targetsCause: str(it.why).slice(0, 140), whyStep: step, derived: true,
+        hierarchyLevel: step === n ? (guessHierarchy(rec) === 'ppe' ? 'administrative' : guessHierarchy(rec)) : guessHierarchy(rec),
+        priority: step === n ? 'high' : (step <= 2 ? 'immediate' : 'medium'),
+        effectivenessMeasure: step === n ? 'Kalıcı çözümün uygulandığının saha doğrulaması ve tekrar olay olmaması' : 'Önlemin uygulandığının saha kontrolüyle doğrulanması'
+      });
+      added++;
+    });
+    const ord = x => (x.whyStep ? Number(x.whyStep) : 99);
+    a.correctiveActions = a.correctiveActions.map((x, i) => ({ x, i })).sort((p, q) => ord(p.x) - ord(q.x) || p.i - q.i).map(o => o.x);
+    return added;
+  }
+  // Olay bağlantısı: faaliyet, olay anlatımı/zincirindeki hiçbir somut unsurdan söz etmiyorsa "genel/şablon" sayılır
+  function genericActionRatio(incident, analysis) {
+    const n = normalizeIncident(incident);
+    const ctx = new Set(stems([n.narrative, n.department, n.injuries.map(x => x.displayText).join(' '),
+      analysis.directCause, (analysis.whyAnalysisBranches[0] ? analysis.whyAnalysisBranches[0].items.map(x => x.why).join(' ') : '')].join(' '))
+      .filter(x => !STOP_STEMS.has(x)));
+    const acts = analysis.correctiveActions.filter(x => !x.derived);
+    if (!acts.length) return { ratio: 0, generic: [] };
+    const generic = acts.filter(x => !stems(x.action + ' ' + x.targetsCause).some(w => ctx.has(w)));
+    return { ratio: generic.length / acts.length, generic };
+  }
+  function buildActionsRetryPrompt(incident, analysis, generic) {
+    const prepared = prepareIncidentForAI(incident);
+    const main = analysis.whyAnalysisBranches[0];
+    return `ROL: İSG düzeltici-önleyici faaliyet (DÖF) uzmanısın. GÖREV: Aşağıdaki olay ve 5 Neden zinciri için olaya ÖZGÜ düzeltici faaliyetleri yeniden yaz.
+
+KURALLAR:
+- Zincirin HER basamağı (1-${main ? main.items.length : 5}) için en az 1 faaliyet; "whyStep" alanına basamak numarasını yaz. Son basamak (kök) için kalıcı sistemsel çözüm (ortadan kaldırma/mühendislik/sistem prosedürü) zorunlu.
+- Her faaliyet emir kipinde, tek cümle, olaydaki SOMUT ekipman/alan/iş adımını ve çalışanın rolünü içersin. "Eğitim verilecek / denetim artırılacak / prosedür güncellenecek" gibi her olaya uyan şablon cümle YAZMA; yazılacaksa konu, alan ve sıklık belirt.
+- Kontrol hiyerarşisini uygula: ortadan kaldırma > ikame > mühendislik > idari > KKD. Yalnız eğitim/KKD ile yetinme.
+- effectivenessMeasure: ölçülebilir (sayı, sıklık, kontrol yöntemi).
+- Toplam en fazla 8 faaliyet. Verilmeyen bilgiyi uydurma.
+
+OLAY:
+${JSON.stringify(prepared.aiIncident, null, 2)}
+
+5 NEDEN ZİNCİRİ:
+${JSON.stringify(main || {}, null, 1)}
+
+ANA KÖK NEDEN: ${str(analysis.mainRootCause && analysis.mainRootCause.text)}
+
+ÖNCEKİ (OLAYA BAĞI ZAYIF) FAALİYETLER:
+${JSON.stringify(generic.map(x => x.action), null, 1)}
+
+SADECE ŞU JSON'U DÖNDÜR:
+{"correctiveActions":[{"action":"","targetsCause":"","whyStep":1,"hierarchyLevel":"elimination|substitution|engineering|administrative|ppe","priority":"immediate|high|medium|low","effectivenessMeasure":""}]}`;
   }
 
   function buildWhyRetryPrompt(incident, analysis) {
@@ -20003,6 +20093,9 @@ DENETİM LİSTESİ:
 - Temas ve ikincil yaralanma sonuçları ayrılmış mı?
 - 5 NEDEN zinciri gerçekten art arda neden-sonuç zinciri mi, ana kolda tam 5 basamak var mı, 5. cevap sistemik kök neden mi, her basamakta ask/why/recommendation dolu mu? Eksik/yüzeysel/yan yana bulgu listesi ise zinciri baştan kurup 5 basamağa tamamla. Neden-Neden sonucu mainRootCause ile tutarlı olmalı.
 - Her Neden satırında nedeni hedefleyen somut öneri var mı?
+- Ana 5 Neden zincirinin her basamağı için (whyStep 1-5) en az bir düzeltici faaliyet var mı; 5. basamak (kök) için kalıcı sistemsel çözüm var mı? Eksikse ekle.
+- Faaliyetler olaydaki somut ekipman/alana atıf yapıyor mu, yoksa her olaya uyabilecek şablon cümle mi? Şablonsa olaya özgü hâle getir.
+- Faaliyetler yazılmış nedenle (whyStep/targetsCause) tutarlı mı; ölçülebilir effectivenessMeasure içeriyor mu?
 - Öneriler kontrol hiyerarşisinin üst basamaklarına öncelik veriyor mu?
 - Balık kılçığı kararı en az üç anlamlı kategoriyle destekleniyor mu? problemStatement olayın somut adını/sonucunu söylüyor mu; genel 'OLAY / KAZA' ifadesi kullanılmışsa düzelt.
 - İnsan, Makine, Metot, Malzeme, Çevre ve Yönetim altı kategorisini tek tek yeniden denetle. Özellikle Malzeme, Çevre ve Yönetim için olay görseli, olay zinciri, bariyer analizi ve ikincil yaralanma mekanizmasından türetilebilecek fakat analistin atladığı makul katkıları ara.
@@ -20106,7 +20199,7 @@ ${jsonContractText()}`;
       rationale: str(vc.rationale)
     };
     out.fishbone.conclusion = str(out.fishbone.conclusion);
-    out.correctiveActions = arr(out.correctiveActions).map(v => ({ action: str(v.action), targetsCause: str(v.targetsCause), hierarchyLevel: ['elimination','substitution','engineering','administrative','ppe'].includes(v.hierarchyLevel) ? v.hierarchyLevel : 'administrative', priority: ['immediate','high','medium','low'].includes(v.priority) ? v.priority : 'medium', effectivenessMeasure: str(v.effectivenessMeasure) })).filter(v => v.action);
+    out.correctiveActions = arr(out.correctiveActions).map(v => ({ action: str(v.action), targetsCause: str(v.targetsCause), whyStep: (Number(v.whyStep) >= 1 && Number(v.whyStep) <= 9) ? Math.round(Number(v.whyStep)) : '', derived: !!v.derived, hierarchyLevel: ['elimination','substitution','engineering','administrative','ppe'].includes(v.hierarchyLevel) ? v.hierarchyLevel : 'administrative', priority: ['immediate','high','medium','low'].includes(v.priority) ? v.priority : 'medium', effectivenessMeasure: str(v.effectivenessMeasure) })).filter(v => v.action);
     out.reportWarnings = uniq(out.reportWarnings);
     out.analysisStatus = 'draft_requires_user_validation';
     return out;
@@ -20300,6 +20393,24 @@ SADECE ŞU JSON'U DÖNDÜR:
       }
     } catch (whyErr) { /* zincir derinleştirilemezse mevcut zincir korunur */ }
 
+    // Faaliyet kalite kapısı: (a) her 5 Neden basamağı için faaliyet garantisi, (b) olay bağı zayıfsa tek seferlik yeniden yazım.
+    let actionsRewritten = false;
+    try {
+      const gen = genericActionRatio(incident, finalAnalysis);
+      if (finalAnalysis.correctiveActions.length >= 2 && gen.ratio > 0.5) {
+        const raw = extractJson(await aiCall(buildActionsRetryPrompt(incident, finalAnalysis, gen.generic), 8000, { role: 'actions' }));
+        const fixed = normalizeAnalysis({ correctiveActions: raw && raw.correctiveActions }).correctiveActions;
+        if (fixed.length >= 3 && genericActionRatio(incident, { ...finalAnalysis, correctiveActions: fixed }).ratio < gen.ratio) {
+          finalAnalysis.correctiveActions = fixed; actionsRewritten = true;
+        }
+      }
+    } catch (actErr) { /* yeniden yazım başarısızsa mevcut faaliyetler korunur */ }
+    const derivedActions = ensureWhyActions(finalAnalysis);
+    const finalGeneric = genericActionRatio(incident, finalAnalysis);
+    if (finalGeneric.ratio > 0.5 && finalAnalysis.correctiveActions.length >= 3) {
+      finalAnalysis.reportWarnings = uniq([...(finalAnalysis.reportWarnings || []), 'Bazı faaliyetlerin olay bağlantısı zayıf görünüyor; saha bilgisiyle özelleştirin.']);
+    }
+
     // Görsel kalite kapısı: tip + sonuç etiketi üçüncü şahıs açısından anlaşılır olmalı.
     // İlk sonuç kalite eşiğini geçmezse AI yalnız görsel kararını en fazla iki kez yeniden dener.
     let visualQA = validateVisualCue(incident, finalAnalysis);
@@ -20347,6 +20458,8 @@ SADECE ŞU JSON'U DÖNDÜR:
       previousDraftId: str(p.previousDraft && p.previousDraft.reportDraftId),
       reviewApplied,
       reviewError,
+      actionsRewritten,
+      derivedActions,
       visualQA,
       status: 'draft',
       validation: { valid: checked.valid, errors: checked.errors, warnings: checked.warnings },
@@ -20402,7 +20515,7 @@ SADECE ŞU JSON'U DÖNDÜR:
     ENGINE_VERSION, SCHEMA_VERSION, CAUSE_CATEGORIES, EVIDENCE_STATES,
     normalizeIncident, prepareIncidentForAI, buildEvidencePacket, requiredQuestionCandidates,
     analystOutputTemplate, buildAnalystPrompt, buildReviewerPrompt, extractJson,
-    normalizeAnalysis, validateAnalysis, generateDraft, createDraftStore, validateVisualCue, visualCandidates,
+    normalizeAnalysis, validateAnalysis, generateDraft, createDraftStore, validateVisualCue, visualCandidates, ensureWhyActions, genericActionRatio,
     incidentFromCurrentForm, simpleHash
   };
 });
@@ -21207,7 +21320,10 @@ function kazaRaporRender(draft,inc){
     : `<h2>6. BALIK KILÇIĞI (ISHIKAWA) ANALİZİ</h2>
        <div class="kaza-report-note muted"><b>Uygulanabilirlik</b>${safe(fish.reason||'Mevcut kanıtlar en az üç anlamlı neden kategorisini desteklemediği için balık kılçığı analizi zorunlu tutulmamıştır.')}</div>`;
 
-  const actRows=acts.map((x,i)=>`<tr><td>${i+1}</td><td>${safe(x.action)}</td><td>${hierarchyLabel(x.hierarchyLevel)}</td><td>${priorityLabel(x.priority)}</td><td>${safe(x.effectivenessMeasure)}</td></tr>`).join('');
+  const whyN=(whys[0]&&whys[0].items&&whys[0].items.length)||0;
+  const zamanLabel=v=>({immediate:'Acil · hemen',high:'Yüksek · ≤30 gün',medium:'Orta · ≤90 gün',low:'Düşük'}[v]||safe(v));
+  const stepLabel=x=>x.whyStep?`${x.whyStep}. Neden${(whyN&&Number(x.whyStep)===whyN)?' (Kök)':''}`:'Genel';
+  const actRows=acts.map((x,i)=>`<tr><td>${i+1}</td><td>${safe(x.action)}</td><td>${stepLabel(x)}${x.targetsCause?`<br><span class="why-ask">${safe(x.targetsCause)}</span>`:''}</td><td>${hierarchyLabel(x.hierarchyLevel)}</td><td>${zamanLabel(x.priority)}</td><td>${safe(x.effectivenessMeasure)}</td></tr>`).join('');
   const missingRows=missing.map((x,i)=>`<tr><td>${i+1}</td><td>${safe(x.question)}</td><td>${safe(x.whyItMatters)}</td></tr>`).join('');
   const photo=(typeof kazaPrimaryImageData!=='undefined' && kazaPrimaryImageData)
     ? `<img alt="Olay görseli" src="${kazaPrimaryImageData}">`
@@ -21270,7 +21386,7 @@ function kazaRaporRender(draft,inc){
 
     <h2>7. DÜZELTİCİ / ÖNLEYİCİ FAALİYETLER</h2>
     ${inc.existingMeasures?`<div class="kaza-report-note"><b>Kayıtta Girilen Alınan / Alınacak Önlem</b>${safe(inc.existingMeasures).replace(/\n/g,'<br>')}</div>`:''}
-    ${actRows?`<table><thead><tr><th>No</th><th>Faaliyet</th><th>Kontrol Seviyesi</th><th>Öncelik</th><th>Etkinlik Ölçütü</th></tr></thead><tbody>${actRows}</tbody></table>`:
+    ${actRows?`<p class="kaza-fishbone-intro">Her faaliyet, 5 Neden zincirindeki ilgili basamağı hedefler; son basamak kök nedeni çözen kalıcı faaliyettir.</p><table><thead><tr><th>No</th><th>Faaliyet</th><th style="width:19%">Hedef Neden</th><th style="width:12%">Kontrol Seviyesi</th><th style="width:11%">Öncelik / Süre</th><th style="width:19%">Etkinlik Ölçütü</th></tr></thead><tbody>${actRows}</tbody></table>`:
       `<div class="kaza-report-note muted">Doğrulanmış düzeltici / önleyici faaliyet taslağı bulunmamaktadır.</div>`}
 
     <h2>8. DOĞRULAMA VE AÇIK NOKTALAR</h2>
