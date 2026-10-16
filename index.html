@@ -14541,6 +14541,7 @@ function kazaPrint(share) {
 
   const sadecaDevam = document.getElementById('kp-opt-sadece-devam')?.checked;
   let liste = kazaFiltreli().sort((a,b) => (a.tarih||'').localeCompare(b.tarih||''));
+  const tumListe = liste;   // özet kutuları 'yalnızca devam eden' filtresinden etkilenmez
   if (sadecaDevam) {
     // Önlemi olan kayıtlarda: onlemTamam===true olanları çıkar
     // Önlemi olmayanlar (henüz önlem girilmemiş) her zaman dahil edilir
@@ -14548,9 +14549,9 @@ function kazaPrint(share) {
   }
   const yil   = document.getElementById('kaza-f-yil')?.value || 'Tüm yıllar';
   const fab   = document.getElementById('kaza-f-fab')?.value || 'Tüm fabrikalar';
-  const kazaSay  = liste.filter(k => k.tur === 'kaza').length;
-  const ramakSay = liste.filter(k => k.tur === 'ramak').length;
-  const kayipGun = liste.reduce((s,k) => s + (parseInt(k.kayip)||0), 0);
+  const kazaSay  = tumListe.filter(k => k.tur === 'kaza').length;
+  const ramakSay = tumListe.filter(k => k.tur === 'ramak').length;
+  const kayipGun = tumListe.reduce((s,k) => s + (parseInt(k.kayip)||0), 0);
   const saat     = kazaCalismaSaati();
   const siklik   = saat > 0 ? (kazaSay  * 1000000 / saat).toFixed(1) : '—';
   const agirlik  = saat > 0 ? (kayipGun * 1000000 / saat).toFixed(1) : '—';
@@ -14581,17 +14582,16 @@ function kazaPrint(share) {
   const kpKokParetoData = ksParetoVerisi(Object.entries(kpKokMap));
 
   const rTur = (typeof kazaFTur !== 'undefined' && kazaFTur) ? kazaFTur : null;
-  const devamSay = liste.filter(k => !(k.onlem && k.onlemTamam === true)).length;
+  const devamSay = tumListe.filter(k => !(k.onlem && k.onlemTamam === true)).length;
   const saatTxt  = saat ? saat.toLocaleString('tr-TR') : 'girilmedi';
   const rBaslik  = rTur === 'kaza' ? 'İSG İş Kazası Raporu' : rTur === 'ramak' ? 'İSG Ramak Kala Raporu'
                  : rTur === 'ilkyardim' ? 'İSG İlk Yardım Olayları Raporu' : rTur === 'maddi' ? 'İSG Maddi Hasar Raporu'
                  : 'İSG Kaza & Ramak Kala Raporu';
-  const filtEt = sadecaDevam ? ' <span style="font-size:8.5px;color:#d97706;">(filtrelenmiş)</span>' : '';
   let ozetKutular;
-  if (rTur === 'kaza') ozetKutular = [['Kaza adedi', liste.length + filtEt], ['Toplam kayıp iş günü', kayipGun], ['Sıklık oranı', siklik], ['Ağırlık oranı', agirlik], ['Çalışma saati', saatTxt]];
-  else if (rTur === 'ramak') ozetKutular = [['Ramak kala sayısı', liste.length + filtEt], ['Devam eden ramak kala', devamSay]];
-  else if (rTur) ozetKutular = [['Toplam kayıt', liste.length + filtEt], ['Devam eden', devamSay]];
-  else ozetKutular = [['Toplam olay', liste.length + filtEt], ['İş kazası', kazaSay], ['Ramak kala', ramakSay], ['Kayıp iş günü', kayipGun], ['Sıklık oranı', siklik], ['Ağırlık oranı', agirlik], ['Çalışma saati', saatTxt]];
+  if (rTur === 'kaza') ozetKutular = [['Toplam kaza adedi', tumListe.length], ['Devam eden kaza', devamSay], ['Toplam kayıp iş günü', kayipGun], ['Sıklık oranı', siklik], ['Ağırlık oranı', agirlik], ['Çalışma saati', saatTxt]];
+  else if (rTur === 'ramak') ozetKutular = [['Toplam ramak kala', tumListe.length], ['Devam eden ramak kala', devamSay]];
+  else if (rTur) ozetKutular = [['Toplam kayıt', tumListe.length], ['Devam eden', devamSay]];
+  else ozetKutular = [['Toplam olay', tumListe.length], ['İş kazası', kazaSay], ['Ramak kala', ramakSay], ['Kayıp iş günü', kayipGun], ['Sıklık oranı', siklik], ['Ağırlık oranı', agirlik], ['Çalışma saati', saatTxt]];
 
   let el = document.getElementById('kaza-print');
   if (!el) { el = document.createElement('div'); el.id = 'kaza-print'; document.body.appendChild(el); }
