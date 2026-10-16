@@ -8331,7 +8331,8 @@ async function aiKeyTest() {
 //  • bir model yoğunsa/yoksa (404) yedek modele geçer,
 //  • kalıcı hatalarda (anahtar, istek) hemen açık Türkçe mesaj verir.
 const GEMINI_MODELLER = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
-let geminiTercihModel = 0;          // son başarılı model sırası (sonraki çağrılar önce onu dener)
+let geminiTercihModel = 0;
+let geminiDusunmeKapali = false;   // 'düşünme' ayarı bir modelde reddedilirse oturum boyunca kapatılır          // son başarılı model sırası (sonraki çağrılar önce onu dener)
 window.geminiDurumBildir = null;    // (mesaj) => void : ekranda "yeniden deneniyor" göstermek için
 function geminiBekle(ms) { return new Promise(r => setTimeout(r, ms)); }
 function geminiHataMesaji(e) {
@@ -8359,13 +8360,21 @@ async function geminiHamIstek(govde, opts) {
       const ctrl = new AbortController();
       const tm = setTimeout(() => ctrl.abort(), o.timeoutMs || 100000);
       try {
-        const yanit = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(govde), signal: ctrl.signal });
+        // Hız: yapılandırılmış rapor çıktısında uzun "düşünme" süresi gereksiz; düşük seviyeye çek (model desteklemezse otomatik vazgeçilir)
+        let g = govde;
+        if (o.hizli && !geminiDusunmeKapali) {
+          g = JSON.parse(JSON.stringify(govde));
+          g.generationConfig = g.generationConfig || {};
+          g.generationConfig.thinkingConfig = /2\.5/.test(model) ? { thinkingBudget: 1024 } : { thinkingLevel: 'low' };
+        }
+        const yanit = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(g), signal: ctrl.signal });
         if (!yanit.ok) {
           let mesaj = 'Gemini API hatası (' + yanit.status + ')';
           try { const h = await yanit.json(); if (h.error && h.error.message) mesaj += ': ' + h.error.message; } catch(e) {}
           const err = new Error(mesaj); err.status = yanit.status;
           if ([429, 500, 502, 503, 504].includes(yanit.status)) { sonHata = err; continue; }   // aynı modeli bekleyip tekrar dene
           if (yanit.status === 404) { sonHata = err; break; }                                  // model yok → yedek modele geç
+          if (yanit.status === 400 && g !== govde && /think/i.test(mesaj)) { geminiDusunmeKapali = true; sonHata = err; d--; continue; }   // düşünme ayarı reddedildi → ayarsız tekrar
           if (yanit.status === 400 || yanit.status === 403) err.message += ' — Anahtar geçersiz ya da istek kabul edilmedi.';
           throw err;
         }
@@ -8562,7 +8571,7 @@ async function kazaRaporMotorTest(deep) {
     const t0 = Date.now();
     try {
       const inc = KazaAIRaporMotoru.normalizeIncident({ incidentId:'test', tur:sn.tur, tarih:'2026-10-15', saat:'10:30', bolum:'Üretim', fab:'Test', aciklama:sn.narrative, injuries:sn.injuries, kayip:0 });
-      const d = await KazaAIRaporMotoru.generateDraft({ incident:inc, skipReview:!deep, aiCall:(p,t,m)=>geminiUret(p,t,{json:true,temperature:0.2}) });
+      const d = await KazaAIRaporMotoru.generateDraft({ incident:inc, skipReview:!deep, aiCall:(p,t,m)=>geminiUret(p,t,{json:true,temperature:0.2,hizli:true}) });
       const a = d.analysis, sorunlar = [];
       if (!a.fishbone.applicable || a.fishbone.categories.length < 3) sorunlar.push('balık kılçığı eksik');
       if (!a.mainRootCause.text) sorunlar.push('ana kök neden boş');
@@ -20644,7 +20653,7 @@ async function kazaRaporGenerate(regenerate){
         if(deep&&rol==='analyst') status.textContent='1/2 Analist taslağı hazırlanıyor…';
         if(deep&&rol==='reviewer') status.textContent='2/2 Bağımsız gözden geçirme yapılıyor…';
         if(rol==='visual') status.textContent='Görsel tipi doğrulanıyor…';
-        return geminiUret(prompt,tokens,{json:true,temperature:0.2,image:(rol==='analyst'&&gorsel)?gorsel:null});
+        return geminiUret(prompt,tokens,{json:true,temperature:0.2,hizli:true,image:(rol==='analyst'&&gorsel)?gorsel:null});
       }
     });
     kazaDraftStore.save(draft);kazaActiveDraft=draft;kazaRaporRender(draft,inc);kazaRaporVersions(inc.incidentId);
