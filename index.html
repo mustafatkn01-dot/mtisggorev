@@ -3665,6 +3665,10 @@ html,body{max-width:100%;overflow-x:hidden}
 .kaza-ai-result span{display:block;font-size:7.8px;color:#74818C;font-weight:800;margin-bottom:3px}
 .kaza-ai-result b{display:block;font-size:9.3px;color:#233747;line-height:1.35;word-break:break-word}
 .kaza-ai-note{margin-top:7px;background:#fff;border-left:4px solid #F07A24;border-radius:9px;padding:8px 9px;color:#5F6E79;font-size:8.8px;line-height:1.45}
+.kaza-action-btns{display:inline-flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.kaza-ai-undo-btn{background:#fff!important;color:#C0392B!important;border:1px solid #C0392B!important}
+.kaza-ai-undo{background:#fff!important;color:#C0392B!important;border:1px solid #C0392B!important}
+.kaza-ai-removed{color:#C0392B}
 .kaza-ai-apply{margin-left:6px;border:0;border-radius:7px;background:#0D2B46;color:#fff;padding:5px 7px;font-size:8.5px;font-weight:800;cursor:pointer}
 .kaza-onlem-ai-btn{margin-left:auto;padding:5px 9px;border:0;border-radius:8px;background:#378ADD;color:#fff;font-size:9.2px;font-weight:800;cursor:pointer}
 
@@ -7032,7 +7036,7 @@ px}
       <section class="kaza-form-section">
         <h4>Görsel ve Önlemler</h4>
         <div class="kaza-photo-grid"><div class="mfield"><label>Kaza / Olay Ana Görseli</label><input type="file" id="kaza-m-photo" accept="image/*" onchange="kazaPhotoPick(this)"/><small>Raporun ön bilgi tablosunun sağında kullanılır.</small></div><div id="kaza-photo-preview" class="kaza-photo-preview"><span>Görsel eklenmedi</span></div></div>
-        <div class="mfield"><label class="kaza-action-label">Alınan / Alınacak Önlem <button type="button" onclick="aiKazaOneri(this)" class="kaza-ai-btn">✨ Öneri Oluştur</button></label><textarea id="kaza-m-onlem" rows="6" placeholder="Tekrarını önlemek için ne yapıldı veya ne yapılacak?"></textarea></div>
+        <div class="mfield"><label class="kaza-action-label">Alınan / Alınacak Önlem <span class="kaza-action-btns"><button type="button" id="kaza-onlem-undo" onclick="kazaOnlemGeriAl()" class="kaza-ai-btn kaza-ai-undo-btn" style="display:none">↶ Önceki metne dön</button><button type="button" onclick="aiKazaOneri(this)" class="kaza-ai-btn">✨ Öneri Oluştur</button></span></label><textarea id="kaza-m-onlem" rows="6" placeholder="Tekrarını önlemek için ne yapıldı veya ne yapılacak?"></textarea></div>
         <label class="kaza-check"><input type="checkbox" id="kaza-m-onlem-tamam"> Önlem tamamlandı</label>
       </section>
     </main>
@@ -8402,32 +8406,63 @@ async function aiDenetimOneri(btn) {
   }
 }
 
-// ── KAZA: yaralanma türü + olay anlatımı + kök nedenden önlem önerisi ──
+// ── KAZA: olay + yaralanma + kök neden + potansiyel şiddetten önlem önerisi ──
+let kazaOnlemOnceki = null;   // yapay zekâ üretiminden önceki metin ("Önceki metne dön" için)
 async function aiKazaOneri(btn) {
+  const ta        = document.getElementById('kaza-m-onlem');
   const aciklama  = (document.getElementById('kaza-m-aciklama')?.value || '').trim();
-  const yaralanma = (document.getElementById('kaza-m-yaralanma')?.value || '').trim();
+  const injuries  = (typeof kazaInjuryRead === 'function') ? kazaInjuryRead() : [];
+  const yaralanma = (typeof kazaInjuryDisplay === 'function' ? kazaInjuryDisplay(injuries) : '') || (document.getElementById('kaza-m-yaralanma')?.value || '').trim();
   const kokNeden  = (document.getElementById('kaza-m-koknedan')?.value || '').trim();
+  const siddetNo  = document.getElementById('kaza-m-potansiyel')?.value || '';
+  const bolum     = (document.getElementById('kaza-m-bolum')?.value || '').trim();
+  const gorev     = (document.getElementById('kaza-m-gorev')?.value || '').trim();
+  const mevcut    = (ta?.value || '').trim();
+  const tamam     = !!document.getElementById('kaza-m-onlem-tamam')?.checked;
   const tur       = kazaMTur || '';
   if (!aciklama && !yaralanma && !kokNeden) {
     alert('Öneri üretmek için önce "Olayın Anlatımı", "Yaralanma/Hasar Türü" ya da "Kök Neden" alanlarından en az birini doldurun.');
     return;
   }
   const turAd = (kazaTur(tur)?.ad) || '';
+  const kategori = kokNeden ? (kazaKokNedenKategori(kokNeden) || '') : '';
+  const siddetAd = ({'1':'Çok Düşük','2':'Düşük','3':'Orta','4':'Yüksek','5':'Çok Yüksek'})[siddetNo] || '';
   const prompt =
-    'Sen bir İş Sağlığı ve Güvenliği (İSG) uzmanısın. Aşağıdaki iş kazası / ramak kala olayı için ' +
-    'tekrarını önleyecek somut, uygulanabilir bir ALINACAK ÖNLEM yaz. ' +
-    'Kurallar: Türkçe yaz, en fazla 2 kısa cümle, madde işareti veya başlık kullanma, ' +
-    'doğrudan yapılacak eylemi belirt.\n\n' +
+    'Sen deneyimli bir İş Sağlığı ve Güvenliği (İSG) uzmanısın. Aşağıdaki olay için, olayın GERÇEK mekanizmasına ve kök nedenine bağlı, ' +
+    'tekrarını önleyecek somut ve uygulanabilir bir "Alınan / Alınacak Önlem" metni yaz.\n\n' +
+    'YÖNTEM: Önce olayın mekanizmasını ve kök nedenini düşün (neden oluştu? hangi bariyer yoktu/yetersizdi?). Sonra önlemleri İSG kontrol hiyerarşisine göre ' +
+    'ele al: ortadan kaldırma > ikame > mühendislik kontrolü (koruyucu, bariyer, sensör, yerleşim) > idari kontrol (prosedür, eğitim, denetim, işaretleme) > KKD. ' +
+    'Mümkünse yalnız eğitim/uyarı/KKD ile yetinme; kalıcı çözümü (mühendislik/yerleşim/bakım) mutlaka öne çıkar. Genel cümlelerden ("dikkatli olunacaktır") kaçın; ' +
+    'ne yapılacağını, nerede/hangi ekipmanda uygulanacağını belirt.\n\n' +
+    'ÇIKTI BİÇİMİ (Türkçe, düz metin, başlık/markdown/yıldız kullanma, toplam en fazla 4 kısa satır):\n' +
+    '1) Acil / düzeltici: ... \n2) Kalıcı / önleyici: ... \n3) Doğrulama / izleme: ... (kısa; kimin/ne sıklıkla kontrol edeceği)\n' +
+    'Her satır en fazla 1-2 cümle olsun. ' + (tamam
+      ? 'Önlem tamamlandı olarak işaretli: yapılan işleri geçmiş zamanla yaz, kalıcı iyileştirme kaldıysa onu "yapılacak" olarak belirt.'
+      : 'Önlem henüz tamamlanmadı: yapılacak işleri gelecek/emir kipinde yaz.') + '\n\n' +
     (turAd     ? 'Olay türü: ' + turAd + '\n' : '') +
-    (yaralanma ? 'Yaralanma/Hasar türü: ' + yaralanma + '\n' : '') +
+    (bolum     ? 'Bölüm: ' + bolum + '\n' : '') +
+    (gorev     ? 'Çalışan görevi: ' + gorev + '\n' : '') +
+    (yaralanma ? 'Yaralanma/Hasar: ' + yaralanma + '\n' : '') +
+    (siddetAd  ? 'Potansiyel şiddet: ' + siddetAd + '\n' : '') +
+    (kokNeden  ? 'Kök neden: ' + kokNeden + (kategori ? ' (' + kategori + ')' : '') + '\n' : '') +
     (aciklama  ? 'Olayın anlatımı: ' + aciklama + '\n' : '') +
-    (kokNeden  ? 'Kök neden: ' + kokNeden + '\n' : '');
+    (mevcut
+      ? '\nKULLANICININ YAZDIĞI MEVCUT ÖNLEM METNİ (kullanıcının yazdığı gerçek eylemleri SİLME ve çelişme; metni koru, eksik kalan kök neden bağlantısını, kalıcı/mühendislik önlemi ve izleme adımını tamamlayarak geliştir):\n' + mevcut + '\n'
+      : '');
   aiBtnDurum(btn, true);
   try {
-    const oneri = await geminiUret(prompt, 1024);
+    let oneri = '';
+    try { oneri = await geminiUret(prompt, 4096); }
+    catch (e1) {
+      if (e1 && (e1.message || '').indexOf('429') >= 0) throw e1;
+      oneri = await geminiUret(prompt, 4096);          // bir kez daha dene
+    }
+    oneri = String(oneri || '').replace(/\*\*/g, '').trim();
     if (oneri) {
-      document.getElementById('kaza-m-onlem').value = oneri;
-      toast('Önlem önerisi oluşturuldu');
+      kazaOnlemOnceki = mevcut;
+      ta.value = oneri;
+      kazaOnlemUndoGoster(true, !!mevcut);
+      toast(mevcut ? 'Önlem metni geliştirildi' : 'Önlem önerisi oluşturuldu');
     } else {
       alert('Öneri üretilemedi, tekrar deneyin.');
     }
@@ -8436,6 +8471,21 @@ async function aiKazaOneri(btn) {
   } finally {
     aiBtnDurum(btn, false);
   }
+}
+// Üretimden önceki metne dön ("Önceki metne dön" / "Üretimi kaldır")
+function kazaOnlemUndoGoster(goster, oncekiVar) {
+  const b = document.getElementById('kaza-onlem-undo');
+  if (!b) return;
+  b.style.display = goster ? 'inline-block' : 'none';
+  b.textContent = oncekiVar ? '↶ Önceki metne dön' : '↶ Üretimi kaldır';
+}
+function kazaOnlemGeriAl() {
+  const ta = document.getElementById('kaza-m-onlem');
+  if (!ta) return;
+  ta.value = kazaOnlemOnceki || '';
+  kazaOnlemOnceki = null;
+  kazaOnlemUndoGoster(false);
+  toast('Önlem metni geri alındı');
 }
 function closeSettings() { document.getElementById('settings-bg').classList.remove('on'); }
 
@@ -13486,7 +13536,7 @@ let kazaFTur   = null;          // null = tüm türler
 window._kazaReady = window._kazaReady || false;
 let kazaMTur   = 'kaza';        // modalda seçili tür
 
-let kazaAnalizState={attempt:0,lastResult:null,applied:false,appliedAt:'',source:'',incidentId:''};
+let kazaAnalizState={attempt:0,lastResult:null,applied:false,appliedAt:'',source:'',incidentId:'',undo:null,lastError:''};
 
 function kazaAnalizStateReset(k){
   const saved=k&&k.classificationAssist&&typeof k.classificationAssist==='object'?k.classificationAssist:null;
@@ -13496,12 +13546,28 @@ function kazaAnalizStateReset(k){
     applied:!!saved?.applied,
     appliedAt:String(saved?.appliedAt||''),
     source:String(saved?.source||''),
-    incidentId:k?String(k.id||''):''
+    incidentId:k?String(k.id||''):'',
+    undo:saved?.undo&&typeof saved.undo==='object'?{...saved.undo}:null,
+    lastError:''
   };
 }
 function kazaAnalizStateSnapshot(){
   return {attempt:Number(kazaAnalizState.attempt||0),lastResult:kazaAnalizState.lastResult?{...kazaAnalizState.lastResult}:null,
-    applied:!!kazaAnalizState.applied,appliedAt:kazaAnalizState.appliedAt||'',source:kazaAnalizState.source||''};
+    applied:!!kazaAnalizState.applied,appliedAt:kazaAnalizState.appliedAt||'',source:kazaAnalizState.source||'',undo:kazaAnalizState.undo?{...kazaAnalizState.undo}:null};
+}
+function kazaAnalizAksiyonHTML(){
+  return kazaAnalizState.applied
+    ? ' <button type="button" class="kaza-ai-apply kaza-ai-undo" onclick="kazaAnalizGeriAl()">↶ Uygulananı Kaldır</button>'
+    : ' <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygulaSonucu()">Öneriyi Uygula</button>';
+}
+// Bir <select>'e, listede olmasa bile değeri güvenle yazar (eski/özel değerler kaybolmasın)
+function kazaSelectSet(sel,val){
+  if(!sel) return;
+  const v=String(val||'');
+  if(v&&![...sel.options].some(o=>o.value===v)){
+    const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);
+  }
+  sel.value=v;
 }
 function kazaAnalizRenderSavedState(){
   const res=document.getElementById('kaza-ai-result');
@@ -13525,9 +13591,9 @@ function kazaAnalizRenderSavedState(){
     if(kazaAnalizState.applied){
       note.innerHTML=`<b class="kaza-ai-applied-ok">✓ Sınıflandırma önerisi daha önce uygulandı.</b>`+
         (when?` <small class="kaza-ai-meta">${kazaEsc(when)}</small>`:'')+
-        `<small class="kaza-ai-meta"> İsterseniz olay bilgilerini değiştirip tekrar analiz edebilirsiniz.</small>`;
+        `<small class="kaza-ai-meta"> İsterseniz olay bilgilerini değiştirip tekrar analiz edebilirsiniz.</small>`+kazaAnalizAksiyonHTML();
     }else{
-      note.innerHTML=`${kazaEsc(d.gerekce||'Analiz sonucu hazır.')} <small class="kaza-ai-meta">Henüz forma uygulanmadı.</small> <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygulaSonucu()">Öneriyi Uygula</button>`;
+      note.innerHTML=`${kazaEsc(d.gerekce||'Analiz sonucu hazır.')} <small class="kaza-ai-meta">Henüz forma uygulanmadı.</small>`+kazaAnalizAksiyonHTML();
     }
   }
   if(btn){btn.disabled=false;btn.textContent='↻ Tekrar Analiz Et'}
@@ -14018,11 +14084,12 @@ function kazaOpenAdd(editId) {
     kazaInjuryRender(k && Array.isArray(k.injuries) && k.injuries.length ? k.injuries : legacyRows);
   }
   document.getElementById('kaza-m-yaralanma').value = k ? (k.yaralanma||'') : '';
-  document.getElementById('kaza-m-koknedan').value  = k ? (k.kokNeden||'') : '';
+  kazaSelectSet(document.getElementById('kaza-m-koknedan'), k ? (k.kokNeden||'') : '');
   document.getElementById('kaza-m-potansiyel').value = k && k.potansiyelSiddet ? String(k.potansiyelSiddet) : '';
 
   kazaAnalizStateReset(k);
   kazaAnalizRenderSavedState();
+  kazaOnlemOnceki = null; kazaOnlemUndoGoster(false);
 
   document.getElementById('kaza-modal-bg').style.display = 'flex';
   setTimeout(() => document.getElementById('kaza-m-aciklama').focus(), 80);
@@ -15662,31 +15729,86 @@ function kazaAnalizGorselParca(){
   return {inline_data:{mime_type:m[1]||'image/jpeg',data:m[2]}};
 }
 
-async function kazaGeminiSiniflandir(prompt){
+function kazaNorm(v){
+  return String(v||'').toLocaleLowerCase('tr-TR').replace(/[^a-z0-9ğüşıöçâîû]+/gi,'');
+}
+// Yapay zekâ çıktısını standart listeye güvenle eşler (büyük/küçük harf, boşluk, noktalama farkı tolere edilir)
+function kazaEslestir(list,v){
+  const raw=String(v||'').trim();
+  if(!raw||/^(belirsiz|yok|yeterli bilgi yok)$/i.test(raw)) return '';
+  if(list.includes(raw)) return raw;
+  const n=kazaNorm(raw);
+  if(!n) return '';
+  const eq=list.find(x=>kazaNorm(x)===n);
+  if(eq) return eq;
+  if(n.length>=8){
+    const inc=list.filter(x=>{const m=kazaNorm(x);return m.includes(n)||n.includes(m)});
+    if(inc.length===1) return inc[0];
+  }
+  return '';
+}
+
+async function kazaGeminiIstek(govde,key){
+  const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key='+encodeURIComponent(key);
+  const yanit=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(govde)});
+  if(!yanit.ok){
+    let mesaj='Servis hatası ('+yanit.status+')';
+    try{const h=await yanit.json();if(h?.error?.message)mesaj+=': '+h.error.message}catch(e){}
+    if(yanit.status===429)mesaj+=' — kota/hız sınırı, biraz sonra tekrar deneyin';
+    const err=new Error(mesaj);err.status=yanit.status;throw err;
+  }
+  const veri=await yanit.json();
+  const aday=veri?.candidates?.[0];
+  if(!aday){
+    const blok=veri?.promptFeedback?.blockReason;
+    throw new Error(blok?('İçerik engellendi: '+blok):'Yanıt alınamadı');
+  }
+  const metin=(aday.content?.parts||[]).map(p=>p?.text||'').join('').trim();
+  if(!metin) throw new Error(aday.finishReason==='MAX_TOKENS'?'Yanıt token sınırına takıldı':'Boş yanıt alındı');
+  return {metin,finish:aday.finishReason||''};
+}
+
+async function kazaGeminiSiniflandir(prompt,hasarList,kokList){
   const key=aiKeyAl();
   if(!key) throw new Error('Önce Ayarlar → Yapay Zeka bölümünden API anahtarını girin.');
-  const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key='+encodeURIComponent(key);
   const parts=[{text:prompt}];
   const img=kazaAnalizGorselParca();
   if(img) parts.push(img);
-  const govde={
-    contents:[{parts}],
-    generationConfig:{temperature:0.12,maxOutputTokens:1600,responseMimeType:'application/json'}
+  const siddetEnum=['1','2','3','4','5'];
+  const schema={
+    type:'OBJECT',
+    properties:{
+      olayMekanizmasi:{type:'STRING'},
+      dogrudanNeden:{type:'STRING'},
+      hasarTuru:{type:'STRING',enum:[...hasarList,'Belirsiz']},
+      kokNeden:{type:'STRING',enum:[...kokList,'Belirsiz']},
+      alternatifKokNeden:{type:'STRING',enum:[...kokList,'Yok']},
+      potansiyelSiddet:{type:'STRING',enum:siddetEnum},
+      gerekce:{type:'STRING'},
+      guven:{type:'STRING',enum:['yüksek','orta','düşük']},
+      gorselKullanildi:{type:'BOOLEAN'}
+    },
+    required:['olayMekanizmasi','dogrudanNeden','hasarTuru','kokNeden','alternatifKokNeden','potansiyelSiddet','gerekce','guven'],
+    propertyOrdering:['olayMekanizmasi','dogrudanNeden','hasarTuru','kokNeden','alternatifKokNeden','potansiyelSiddet','gerekce','guven','gorselKullanildi']
   };
-  const yanit=await fetch(url,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(govde)
+  const govde=(sema)=>({
+    contents:[{parts}],
+    generationConfig:Object.assign({temperature:0.1,maxOutputTokens:8192,responseMimeType:'application/json'},sema?{responseSchema:schema}:{})
   });
-  if(!yanit.ok){
-    let mesaj='Sınıflandırma servisi hatası ('+yanit.status+')';
-    try{const h=await yanit.json();if(h?.error?.message)mesaj+=': '+h.error.message}catch(e){}
-    throw new Error(mesaj);
+  // 1. deneme: şemalı (liste dışı değer üretilemez). Başarısızsa şemasız, sonra bir kez daha dener.
+  const denemeler=[true,false,false];
+  let sonHata=null;
+  for(let n=0;n<denemeler.length;n++){
+    try{
+      const r=await kazaGeminiIstek(govde(denemeler[n]),key);
+      return kazaAnalizJsonAyikla(r.metin);
+    }catch(e){
+      sonHata=e;
+      if(e.status===401||e.status===403) break;           // anahtar sorunu: tekrar denemenin anlamı yok
+      if(e.status===429&&n<denemeler.length-1) await new Promise(r=>setTimeout(r,1800));
+    }
   }
-  const veri=await yanit.json();
-  const metin=(veri?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||'').join('').trim();
-  if(!metin) throw new Error('Sınıflandırma yanıtı alınamadı.');
-  return kazaAnalizJsonAyikla(metin);
+  throw sonHata||new Error('Sınıflandırma yanıtı alınamadı.');
 }
 
 function kazaAnalizFallback(metin){
@@ -15727,13 +15849,17 @@ function kazaAnalizFallback(metin){
 function kazaAnalizSonucDogrula(obj){
   const hasarlar=kazaAnalizHasarListesi();
   const kokler=kazaAnalizKokListesi();
-  const hasar=hasarlar.includes(obj?.hasarTuru)?obj.hasarTuru:'';
-  const kok=kokler.includes(obj?.kokNeden)?obj.kokNeden:'';
-  let siddet=String(obj?.potansiyelSiddet||'');
+  const hasar=kazaEslestir(hasarlar,obj?.hasarTuru);
+  const kok=kazaEslestir(kokler,obj?.kokNeden);
+  let alt=kazaEslestir(kokler,obj?.alternatifKokNeden);
+  if(alt===kok) alt='';
+  let siddet=String(obj?.potansiyelSiddet||'').trim();
   if(!['1','2','3','4','5'].includes(siddet)) siddet='';
   const ana=kok?(kazaKokNedenKategori(kok)||'Kategori eşleşmesi yok'):'—';
   return {
-    hasar,kok,siddet,ana,
+    hasar,kok,siddet,ana,alt,
+    mekanizma:String(obj?.olayMekanizmasi||'').trim(),
+    dogrudan:String(obj?.dogrudanNeden||'').trim(),
     gerekce:String(obj?.gerekce||'').trim(),
     guven:String(obj?.guven||'').trim().toLocaleLowerCase('tr-TR'),
     imageUsed:!!obj?.gorselKullanildi
@@ -15770,6 +15896,7 @@ async function kazaAnalizEt(){
     : 'Olay anlatımı, yaralanma kayıtları ve varsa görsel birlikte değerlendiriliyor…';
 
   let sonuc=null,aiUsed=false;
+  kazaAnalizState.lastError='';
   try{
     const repeatInstruction=attempt>1?`
 TEKRAR ANALİZ TALİMATI:
@@ -15785,23 +15912,44 @@ TEKRAR ANALİZ TALİMATI:
 ${JSON.stringify(previous||{},null,2)}
 `: '';
 
-    const prompt=`Sen endüstriyel iş sağlığı ve güvenliği olay sınıflandırma uzmanısın.
-Görevin SADECE verilen olaya dayanarak kayıt ön sınıflandırması yapmaktır.
+    const turAd=(typeof kazaTur==='function'&&typeof kazaMTur!=='undefined'?kazaTur(kazaMTur)?.ad:'')||'';
+    const bolum=(document.getElementById('kaza-m-bolum')?.value||'').trim();
+    const gorev=(document.getElementById('kaza-m-gorev')?.value||'').trim();
+    const kayipGun=document.getElementById('kaza-m-kayip')?.value||'0';
+    const grup={};
+    kokList.forEach(x=>{const c=kazaKokNedenKategori(x)||'Özel / Kullanıcı tanımlı';(grup[c]=grup[c]||[]).push(x)});
+    const kokMetin=Object.entries(grup).map(([c,l])=>'['+c+']\n'+l.map(x=>'- '+x).join('\n')).join('\n');
+    const prompt=`Sen 20 yıllık deneyime sahip bir iş sağlığı ve güvenliği (İSG) kaza araştırma uzmanısın. Görevin, aşağıdaki olayı okuyup kaydın ön sınıflandırmasını standart listelerden seçmektir. Sınıflandırma, saha uzmanının raporuna doğrudan girecek; bu yüzden isabet, hız ve tutarlılık önceliklidir.
 
-KRİTİK KURALLAR:
-1. Olay anlatımından bağımsız tahmin üretme.
-2. Kelime parçası eşleştirmesi yapma. Örn. "arkadan" kelimesi "elektrik arkı" DEĞİLDİR.
-3. Görsel varsa yalnız görünür ve olay anlatımıyla tutarlı bulguları destekleyici kanıt olarak kullan.
-4. Görsel olay anlatımıyla çelişirse bunu gerekçede belirt; tek başına görsele dayanıp kök neden uydurma.
-5. Hasar türünü yalnız aşağıdaki HASAR LİSTESİNDEN seç.
-6. Kök nedeni yalnız aşağıdaki KÖK NEDEN LİSTESİNDEN seç.
-7. Davranışsal kök nedenleri ancak anlatımda açık kanıt varsa seç. Sistem/yerleşim/koruyucu eksikliği daha güçlü kanıtlanıyorsa onu tercih et.
-8. "Ana kök neden" ayrı seçim değildir; standart kök neden kategori eşlemesi sistem tarafından yapılacaktır.
-9. Potansiyel şiddet gerçekleşen yaralanmaya göre değil, makul en ciddi potansiyel sonuca göre 1-5 seç.
-10. Birden fazla yaralanma kaydı varsa baskın/ana kayıt hasarını seç; diğer yaralanmalar ayrı satırlarda tutulur.
-11. Yeterli kanıt yoksa boş string döndür; rastgele sınıflandırma yapma.
-12. Kök neden seçimi olayın gerçek mekanizmasına ve olay zincirindeki en güçlü kanıta dayanmalıdır.
+OKUMA YÖNTEMİ (sırayla uygula, ama yalnız JSON çıktısını döndür):
+A) Anlatımı baştan sona oku. Kim, ne iş yapıyordu, hangi ekipman/malzeme/alan, hangi sapma/olay, hangi temas veya potansiyel temas oldu? Bunu "olayMekanizmasi" alanına en fazla 2 cümleyle yaz.
+B) "dogrudanNeden": olayı doğrudan başlatan koşul/eylem (örn. "sabitlenmemiş sac levhanın kayması").
+C) Kök neden: "neden bu doğrudan neden oluştu?" sorusunu en az 2-3 kez sor (5 Neden). Davranışı değil, davranışı mümkün kılan sistem/ekipman/çevre/organizasyon boşluğunu ara.
+D) Listedeki seçenekleri anlatımdaki GERÇEK ifadelerle karşılaştır; kelime benzerliğiyle değil anlam ve olay zinciriyle eşleştir.
+
+SEÇİM İLKELERİ:
+1. Anlatımda "riski vardır / riski oluşturmaktadır / olabilir" gibi ifadeler varsa bu bir RAMAK KALA/risk bildirimidir: hasarTuru olarak "gerçekleşen" değil, anlatılan durumda ORTAYA ÇIKMASI EN MUHTEMEL yaralanma türünü seç; potansiyelSiddet'i bu en olası makul sonuca göre ver.
+2. Sistem/ekipman/çevre kanıtı güçlüyse bunu davranışsal nedene tercih et. "Dalgınlık ve Dikkatsizlik", "İş Disiplinine Uymamak" gibi davranışsal nedenleri yalnız anlatımda AÇIK ifade varsa seç; kazadan sonra kişiyi suçlamak kolay ama çoğu zaman yanlıştır.
+3. Sık karışan ayrımlar:
+   - Zeminde malzeme/palet/kablo/döküntü/karton/düzensiz istif → "İşyeri Düzensizliği (5S Eksikliği)". Islak/yağlı/kaygan zemin, yetersiz aydınlatma, engebe/çukur, geçiş yolu yetersizliği → "Emniyetsiz ve Sağlıksız Çevre Koşulları". Yüksekten düşme, merdiven/platform/denge kaybı → "Düşme ve Denge Kaybı".
+   - Makinede koruyucu HİÇ yok/sökülmüş → "Koruyucusuz / Muhafazasız Makine Kullanmak"; koruyucu var ama yetersiz/erişilebilir/delik → "Makine Koruyucularının Yetersiz Olması"; sensör, ışık perdesi, kilitleme, acil stop, güvenlik devresi eksik/devre dışı → "Teknik Koruma / Güvenlik Sisteminin Yetersizliği".
+   - Kırık, aşınmış, gevşek, arızalı, bakımı yapılmamış ekipman/aparat/tekerlek/sehpa → "Arızalı / Bakımsız Ekipman Kullanımı".
+   - Çalışan makineye müdahale (tıkanma açma, ayar, temizlik) → "Makineyi Durdurmadan Müdahale Yapmak"; enerji kesme/kilitleme-etiketleme yok → "EKED/LOTO Eksikliği".
+   - KKD hiç kullanılmadı → "KKD Kullanmamak"; KKD var ama işe uygun/yeterli değil → "KKD'nin Yetersiz / Uygunsuz Olması".
+   - Prosedür, talimat, eğitim, yetkilendirme veya denetim eksikliği → "Yetersiz Eğitim, Denetim"; kişi bilerek talimata aykırı davrandıysa → "İş Disiplinine / Talimatlara Uymamak".
+   - Forklift/araç-yaya, haberleşme, işaretleme, bir başkasının eylemi → "2. Şahıs Kusuru / İletişim Hatası" veya fiziksel ayrım/bariyer eksikse teknik koruma.
+   - Kesici kenar/sivri uç temasında "Kesik / Yırtılma" veya "Delinme / Batma"; el/parmak sıkışması "Ezilme / Sıkışma"; düşen/devrilen yük "Çarpma / Darbe" veya "Ezilme / Sıkışma"; sıcak yüzey/sıvı için yanık türleri.
+4. Birden çok neden varsa olay zincirini BAŞLATAN ve ortadan kalkarsa olayı engelleyecek olanı "kokNeden", ikinci güçlü adayı "alternatifKokNeden" yap. Alternatif yoksa "Yok".
+5. Seçimi anlatımdan bağımsız tahmin etme. Gerçekten belirleyemiyorsan "Belirsiz" yaz; fakat anlatım olay mekanizmasını anlatıyorsa Belirsiz'e kaçma, en olası seçimi yap ve güveni "düşük/orta" ver.
+6. Kullanıcının formdaki mevcut seçimi bir İPUCUDUR, kesin doğru değildir; olay zinciriyle uyumluysa koru, uyumsuzsa düzelt ve gerekçede nedenini belirt.
+7. Görsel varsa yalnız anlatımla tutarlı, gözle görülen bulguları destekleyici kanıt say; çelişirse gerekçede belirt; tek başına görsele dayanıp kök neden uydurma.
+8. Birden fazla yaralanma kaydı varsa baskın/en ağır olanın hasar türünü seç.
+9. potansiyelSiddet (makul en kötü sonuç): 1 Çok Düşük (ilk yardım gerektirmez), 2 Düşük (ilk yardım/hafif), 3 Orta (tıbbi müdahale/iş günü kaybı), 4 Yüksek (ciddi yaralanma, kalıcı etki), 5 Çok Yüksek (ölüm/uzuv kaybı/çoklu yaralanma).
+10. "gerekce": en fazla 2 kısa cümle; seçilen kök nedenin olay zinciriyle bağını somut ifadeyle kur (anlatımdan bir ifadeye atıf yap).
 ${repeatInstruction}
+
+OLAY BİLGİSİ:
+Olay türü: ${turAd||'—'}${bolum?'\nBölüm: '+bolum:''}${gorev?'\nÇalışan görevi: '+gorev:''}\nKayıp iş günü: ${kayipGun}
 
 OLAY ANLATIMI:
 ${metin}
@@ -15809,31 +15957,25 @@ ${metin}
 MEVCUT YARALANMA / HASAR SATIRLARI:
 ${JSON.stringify(injuryRows)}
 
-KULLANICININ MEVCUT FORM SEÇİMLERİ:
+KULLANICININ MEVCUT FORM SEÇİMLERİ (ipucu):
 Kök neden: ${mevcutKok||'—'}
 Potansiyel şiddet: ${mevcutSiddet||'—'}
 Alınan / Alınacak Önlem: ${mevcutOnlem||'—'}
 
-HASAR LİSTESİ:
+HASAR TÜRÜ LİSTESİ (yalnız bunlardan seç):
 ${hasarList.map(x=>'- '+x).join('\n')}
 
-KÖK NEDEN LİSTESİ:
-${kokList.map(x=>'- '+x).join('\n')}
+KÖK NEDEN LİSTESİ (yalnız bunlardan seç; köşeli parantez kategori adıdır, değere dahil değildir):
+${kokMetin}
 
-SADECE BU JSON NESNESİNİ DÖNDÜR:
-{
-  "hasarTuru": "listedeki tam değer veya boş string",
-  "kokNeden": "listedeki tam değer veya boş string",
-  "potansiyelSiddet": 1,
-  "gerekce": "en fazla 2 kısa cümle; seçimin olay zinciriyle doğrudan bağını açıkla",
-  "guven": "yüksek|orta|düşük",
-  "gorselKullanildi": true
-}`;
-    const raw=await kazaGeminiSiniflandir(prompt);
+SADECE şu JSON nesnesini döndür (alan sırasına uy; hasarTuru/kokNeden/alternatifKokNeden listedeki tam değer, potansiyelSiddet "1"-"5"):
+{"olayMekanizmasi":"","dogrudanNeden":"","hasarTuru":"","kokNeden":"","alternatifKokNeden":"","potansiyelSiddet":"3","gerekce":"","guven":"yüksek|orta|düşük","gorselKullanildi":false}`;
+    const raw=await kazaGeminiSiniflandir(prompt,hasarList,kokList);
     sonuc=kazaAnalizSonucDogrula(raw);
     aiUsed=true;
   }catch(e){
     console.warn('Kaza sınıflandırma AI yedeğe düştü:',e);
+    kazaAnalizState.lastError=String(e&&e.message||e||'').slice(0,220);
     sonuc=kazaAnalizFallback(metin);
   }
 
@@ -15848,11 +15990,11 @@ SADECE BU JSON NESNESİNİ DÖNDÜR:
     <div><span>Potansiyel Şiddet</span><b>${kazaEsc(siddetAd)}</b></div>`;
 
   const meta=aiUsed
-    ? `Güven: ${kazaEsc(sonuc.guven||'belirtilmedi')}${sonuc.imageUsed?' · Görsel destekleyici olarak değerlendirildi':''} · Analiz ${attempt}.`
-    : `Canlı analiz servisi kullanılamadığı için muhafazakâr yedek sınıflandırma kullanıldı · Analiz ${attempt}.`;
+    ? `Güven: ${kazaEsc(sonuc.guven||'belirtilmedi')}${sonuc.alt?' · Olası alternatif kök neden: '+kazaEsc(sonuc.alt):''}${sonuc.imageUsed?' · Görsel destekleyici olarak değerlendirildi':''} · Analiz ${attempt}.`
+    : `Canlı analiz yapılamadı${kazaAnalizState.lastError?' ('+kazaEsc(kazaAnalizState.lastError)+')':''}; muhafazakâr yedek sınıflandırma kullanıldı · Analiz ${attempt}.`;
   const repeatMsg=attempt>1?'<small class="kaza-ai-meta kaza-ai-repeat-note"> Önceki sonuç da dikkate alınarak olay baştan değerlendirildi.</small>':'';
   if(note)note.innerHTML=`${kazaEsc(sonuc.gerekce||'Sonucu olay anlatımı ve saha koşullarıyla doğrulayın.')} <small class="kaza-ai-meta">${meta}</small>${repeatMsg}`+
-    ((sonuc.hasar||sonuc.kok||sonuc.siddet)?` <button type="button" class="kaza-ai-apply" onclick="kazaAnalizUygulaSonucu()">Öneriyi Uygula</button>`:'');
+    ((sonuc.hasar||sonuc.kok||sonuc.siddet)?kazaAnalizAksiyonHTML():'');
   if(btn){btn.disabled=false;btn.textContent='↻ Tekrar Analiz Et'}
 }
 
@@ -15866,27 +16008,37 @@ function kazaAnalizUygulaEncoded(encoded){
 
 function kazaAnalizUygula(hasar,kok,siddet){
   let appliedCount=0;
+  const rows=[...document.querySelectorAll('#kaza-injury-rows [data-injury-row]')];
+  const k=document.getElementById('kaza-m-koknedan');
+  const p=document.getElementById('kaza-m-potansiyel');
+  // Uygulama öncesi (elle girilmiş) değerler: "Uygulananı Kaldır" bunlara döner.
+  // Üst üste uygulamada ilk (elle girilen) durum korunur.
+  const undo=(kazaAnalizState.applied&&kazaAnalizState.undo)?kazaAnalizState.undo:{
+    rowIdx:-1,prevHasar:'',prevKok:k?k.value:'',prevSiddet:p?p.value:''
+  };
   if(hasar){
-    const rows=[...document.querySelectorAll('#kaza-injury-rows [data-injury-row]')];
-    let target=rows.find(r=>!(r.querySelector('[data-damage-type]')?.value||'').trim())||rows[0];
+    let idx=rows.findIndex(r=>!(r.querySelector('[data-damage-type]')?.value||'').trim());
+    if(idx<0) idx=0;
+    const target=rows[idx];
     if(target){
       const sel=target.querySelector('[data-damage-type]');
       if(sel&&[...sel.options].some(o=>o.value===hasar)){
+        if(!(kazaAnalizState.applied&&kazaAnalizState.undo)){undo.rowIdx=idx;undo.prevHasar=sel.value||''}
+        else if(undo.rowIdx<0){undo.rowIdx=idx}
         sel.value=hasar;sel.dispatchEvent(new Event('change',{bubbles:true}));appliedCount++;
       }
     }
   }
-  const k=document.getElementById('kaza-m-koknedan');
-  const p=document.getElementById('kaza-m-potansiyel');
-  if(k&&kok&&[...k.options].some(o=>o.value===kok)){k.value=kok;k.dispatchEvent(new Event('change',{bubbles:true}));appliedCount++}
+  if(k&&kok){kazaSelectSet(k,kok);k.dispatchEvent(new Event('change',{bubbles:true}));appliedCount++}
   if(p&&siddet){p.value=String(siddet);p.dispatchEvent(new Event('change',{bubbles:true}));appliedCount++}
 
   kazaAnalizState.applied=appliedCount>0;
   kazaAnalizState.appliedAt=appliedCount>0?new Date().toISOString():'';
+  kazaAnalizState.undo=appliedCount>0?undo:null;
   const note=document.getElementById('kaza-ai-note');
 
   if(appliedCount>0){
-    if(note)note.innerHTML='<b class="kaza-ai-applied-ok">✓ Sınıflandırma önerisi uygulandı.</b> <small class="kaza-ai-meta">Değerler kayıt formuna aktarıldı. Kalıcı kayıt için alttaki Kaydet butonunu kullanın; isterseniz tekrar Analiz Et ile yeniden değerlendirebilirsiniz.</small>';
+    if(note)note.innerHTML='<b class="kaza-ai-applied-ok">✓ Sınıflandırma önerisi uygulandı.</b> <small class="kaza-ai-meta">Değerler kayıt formuna aktarıldı. Kalıcı kayıt için alttaki Kaydet butonunu kullanın. Elle girmek isterseniz “Uygulananı Kaldır” ile önceki değerlere dönebilir, ya da alanları doğrudan değiştirebilirsiniz.</small>'+kazaAnalizAksiyonHTML();
     if(typeof toast==='function')toast('Sınıflandırma önerisi uygulandı ✓');
   }else{
     if(note)note.textContent='Uygulanabilir sınıflandırma değeri bulunamadı.';
@@ -15895,6 +16047,43 @@ function kazaAnalizUygula(hasar,kok,siddet){
   const btn=document.getElementById('kaza-ai-analyze-btn');
   if(btn){btn.disabled=false;btn.textContent='↻ Tekrar Analiz Et'}
 }
+// Uygulanan yapay zekâ önerisini kaldırır; formu uygulama öncesi (elle girilen) değerlere döndürür.
+function kazaAnalizGeriAl(){
+  const u=kazaAnalizState.undo;
+  const d=kazaAnalizState.lastResult||{};
+  const rows=[...document.querySelectorAll('#kaza-injury-rows [data-injury-row]')];
+  const k=document.getElementById('kaza-m-koknedan');
+  const p=document.getElementById('kaza-m-potansiyel');
+  const fire=el=>{if(el)el.dispatchEvent(new Event('change',{bubbles:true}))};
+  if(u){
+    const row=u.rowIdx>=0?rows[u.rowIdx]:null;
+    const sel=row?.querySelector('[data-damage-type]');
+    if(sel&&d.hasar&&sel.value===d.hasar){kazaSelectSet(sel,u.prevHasar);fire(sel)}
+    if(k&&(!d.kok||k.value===d.kok)){kazaSelectSet(k,u.prevKok);fire(k)}
+    if(p&&(!d.siddet||p.value===String(d.siddet))){p.value=u.prevSiddet||'';fire(p)}
+  }else{
+    // Eski kayıt: geri alma bilgisi yok → yapay zekâ ile aynı olan değerleri temizle
+    rows.forEach(r=>{const sel=r.querySelector('[data-damage-type]');if(sel&&d.hasar&&sel.value===d.hasar){sel.value='';fire(sel)}});
+    if(k&&d.kok&&k.value===d.kok){k.value='';fire(k)}
+    if(p&&d.siddet&&p.value===String(d.siddet)){p.value='';fire(p)}
+  }
+  kazaAnalizState.applied=false;
+  kazaAnalizState.appliedAt='';
+  kazaAnalizState.undo=null;
+  const note=document.getElementById('kaza-ai-note');
+  if(note)note.innerHTML='<b class="kaza-ai-removed">↶ Uygulanan öneri kaldırıldı.</b> <small class="kaza-ai-meta">Alanlar önceki (elle girilen) değerlere döndü. Dilerseniz önerinin tamamını yeniden uygulayabilirsiniz.</small>'+kazaAnalizAksiyonHTML();
+  if(typeof toast==='function')toast('Yapay zekâ önerisi kaldırıldı');
+}
+// Kullanıcı alanları ELLE değiştirirse (yapay zekâ ile uygulanmış olsa bile) kayıt "elle girilmiş" sayılır.
+document.addEventListener('change',function(e){
+  if(!e.isTrusted||!kazaAnalizState.applied) return;
+  const t=e.target;
+  if(!t||!t.closest||!t.closest('#kaza-modal-bg')) return;
+  if(!(t.id==='kaza-m-koknedan'||t.id==='kaza-m-potansiyel'||(t.hasAttribute&&t.hasAttribute('data-damage-type')))) return;
+  kazaAnalizState.applied=false;kazaAnalizState.appliedAt='';kazaAnalizState.undo=null;
+  const note=document.getElementById('kaza-ai-note');
+  if(note)note.innerHTML='<b class="kaza-ai-removed">✎ Değerler elle değiştirildi.</b> <small class="kaza-ai-meta">Kayıtta sizin girdiğiniz değerler kullanılacak; yapay zekâ önerisi uygulanmış sayılmaz.</small>'+kazaAnalizAksiyonHTML();
+});
 function kazaAnalizUygulaSonucu(){
   const d=kazaAnalizState.lastResult;
   if(!d){
@@ -20827,6 +21016,7 @@ function kazaRaporRender(draft,inc){
     ${fishHtml}
 
     <h2>7. DÜZELTİCİ / ÖNLEYİCİ FAALİYETLER</h2>
+    ${inc.existingMeasures?`<div class="kaza-report-note"><b>Kayıtta Girilen Alınan / Alınacak Önlem</b>${safe(inc.existingMeasures).replace(/\n/g,'<br>')}</div>`:''}
     ${actRows?`<table><thead><tr><th>No</th><th>Faaliyet</th><th>Kontrol Seviyesi</th><th>Öncelik</th><th>Etkinlik Ölçütü</th></tr></thead><tbody>${actRows}</tbody></table>`:
       `<div class="kaza-report-note muted">Doğrulanmış düzeltici / önleyici faaliyet taslağı bulunmamaktadır.</div>`}
 
