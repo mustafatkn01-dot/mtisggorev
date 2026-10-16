@@ -7495,6 +7495,11 @@ px}
           <button onclick="aiKeyTest()" style="padding:7px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;">Test Et</button>
         </div>
         <div id="ai-key-durum" style="font-size:11px;margin-top:6px;color:var(--text3);"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button type="button" class="dn-secondary" onclick="kazaRaporMotorTest(false)" style="flex:1">🧪 Rapor testi · Hızlı (5 senaryo)</button>
+          <button type="button" class="dn-secondary" onclick="kazaRaporMotorTest(true)" style="flex:1">🔬 Rapor testi · Derin (5 senaryo)</button>
+        </div>
+        <div id="ai-test-sonuc" style="font-size:11px;margin-top:8px;color:var(--text2);line-height:1.5"></div>
 
         <div id="settings-auth-logout" class="settings-auth-logout">
           <div class="settings-auth-logout-copy">
@@ -8320,45 +8325,82 @@ async function aiKeyTest() {
   }
 }
 
-// Gemini API çağrısı — kısa metin döndürür
-async function geminiUret(prompt, maxToken) {
+// ── Gemini ortak istemcisi ───────────────────────────────────────
+// Neden: servis yoğunluğunda (503/429) tek denemeyle hata veriliyordu. Artık:
+//  • geçici hatalarda (429/500/502/503/504, ağ, zaman aşımı) bekleyip yeniden dener,
+//  • bir model yoğunsa/yoksa (404) yedek modele geçer,
+//  • kalıcı hatalarda (anahtar, istek) hemen açık Türkçe mesaj verir.
+const GEMINI_MODELLER = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
+let geminiTercihModel = 0;          // son başarılı model sırası (sonraki çağrılar önce onu dener)
+window.geminiDurumBildir = null;    // (mesaj) => void : ekranda "yeniden deneniyor" göstermek için
+function geminiBekle(ms) { return new Promise(r => setTimeout(r, ms)); }
+function geminiHataMesaji(e) {
+  const st = e && e.status;
+  if (st === 503 || st === 429 || st === 500 || st === 502 || st === 504)
+    return 'Yapay zekâ servisi şu an yoğun (Google tarafı). Otomatik olarak birkaç kez ve yedek modelle denendi; 1-2 dakika sonra tekrar deneyin.';
+  if (e && e.name === 'AbortError') return 'Yapay zekâ yanıtı zaman aşımına uğradı. Bağlantınızı kontrol edip tekrar deneyin.';
+  return (e && e.message) || 'Yapay zekâ isteği başarısız oldu.';
+}
+async function geminiHamIstek(govde, opts) {
   const key = aiKeyAl();
   if (!key) throw new Error('Önce Ayarlar → Yapay Zeka bölümünden Gemini API anahtarını girin.');
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + encodeURIComponent(key);
-  const govde = {
-    contents: [{ parts: [{ text: prompt }] }],
-    // Yeni nesil modeller yanıt öncesi "düşünme" tokenı harcar; bütçeyi geniş tut
-    // ki gerçek metin yarıda kesilmesin.
-    generationConfig: { temperature: 0.4, maxOutputTokens: maxToken || 1024 }
-  };
-  const yanit = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(govde)
-  });
-  if (!yanit.ok) {
-    let mesaj = 'Gemini API hatası (' + yanit.status + ')';
-    try { const h = await yanit.json(); if (h.error && h.error.message) mesaj += ': ' + h.error.message; } catch(e) {}
-    if (yanit.status === 400 || yanit.status === 403) mesaj += ' — Anahtar geçersiz olabilir.';
-    if (yanit.status === 404) mesaj += ' — Model adı güncel değil olabilir.';
-    if (yanit.status === 429) mesaj += ' — Kota/hız sınırı aşıldı, biraz sonra tekrar deneyin.';
-    throw new Error(mesaj);
+  const o = opts || {};
+  const n = GEMINI_MODELLER.length;
+  const gecikme = [0, 2500, 6000];
+  const bildir = m => { try { if (typeof window.geminiDurumBildir === 'function') window.geminiDurumBildir(m); } catch(e) {} };
+  let sonHata = null;
+  for (let mi = 0; mi < n; mi++) {
+    const mIdx = (geminiTercihModel + mi) % n;
+    const model = GEMINI_MODELLER[mIdx];
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key);
+    for (let d = 0; d < gecikme.length; d++) {
+      if (gecikme[d]) { bildir('Servis yoğun — yeniden deneniyor (' + (mi * gecikme.length + d + 1) + ')…'); await geminiBekle(gecikme[d]); }
+      else if (mi > 0) bildir('Yedek model deneniyor…');
+      const ctrl = new AbortController();
+      const tm = setTimeout(() => ctrl.abort(), o.timeoutMs || 100000);
+      try {
+        const yanit = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(govde), signal: ctrl.signal });
+        if (!yanit.ok) {
+          let mesaj = 'Gemini API hatası (' + yanit.status + ')';
+          try { const h = await yanit.json(); if (h.error && h.error.message) mesaj += ': ' + h.error.message; } catch(e) {}
+          const err = new Error(mesaj); err.status = yanit.status;
+          if ([429, 500, 502, 503, 504].includes(yanit.status)) { sonHata = err; continue; }   // aynı modeli bekleyip tekrar dene
+          if (yanit.status === 404) { sonHata = err; break; }                                  // model yok → yedek modele geç
+          if (yanit.status === 400 || yanit.status === 403) err.message += ' — Anahtar geçersiz ya da istek kabul edilmedi.';
+          throw err;
+        }
+        const veri = await yanit.json();
+        const aday = veri?.candidates?.[0];
+        if (!aday) {
+          const blok = veri?.promptFeedback?.blockReason;
+          throw new Error(blok ? ('İçerik engellendi: ' + blok) : 'Yapay zekadan yanıt alınamadı.');
+        }
+        const metin = (aday.content?.parts || []).map(p => (p && p.text) ? p.text : '').join('').trim();
+        if (!metin) { sonHata = new Error(aday.finishReason === 'MAX_TOKENS' ? 'Yanıt token sınırına takıldı.' : 'Boş yanıt alındı.'); continue; }
+        geminiTercihModel = mIdx;
+        return { metin, finish: aday.finishReason || '', model };
+      } catch (e) {
+        if (e && e.name === 'AbortError') { sonHata = e; continue; }
+        if (e instanceof TypeError) { sonHata = e; continue; }        // ağ hatası
+        if (e && e.status && [429, 500, 502, 503, 504, 404].includes(e.status)) { sonHata = e; continue; }
+        throw e;                                                      // kalıcı hata
+      } finally { clearTimeout(tm); }
+    }
   }
-  const veri = await yanit.json();
-  const aday = veri?.candidates?.[0];
-  // İçerik güvenlik filtresine takıldıysa ya da hiç aday yoksa açıkla
-  if (!aday) {
-    const blok = veri?.promptFeedback?.blockReason;
-    throw new Error(blok ? ('İçerik engellendi: ' + blok) : 'Yapay zekadan yanıt alınamadı.');
-  }
-  // Metni tüm part'lardan birleştir (bazı yanıtlar çok parçalı gelebilir)
-  const parcalar = aday?.content?.parts || [];
-  let metin = parcalar.map(p => (p && p.text) ? p.text : '').join('').trim();
-  // Yanıt token sınırına takılıp boş/yarıda kaldıysa bildir
-  if (!metin && aday.finishReason === 'MAX_TOKENS') {
-    throw new Error('Yanıt token sınırına takıldı. Lütfen tekrar deneyin.');
-  }
-  return metin;
+  const son = new Error(geminiHataMesaji(sonHata));
+  son.status = sonHata && sonHata.status;
+  throw son;
+}
+
+// Gemini çağrısı — metin döndürür. opts: {json, temperature, image(inline_data parçası), timeoutMs}
+async function geminiUret(prompt, maxToken, opts) {
+  const o = opts || {};
+  const parts = [{ text: prompt }];
+  if (o.image) parts.push(o.image);
+  const gen = { temperature: o.temperature != null ? o.temperature : 0.4, maxOutputTokens: maxToken || 1024 };
+  if (o.json) gen.responseMimeType = 'application/json';
+  const r = await geminiHamIstek({ contents: [{ parts }], generationConfig: gen }, o);
+  return r.metin;
 }
 
 // Bir "Öneri Oluştur" butonunu yükleniyor durumuna al / geri döndür
@@ -8486,6 +8528,60 @@ function kazaOnlemGeriAl() {
   kazaOnlemOnceki = null;
   kazaOnlemUndoGoster(false);
   toast('Önlem metni geri alındı');
+}
+// ── Rapor motoru testi: 5 hazır senaryo ile hızlı/derin akışı canlı doğrular ──
+const KAZA_TEST_SENARYOLARI = [
+  { ad:'Düşme', gorsel:'slip_fall', tur:'kaza',
+    narrative:'Depoda etiket kontrolü için 4 kat üst üste istiflenmiş paletlere tırmanan personel, inerken ikinci seviyede ayağının kayması sonucu dengesini kaybederek yaklaşık 1,5 metre yükseklikten düştü. Sol ayak bileği burkuldu.',
+    injuries:[{bodyRegion:'Sol ayak bileği',damageType:'Burkulma',detail:'Doktor tanısı'}] },
+  { ad:'KKD kullanmama', gorsel:'eye_foreign_body', tur:'kaza',
+    narrative:'Taşlama makinesinde parça temizleyen operatör koruyucu gözlük takmadan çalışırken kıvılcım ve metal çapak sağ gözüne kaçtı. Operatör revire götürüldü. Hat başında gözlük bulunmadığı, operatörün eski gözlüğünün buğulandığı için çıkardığı belirtildi.',
+    injuries:[{bodyRegion:'Sağ göz',damageType:'Göz Yaralanması / Yabancı Cisim',detail:''}] },
+  { ad:'Tehlikeli davranış', gorsel:'forklift_pedestrian', tur:'ramak',
+    narrative:'Sevkiyat alanında forklift operatörü sevkiyat süresini yakalamak için yüksek hızla köşeyi dönerken yaya yolunda yürüyen personele yaklaşık 1 metre kala fren yaptı. Yaya ile forklift yolu arasında fiziksel ayrım yok, köşede ayna bulunmuyor.',
+    injuries:[] },
+  { ad:'Makine koruyucusu yok', gorsel:'hand_crush', tur:'kaza',
+    narrative:'Pres makinesine parça besleyen operatörün sağ eli, ışık perdesi bakım nedeniyle devre dışı bırakıldığı için pres inerken kalıp arasında sıkıştı. Başparmakta ezilme ve kırık oluştu. Işık perdesinin bypass edildiği vardiya sonrası fark edildi.',
+    injuries:[{bodyRegion:'Sağ el başparmak',damageType:'Kırık',detail:'Ezilme'}] },
+  { ad:'Kimyasal sıçrama', gorsel:'chemical_exposure', tur:'ilkyardim',
+    narrative:'Kimyasal dolum alanında bidondan bidona asidik temizlik sıvısı aktaran personel eldiven ve yüz siperi kullanmadan çalışırken sıvı sıçrayarak sol ön koluna döküldü. Acil duş 15 metre uzaktaydı. Kol bol suyla yıkandı, kızarıklık oluştu.',
+    injuries:[{bodyRegion:'Sol ön kol',damageType:'Kimyasal Yanık / Temas',detail:''}] }
+];
+async function kazaRaporMotorTest(deep) {
+  const out = document.getElementById('ai-test-sonuc');
+  if (!out) return;
+  if (!aiKeyAl()) { out.innerHTML = '<span style="color:#C0392B">Önce Gemini API anahtarını girin.</span>'; return; }
+  out.innerHTML = '';
+  const satirlar = [];
+  const yaz = () => { out.innerHTML = '<b>' + (deep ? 'Derin' : 'Hızlı') + ' analiz testi</b><br>' + satirlar.join('<br>'); };
+  let gecen = 0;
+  for (const sn of KAZA_TEST_SENARYOLARI) {
+    const idx = satirlar.length;
+    satirlar.push('⏳ ' + sn.ad + ' …'); yaz();
+    window.geminiDurumBildir = m => { satirlar[idx] = '⏳ ' + sn.ad + ' — ' + m; yaz(); };
+    const t0 = Date.now();
+    try {
+      const inc = KazaAIRaporMotoru.normalizeIncident({ incidentId:'test', tur:sn.tur, tarih:'2026-10-15', saat:'10:30', bolum:'Üretim', fab:'Test', aciklama:sn.narrative, injuries:sn.injuries, kayip:0 });
+      const d = await KazaAIRaporMotoru.generateDraft({ incident:inc, skipReview:!deep, aiCall:(p,t,m)=>geminiUret(p,t,{json:true,temperature:0.2}) });
+      const a = d.analysis, sorunlar = [];
+      if (!a.fishbone.applicable || a.fishbone.categories.length < 3) sorunlar.push('balık kılçığı eksik');
+      if (!a.mainRootCause.text) sorunlar.push('ana kök neden boş');
+      if (!a.whyAnalysisBranches.length) sorunlar.push('neden-neden yok');
+      if (a.correctiveActions.length < 2) sorunlar.push('önlem az');
+      if (!a.correctiveActions.some(x => ['elimination','substitution','engineering'].includes(x.hierarchyLevel))) sorunlar.push('mühendislik/ortadan kaldırma önlemi yok');
+      if (!d.visualQA.ok) sorunlar.push('görsel tipi uyumsuz (' + (d.visualQA.got || '-') + ')');
+      if (deep && d.reviewError) sorunlar.push(d.reviewError);
+      const sn2 = Math.round((Date.now() - t0) / 1000);
+      if (!sorunlar.length) gecen++;
+      satirlar[idx] = (sorunlar.length ? '⚠️' : '✅') + ' ' + sn.ad + ' · ' + sn2 + ' sn · ana kök neden: ' + esc((a.mainRootCause.text || '—').slice(0, 70)) + (sorunlar.length ? ' · <span style="color:#C0392B">' + esc(sorunlar.join(', ')) + '</span>' : '');
+    } catch (e) {
+      satirlar[idx] = '❌ ' + sn.ad + ' · ' + esc(e.message);
+    }
+    yaz();
+  }
+  window.geminiDurumBildir = null;
+  satirlar.push('<b>Sonuç: ' + gecen + '/' + KAZA_TEST_SENARYOLARI.length + ' senaryo sorunsuz.</b>');
+  yaz();
 }
 function closeSettings() { document.getElementById('settings-bg').classList.remove('on'); }
 
@@ -15749,23 +15845,7 @@ function kazaEslestir(list,v){
 }
 
 async function kazaGeminiIstek(govde,key){
-  const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key='+encodeURIComponent(key);
-  const yanit=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(govde)});
-  if(!yanit.ok){
-    let mesaj='Servis hatası ('+yanit.status+')';
-    try{const h=await yanit.json();if(h?.error?.message)mesaj+=': '+h.error.message}catch(e){}
-    if(yanit.status===429)mesaj+=' — kota/hız sınırı, biraz sonra tekrar deneyin';
-    const err=new Error(mesaj);err.status=yanit.status;throw err;
-  }
-  const veri=await yanit.json();
-  const aday=veri?.candidates?.[0];
-  if(!aday){
-    const blok=veri?.promptFeedback?.blockReason;
-    throw new Error(blok?('İçerik engellendi: '+blok):'Yanıt alınamadı');
-  }
-  const metin=(aday.content?.parts||[]).map(p=>p?.text||'').join('').trim();
-  if(!metin) throw new Error(aday.finishReason==='MAX_TOKENS'?'Yanıt token sınırına takıldı':'Boş yanıt alındı');
-  return {metin,finish:aday.finishReason||''};
+  return geminiHamIstek(govde,{});
 }
 
 async function kazaGeminiSiniflandir(prompt,hasarList,kokList){
@@ -15796,7 +15876,7 @@ async function kazaGeminiSiniflandir(prompt,hasarList,kokList){
     generationConfig:Object.assign({temperature:0.1,maxOutputTokens:8192,responseMimeType:'application/json'},sema?{responseSchema:schema}:{})
   });
   // 1. deneme: şemalı (liste dışı değer üretilemez). Başarısızsa şemasız, sonra bir kez daha dener.
-  const denemeler=[true,false,false];
+  const denemeler=[true,false];
   let sonHata=null;
   for(let n=0;n<denemeler.length;n++){
     try{
@@ -19853,6 +19933,15 @@ ZORUNLU ANALİZ KURALLARI:
 8. Kök neden ana kategorisi yalnız standart listeden seçilsin: ${CAUSE_CATEGORIES.join(', ')}.
 9. Rapor nihai karar değildir; analysisStatus her zaman draft_requires_user_validation olmalıdır.
 10. Uzun iç muhakeme veya düşünce zinciri yazma; yalnız yapılandırılmış bulguları ve kısa teknik gerekçeleri ver.
+11. ÇIKTIYI KISA TUT (JSON yarıda kesilmesin): eventChain en fazla 7 adım; rootCauses en fazla 4; whyAnalysisBranches en fazla 2 kol ve kol başına en fazla 5 neden; barrierAnalysis en fazla 5; correctiveActions en fazla 6; fishbone kategorisi başına en fazla 3 neden; her metin tek cümle (en fazla ~25 kelime). evidence listeleri yalnız olay verisindeki önemli 3-5 maddeyi içersin.
+12. KONU REHBERİ (olayın türüne uyan satırı uygula):
+   - Düşme / kayma / takılma: yüksekliğe erişim yöntemi (merdiven, platform, uygun iş basamağı yokluğu), tutunma/korkuluk, zemin-istif-malzeme düzeni, seviye farkı. Kalıcı çözüm "yükseğe elle çıkmayı gerektirmeyen" düzen/ekipmandır; yalnız uyarı/eğitim yeterli sayılmaz.
+   - KKD kullanılmadı: "neden kullanılmadı?" sorusunu sor (temin edilmemiş, uygun değil, rahatsız ediyor, prosedürde zorunlu kılınmamış, denetlenmiyor). Önce kaynakta kontrol (koruyucu, perde, aspirasyon, ikame), KKD son basamaktır.
+   - Tehlikeli davranış / hız / prosedür dışı çalışma: davranışı tek başına kök neden yapma; iş baskısı, hedef/süre, belirsiz prosedür, uygun alternatif ekipman yokluğu, gözetim eksikliğini sorgula.
+   - Makine koruyucu yok / devre dışı: sabit-hareketli koruyucu, ışık perdesi, emniyet kilidi, by-pass nedeni, bakım ve LOTO, risk değerlendirmesi ve makine uygunluğu.
+   - Araç-yaya: trafik ayrımı, bariyer, kör nokta/ayna, hız sınırı, sesli-ışıklı ikaz, geçiş kuralları.
+   - Kimyasal / sıcak / elektrik: kapalı sistem, ikame, havalandırma, etiketleme/SDS, acil duş-göz yıkama, izolasyon.
+13. Olay görseli de gönderildiyse yalnız görselde AÇIKÇA görülen fiziksel bulguları "observed" olarak kullan; görselde görünmeyen şeyi uydurma.
 
 KULLANICI EK YÖNLENDİRMESİ:
 ${directive || 'Yok - standart sistemsel analiz uygula.'}
@@ -19903,13 +19992,33 @@ ${JSON.stringify(analysis, null, 2)}
 ${jsonContractText()}`;
   }
 
+  // Yarıda kesilmiş (token sınırı) JSON'u parantezleri/tırnakları kapatarak kurtarır.
+  function repairJson(raw) {
+    let out = '', stack = [], inStr = false, esc = false;
+    for (let i = 0; i < raw.length; i++) {
+      const c = raw[i];
+      out += c;
+      if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; continue; }
+      if (c === '"') inStr = true;
+      else if (c === '{') stack.push('}');
+      else if (c === '[') stack.push(']');
+      else if (c === '}' || c === ']') stack.pop();
+    }
+    if (inStr) out += '"';
+    out = out.replace(/[,:\s]+$/,'');
+    out = out.replace(/,\s*("[^"]*")?\s*$/,'');          // sondaki yarım anahtar
+    while (stack.length) out += stack.pop();
+    return out.replace(/,\s*([}\]])/g, '$1');
+  }
   function extractJson(text) {
     const raw = str(text).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
     try { return JSON.parse(raw); } catch (_) {}
     const start = raw.indexOf('{');
+    if (start < 0) throw new Error('Yapay zeka yanıtında geçerli JSON bulunamadı.');
     const end = raw.lastIndexOf('}');
-    if (start >= 0 && end > start) return JSON.parse(raw.slice(start, end + 1));
-    throw new Error('Yapay zeka yanıtında geçerli JSON bulunamadı.');
+    if (end > start) { try { return JSON.parse(raw.slice(start, end + 1)); } catch (_) {} }
+    try { return JSON.parse(repairJson(raw.slice(start))); } catch (_) {}
+    throw new Error('Yapay zeka yanıtı eksik/bozuk geldi; lütfen tekrar deneyin.');
   }
 
   function normalizeEvidenceItem(x, fallbackStatus) {
@@ -20001,7 +20110,7 @@ ${jsonContractText()}`;
     'chemical_exposure','hot_liquid_steam','vehicle_collision','generic_warning'
   ];
 
-  function visualTypeFromIncident(incident) {
+  function visualCandidates(incident) {
     const t = [
       incident && incident.incidentType,
       incident && incident.narrative,
@@ -20009,58 +20118,64 @@ ${jsonContractText()}`;
       ...(Array.isArray(incident && incident.injuries)
         ? incident.injuries.map(x => `${x.bodyRegion||''} ${x.damageType||''} ${x.detail||''}`) : [])
     ].join(' ').toLocaleLowerCase('tr-TR');
-
-    if (/(forklift|transpalet).*(yaya|personel)|(yaya|personel).*(forklift|transpalet)/.test(t)) return 'forklift_pedestrian';
-    if (/(sıkış|ezil|pres|iki parça arasında|el sıkış)/.test(t)) return 'hand_crush';
-    if (/(kesik|kesil|bıçak|sac kenarı|levha kenarı|laserasyon)/.test(t)) return 'cut_laceration';
-    if (/(elektrik|elektrik çarp|ark flaşı|ark parlaması)/.test(t)) return 'electric_shock';
-    if (/(yangın|alev|tutuş|yanma|termal yanık)/.test(t)) return 'fire_burn';
-    if (/(kayma|takıl|yüksekten düş|düştü|düşme|denge kayb)/.test(t)) return 'slip_fall';
-    if (/(kafa darbe|baş bölgesi|başını çarp|kafa travma)/.test(t)) return 'head_impact';
-    if (/(göze|göz yaralan|çapak|yabancı cisim)/.test(t)) return 'eye_foreign_body';
-    if (/(kimyasal|asit|alkali|solvent|tiner|sıçra|maruziyet)/.test(t)) return 'chemical_exposure';
-    if (/(buhar|sıcak su|kaynar|sıcak sıvı)/.test(t)) return 'hot_liquid_steam';
-    if (/(araç çarp|çarpış|kamyon|otomobil|yükleyici)/.test(t)) return 'vehicle_collision';
-    return 'generic_warning';
+    const rules = [
+      ['forklift_pedestrian', /(forklift|transpalet).*(yaya|personel)|(yaya|personel).*(forklift|transpalet)/],
+      ['hand_crush', /(sıkış|ezil|pres|iki parça arasında|el sıkış)/],
+      ['cut_laceration', /(kesik|kesil|bıçak|sac kenarı|levha kenarı|laserasyon|delin|batma)/],
+      ['electric_shock', /(elektrik|elektrik çarp|ark flaşı|ark parlaması)/],
+      ['fire_burn', /(yangın|alev|tutuş|yanma|termal yanık)/],
+      ['slip_fall', /(kayma|kaydı|takıl|yüksekten düş|düştü|düşme|düşer|denge kayb|devril)/],
+      ['head_impact', /(kafa darbe|baş bölgesi|başını çarp|kafa travma|kafa)/],
+      ['eye_foreign_body', /(göze|göz yaralan|çapak|yabancı cisim|gözlük)/],
+      ['chemical_exposure', /(kimyasal|asit|alkali|solvent|tiner|sıçra|maruziyet)/],
+      ['hot_liquid_steam', /(buhar|sıcak su|kaynar|sıcak sıvı)/],
+      ['vehicle_collision', /(araç çarp|çarpış|kamyon|otomobil|yükleyici)/]
+    ];
+    return rules.filter(r => r[1].test(t)).map(r => r[0]);
+  }
+  function visualTypeFromIncident(incident) {
+    return visualCandidates(incident)[0] || 'generic_warning';
   }
 
   function validateVisualCue(incident, analysis) {
-    const expected = visualTypeFromIncident(incident);
+    const cands = visualCandidates(incident);
+    const expected = cands[0] || 'generic_warning';
     const cue = analysis && analysis.fishbone && analysis.fishbone.visualCue || {};
     const got = str(cue.type);
     const allowed = VISUAL_TYPES.includes(got);
     const label = str(cue.label || (analysis && analysis.fishbone && analysis.fishbone.problemStatement));
     const labelLower = label.toLocaleLowerCase('tr-TR');
     const requiredWords = ({
-      forklift_pedestrian:['forklift','yaya'],
-      hand_crush:['sıkış','ezil'],
-      cut_laceration:['kesik','kesil'],
+      forklift_pedestrian:['forklift','yaya','transpalet','araç'],
+      hand_crush:['sıkış','ezil','el','parmak','pres'],
+      cut_laceration:['kesik','kesil','kenar','delin','sivri'],
       electric_shock:['elektrik','akım','ark'],
-      fire_burn:['yangın','alev','yanık'],
-      slip_fall:['kay','düş','denge','takıl'],
+      fire_burn:['yangın','alev','yanık','yanma'],
+      slip_fall:['kay','düş','denge','takıl','devril','palet','merdiven'],
       head_impact:['kafa','baş','darbe'],
       eye_foreign_body:['göz','çapak','yabancı'],
-      chemical_exposure:['kimyasal','asit','solvent','tiner'],
+      chemical_exposure:['kimyasal','asit','solvent','tiner','sıçra'],
       hot_liquid_steam:['buhar','sıcak','kaynar'],
       vehicle_collision:['araç','çarpış'],
       generic_warning:[]
     })[got] || [];
 
-    const typeMatch = allowed && (expected === 'generic_warning' ? got !== '' : got === expected);
-    const labelMatch = got === 'generic_warning' || requiredWords.some(k => labelLower.includes(k));
+    // Tür uyumu: model, olay metninden çıkan OLASI türlerden biriyse uyumludur (tek bir "doğru" aranmaz).
+    const typeMatch = allowed && (cands.length === 0 ? true : cands.includes(got));
+    const labelMatch = got === 'generic_warning' || !label || requiredWords.some(k => labelLower.includes(k)) || typeMatch;
     const confidence = str(cue.confidence);
     const score = (allowed?25:0) + (typeMatch?45:0) + (labelMatch?20:0) +
       (['high','medium'].includes(confidence)?10:0);
 
     return {
-      ok: score >= 80 && typeMatch && labelMatch,
+      ok: allowed && typeMatch && labelMatch,
       score,
       expected,
       got: allowed ? got : '',
       typeMatch,
       labelMatch,
       reason: !allowed ? 'visualCue.type eksik veya geçersiz'
-        : !typeMatch ? `olay mekanizması ${expected}, seçilen görsel ${got}`
+        : !typeMatch ? `olay mekanizması ${cands.join('/')||expected}, seçilen görsel ${got}`
         : !labelMatch ? 'görsel etiketi seçilen olay tipini üçüncü şahıs için açık anlatmıyor'
         : 'uyumlu'
     };
@@ -20111,27 +20226,43 @@ SADECE ŞU JSON'U DÖNDÜR:
     const aiCall = p.aiCall || defaultAiCall;
     const sourceHash = simpleHash(incident);
     const analystPrompt = buildAnalystPrompt(incident, { userDirective: p.userDirective, previousDraft: p.previousDraft, privacy: p.privacy });
-    const analystRaw = extractJson(await aiCall(analystPrompt, p.maxToken || 8192));
+    const analystRaw = extractJson(await aiCall(analystPrompt, p.maxToken || 24576, { role: 'analyst' }));
     const analystAnalysis = normalizeAnalysis(analystRaw);
     let finalAnalysis = analystAnalysis;
     let reviewApplied = false;
+    let reviewError = '';
     if (p.skipReview !== true) {
-      const reviewerPrompt = buildReviewerPrompt(incident, analystAnalysis, { privacy: p.privacy });
-      const reviewerRaw = extractJson(await aiCall(reviewerPrompt, p.maxToken || 8192));
-      finalAnalysis = normalizeAnalysis(reviewerRaw);
-      reviewApplied = true;
+      // Bağımsız denetim başarısız olursa (servis yoğunluğu, bozuk JSON) analist taslağı KAYBOLMAZ.
+      try {
+        const reviewerPrompt = buildReviewerPrompt(incident, analystAnalysis, { privacy: p.privacy });
+        const reviewerRaw = extractJson(await aiCall(reviewerPrompt, p.maxToken || 24576, { role: 'reviewer' }));
+        const reviewed = normalizeAnalysis(reviewerRaw);
+        // Denetçi çıktısı anlamlı değilse (özet/kök neden boş) analist taslağı korunur.
+        if (reviewed.eventSummary && (reviewed.rootCauses.length || reviewed.mainRootCause.text)) {
+          finalAnalysis = reviewed;
+          reviewApplied = true;
+        } else {
+          reviewError = 'Bağımsız denetim eksik döndü; analist taslağı kullanıldı.';
+        }
+      } catch (revErr) {
+        reviewError = 'Bağımsız denetim tamamlanamadı (' + str(revErr && revErr.message).slice(0, 120) + '); analist taslağı kullanıldı.';
+      }
+      if (reviewError) {
+        finalAnalysis.reportWarnings = uniq([...(finalAnalysis.reportWarnings || []), reviewError]);
+      }
     }
 
     // Görsel kalite kapısı: tip + sonuç etiketi üçüncü şahıs açısından anlaşılır olmalı.
     // İlk sonuç kalite eşiğini geçmezse AI yalnız görsel kararını en fazla iki kez yeniden dener.
     let visualQA = validateVisualCue(incident, finalAnalysis);
     let visualRetryCount = 0;
-    while (!visualQA.ok && visualRetryCount < 2) {
+    while (!visualQA.ok && visualRetryCount < 1) {
       visualRetryCount++;
       try {
         const retryRaw = extractJson(await aiCall(
           buildVisualRetryPrompt(incident, finalAnalysis, {...visualQA,attempt:visualRetryCount}),
-          1400
+          3000,
+          { role: 'visual' }
         ));
         const retryCue = retryRaw && retryRaw.visualCue;
         if (retryCue && VISUAL_TYPES.includes(str(retryCue.type))) {
@@ -20167,6 +20298,7 @@ SADECE ŞU JSON'U DÖNDÜR:
       userDirective: str(p.userDirective),
       previousDraftId: str(p.previousDraft && p.previousDraft.reportDraftId),
       reviewApplied,
+      reviewError,
       visualQA,
       status: 'draft',
       validation: { valid: checked.valid, errors: checked.errors, warnings: checked.warnings },
@@ -20222,7 +20354,7 @@ SADECE ŞU JSON'U DÖNDÜR:
     ENGINE_VERSION, SCHEMA_VERSION, CAUSE_CATEGORIES, EVIDENCE_STATES,
     normalizeIncident, prepareIncidentForAI, buildEvidencePacket, requiredQuestionCandidates,
     analystOutputTemplate, buildAnalystPrompt, buildReviewerPrompt, extractJson,
-    normalizeAnalysis, validateAnalysis, generateDraft, createDraftStore,
+    normalizeAnalysis, validateAnalysis, generateDraft, createDraftStore, validateVisualCue, visualCandidates,
     incidentFromCurrentForm, simpleHash
   };
 });
@@ -20490,7 +20622,43 @@ function kazaRaporApplyAnalysisEdits(draft){
   }
   return draft;
 }
-async function kazaRaporGenerate(regenerate){const btn=document.getElementById('kaza-report-generate'),status=document.getElementById('kaza-report-status'),inc=kazaFormIncident(),deep=document.getElementById('kaza-report-depth').value==='deep',directive=document.getElementById('kaza-report-directive').value.trim();if(!inc.narrative){alert('Olay anlatımı zorunludur.');return}btn.disabled=true;btn.textContent=deep?'🔎 Derin analiz hazırlanıyor…':'⚡ Hızlı rapor hazırlanıyor…';status.textContent=deep?'Analist taslağı ve bağımsız gözden geçirme hazırlanıyor…':'Hızlı ön analiz hazırlanıyor…';try{const previous=regenerate?kazaRaporApplyAnalysisEdits(kazaActiveDraft):null;const draft=await KazaAIRaporMotoru.generateDraft({incident:inc,userDirective:directive,previousDraft:previous,skipReview:!deep,aiCall:(prompt,tokens)=>geminiUret(prompt,tokens)});kazaDraftStore.save(draft);kazaActiveDraft=draft;kazaRaporRender(draft,inc);kazaRaporVersions(inc.incidentId);if(kazaReportIncidentOverride)kazaRender();status.textContent='Taslak v'+draft.version+' hazır. Bulguları saha kanıtlarıyla doğrulayın.';['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>document.getElementById(id).disabled=false)}catch(e){status.textContent='Rapor üretilemedi: '+e.message;alert(e.message)}finally{btn.disabled=false;btn.textContent='✨ Rapor Taslağı Oluştur'}}
+async function kazaRaporGenerate(regenerate){
+  const btn=document.getElementById('kaza-report-generate'),status=document.getElementById('kaza-report-status'),inc=kazaFormIncident();
+  const deep=document.getElementById('kaza-report-depth').value==='deep',directive=document.getElementById('kaza-report-directive').value.trim();
+  if(!inc.narrative){alert('Olay anlatımı zorunludur.');return}
+  btn.disabled=true;
+  btn.textContent=deep?'🔎 Derin analiz hazırlanıyor…':'⚡ Hızlı rapor hazırlanıyor…';
+  const baslik=deep?'Analist taslağı ve bağımsız gözden geçirme hazırlanıyor…':'Hızlı ön analiz hazırlanıyor…';
+  status.textContent=baslik;
+  // Servis yoğunluğunda otomatik yeniden denemeyi kullanıcıya göster
+  window.geminiDurumBildir=m=>{status.textContent=m};
+  const t0=Date.now();
+  try{
+    const previous=regenerate?kazaRaporApplyAnalysisEdits(kazaActiveDraft):null;
+    const gorsel=(typeof kazaAnalizGorselParca==='function')?kazaAnalizGorselParca():null;
+    let adim=0;
+    const draft=await KazaAIRaporMotoru.generateDraft({
+      incident:inc,userDirective:directive,previousDraft:previous,skipReview:!deep,
+      aiCall:(prompt,tokens,meta)=>{
+        const rol=meta&&meta.role;
+        if(deep&&rol==='analyst') status.textContent='1/2 Analist taslağı hazırlanıyor…';
+        if(deep&&rol==='reviewer') status.textContent='2/2 Bağımsız gözden geçirme yapılıyor…';
+        if(rol==='visual') status.textContent='Görsel tipi doğrulanıyor…';
+        return geminiUret(prompt,tokens,{json:true,temperature:0.2,image:(rol==='analyst'&&gorsel)?gorsel:null});
+      }
+    });
+    kazaDraftStore.save(draft);kazaActiveDraft=draft;kazaRaporRender(draft,inc);kazaRaporVersions(inc.incidentId);
+    if(kazaReportIncidentOverride)kazaRender();
+    const sn=Math.round((Date.now()-t0)/1000);
+    status.textContent='Taslak v'+draft.version+' hazır ('+sn+' sn). Bulguları saha kanıtlarıyla doğrulayın.'+(draft.reviewError?' ⚠ '+draft.reviewError:'');
+    ['kaza-report-save','kaza-report-regenerate','kaza-report-pdf'].forEach(id=>document.getElementById(id).disabled=false);
+  }catch(e){
+    status.textContent='Rapor üretilemedi: '+e.message;alert(e.message);
+  }finally{
+    window.geminiDurumBildir=null;
+    btn.disabled=false;btn.textContent='✨ Rapor Taslağı Oluştur';
+  }
+}
 
 let kazaRaporSilBekleyen=null;
 
