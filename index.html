@@ -13957,6 +13957,7 @@ const kazaTur = id => KAZA_TURLER.find(t => t.id === id) || KAZA_TURLER[0];
 function kazaLoad() {
   try { kazaItems = JSON.parse(localStorage.getItem(LS_KAZA_ITEMS) || '[]'); } catch(e) { kazaItems = []; }
   try { const a = JSON.parse(localStorage.getItem(LS_KAZA_AYAR)); if (a) kazaAyar = a; } catch(e) {}
+  try { kazaGecmisKodla(); } catch(e) {}
   kazaYaralanmaYukle();
   kazaKokNedenYukle();
 }
@@ -16176,15 +16177,30 @@ const KS_K_SABIT = {
   yas: ['16-19', '19-25', '25-30', '30-35', '35-40', '40-45', '45+'], kidem: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+']
 };
 // Seçili fabrikanın geçmiş yıl özetleri (tüm fabrikalar: toplanır)
+// Firebase anahtarlarında . / $ # [ ] yasak: kategori etiketleri (ör. "1. hafta", "El / Bilek") kodlanarak saklanır
+const kzKeyEnc = s => String(s).replace(/[.$#\[\]\/]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'));
+const kzKeyDec = s => String(s).replace(/%([0-9a-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
+function kazaGecmisKodla() {
+  const g = kazaAyar && kazaAyar.gecmis; if (!g) return;
+  Object.keys(g).forEach(f => Object.keys(g[f] || {}).forEach(y => {
+    const c = g[f][y] && g[f][y].cats; if (!c) return;
+    Object.keys(c).forEach(k => { const n = {}; Object.keys(c[k] || {}).forEach(l => { n[kzKeyEnc(l)] = c[k][l]; }); c[k] = n; });
+  }));
+}
+function ksKGecmisCoz(o) {
+  const r = JSON.parse(JSON.stringify(o || {}));
+  Object.keys(r).forEach(y => { const c = r[y] && r[y].cats; if (!c) return; Object.keys(c).forEach(k => { const n = {}; Object.keys(c[k] || {}).forEach(l => { n[kzKeyDec(l)] = c[k][l]; }); c[k] = n; }); });
+  return r;
+}
 function ksKGecmis(fab) {
   const g = (kazaAyar && kazaAyar.gecmis) || {};
-  if (fab && fab !== 'tumu') return g[fab] || {};
+  if (fab && fab !== 'tumu') return ksKGecmisCoz(g[fab]);
   const out = {};
-  Object.keys(g).forEach(f => Object.keys(g[f] || {}).forEach(y => {
-    const a = g[f][y]; if (!out[y]) { out[y] = JSON.parse(JSON.stringify(a)); return; }
+  Object.keys(g).forEach(f => { const gc = ksKGecmisCoz(g[f]); Object.keys(gc).forEach(y => {
+    const a = gc[y]; if (!out[y]) { out[y] = JSON.parse(JSON.stringify(a)); return; }
     const o = out[y]; ['kaza', 'kayip', 'saat', 'calisan'].forEach(k => { o[k] = (o[k] || 0) + (a[k] || 0); });
     Object.keys(a.cats || {}).forEach(c => { o.cats[c] = o.cats[c] || {}; Object.keys(a.cats[c]).forEach(l => { o.cats[c][l] = (o.cats[c][l] || 0) + a.cats[c][l]; }); });
-  }));
+  }); });
   return out;
 }
 // Yıllık özet satırları: o yıl için ayrıntılı kayıt varsa kayıtlardan, yoksa geçmiş özetten
@@ -19414,7 +19430,7 @@ window.addEventListener('resize', calMobInit);
   window._fbSaveTakvim  = () => yaz('takvim',  () => calReminders);
   window._fbSavePer     = () => yaz('per',     () => ({ tasks: perTasks, persons: perPersons, fabs: perFabs }));
   window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs }));
-  window._fbSaveKaza    = () => yaz('kaza',    () => ({ items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }));
+  window._fbSaveKaza    = () => yaz('kaza',    () => { try { kazaGecmisKodla(); } catch (e) {} return { items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }; });
 
   // ── Kaza / Olay raporları — cihazlar arası bulut deposu ─────
   // Raporlar ana kaza kaydından ayrı tutulur. Böylece rapor sürümü,
@@ -19563,7 +19579,7 @@ window.addEventListener('resize', calMobInit);
 
     if (!yazimBekliyor['kaza'] && d.kaza) {
       doldur(kazaItems, d.kaza.items);
-      if (d.kaza.ayar) kazaAyar = d.kaza.ayar;
+      if (d.kaza.ayar) { const yg = kazaAyar && kazaAyar.gecmis; kazaAyar = d.kaza.ayar; if (!kazaAyar.gecmis && yg) { kazaAyar.gecmis = yg; try { localStorage.setItem(LS_KAZA_AYAR, JSON.stringify(kazaAyar)); } catch (e) {} setTimeout(() => { if (window._fbSaveKaza) window._fbSaveKaza(); }, 800); } try { kazaGecmisKodla(); } catch (e) {} }
       if (Array.isArray(d.kaza.yaralanmaListesi) && d.kaza.yaralanmaListesi.length) {
         // Firebase listesini varsayılanlarla birleştir — kod güncellenince yeni
         // varsayılanlar eski bulut verisini ezmez, her zaman listeye eklenir.
