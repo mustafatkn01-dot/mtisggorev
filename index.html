@@ -7106,8 +7106,8 @@ px}
       <button onclick="kazaImportKapat()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
     </div>
     <div style="font-size:10px;color:var(--text2);line-height:1.7;background:var(--surface2);padding:9px 11px;border-radius:var(--r);">
-      Dosyanın ilk satırı başlık olmalıdır. Beklenen sütun başlıkları:
-      <br><b>Tarih</b> <span style="color:var(--text3);">|</span> <b>Olayın Adı</b> <span style="color:var(--text3);">|</span> <b>Fabrika</b> <span style="color:var(--text3);">|</span> <b>Bölüm</b> <span style="color:var(--text3);">|</span> <b>Adı Soyadı</b> <span style="color:var(--text3);">|</span> <b>Olay</b> <span style="color:var(--text3);">|</span> <b>Kaza/Hasar Türü</b> <span style="color:var(--text3);">|</span> <b>Kök Neden</b> <span style="color:var(--text3);">|</span> <b>Önlem</b> <span style="color:var(--text3);">|</span> <b>Kayıp Gün</b>
+      Dosyanın ilk satırı başlık olmalıdır. <button type="button" onclick="kazaSablonIndir()" style="margin-left:6px;padding:3px 9px;font-size:10.5px;font-weight:600;border:1px solid var(--border2);border-radius:6px;background:#fff;cursor:pointer">⬇ Şablonu indir</button> Beklenen sütun başlıkları:
+      <br><b>Tarih</b> <span style="color:var(--text3);">|</span> <b>Olayın Adı</b> <span style="color:var(--text3);">|</span> <b>Fabrika</b> <span style="color:var(--text3);">|</span> <b>Bölüm</b> <span style="color:var(--text3);">|</span> <b>Adı Soyadı</b> <span style="color:var(--text3);">|</span> <b>Olay</b> <span style="color:var(--text3);">|</span> <b>Kaza/Hasar Türü</b> <span style="color:var(--text3);">|</span> <b>Kök Neden</b> <span style="color:var(--text3);">|</span> <b>Önlem</b> <span style="color:var(--text3);">|</span> <b>Kayıp Gün</b> <span style="color:var(--text3);">|</span> <b>Saat</b> <span style="color:var(--text3);">|</span> <b>Gerçekleşen Şiddet</b> <span style="color:var(--text3);">|</span> <b>Yaş Grubu</b> <span style="color:var(--text3);">|</span> <b>Öğrenim Durumu</b> <span style="color:var(--text3);">|</span> <b>Kıdem (Yıl)</b> <span style="color:var(--text3);">|</span> <b>Önlem Tamamlandı</b> <span style="color:var(--text3);">|</span> <b>Önlem Kapanış Tarihi</b> <span style="color:var(--text3);">(son yedi sütun isteğe bağlı)</span>
     </div>
     <div id="kaza-imp-dropzone"
          onclick="document.getElementById('kaza-imp-dosya').click()"
@@ -7126,7 +7126,7 @@ px}
       <div style="flex:1;height:1px;background:var(--border);"></div>
     </div>
     <div class="mfield">
-      <textarea id="kaza-imp-metin" oninput="kazaImportMetin()" placeholder="Tarih | Olayın Adı | Fabrika | Bölüm | Adı Soyadı | Olay | Kaza/Hasar Türü | Kök Neden | Önlem | Kayıp Gün"
+      <textarea id="kaza-imp-metin" oninput="kazaImportMetin()" placeholder="Tarih | Saat | Olayın Adı | Fabrika | Bölüm | Adı Soyadı | Olay | Kaza/Hasar Türü | Kök Neden | Önlem | Kayıp Gün | Gerçekleşen Şiddet | Yaş Grubu | Öğrenim Durumu | Kıdem (Yıl) | Önlem Tamamlandı | Önlem Kapanış Tarihi"
         style="min-height:100px;font-family:ui-monospace,Menlo,monospace;font-size:11px;"></textarea>
     </div>
     <div id="kaza-imp-onizleme" style="font-size:11px;color:var(--text2);"></div>
@@ -14777,6 +14777,67 @@ function kazaTurCevir(x) {
 }
 
 // Ortak işleme: başlıkları otomatik eşleştir, her satırı kaza kaydı olarak ekle
+// ── Yeni profil sütunları için dönüştürücüler ──
+function kazaImpSaat(x) {
+  if (x == null || x === '') return '';
+  if (typeof x === 'number' && x >= 0 && x < 1) { const dk = Math.round(x * 1440); return String(Math.floor(dk / 60) % 24).padStart(2,'0') + ':' + String(dk % 60).padStart(2,'0'); }
+  return kazaSaatCevir(x);
+}
+function kazaImpSiddet(x) {
+  const t = kzNorm(x); if (!t) return '';
+  if (t.includes('olum') || t.includes('vefat')) return 'olum';
+  if (t.includes('uzuv')) return 'uzuv';
+  if (t.includes('ciddi') || t.includes('agir') || t.includes('major') || t.includes('majör')) return 'ciddi';
+  if (t.includes('hafif') || t.includes('minor') || t.includes('minör')) return 'hafif';
+  return '';
+}
+function kazaImpYas(x) {
+  const t = String(x == null ? '' : x).trim(); if (!t) return '';
+  const lst = ['16-19','19-25','25-30','30-35','35-40','40-45','45+'];
+  const n = t.replace(/\s/g,'').replace('–','-');
+  if (lst.includes(n)) return n;
+  if (/^45\s*(\+|ve|ustu)/i.test(t)) return '45+';
+  const v = parseFloat(t.replace(',','.')); if (isNaN(v)) return '';
+  return v < 19 ? '16-19' : v < 25 ? '19-25' : v < 30 ? '25-30' : v < 35 ? '30-35' : v < 40 ? '35-40' : v < 45 ? '40-45' : '45+';
+}
+function kazaImpOgrenim(x) {
+  const t = kzNorm(x); if (!t) return '';
+  if (t.includes('okuma') || t.includes('okur')) return 'okumamis';
+  if (t.includes('ilkokul') || t.includes('ilk okul')) return 'ilkokul';
+  if (t.includes('ortaokul') || t.includes('orta okul')) return 'ortaokul';
+  if (t.includes('on lisans') || t.includes('onlisans') || t.includes('myo')) return 'onlisans';
+  if (t.includes('lisans') || t.includes('yuksek') || t.includes('universite')) return 'lisans';
+  if (t.includes('lise')) return 'lise';
+  return '';
+}
+function kazaImpKidem(x) {
+  const t = String(x == null ? '' : x).trim(); if (!t) return '';
+  if (/^10\s*\+/.test(t)) return '10+';
+  const v = parseFloat(t.replace(',','.')); if (isNaN(v)) return '';
+  return v >= 10 ? '10+' : String(Math.max(1, Math.ceil(v)));
+}
+function kazaImpEvet(x) {
+  const t = kzNorm(x);
+  return ['evet','tamam','tamamlandi','kapali','kapandi','yapildi','x','1','true','e'].includes(t);
+}
+function kazaSablonIndir() {
+  const bas = ['Tarih','Saat','Olayın Adı','Fabrika','Bölüm','Adı Soyadı','Olay','Kaza/Hasar Türü','Kök Neden','Önlem','Kayıp Gün','Gerçekleşen Şiddet','Yaş Grubu','Öğrenim Durumu','Kıdem (Yıl)','Önlem Tamamlandı','Önlem Kapanış Tarihi'];
+  const ornek = ['12.03.2024','14:30','İş Kazası','Adana Metal Fabrikası','Laklama','A.Y.','Kesici ile çalışırken parmağını kesti.','Kesilme / Delinme','Eğitim / Yetkinlik','Eldiven kullanımı zorunlu hale getirildi','3','Hafif','28','Lise','2','Evet','20.03.2024'];
+  const not = ['Gerçekleşen Şiddet: Hafif | Ciddi | Uzuv kaybı | Ölüm','Yaş Grubu: 16-19, 19-25, 25-30, 30-35, 35-40, 40-45, 45+ (veya yaş sayısı)','Öğrenim: Okumamış | İlkokul | Ortaokul | Lise | Ön lisans | Lisans','Kıdem: fabrikadaki yıl (1-9, 10+)','Önlem Tamamlandı: Evet / Hayır'];
+  if (typeof XLSX !== 'undefined') {
+    const ws = XLSX.utils.aoa_to_sheet([bas, ornek]);
+    ws['!cols'] = bas.map(b => ({ wch: Math.max(12, b.length + 2) }));
+    const ws2 = XLSX.utils.aoa_to_sheet([['Sütun notları'], ...not.map(n => [n])]);
+    ws2['!cols'] = [{ wch: 90 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Kaza Kayıtları');
+    XLSX.utils.book_append_sheet(wb, ws2, 'Notlar');
+    XLSX.writeFile(wb, 'kaza-kayit-sablonu.xlsx');
+  } else {
+    const csv = '\uFEFF' + [bas, ornek].map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(';')).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = 'kaza-kayit-sablonu.csv'; a.click();
+  }
+}
 function kazaImportIsle(satirlar) {
   if (!satirlar || satirlar.length < 2) { alert('Dosyada veri satırı bulunamadı (yalnızca başlık ya da boş).'); return; }
   const basliklar = satirlar[0].map(x => kzNorm(x));
@@ -14789,6 +14850,13 @@ function kazaImportIsle(satirlar) {
     return -1;
   };
   const idx = {
+    kapanis:   bul(['onlem kapanis tarihi','onlem kapanis','kapanis tarihi','kapanis']),
+    saatSut:   bul(['saat'], ['calisma']),
+    siddet:    bul(['gerceklesen siddet','kaza siddeti','siddet'], ['potansiyel']),
+    yas:       bul(['yas grubu','yas']),
+    ogrenim:   bul(['ogrenim durumu','ogrenim','egitim durumu','ogrenim seviyesi']),
+    kidem:     bul(['kidem (yil)','kidem yil','kidem','fabrikadaki kidem']),
+    onlemTamam:bul(['onlem tamamlandi','tamamlandi','onlem durumu']),
     tarih:     bul(['tarih','date']),
     olayAdi:   bul(['olayin adi','olay adi','olayadi']),
     fab:       bul(['fabrika','tesis','lokasyon']),
@@ -14823,7 +14891,7 @@ function kazaImportIsle(satirlar) {
       id: 'kz' + (zaman + r) + Math.random().toString(36).slice(2,5),
       tur:        kazaTurCevir(al(satir, idx.olayAdi)),
       tarih:      tarih,
-      saat:       kazaSaatCevir(tarihHam),
+      saat:       kazaImpSaat(idx.saatSut !== -1 ? satir[idx.saatSut] : '') || kazaSaatCevir(tarihHam),
       kayip:      parseInt(al(satir, idx.kayip)) || 0,
       fab:        al(satir, idx.fab),
       bolum:      al(satir, idx.bolum),
@@ -14832,7 +14900,12 @@ function kazaImportIsle(satirlar) {
       aciklama:   aciklama || yaralanma || '(açıklama yok)',
       kokNeden:   kokNeden,
       onlem:      al(satir, idx.onlem),
-      onlemTamam: false,
+      onlemTamam: idx.onlemTamam !== -1 ? kazaImpEvet(al(satir, idx.onlemTamam)) : false,
+      onlemKapanis: idx.kapanis !== -1 ? kazaTarihCevir(satir[idx.kapanis]) : '',
+      gercekSiddet: kazaImpSiddet(al(satir, idx.siddet)),
+      yasGrubu:   kazaImpYas(idx.yas !== -1 ? satir[idx.yas] : ''),
+      ogrenim:    kazaImpOgrenim(al(satir, idx.ogrenim)),
+      kidemYil:   kazaImpKidem(idx.kidem !== -1 ? satir[idx.kidem] : ''),
       createdAt:  zaman + r
     });
   }
@@ -15917,6 +15990,73 @@ function ksKKart(key, baslik, alt, icerik) {
     ${ac ? `<div style="display:flex;flex-direction:column;gap:14px;padding:4px 14px 14px;border-top:1px solid #EEF1F4">${icerik}</div>` : ''}</div>`;
 }
 
+const KS_K_SID = {hafif: 'Hafif', ciddi: 'Ciddi', uzuv: 'Uzuv kaybı', olum: 'Ölüm'};
+const KS_K_OGR = {okumamis: 'Okumamış', ilkokul: 'İlkokul', ortaokul: 'Ortaokul', lise: 'Lise', onlisans: 'Ön lisans', lisans: 'Lisans+'};
+function ksKDagilimlar(liste) {
+  liste = Array.isArray(liste) ? liste : [];
+  const gunAd = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  const saatNo = k => { if (!k.saat) return null; const h = parseInt(k.saat); return isNaN(h) ? null : h; };
+  const gunSay = ksKSayim(liste, k => { if (!k.tarih) return ''; const d = new Date(k.tarih + 'T12:00:00'); return isNaN(d) ? '' : gunAd[(d.getDay() + 6) % 7]; });
+  const vSay = ksKSayim(liste, k => { const h = saatNo(k); if (h == null) return ''; return h >= 8 && h < 16 ? '1. (08–16)' : h >= 16 ? '2. (16–24)' : '3. (24–08)'; });
+  const vsSay = ksKSayim(liste, k => { const h = saatNo(k); if (h == null) return ''; const bas = h >= 8 && h < 16 ? 8 : h >= 16 ? 16 : 0; return String(((h - bas + 24) % 24) + 1); });
+  const d = (key, baslik, o, sira, not) => { const l = sira || Object.keys(o).sort((a, b) => o[b] - o[a]); return {key, baslik, labels: l, vals: l.map(x => o[x] || 0), not: not || ''}; };
+  const yasSira = ['16-19', '19-25', '25-30', '30-35', '35-40', '40-45', '45+'], kSira = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'];
+  const kdn = liste.filter(k => k.kidemYil);
+  const ilkYil = kdn.length ? Math.round(kdn.filter(k => k.kidemYil === '1').length * 100 / kdn.length) : null;
+  return {
+    zaman: [d('gun', 'Haftanın gününe göre', gunSay, gunAd), d('vardiya', 'Vardiyaya göre', vSay, ['1. (08–16)', '2. (16–24)', '3. (24–08)']), d('saat', 'Vardiyanın saatine göre', vsSay, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'])],
+    yer: [d('bolum', 'Bölüme göre', ksKSayim(liste, k => (k.bolum || '').trim())), d('bolge', 'Vücut bölgesine göre', ksKSayim(liste, k => (Array.isArray(k.injuries) ? k.injuries : []).map(i => ksKBolgeGrup(i.bodyRegion)).filter(Boolean)))],
+    kisi: [d('yas', 'Yaş grubuna göre', ksKSayim(liste, k => k.yasGrubu || ''), yasSira), d('kidem', 'Fabrikadaki kıdeme göre (yıl)', ksKSayim(liste, k => k.kidemYil || ''), kSira, ilkYil != null ? `Kaza kayıtlarının %${ilkYil}'i ilk yıl çalışanlarında.` : ''), d('ogr', 'Öğrenim durumuna göre', ksKSayim(liste, k => KS_K_OGR[k.ogrenim] || ''), Object.values(KS_K_OGR))],
+    siddet: [d('siddet', 'Gerçekleşen şiddete göre', ksKSayim(liste, k => KS_K_SID[k.gercekSiddet] || ''), Object.values(KS_K_SID))],
+    minor: liste.filter(k => k.gercekSiddet === 'hafif').length,
+    major: liste.filter(k => ['ciddi', 'uzuv', 'olum'].includes(k.gercekSiddet)).length
+  };
+}
+
+// Raporda kullanılan Kıyas & Dağılım bölümü (tablo + yatay çubuk + Pareto özeti)
+function ksKRaporSection(no, liste, period, fab) {
+  const fmt = v => Number.isFinite(v) ? v.toFixed(2).replace('.', ',') : '—';
+  const fmt4 = v => Number.isFinite(v) ? v.toFixed(4).replace('.', ',') : '—';
+  const m = kazaOranMetrikleri(liste, period);
+  const kpi = ksReportTable(['Kaza', 'Kayıp gün', 'Çalışma saati', 'Kaza Sıklık', 'Kaza Ağırlık', 'Sıklık Hızı'], [[m.kazaSay, m.kayipGun, m.saat ? m.saat.toLocaleString('tr-TR') : '—', fmt(m.siklik), fmt(m.agirlik), fmt4(m.siklikHizi)]]);
+  const kaynak = kazaItems.filter(k => fab === 'tumu' || k.fab === fab);
+  const yillar = [...new Set(kaynak.map(k => (k.tarih || '').slice(0, 4)).filter(y => /^\d{4}$/.test(y)))].sort();
+  const satir = yillar.map(y => {
+    const it = kaynak.filter(k => (k.tarih || '').slice(0, 4) === y && k.tur === 'kaza');
+    const kayip = it.reduce((t, k) => t + (parseInt(k.kayip) || 0), 0);
+    const saat = kazaCalismaSaati(y), cal = kazaCalisanToplam(y, fab === 'tumu' ? '' : fab);
+    return [y, it.length, kayip, fmt(saat > 0 ? it.length * 1e6 / saat : NaN), fmt(saat > 0 ? kayip * 1e6 / saat : NaN), fmt4(cal > 0 ? it.length / cal : NaN)];
+  });
+  const D = ksKDagilimlar(liste);
+  const blok = (d) => {
+    const pairs = d.labels.map((l, i) => [l, d.vals[i]]).filter(p => p[1] > 0).sort((a, b) => b[1] - a[1]);
+    const tot = pairs.reduce((t, p) => t + p[1], 0);
+    if (!tot) return '';
+    let cum = 0, kk = 0; const rows = pairs.map((p, i) => { cum += p[1]; if (!kk && cum / tot >= .8) kk = i + 1; return [ksEsc(p[0]), p[1], '%' + Math.round(p[1] * 100 / tot), `<div style="height:8px;border-radius:4px;background:#378ADD;width:${Math.max(4, Math.round(p[1] / pairs[0][1] * 100))}%;-webkit-print-color-adjust:exact;print-color-adjust:exact"></div>`, '%' + Math.round(cum * 100 / tot)]; });
+    return `<h3 style="margin:10px 0 4px;font-size:12px">${ksEsc(d.baslik)}</h3>${ksReportTable(['Kategori', 'Adet', 'Pay', 'Dağılım', 'Kümülatif'], rows)}<div style="font-size:10.5px;margin:3px 0 6px">Pareto: ilk ${kk} kategori kümülatif %${Math.round(rows[kk - 1][4].slice(1))} (%80 sınırı) — ${ksEsc(pairs.slice(0, kk).map(p => p[0]).join(', '))}.</div>`;
+  };
+  const dag = [].concat(D.zaman, D.yer, D.kisi, D.siddet).map(blok).join('') || '<div class="hse-pr-empty">Dağılım için yeterli veri yok.</div>';
+  const body = `<h3 style="margin:4px 0">Dönem Göstergeleri</h3>${kpi}<h3 style="margin:10px 0 4px">Yıllık Kıyas</h3>${ksReportTable(['Yıl', 'Kaza', 'Kayıp gün', 'Sıklık', 'Ağırlık', 'Hız'], satir, 'Kıyaslanacak yıl verisi yok.')}${dag}<div style="font-size:10.5px;margin-top:6px">Minör risk: <b>${D.minor}</b> · Majör risk: <b>${D.major}</b></div>`;
+  return ksReportSection(no, 'Kıyas ve Dağılım Analizi', 'Yıllık kıyas ile zaman, yer, kazazede profili ve şiddet dağılımları; her dağılım için Pareto özeti.', body, 'Dağılımlar yalnız ilgili alanı doldurulmuş kayıtlarla hesaplanır. Pareto özeti, olayların %80\'ini oluşturan en az kategoriyi gösterir; önceliklendirme bu kategorilerden başlanmalıdır.');
+}
+
+let ksKRapora = false;
+function ksKRaporaToggle() { ksKRapora = !ksKRapora; kazaStatsRender(); toast(ksKRapora ? 'Kıyas & Dağılım rapora eklendi (Kurumsal Rapor)' : 'Rapordan çıkarıldı'); }
+function ksKPdf(share) {
+  const liste = kazaStatsFiltrele();
+  const period = document.getElementById('ks-f-yil')?.value || 'ytd';
+  const fab = document.getElementById('ks-f-fab')?.value || 'tumu';
+  const periodLabel = ksPeriodLabel(period), fabLabel = document.getElementById('ks-f-fab')?.selectedOptions?.[0]?.text || 'Tüm Fabrikalar';
+  const turLabel = document.getElementById('ks-f-tur-select')?.selectedOptions?.[0]?.text || 'Tüm Olay Türleri';
+  const el = ksHsePrintContainer();
+  el.innerHTML = `<table class="hse-pr-doc-shell"><thead><tr><td><div class="hse-pr-fixed-head"><h1>Kıyas ve Dağılım Raporu</h1><div>Kaza istatistikleri · yıllık kıyas · Pareto</div></div></td></tr></thead>
+    <tbody><tr><td><main class="hse-pr-doc-body"><div class="hse-pr-cover"><table class="hse-pr-context"><thead><tr><th>DÖNEM</th><th>FABRİKA</th><th>KAPSAM</th></tr></thead><tbody><tr><td>${ksEsc(periodLabel)}</td><td>${ksEsc(fabLabel)}</td><td>${ksEsc(turLabel)}</td></tr></tbody></table></div>
+    ${ksKRaporSection(1, liste, period, fab)}</main></td></tr></tbody></table>`;
+  if (share === true) { isgResetPrintModes(''); isgSharePdf({rootId: 'hse-print', bodyClass: 'print-hse-report', name: 'Kiyas ve Dagilim ' + periodLabel + ' - ' + fabLabel, width: 711, mx: 11, top: 8, bottom: 12}); return; }
+  isgBeginPrintMode('print-hse-report', {title: 'Kıyas ve Dağılım Raporu', context: periodLabel + ' - ' + fabLabel});
+  setTimeout(() => window.print(), 180);
+}
+
 function ksRenderKiyas(liste) {
   const body = document.getElementById('ks-kiyas-body'); if (!body) return;
   liste = Array.isArray(liste) ? liste : [];
@@ -15950,27 +16090,14 @@ function ksRenderKiyas(liste) {
     : '<div style="font-size:12px;color:#7a8794;margin-top:10px">Kıyaslanacak yıl verisi yok.</div>';
 
   // Dağılımlar
-  const gunAd = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-  const gunSay = ksKSayim(liste, k => { if (!k.tarih) return ''; const d = new Date(k.tarih + 'T12:00:00'); return isNaN(d) ? '' : gunAd[(d.getDay() + 6) % 7]; });
-  const vSay = ksKSayim(liste, k => { if (!k.saat) return ''; const h = parseInt(k.saat); if (isNaN(h)) return ''; return h >= 8 && h < 16 ? '1. (08–16)' : h >= 16 ? '2. (16–24)' : '3. (24–08)'; });
-  const vsSay = ksKSayim(liste, k => { if (!k.saat) return ''; const h = parseInt(k.saat); if (isNaN(h)) return ''; const bas = h >= 8 && h < 16 ? 8 : h >= 16 ? 16 : 0; return String(((h - bas + 24) % 24) + 1); });
-  const arr = (o, sira) => { const l = sira || Object.keys(o).sort((a, b) => o[b] - o[a]); return {l, v: l.map(x => o[x] || 0)}; };
-  const g = (key, baslik, o, sira, opt) => { const a = arr(o, sira); return a.v.some(x => x > 0) ? ksKGrafikHTML(key, baslik, a.l, a.v, opt) : `<div style="font-size:11.5px;color:#7a8794;margin-top:10px">${ksEsc(baslik)}: veri yok.</div>`; };
-  const SID = {hafif: 'Hafif', ciddi: 'Ciddi', uzuv: 'Uzuv kaybı', olum: 'Ölüm'}, OID = {okumamis: 'Okumamış', ilkokul: 'İlkokul', ortaokul: 'Ortaokul', lise: 'Lise', onlisans: 'Ön lisans', lisans: 'Lisans+'};
-  const yasSira = ['16-19', '19-25', '25-30', '30-35', '35-40', '40-45', '45+'], kSira = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'];
-  const sdSay = ksKSayim(liste, k => SID[k.gercekSiddet] || '');
-  const bolSay = ksKSayim(liste, k => (k.bolum || '').trim());
-  const bgSay = ksKSayim(liste, k => (Array.isArray(k.injuries) ? k.injuries : []).map(i => ksKBolgeGrup(i.bodyRegion)).filter(Boolean));
-  const yasSay = ksKSayim(liste, k => k.yasGrubu || ''), ogSay = ksKSayim(liste, k => OID[k.ogrenim] || ''), kdSay = ksKSayim(liste, k => k.kidemYil || '');
-  const minor = liste.filter(k => k.gercekSiddet === 'hafif').length, major = liste.filter(k => ['ciddi', 'uzuv', 'olum'].includes(k.gercekSiddet)).length;
-  const ilkYil = liste.filter(k => k.kidemYil).length ? Math.round(liste.filter(k => k.kidemYil === '1').length * 100 / liste.filter(k => k.kidemYil).length) : null;
-
+  const D = ksKDagilimlar(liste);
+  const g = (d) => d.vals.some(x => x > 0) ? ksKGrafikHTML(d.key, d.baslik, d.labels, d.vals, d.not ? {not: d.not} : {}) : `<div style="font-size:11.5px;color:#7a8794;margin-top:10px">${ksEsc(d.baslik)}: veri yok.</div>`;
   const ic = {
     kiyas: tablo,
-    zaman: g('gun', 'Haftanın gününe göre', gunSay, gunAd) + g('vardiya', 'Vardiyaya göre', vSay, ['1. (08–16)', '2. (16–24)', '3. (24–08)']) + g('saat', 'Vardiyanın saatine göre', vsSay, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']),
-    yer: g('bolum', 'Bölüme göre', bolSay) + g('bolge', 'Vücut bölgesine göre', bgSay),
-    kisi: g('yas', 'Yaş grubuna göre', yasSay, yasSira) + g('kidem', 'Fabrikadaki kıdeme göre (yıl)', kdSay, kSira, ilkYil != null ? {not: `Kaza kayıtlarının %${ilkYil}'i ilk yıl çalışanlarında.`} : {}) + g('ogr', 'Öğrenim durumuna göre', ogSay, Object.values(OID)),
-    siddet: g('siddet', 'Gerçekleşen şiddete göre', sdSay, Object.values(SID)) + `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><div style="padding:10px;border-radius:10px;background:#E3F4EB;text-align:center"><div style="font-size:11px;color:#2F7D55">Minör risk</div><div style="font-size:20px;font-weight:700;color:#2F7D55">${minor}</div></div><div style="padding:10px;border-radius:10px;background:#FBE4E1;text-align:center"><div style="font-size:11px;color:#A12A1E">Majör risk</div><div style="font-size:20px;font-weight:700;color:#A12A1E">${major}</div></div></div>`
+    zaman: D.zaman.map(g).join(''),
+    yer: D.yer.map(g).join(''),
+    kisi: D.kisi.map(g).join(''),
+    siddet: D.siddet.map(g).join('') + `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><div style="padding:10px;border-radius:10px;background:#E3F4EB;text-align:center"><div style="font-size:11px;color:#2F7D55">Minör risk</div><div style="font-size:20px;font-weight:700;color:#2F7D55">${D.minor}</div></div><div style="padding:10px;border-radius:10px;background:#FBE4E1;text-align:center"><div style="font-size:11px;color:#A12A1E">Majör risk</div><div style="font-size:20px;font-weight:700;color:#A12A1E">${D.major}</div></div></div>`
   };
   body.innerHTML = `<div style="display:flex;flex-direction:column;gap:14px;padding:4px 0 16px">
     ${kpi}
@@ -15979,6 +16106,9 @@ function ksRenderKiyas(liste) {
     ${ksKKart('yer', 'Yer Analizi', 'Bölüm · vücut bölgesi', ic.yer)}
     ${ksKKart('kisi', 'Kazazede Profili', 'Yaş · kıdem · öğrenim', ic.kisi)}
     ${ksKKart('siddet', 'Şiddet ve Risk Türü', 'Gerçekleşen şiddet · minör / majör', ic.siddet)}
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+      <button type="button" onclick="ksKRaporaToggle()" style="min-height:46px;border:1px solid #378ADD;border-radius:10px;background:${ksKRapora ? '#E8F1FB' : '#fff'};color:#17559A;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">${ksKRapora ? '✓ Rapora eklendi' : 'Rapora Ekle'}</button>
+      <button type="button" onclick="ksKPdf(true)" style="min-height:46px;border:1px solid #378ADD;border-radius:10px;background:#378ADD;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">PDF İndir / Paylaş</button></div>
     <div style="font-size:11px;color:#7a8794">Dağılımlar seçili dönem, fabrika ve olay türü filtresine göre hesaplanır. Yıllık Kıyas yalnız fabrika filtresini kullanır.</div></div>`;
 }
 
@@ -17235,6 +17365,7 @@ function ksRenderISO45004(liste) {
         <label><input type="checkbox" id="ks-r-leading" checked> Leading / Lagging</label>
         <label><input type="checkbox" id="ks-r-severity" checked> Şiddet × Frekans</label>
         <label><input type="checkbox" id="ks-r-factory" checked> Fabrika Karşılaştırması</label>
+        <label><input type="checkbox" id="ks-r-kiyas" ${ksKRapora?'checked':''}> Kıyas &amp; Dağılım (Yıllık Kıyas + Pareto)</label>
         <label><input type="checkbox" id="ks-r-iso-flow" checked> ISO 45004 Değerlendirme Akışı</label>
         <label><input type="checkbox" id="ks-r-root-class" checked> Sistematik Kök Neden Sınıflandırması</label>
         <label><input type="checkbox" id="ks-r-improve" checked> Sürekli İyileştirme + Yıllık Değerlendirme</label>
@@ -17431,7 +17562,7 @@ function ksPrintHSE(mode='management',share){
   const rateTrend=ksRateTrendData(rateSource,periodValue);
   const rateLabels=rateTrend.labels;
   const rateVals=k=>rateTrend.rows.map(r=>Number.isFinite(r[k])?Number(r[k].toFixed(2)):null);
-  const incl={summary:ksReportChecked('ks-r-summary'),kpi:ksReportChecked('ks-r-kpi'),trend:ksReportChecked('ks-r-trend'),risk:ksReportChecked('ks-r-risk'),priority:ksReportChecked('ks-r-priority'),event:ksReportChecked('ks-r-event'),eventP:ksReportChecked('ks-r-event-p'),root:ksReportChecked('ks-r-root'),rootP:ksReportChecked('ks-r-root-p'),month:ksReportChecked('ks-r-month',false),leading:ksReportChecked('ks-r-leading'),severity:ksReportChecked('ks-r-severity'),factory:ksReportChecked('ks-r-factory'),isoFlow:ksReportChecked('ks-r-iso-flow'),rootClass:ksReportChecked('ks-r-root-class'),improve:ksReportChecked('ks-r-improve'),actions:ksReportChecked('ks-r-actions'),appendix:ksReportChecked('ks-r-events-appendix',false),rateHse:ksReportChecked('ks-r-rate-hse'),rateClassic:ksReportChecked('ks-r-rate-classic')};
+  const incl={summary:ksReportChecked('ks-r-summary'),kpi:ksReportChecked('ks-r-kpi'),trend:ksReportChecked('ks-r-trend'),risk:ksReportChecked('ks-r-risk'),priority:ksReportChecked('ks-r-priority'),event:ksReportChecked('ks-r-event'),eventP:ksReportChecked('ks-r-event-p'),root:ksReportChecked('ks-r-root'),rootP:ksReportChecked('ks-r-root-p'),month:ksReportChecked('ks-r-month',false),leading:ksReportChecked('ks-r-leading'),severity:ksReportChecked('ks-r-severity'),factory:ksReportChecked('ks-r-factory'),kiyas:ksReportChecked('ks-r-kiyas',ksKRapora),isoFlow:ksReportChecked('ks-r-iso-flow'),rootClass:ksReportChecked('ks-r-root-class'),improve:ksReportChecked('ks-r-improve'),actions:ksReportChecked('ks-r-actions'),appendix:ksReportChecked('ks-r-events-appendix',false),rateHse:ksReportChecked('ks-r-rate-hse'),rateClassic:ksReportChecked('ks-r-rate-classic')};
 
   const rootMap={},eventMap={},monthMap=Array(12).fill(0),fabMap={};
   liste.forEach(k=>{const r=(k.kokNeden||'Belirtilmemiş').trim()||'Belirtilmemiş';rootMap[r]=(rootMap[r]||0)+1;const e=(k.yaralanma||'Belirtilmemiş').trim()||'Belirtilmemiş';eventMap[e]=(eventMap[e]||0)+1;if(k.tarih){const m=Number(k.tarih.slice(5,7))-1;if(m>=0&&m<12)monthMap[m]++;}const f=k.fab||'Belirtilmemiş';fabMap[f]=(fabMap[f]||0)+1;});
@@ -17532,6 +17663,7 @@ function ksPrintHSE(mode='management',share){
     sec.push(ksReportSection(next(),'Şiddet × Frekans Matrisi','Yalnız potansiyel şiddeti değerlendirilmiş gerçek olay kayıtları kullanılır.',matrix,`Matrisin amacı düşük frekanslı fakat yüksek sonuç potansiyelli olayların görünürlüğünü korumaktır.`));
   }
   if(incl.factory)sec.push(ksReportSection(next(),'Fabrika Karşılaştırması','Seçili dönem ve olay türü kapsamında fabrikalara göre olay sayıları.',ksReportTable(['Fabrika','Olay Adedi','Pay'],Object.entries(fabMap).sort((a,b)=>b[1]-a[1]).map(([f,v])=>[ksEsc(f),v,liste.length?'%'+Math.round(v*100/liste.length):'%0'])),ksReportFactoryInsight(Object.entries(fabMap).sort((a,b)=>b[1]-a[1]),liste.length)));
+  if(incl.kiyas)sec.push(ksKRaporSection(next(),liste,periodValue,document.getElementById('ks-f-fab')?.value||'tumu'));
   if(incl.isoFlow)sec.push(ksReportSection(next(),'ISO 45004 Performans Değerlendirme Akışı','Performans değerlendirme sürecinin uygulamadaki izleme–aksiyon–gözden geçirme döngüsü.',`<div class="hse-pr-flow">${[['İZLE','Olay, denetim, kontrol, görev'],['ÖLÇ','KPI ve performans göstergeleri'],['ANALİZ ET','Trend, Pareto, kök neden'],['DEĞERLENDİR','Durum özeti, risk önceliği'],['AKSİYON AL','Öncelikli aksiyon / görev'],['GÖZDEN GEÇİR','Dönem ve uzun vadeli gelişim']].map(x=>`<div><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div>`,`Bu akış; izleme, ölçme, analiz, değerlendirme, aksiyon ve yönetim gözden geçirmesini birbirine bağlayan performans değerlendirme döngüsünü gösterir.`));
   if(incl.rootClass)sec.push(ksReportSection(next(),'Sistematik Kök Neden Sınıflandırması','Kök neden kayıtlarının sistem düzeyinde değerlendirilmesi için kullanılan altı analiz başlığı.',`<div class="hse-pr-rootgrid"><div><b>Mühendislik / Teknik Kontroller</b><span>Makine muhafazası, interlock, teknik güvenlik sistemleri, yangın koruma sistemleri, ekipman tasarımı ve fiziksel izolasyon.</span></div><div><b>İş Organizasyonu / Prosedür</b><span>İş yöntemi, EKED, görev planlama, vardiya, iş akışı ve prosedür eksiklikleri.</span></div><div><b>Yetkinlik / Eğitim</b><span>Eğitim, işe uygunluk, yeterlilik ve talimatın anlaşılması.</span></div><div><b>Gözetim / Yönetim Kontrolü</b><span>Saha gözetimi, kontrol sıklığı, uygunsuzluğun tekrarı ve yönetim takibi.</span></div><div><b>Çalışma Ortamı</b><span>Kimyasal muhafaza / maruziyet kontrolü, aydınlatma, zemin, gürültü, görüş alanı, trafik düzeni ve alan kısıtları.</span></div><div><b>İnsan Faktörü</b><span>Dikkat kaybı gibi insan faktörleri tek başına son neden olarak değil, ilişkili sistem koşullarıyla birlikte değerlendirilir.</span></div></div>`,`Bu sınıflandırma olay nedenlerini yalnız davranışsal açıklamalara indirgemeden sistem ve kontrol katmanlarını görünür kılar.`));
 
