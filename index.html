@@ -7700,6 +7700,7 @@ px}
     <div class="ks-nav">
       <button class="ks-nav-btn on" data-ksview="hse" onclick="ksSwitchView('hse')">HSE Performans</button>
       <button class="ks-nav-btn" data-ksview="analysis" onclick="ksSwitchView('analysis')">Genel Analiz</button>
+      <button class="ks-nav-btn" data-ksview="kiyas" onclick="ksSwitchView('kiyas')">Kıyas &amp; Dağılım</button>
       <button class="ks-nav-btn" data-ksview="risk" onclick="ksSwitchView('risk')">Kritik Riskler</button>
       <button class="ks-nav-btn" data-ksview="leading" onclick="ksSwitchView('leading')">Leading / Lagging</button>
       <button class="ks-nav-btn" data-ksview="iso" onclick="ksSwitchView('iso')">ISO 45004 Değerlendirme</button>
@@ -7734,6 +7735,7 @@ px}
     </div>
     <div id="ks-view-risk" class="ks-view"><div id="ks-risk-body"></div></div>
     <div id="ks-view-leading" class="ks-view"><div id="ks-leading-body"></div></div>
+    <div id="ks-view-kiyas" class="ks-view"><div id="ks-kiyas-body"></div></div>
     <div id="ks-view-iso" class="ks-view"><div id="ks-iso-body"></div></div>
     <div id="ks-view-report" class="ks-view"><div id="ks-report-body"></div></div>
   </div>
@@ -15078,6 +15080,7 @@ function kazaOpenStats() {
   setTimeout(syncHseStickyOffset, 60);
 }
 function kazaCloseStats() {
+  if (typeof ksKReset === 'function') ksKReset();
   document.getElementById('kaza-stats-panel-wrap').classList.remove('on');
 }
 function ksSetTur(id) {
@@ -15836,6 +15839,149 @@ function ksRateChartConfig(labels,values,label,color){
   }};
 }
 
+// ── Kıyas & Dağılım sekmesi ─────────────────────────────────
+let ksKAcik = {};      // açık kartlar (varsayılan hepsi kapalı)
+let ksKPg = {};        // açık Pareto alanları
+function ksKReset() {
+  if (!Object.keys(ksKAcik).length && !Object.keys(ksKPg).length) return;
+  ksKAcik = {}; ksKPg = {};
+  const b = document.getElementById('ks-kiyas-body'); if (b && typeof kazaStatsRender === 'function') kazaStatsRender();
+}
+function ksKToggle(k) { ksKAcik[k] = !ksKAcik[k]; kazaStatsRender(); }
+function ksKPareto(k) { ksKPg[k] = !ksKPg[k]; kazaStatsRender(); }
+
+function ksKBolgeGrup(t) {
+  const x = String(t || '').toLocaleLowerCase('tr');
+  if (!x) return '';
+  const m = [['parmak','Parmak'],['el ','El / Bilek'],['el,','El / Bilek'],['bilek','El / Bilek'],['göz','Göz'],['baş','Baş'],['boyun','Boyun'],['omuz','Omuz'],['kol','Kol'],['sırt','Bel / Sırt'],['bel','Bel / Sırt'],['göğüs','Gövde'],['karın','Gövde'],['gövde','Gövde'],['diz','Bacak / Diz'],['bacak','Bacak / Diz'],['ayak','Ayak'],['kalça','Kalça']];
+  const y = x + ' ';
+  for (const [a, b] of m) if (y.includes(a)) return b;
+  return t.trim();
+}
+
+function ksKSayim(liste, fn) {
+  const o = {};
+  liste.forEach(k => { const v = fn(k); (Array.isArray(v) ? v : [v]).forEach(a => { if (a !== '' && a != null) o[a] = (o[a] || 0) + 1; }); });
+  return o;
+}
+
+function ksKGrafikHTML(key, baslik, labels, vals, opt) {
+  opt = opt || {};
+  const n = labels.length, max = Math.max(...vals, 1), peak = Math.max(...vals);
+  const kolon = labels.map((l, i) => {
+    const v = vals[i], h = v === 0 ? 2 : Math.round(v / max * 70) + 8;
+    return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:112px;min-width:0">
+      <span style="font-size:11px;font-weight:700;color:#334155">${v > 0 ? v : ''}</span>
+      <span style="display:block;width:100%;max-width:26px;height:${h}px;border-radius:4px 4px 0 0;background:${v === peak && v > 0 ? '#378ADD' : '#B7D0EC'}"></span>
+      <span style="font-size:9.5px;color:#5B6775;text-align:center;line-height:1.15;word-break:break-word">${ksEsc(l)}</span></div>`;
+  }).join('');
+  const acik = !!ksKPg[key];
+  // Pareto
+  let par = '';
+  if (acik) {
+    const pairs = labels.map((l, i) => [l, vals[i]]).filter(p => p[1] > 0).sort((a, b) => b[1] - a[1]);
+    const tot = pairs.reduce((t, p) => t + p[1], 0);
+    if (!tot) par = '<div style="font-size:11.5px;color:#7a8794">Veri yok.</div>';
+    else {
+      const m = pairs.length; let cum = 0, kk = 0; const pts = [], cc = [];
+      pairs.forEach((p, i) => { cum += p[1]; pts.push(((i + .5) / m * 100).toFixed(2) + ',' + (100 - cum / tot * 100).toFixed(2)); if (!kk && cum / tot >= .8) kk = i + 1; cc.push(cum); });
+      if (!kk) kk = m;
+      const bars = pairs.map((p, i) => `<div style="display:flex;align-items:flex-end;justify-content:center;height:120px"><span style="display:block;position:relative;width:62%;height:${Math.max(3, Math.round(p[1] / tot * 100))}%;border-radius:4px 4px 0 0;background:${i < kk ? '#378ADD' : '#B7D0EC'}"><span style="position:absolute;bottom:100%;left:-10px;right:-10px;text-align:center;font-size:10.5px;font-weight:700;color:#334155">${p[1]}</span></span></div>`).join('');
+      const labs = pairs.map(p => `<span style="font-size:9.5px;color:#5B6775;text-align:center;line-height:1.15;padding:0 1px;word-break:break-word">${ksEsc(p[0])}</span>`).join('');
+      par = `<div style="display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:10px;background:#F7F9FB;border:1px solid #E3E7EB">
+        <div style="position:relative;height:134px">
+          <div style="position:absolute;left:0;right:0;bottom:0;height:120px;display:grid;grid-template-columns:repeat(${m},minmax(0,1fr));gap:0">${bars}</div>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:120px;overflow:visible;pointer-events:none"><line x1="0" y1="20" x2="100" y2="20" stroke="#E09000" stroke-width="1" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"></line><polyline points="${pts.join(' ')}" fill="none" stroke="#0D2B46" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline></svg>
+          <span style="position:absolute;right:0;bottom:98px;font-size:9.5px;font-weight:700;color:#B26A00;background:#F7F9FB;padding:0 3px">%80</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(${m},minmax(0,1fr));gap:0">${labs}</div>
+        <div style="font-size:11.5px;color:#334155;line-height:1.4">İlk ${kk} kategori kümülatif %${Math.round(cc[kk - 1] / tot * 100)} — ${ksEsc(pairs.slice(0, kk).map(p => p[0]).join(', '))}.</div>
+        <div style="font-size:10.5px;color:#7a8794">Çubuk: adet · Çizgi: kümülatif %</div></div>`;
+    }
+  }
+  return `<div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+    <span style="font-size:11px;font-weight:600;color:#5B6775">${ksEsc(baslik)}</span>
+    <div style="display:grid;grid-template-columns:repeat(${n},minmax(0,1fr));gap:${n > 8 ? 3 : 6}px">${kolon}</div>
+    ${opt.not ? `<div style="font-size:11.5px;color:#5B6775;line-height:1.4">${ksEsc(opt.not)}</div>` : ''}
+    <button type="button" onclick="ksKPareto('${key}')" aria-expanded="${acik}" style="align-self:flex-start;display:flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid #C9D6E3;border-radius:8px;background:#fff;color:#17559A;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">${acik ? 'Pareto gizle' : 'Pareto göster'}
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#17559A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transition:transform .15s;transform:rotate(${acik ? 180 : 0}deg)"><path d="m6 9 6 6 6-6"></path></svg></button>
+    ${par}</div>`;
+}
+
+function ksKKart(key, baslik, alt, icerik) {
+  const ac = !!ksKAcik[key];
+  return `<div style="border:1px solid #E3E7EB;border-radius:12px;background:#fff;overflow:hidden">
+    <button type="button" onclick="ksKToggle('${key}')" aria-expanded="${ac}" style="width:100%;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:14px;border:none;background:#fff;text-align:left;cursor:pointer;color:#1F2A37;font-family:inherit">
+      <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:700">${baslik}</span><span style="font-size:11.5px;color:#5B6775">${alt}</span></span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6775" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transition:transform .15s;transform:rotate(${ac ? 180 : 0}deg)"><path d="m6 9 6 6 6-6"></path></svg></button>
+    ${ac ? `<div style="display:flex;flex-direction:column;gap:14px;padding:4px 14px 14px;border-top:1px solid #EEF1F4">${icerik}</div>` : ''}</div>`;
+}
+
+function ksRenderKiyas(liste) {
+  const body = document.getElementById('ks-kiyas-body'); if (!body) return;
+  liste = Array.isArray(liste) ? liste : [];
+  const fab = document.getElementById('ks-f-fab')?.value || 'tumu';
+  const fmt = v => Number.isFinite(v) ? v.toFixed(2).replace('.', ',') : '—';
+  const fmt4 = v => Number.isFinite(v) ? v.toFixed(4).replace('.', ',') : '—';
+
+  // Göstergeler (seçili dönem)
+  const period = document.getElementById('ks-f-yil')?.value || 'ytd';
+  const m = kazaOranMetrikleri(liste, period);
+  const tile = (l, v, a, ek) => `<div style="padding:10px 6px;border-radius:10px;background:#fff;border:1px solid #E3E7EB;text-align:center;${ek || ''}"><div style="font-size:10.5px;color:#5B6775">${l}</div><div style="font-size:19px;font-weight:700;color:#0D2B46">${v}</div><div style="font-size:9.5px;color:#7A8794">${a}</div></div>`;
+  const kpi = `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+    ${tile('Toplam Kaza', m.kazaSay, 'iş kazası')}${tile('Kayıp Gün', m.kayipGun, 'gün')}${tile('Çalışma Saati', m.saat ? m.saat.toLocaleString('tr-TR') : '—', 'saat')}
+    ${tile('Kaza Sıklık', fmt(m.siklik), 'kaza / milyon saat')}${tile('Kaza Ağırlık', fmt(m.agirlik), 'gün / milyon saat')}${tile('Sıklık Hızı', fmt4(m.siklikHizi), 'kaza / Σ çalışan')}</div>`;
+
+  // Yıllık kıyas (dönem filtresinden bağımsız, yalnız fabrika filtresi)
+  const kaynak = kazaItems.filter(k => fab === 'tumu' || k.fab === fab);
+  const yillar = [...new Set(kaynak.map(k => (k.tarih || '').slice(0, 4)).filter(y => /^\d{4}$/.test(y)))].sort();
+  const satir = yillar.map(y => {
+    const it = kaynak.filter(k => (k.tarih || '').slice(0, 4) === y && k.tur === 'kaza');
+    const kayip = it.reduce((t, k) => t + (parseInt(k.kayip) || 0), 0);
+    const saat = kazaCalismaSaati(y), cal = kazaCalisanToplam(y, fab === 'tumu' ? '' : fab);
+    return {y, kaza: it.length, kayip, siklik: saat > 0 ? it.length * 1e6 / saat : NaN, agirlik: saat > 0 ? kayip * 1e6 / saat : NaN, hiz: cal > 0 ? it.length / cal : NaN};
+  });
+  const maxK = Math.max(...satir.map(r => r.kaza), 1);
+  const tablo = satir.length ? `<div style="border:1px solid #E3E7EB;border-radius:10px;overflow:hidden;margin-top:10px">
+      <div style="display:grid;grid-template-columns:44px repeat(5,minmax(0,1fr));gap:4px;padding:8px 10px;background:#F1F7FD;font-size:10.5px;font-weight:700;color:#5B6775;text-align:center"><div style="text-align:left">Yıl</div><div>Kaza</div><div>Kayıp gün</div><div>Sıklık</div><div>Ağırlık</div><div>Hız</div></div>
+      ${satir.map((r, i) => `<div style="display:grid;grid-template-columns:44px repeat(5,minmax(0,1fr));gap:4px;padding:8px 10px;font-size:12px;text-align:center;border-top:1px solid #EEF1F4;${i === satir.length - 1 ? 'background:#E8F1FB;color:#0D2B46' : 'color:#334155'}"><div style="text-align:left;font-weight:700">${r.y}</div><div>${r.kaza}</div><div>${r.kayip}</div><div>${fmt(r.siklik)}</div><div>${fmt(r.agirlik)}</div><div>${fmt4(r.hiz)}</div></div>`).join('')}</div>
+    <div style="display:grid;grid-template-columns:repeat(${Math.min(satir.length, 10)},minmax(0,1fr));gap:6px;align-items:end">${satir.slice(-10).map(r => `<div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:118px"><span style="font-size:11px;font-weight:700;color:#334155">${r.kaza}</span><span style="display:block;width:100%;max-width:26px;height:${Math.round(r.kaza / maxK * 70) + 6}px;border-radius:4px 4px 0 0;background:#378ADD"></span><span style="font-size:10.5px;color:#5B6775">${r.y}</span></div>`).join('')}</div>
+    <div style="font-size:11.5px;color:#5B6775;line-height:1.45">Sıklık, ağırlık ve hız; o yılın çalışma saati / çalışan sayısı Oran Hesabı Ayarları'nda girildiğinde dolar.</div>`
+    : '<div style="font-size:12px;color:#7a8794;margin-top:10px">Kıyaslanacak yıl verisi yok.</div>';
+
+  // Dağılımlar
+  const gunAd = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  const gunSay = ksKSayim(liste, k => { if (!k.tarih) return ''; const d = new Date(k.tarih + 'T12:00:00'); return isNaN(d) ? '' : gunAd[(d.getDay() + 6) % 7]; });
+  const vSay = ksKSayim(liste, k => { if (!k.saat) return ''; const h = parseInt(k.saat); if (isNaN(h)) return ''; return h >= 8 && h < 16 ? '1. (08–16)' : h >= 16 ? '2. (16–24)' : '3. (24–08)'; });
+  const vsSay = ksKSayim(liste, k => { if (!k.saat) return ''; const h = parseInt(k.saat); if (isNaN(h)) return ''; const bas = h >= 8 && h < 16 ? 8 : h >= 16 ? 16 : 0; return String(((h - bas + 24) % 24) + 1); });
+  const arr = (o, sira) => { const l = sira || Object.keys(o).sort((a, b) => o[b] - o[a]); return {l, v: l.map(x => o[x] || 0)}; };
+  const g = (key, baslik, o, sira, opt) => { const a = arr(o, sira); return a.v.some(x => x > 0) ? ksKGrafikHTML(key, baslik, a.l, a.v, opt) : `<div style="font-size:11.5px;color:#7a8794;margin-top:10px">${ksEsc(baslik)}: veri yok.</div>`; };
+  const SID = {hafif: 'Hafif', ciddi: 'Ciddi', uzuv: 'Uzuv kaybı', olum: 'Ölüm'}, OID = {okumamis: 'Okumamış', ilkokul: 'İlkokul', ortaokul: 'Ortaokul', lise: 'Lise', onlisans: 'Ön lisans', lisans: 'Lisans+'};
+  const yasSira = ['16-19', '19-25', '25-30', '30-35', '35-40', '40-45', '45+'], kSira = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'];
+  const sdSay = ksKSayim(liste, k => SID[k.gercekSiddet] || '');
+  const bolSay = ksKSayim(liste, k => (k.bolum || '').trim());
+  const bgSay = ksKSayim(liste, k => (Array.isArray(k.injuries) ? k.injuries : []).map(i => ksKBolgeGrup(i.bodyRegion)).filter(Boolean));
+  const yasSay = ksKSayim(liste, k => k.yasGrubu || ''), ogSay = ksKSayim(liste, k => OID[k.ogrenim] || ''), kdSay = ksKSayim(liste, k => k.kidemYil || '');
+  const minor = liste.filter(k => k.gercekSiddet === 'hafif').length, major = liste.filter(k => ['ciddi', 'uzuv', 'olum'].includes(k.gercekSiddet)).length;
+  const ilkYil = liste.filter(k => k.kidemYil).length ? Math.round(liste.filter(k => k.kidemYil === '1').length * 100 / liste.filter(k => k.kidemYil).length) : null;
+
+  const ic = {
+    kiyas: tablo,
+    zaman: g('gun', 'Haftanın gününe göre', gunSay, gunAd) + g('vardiya', 'Vardiyaya göre', vSay, ['1. (08–16)', '2. (16–24)', '3. (24–08)']) + g('saat', 'Vardiyanın saatine göre', vsSay, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']),
+    yer: g('bolum', 'Bölüme göre', bolSay) + g('bolge', 'Vücut bölgesine göre', bgSay),
+    kisi: g('yas', 'Yaş grubuna göre', yasSay, yasSira) + g('kidem', 'Fabrikadaki kıdeme göre (yıl)', kdSay, kSira, ilkYil != null ? {not: `Kaza kayıtlarının %${ilkYil}'i ilk yıl çalışanlarında.`} : {}) + g('ogr', 'Öğrenim durumuna göre', ogSay, Object.values(OID)),
+    siddet: g('siddet', 'Gerçekleşen şiddete göre', sdSay, Object.values(SID)) + `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><div style="padding:10px;border-radius:10px;background:#E3F4EB;text-align:center"><div style="font-size:11px;color:#2F7D55">Minör risk</div><div style="font-size:20px;font-weight:700;color:#2F7D55">${minor}</div></div><div style="padding:10px;border-radius:10px;background:#FBE4E1;text-align:center"><div style="font-size:11px;color:#A12A1E">Majör risk</div><div style="font-size:20px;font-weight:700;color:#A12A1E">${major}</div></div></div>`
+  };
+  body.innerHTML = `<div style="display:flex;flex-direction:column;gap:14px;padding:4px 0 16px">
+    ${kpi}
+    ${ksKKart('kiyas', 'Yıllık Kıyas', yillar.length ? `${yillar[0]} – ${yillar[yillar.length - 1]}` : 'Yıl bazlı karşılaştırma', ic.kiyas)}
+    ${ksKKart('zaman', 'Zaman Analizi', 'Gün · vardiya · vardiyanın saati', ic.zaman)}
+    ${ksKKart('yer', 'Yer Analizi', 'Bölüm · vücut bölgesi', ic.yer)}
+    ${ksKKart('kisi', 'Kazazede Profili', 'Yaş · kıdem · öğrenim', ic.kisi)}
+    ${ksKKart('siddet', 'Şiddet ve Risk Türü', 'Gerçekleşen şiddet · minör / majör', ic.siddet)}
+    <div style="font-size:11px;color:#7a8794">Dağılımlar seçili dönem, fabrika ve olay türü filtresine göre hesaplanır. Yıllık Kıyas yalnız fabrika filtresini kullanır.</div></div>`;
+}
+
 function ksRenderRateCharts(liste){
   const wrap=document.getElementById('ks-rate-charts-wrap'); if(!wrap)return;
   const period=document.getElementById('ks-f-yil')?.value||'ytd';
@@ -15924,7 +16070,7 @@ function kazaStatsRender() {
     ${liste.length ? '<div id="ks-pareto-genel"></div>' : ''}
     <div id="ks-rate-charts-wrap"></div>`;
 
-  if (!liste.length) { ksRenderRateCharts(liste); ksRenderISO45004(liste); return; }
+  if (!liste.length) { ksRenderRateCharts(liste); ksRenderISO45004(liste); ksRenderKiyas(liste); return; }
 
   // Kaza/Hasar Türüne göre sayım (Pareto için tek toplam seri her zaman gerekir)
   const turMap = {};
@@ -15984,6 +16130,7 @@ function kazaStatsRender() {
   const ksGenelPareto = document.getElementById('ks-pareto-genel');
   if (ksGenelPareto) ksGenelPareto.innerHTML = ksParetoGenelHTML(ksAyParetoData,ksTurParetoData,ksKokParetoData);
   ksRenderRateCharts(liste);
+  ksRenderKiyas(liste);
   ksRenderISO45004(liste);
 }
 
@@ -16490,6 +16637,7 @@ function hseTaskToggle() {
 }
 
 function ksSwitchView(id) {
+  if (id !== 'kiyas' && typeof ksKReset === 'function') ksKReset();
   document.querySelectorAll('.ks-view').forEach(v => v.classList.toggle('on', v.id === 'ks-view-'+id));
   document.querySelectorAll('.ks-nav-btn').forEach(b => b.classList.toggle('on', b.dataset.ksview === id));
   const panel = document.getElementById('kaza-stats-panel-wrap');
