@@ -22618,13 +22618,21 @@ window.addEventListener('DOMContentLoaded',()=>{
         // başlıktan hemen sonra (en az ~3 satır içerik gelmeden) kesme koyma
         for(var h=0;h<heads.length;h++){if(y>heads[h]+3&&y<heads[h]+75)return}
         cand.push(y)});
-      return window.html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:W}).then(function(cv){return {cv:cv,forced:forced,cand:cand}})
+      // Uzun raporlarda tarayıcı canvas sınırı (özellikle mobil) boş sayfa üretir: yüksek içerik parçalara bölünerek çizilir
+      var H=Math.ceil(el.getBoundingClientRect().height),CH=5000,base={scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:W};
+      if(H<=CH+800)return window.html2canvas(el,base).then(function(cv){return {chunks:[{y0:0,y1:cv.height/(cv.width/W),cv:cv}],k:cv.width/W,total:cv.height/(cv.width/W),forced:forced,cand:cand}});
+      var parts=[],y0=0;while(y0<H){parts.push([y0,Math.min(H,y0+CH)]);y0+=CH}
+      var out=[],i=0;
+      function nxt(){if(i>=parts.length)return Promise.resolve({chunks:out,k:out[0].cv.width/W,total:H,forced:forced,cand:cand});
+        var pr=parts[i++],o=Object.assign({},base,{y:top+pr[0],height:pr[1]-pr[0]});
+        return window.html2canvas(el,o).then(function(cv){out.push({y0:pr[0],y1:pr[1],cv:cv});return nxt()})}
+      return nxt()
     }).then(function(r){
       var J=window.jspdf.jsPDF,pdf=new J({unit:'mm',format:'a4',orientation:'portrait'});
       var PW=210,PH=297,mx=opt.mx||8,tp=opt.top||10,bt=opt.bottom||16;
-      var cv=r.cv,k=cv.width/opt.width,cw=PW-2*mx,ch=PH-tp-bt;
+      var k=r.k,cw=PW-2*mx,ch=PH-tp-bt;
       var pagePx=Math.floor(ch/cw*opt.width);
-      var total=cv.height/k,pages=[],y=0,guard=0;
+      var total=r.total,pages=[],y=0,guard=0;
       while(y<total-2&&guard++<200){
         var end=y+pagePx,f=r.forced.filter(function(v){return v>y+20&&v<end}).sort(function(a,b){return a-b})[0];
         if(f!==undefined)end=f;
@@ -22634,9 +22642,12 @@ window.addEventListener('DOMContentLoaded',()=>{
         pages.push([y,end]);y=end}
       pages.forEach(function(p,i){
         if(i)pdf.addPage();
-        var sy=Math.round(p[0]*k),sh=Math.max(1,Math.round((p[1]-p[0])*k));
-        var pc=document.createElement('canvas');pc.width=cv.width;pc.height=sh;
-        var cx=pc.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,pc.width,sh);cx.drawImage(cv,0,sy,cv.width,sh,0,0,cv.width,sh);
+        var sh=Math.max(1,Math.round((p[1]-p[0])*k));
+        var pc=document.createElement('canvas');pc.width=r.chunks[0].cv.width;pc.height=sh;
+        var cx=pc.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,pc.width,sh);
+        r.chunks.forEach(function(c){var a=Math.max(p[0],c.y0),z=Math.min(p[1],c.y1);if(z<=a)return;
+          var dh=Math.round((z-a)*k),sy=Math.round((a-c.y0)*k),dy=Math.round((a-p[0])*k);if(dh<1)return;
+          cx.drawImage(c.cv,0,sy,c.cv.width,dh,0,dy,c.cv.width,dh)});
         pdf.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',mx,tp,cw,(p[1]-p[0])/opt.width*cw);
         pdf.setFontSize(8);pdf.setTextColor(100);pdf.text('Sayfa '+(i+1)+'/'+pages.length,PW/2,PH-8,{align:'center'});
       });
