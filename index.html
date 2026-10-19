@@ -7134,6 +7134,14 @@ px}
         style="min-height:100px;font-family:ui-monospace,Menlo,monospace;font-size:11px;"></textarea>
     </div>
     <div id="kaza-imp-onizleme" style="font-size:11px;color:var(--text2);"></div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:12.5px;font-weight:700;color:var(--text);">📊 İstatistik Excel'i (ESKİ VERİLER + Veri Girişi)</div>
+      <div style="font-size:10.5px;color:var(--text2);line-height:1.6;">Yıllık istatistik dosyanızı seçin: <b>ESKİ VERİLER</b> sayfasındaki yıllık kategori özetleri kıyas verisi olarak, <b>Veri Girişi</b> sayfasındaki işaretli kazalar kayıt olarak, <b>Kaza Oranları</b> sayfasındaki aylık saat ve çalışan sayıları oran hesabına aktarılır. Aynı dosya tekrar yüklenirse mevcut kayıtlar çoğaltılmaz.</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="kaza-ist-fab" style="flex:1;min-width:160px;"></select>
+        <input type="file" id="kaza-ist-dosya" accept=".xlsx,.xlsm,.xls" onchange="kazaIstatistikExcel(this)" style="flex:2;min-width:180px;font-size:11px;"/>
+      </div>
+    </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:10px;">
       <button class="mbtn-cancel" onclick="kazaImportKapat()" style="padding:7px 18px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;">İptal</button>
       <button id="kaza-imp-btn" onclick="kazaImportMetinKaydet()" style="padding:7px 18px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#639922;color:#fff;cursor:pointer;">Metinden İçe Aktar</button>
@@ -14643,6 +14651,7 @@ function kazaSaveSettings() {
     calisanGenel: temiz(d.calisanGenel),
     fabAylik: temizFab(d.fabAylik),
     calisanAylik: temizFab(d.calisanAylik),
+    gecmis: kazaAyar.gecmis || {},
     bolumler: (() => { const r = {}; Object.keys(d.bolumler || {}).forEach(f => { if ((d.bolumler[f] || []).length) r[f] = d.bolumler[f]; }); return r; })()
   };
   kazaDraft = null;
@@ -14679,6 +14688,7 @@ function kzNorm(x) {
 }
 
 function kazaImportAc() {
+  { const fs = document.getElementById('kaza-ist-fab'); if (fs) { fs.innerHTML = fabrikalar.map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`).join(''); const m = fabrikalar.find(f => kzNorm(f.name).includes('adana metal')); if (m) fs.value = m.name; } const fd = document.getElementById('kaza-ist-dosya'); if (fd) fd.value = ''; }
   document.getElementById('kaza-imp-metin').value = '';
   document.getElementById('kaza-imp-dosya').value = '';
   document.getElementById('kaza-imp-onizleme').innerHTML = '';
@@ -14874,6 +14884,168 @@ function kazaSablonIndir() {
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = 'kaza-kayit-sablonu.csv'; a.click();
   }
 }
+// ── İstatistik Excel'i içe aktarma (ESKİ VERİLER · Veri Girişi · Kaza Oranları · İş Kazası Tablosu) ──
+const KZ_TR_BAS = x => String(x || '').trim().toLocaleLowerCase('tr').split(/(\s+|-|\/)/).map(w => w ? w.charAt(0).toLocaleUpperCase('tr') + w.slice(1) : w).join('');
+function kzIstGrup(g) {
+  g = kzNorm(g);
+  if (g === 'ay') return 'ay';
+  if (g === 'hafta') return 'hafta';
+  if (g === 'gun') return 'gun';
+  if (g.includes('vardiyanin saati')) return 'saat';
+  if (g === 'vardiya') return 'vardiya';
+  if (g.includes('bolgesi')) return 'bolge';
+  if (g.includes('kaza tipi')) return 'tip';
+  if (g.includes('kaza turu') || g.includes('siddet')) return 'siddet';
+  if (g.includes('risk')) return 'risk';
+  if (g === 'bolum') return 'bolum';
+  if (g.includes('ogrenim')) return 'ogr';
+  if (g.includes('yasi')) return 'yas';
+  if (g.includes('tecrube')) return 'kidem';
+  if (g.includes('oranlari')) return 'oran';
+  return '';
+}
+function kzIstEtiket(cat, lab) {
+  const t = kzNorm(lab);
+  if (cat === 'gun') return {pazartesi:'Pzt', sali:'Sal', carsamba:'Çar', persembe:'Per', cuma:'Cum', cumartesi:'Cmt', pazar:'Paz'}[t] || '';
+  if (cat === 'saat') { const m = t.match(/(\d+)/); return m ? m[1] : ''; }
+  if (cat === 'vardiya') { const m = t.match(/(\d)/); return m ? ['1. (08–16)', '2. (16–24)', '3. (24–08)'][m[1] - 1] || '' : ''; }
+  if (cat === 'hafta') { const m = t.match(/(\d)/); return m ? m[1] + '. hafta' : ''; }
+  if (cat === 'ay') return KAZA_AYLAR.find(a => kzNorm(a) === t) || '';
+  if (cat === 'bolge') return {bas:'Baş', goz:'Göz', yuz:'Yüz', parmak:'Parmak', el:'El / Bilek', kol:'Kol', ayak:'Ayak', bacak:'Bacak / Diz', govde:'Gövde', boyun:'Boyun', omuz:'Omuz', bel:'Bel / Sırt', kalca:'Kalça'}[t] || KZ_TR_BAS(lab);
+  if (cat === 'siddet') return t.includes('hafif') ? 'Hafif' : t.includes('agir') || t.includes('ciddi') ? 'Ciddi' : t.includes('uzuv') ? 'Uzuv kaybı' : t.includes('olum') ? 'Ölüm' : '';
+  if (cat === 'risk') return t.includes('minor') ? 'Minör' : t.includes('major') ? 'Majör' : '';
+  if (cat === 'ogr') return t.includes('okuma') ? 'Okumamış' : t.includes('ilkokul') ? 'İlkokul' : t.includes('ortaokul') ? 'Ortaokul' : t.includes('on lisans') ? 'Ön lisans' : t.includes('universite') || t.includes('lisans') ? 'Lisans+' : t.includes('lise') ? 'Lise' : '';
+  if (cat === 'yas') return t.includes('45') ? '45+' : String(lab).trim().replace('–', '-');
+  if (cat === 'kidem') { const m = t.match(/(\d+)/); return m ? (Number(m[1]) >= 10 ? '10+' : m[1]) : ''; }
+  return KZ_TR_BAS(lab);
+}
+function kzIstEskiVeriler(rows) {
+  const h = rows.findIndex(r => kzNorm(r[1]) === 'veri basligi');
+  if (h < 1) return {};
+  const grp = []; let cur = '';
+  for (let c = 0; c < rows[h].length; c++) { const g = rows[h - 1][c]; if (g !== '' && g != null) cur = g; grp[c] = kzIstGrup(cur); }
+  const out = {};
+  for (let r = h + 1; r < rows.length; r++) {
+    const y = Number(rows[r][0]);
+    if (!(y >= 2000 && y <= 2100) || !kzNorm(rows[r][1]).includes('kaza sayilari')) continue;
+    const o = {cats: {}, aylikKayip: {}};
+    for (let c = 2; c < rows[h].length; c++) {
+      const lab = rows[h][c], v = Number(rows[r][c]); if (lab === '' || lab == null || !Number.isFinite(v)) continue;
+      const g = grp[c];
+      if (g === 'oran') {
+        const t = kzNorm(lab);
+        if (t.includes('kayip')) o.kayip = v; else if (t.includes('kaza sayisi')) o.kaza = v; else if (t.includes('siklik orani')) o.siklik = v; else if (t.includes('agirlik orani')) o.agirlik = v; else if (t.includes('siklik hizi')) o.hiz = v;
+      } else if (g) {
+        const e = kzIstEtiket(g, lab); if (!e) continue;
+        o.cats[g] = o.cats[g] || {}; if (v > 0 || g === 'ay') o.cats[g][e] = v;
+      }
+    }
+    const kr = rows[r + 1]; // aylık iş gücü kayıpları
+    if (kr && kzNorm(kr[1]).includes('is gucu kayip')) KAZA_AYLAR.forEach((a, i) => { const v = Number(kr[2 + i]); if (v > 0) o.aylikKayip[a] = v; });
+    if (!Number.isFinite(o.kaza)) o.kaza = Object.values(o.cats.ay || {}).reduce((t, x) => t + x, 0);
+    if (!Number.isFinite(o.kayip)) o.kayip = Object.values(o.aylikKayip).reduce((t, x) => t + x, 0);
+    if (o.siklik > 0) o.saat = Math.round(o.kaza / o.siklik * 1e6);
+    if (o.hiz > 0) o.calisan = Math.round(o.kaza / o.hiz);
+    delete o.aylikKayip;
+    out[String(y)] = o;
+  }
+  return out;
+}
+function kzIstTarih(x) {
+  if (x instanceof Date && !isNaN(x)) return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
+  return kazaTarihCevir(x);
+}
+function kzIstVeriGirisi(rows, ek) {
+  const h = rows.findIndex(r => kzNorm(r[1]) === 'sira' && kzNorm(r[2]).includes('adi'));
+  if (h < 1) return [];
+  const grp = []; let cur = '';
+  for (let c = 0; c < rows[h].length; c++) { const g = rows[h - 1][c]; if (g !== '' && g != null) cur = g; grp[c] = kzIstGrup(cur); }
+  const out = [];
+  for (let r = h + 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (kzNorm(row[0]).includes('toplam')) break;
+    const tarih = kzIstTarih(row[3]); if (!tarih) continue;
+    const ad = String(row[2] || '').trim();
+    const t = {tarih, ad, bolge: [], tip: []};
+    for (let c = 4; c < row.length; c++) {
+      if (kzNorm(row[c]) !== 'x') continue;
+      const g = grp[c], e = kzIstEtiket(g, rows[h][c]); if (!g || g === 'oran') continue;
+      if (g === 'bolge' || g === 'tip') t[g].push(e); else t[g] = e;
+    }
+    out.push(t);
+  }
+  return out;
+}
+async function kazaIstatistikExcel(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  const fab = document.getElementById('kaza-ist-fab')?.value || (fabrikalar[0] && fabrikalar[0].name) || '';
+  if (typeof XLSX === 'undefined') { alert('Excel okuma kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.'); return; }
+  try {
+    const wb = XLSX.read(await f.arrayBuffer(), {type: 'array', cellDates: true});
+    const sh = ad => { const n = wb.SheetNames.find(x => kzNorm(x) === ad || kzNorm(x).startsWith(ad)); return n ? XLSX.utils.sheet_to_json(wb.Sheets[n], {header: 1, defval: '', blankrows: true}) : null; };
+    const eski = sh('eski veriler'), vg = sh('veri girisi'), oran = sh('kaza oranlari'), tablo = sh('is kazasi tablosu');
+    const gecmis = eski ? kzIstEskiVeriler(eski) : {};
+    const sat = vg ? kzIstVeriGirisi(vg) : [];
+    // Saat / çalışan (Kaza Oranları)
+    let yil = '', saatler = {}, calisanlar = {}, kayiplar = [], uyari = [];
+    if (oran) {
+      for (let r = 0; r < Math.min(oran.length, 15); r++) { const v = Number(oran[r][4]); if (v >= 2000 && v <= 2100) { yil = String(v); break; } }
+      const al = ad => oran.find(r => kzNorm(r[3]).includes(ad));
+      const rs = al('aylik calisilan toplam calisma saati'), rc = al('toplam calisan sayisi'), rk = al('kayip isgunu');
+      if (yil && rs) for (let i = 0; i < 12; i++) { const v = Number(rs[4 + i]); if (v > 0) saatler[yil + '-' + String(i + 1).padStart(2, '0')] = Math.round(v); }
+      if (yil && rc) {
+        const vs = []; for (let i = 0; i < 12; i++) { const v = Number(rc[4 + i]); if (v > 0) vs.push(v); }
+        const med = vs.slice().sort((a, b) => a - b)[Math.floor(vs.length / 2)] || 0;
+        for (let i = 0; i < 12; i++) { const v = Number(rc[4 + i]); if (!(v > 0)) continue; const k = yil + '-' + String(i + 1).padStart(2, '0'); if (med && v > med * 3) { uyari.push(`${KAZA_AYLAR[i]} ayı çalışan sayısı (${v}) olağandışı yüksek, atlandı`); continue; } calisanlar[k] = v; }
+      }
+      if (rk) for (let i = 0; i < 12; i++) kayiplar[i] = Number(rk[4 + i]) || 0;
+    }
+    // Kayıtlar (Veri Girişi + İş Kazası Tablosu)
+    const detay = {};
+    if (tablo) tablo.forEach((r, i) => { if (i && r[1] && r[3]) detay[kzNorm(r[1]) + '|' + kzIstTarih(r[3])] = {r, ek: tablo[i + 1] && !tablo[i + 1][1] ? tablo[i + 1] : null}; });
+    const yeni = [], atla = [];
+    const aylikSay = {}; sat.forEach(t => { aylikSay[t.tarih.slice(0, 7)] = (aylikSay[t.tarih.slice(0, 7)] || 0) + 1; });
+    sat.forEach((t, i) => {
+      const parcalar = t.ad.split(/\s+/).filter(Boolean), kisi = parcalar.map(x => x.charAt(0).toLocaleUpperCase('tr') + '.').join('');
+      if (kazaItems.some(k => k.fab === fab && k.tarih === t.tarih && (k.kisi || '') === kisi)) { atla.push(t.tarih); return; }
+      const d = detay[kzNorm(t.ad) + '|' + t.tarih], r = d ? d.r : null;
+      const vNo = Number((t.vardiya || '').charAt(0)) || 0, vs = Number(t.saat) || 0;
+      const saat = vNo && vs ? String(([8, 16, 0][vNo - 1] + vs - 1) % 24).padStart(2, '0') + ':00' : '';
+      const tip = t.tip.join(', '), bolumAd = KZ_TR_BAS(t.bolum || '');
+      const lst = kazaBolumListesi(fab), hit = lst.find(b => kzNorm(b) === kzNorm(bolumAd)) || lst.find(b => kzNorm(b).includes(kzNorm(bolumAd)) || kzNorm(bolumAd).includes(kzNorm(b)));
+      const siddet = {Hafif: 'hafif', Ciddi: 'ciddi', 'Uzuv kaybı': 'uzuv', 'Ölüm': 'olum'}[t.siddet] || '';
+      const ogr = {Okumamış: 'okumamis', İlkokul: 'ilkokul', Ortaokul: 'ortaokul', Lise: 'lise', 'Ön lisans': 'onlisans', 'Lisans+': 'lisans'}[t.ogr] || '';
+      const kapanis = r ? kzIstTarih(r[8]) : '';
+      const kayipAy = kayiplar[Number(t.tarih.slice(5, 7)) - 1] || 0;
+      const kok = r ? String(r[4] || '').trim() : '';
+      const ekKok = d && d.ek ? String(d.ek[4] || '').trim() : '';
+      yeni.push({
+        id: 'kz' + Date.now() + i + Math.random().toString(36).slice(2, 5), tur: 'kaza', tarih: t.tarih, saat, fab,
+        kayip: aylikSay[t.tarih.slice(0, 7)] === 1 ? kayipAy : 0, bolum: hit || bolumAd, kisi,
+        injuries: t.bolge.length || tip ? [{bodyRegion: t.bolge.join(', '), damageType: KZ_TR_BAS(tip), detail: ''}] : [], yaralanma: KZ_TR_BAS(tip),
+        aciklama: (r && String(r[2] || '').trim() ? KZ_TR_BAS(String(r[2]).slice(0, 1)) + String(r[2]).trim().slice(1).toLocaleLowerCase('tr') : '(Excel\'den aktarıldı)') + (ekKok ? ' Ek kök neden: ' + KZ_TR_BAS(ekKok) + '.' : ''),
+        kokNeden: KZ_TR_BAS(kok), onlem: r ? String(r[7] || '').trim() : '', onlemTamam: !!kapanis, onlemKapanis: kapanis || '',
+        gercekSiddet: siddet, yasGrubu: t.yas || '', ogrenim: ogr, kidemYil: t.kidem || '', createdAt: Date.now() + i
+      });
+    });
+    const ozet = [];
+    const yl = Object.keys(gecmis).sort(); if (yl.length) ozet.push(`Yıllık kategori özeti: ${yl.join(', ')} (${yl.length} yıl)`);
+    if (yeni.length) ozet.push(`Kaza kaydı: ${yeni.length} yeni${atla.length ? ' (' + atla.length + ' zaten kayıtlı, atlandı)' : ''}`);
+    if (Object.keys(saatler).length) ozet.push(`${yil} aylık çalışma saati: ${Object.keys(saatler).length} ay` + (Object.keys(calisanlar).length ? ` · çalışan sayısı: ${Object.keys(calisanlar).length} ay` : ''));
+    if (uyari.length) ozet.push('Uyarı: ' + uyari.join('; '));
+    if (!ozet.length) { alert('Dosyada aktarılacak veri bulunamadı. ESKİ VERİLER, Veri Girişi ve Kaza Oranları sayfalarının bulunduğundan emin olun.'); inp.value = ''; return; }
+    if (!confirm(`“${fab}” için şunlar aktarılacak:\n\n• ${ozet.join('\n• ')}\n\nDevam edilsin mi?`)) { inp.value = ''; return; }
+    kazaAyar.gecmis = kazaAyar.gecmis || {}; kazaAyar.gecmis[fab] = Object.assign({}, kazaAyar.gecmis[fab] || {}, gecmis);
+    if (Object.keys(saatler).length) { kazaAyar.fabAylik = kazaAyar.fabAylik || {}; kazaAyar.fabAylik[fab] = Object.assign({}, kazaAyar.fabAylik[fab] || {}, saatler); }
+    if (Object.keys(calisanlar).length) { kazaAyar.calisanAylik = kazaAyar.calisanAylik || {}; kazaAyar.calisanAylik[fab] = Object.assign({}, kazaAyar.calisanAylik[fab] || {}, calisanlar); }
+    yeni.forEach(k => { kazaItems.unshift(k); if (typeof kazaKokNedenKaydet === 'function') kazaKokNedenKaydet(k.kokNeden); });
+    kazaSave(); kazaSaveAyarLS(); kazaImportKapat(); kazaRenderFiltreler(); kazaRender();
+    if (typeof kazaStatsRender === 'function' && document.getElementById('kaza-stats-panel-wrap')?.offsetParent) kazaStatsRender();
+    toast('İstatistik dosyası aktarıldı');
+  } catch (e) { console.error(e); alert('Dosya okunamadı: ' + (e && e.message ? e.message : e)); }
+  inp.value = '';
+}
+
 function kazaImportIsle(satirlar) {
   if (!satirlar || satirlar.length < 2) { alert('Dosyada veri satırı bulunamadı (yalnızca başlık ya da boş).'); return; }
   const basliklar = satirlar[0].map(x => kzNorm(x));
@@ -15979,7 +16151,7 @@ function ksKPareto(k) { ksKPg[k] = !ksKPg[k]; kazaStatsRender(); }
 function ksKBolgeGrup(t) {
   const x = String(t || '').toLocaleLowerCase('tr');
   if (!x) return '';
-  const m = [['parmak','Parmak'],['el ','El / Bilek'],['el,','El / Bilek'],['bilek','El / Bilek'],['göz','Göz'],['baş','Baş'],['boyun','Boyun'],['omuz','Omuz'],['kol','Kol'],['sırt','Bel / Sırt'],['bel','Bel / Sırt'],['göğüs','Gövde'],['karın','Gövde'],['gövde','Gövde'],['diz','Bacak / Diz'],['bacak','Bacak / Diz'],['ayak','Ayak'],['kalça','Kalça']];
+  const m = [['parmak','Parmak'],['yüz','Yüz'],['el ','El / Bilek'],['el,','El / Bilek'],['bilek','El / Bilek'],['göz','Göz'],['baş','Baş'],['boyun','Boyun'],['omuz','Omuz'],['kol','Kol'],['sırt','Bel / Sırt'],['bel','Bel / Sırt'],['göğüs','Gövde'],['karın','Gövde'],['gövde','Gövde'],['diz','Bacak / Diz'],['bacak','Bacak / Diz'],['ayak','Ayak'],['kalça','Kalça']];
   const y = x + ' ';
   for (const [a, b] of m) if (y.includes(a)) return b;
   return t.trim();
@@ -15990,6 +16162,64 @@ function ksKSayim(liste, fn) {
   liste.forEach(k => { const v = fn(k); (Array.isArray(v) ? v : [v]).forEach(a => { if (a !== '' && a != null) o[a] = (o[a] || 0) + 1; }); });
   return o;
 }
+
+// ── Geçmiş yıl özetleri (Excel "ESKİ VERİLER") ve yıllara göre kategori kıyası ──
+const KS_K_KATEGORILER = [
+  ['ay', 'Aylar'], ['hafta', 'Ayın haftası'], ['gun', 'Gün'], ['saat', 'Vardiyanın saati'], ['vardiya', 'Vardiya'],
+  ['bolge', 'Vücut bölgesi'], ['tip', 'Kaza tipi'], ['siddet', 'Şiddet'], ['bolum', 'Bölüm'],
+  ['ogr', 'Öğrenim'], ['yas', 'Yaş'], ['kidem', 'Kıdem']
+];
+const KS_K_SABIT = {
+  ay: KAZA_AYLAR, hafta: ['1. hafta', '2. hafta', '3. hafta', '4. hafta'], gun: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+  saat: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'], vardiya: ['1. (08–16)', '2. (16–24)', '3. (24–08)'],
+  siddet: ['Hafif', 'Ciddi', 'Uzuv kaybı', 'Ölüm'], ogr: ['Okumamış', 'İlkokul', 'Ortaokul', 'Lise', 'Ön lisans', 'Lisans+'],
+  yas: ['16-19', '19-25', '25-30', '30-35', '35-40', '40-45', '45+'], kidem: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+']
+};
+// Seçili fabrikanın geçmiş yıl özetleri (tüm fabrikalar: toplanır)
+function ksKGecmis(fab) {
+  const g = (kazaAyar && kazaAyar.gecmis) || {};
+  if (fab && fab !== 'tumu') return g[fab] || {};
+  const out = {};
+  Object.keys(g).forEach(f => Object.keys(g[f] || {}).forEach(y => {
+    const a = g[f][y]; if (!out[y]) { out[y] = JSON.parse(JSON.stringify(a)); return; }
+    const o = out[y]; ['kaza', 'kayip', 'saat', 'calisan'].forEach(k => { o[k] = (o[k] || 0) + (a[k] || 0); });
+    Object.keys(a.cats || {}).forEach(c => { o.cats[c] = o.cats[c] || {}; Object.keys(a.cats[c]).forEach(l => { o.cats[c][l] = (o.cats[c][l] || 0) + a.cats[c][l]; }); });
+  }));
+  return out;
+}
+// Yıllık özet satırları: o yıl için ayrıntılı kayıt varsa kayıtlardan, yoksa geçmiş özetten
+function ksKYilSatirlari(fab) {
+  const kaynak = kazaItems.filter(k => fab === 'tumu' || k.fab === fab);
+  const gecmis = ksKGecmis(fab);
+  const yillar = [...new Set([].concat(kaynak.map(k => (k.tarih || '').slice(0, 4)), Object.keys(gecmis)).filter(y => /^\d{4}$/.test(y)))].sort();
+  return yillar.map(y => {
+    const it = kaynak.filter(k => (k.tarih || '').slice(0, 4) === y && k.tur === 'kaza');
+    const g = gecmis[y];
+    if (it.length || !g) {
+      const kayip = it.reduce((t, k) => t + (parseInt(k.kayip) || 0), 0);
+      const saat = kazaCalismaSaati(y), cal = kazaCalisanToplam(y, fab === 'tumu' ? '' : fab);
+      return {y, kaynak: 'kayit', kaza: it.length, kayip, siklik: saat > 0 ? it.length * 1e6 / saat : NaN, agirlik: saat > 0 ? kayip * 1e6 / saat : NaN, hiz: cal > 0 ? it.length / cal : NaN};
+    }
+    const saat = g.saat || 0, cal = g.calisan || 0;
+    return {y, kaynak: 'gecmis', kaza: g.kaza || 0, kayip: g.kayip || 0, siklik: Number.isFinite(g.siklik) ? g.siklik : (saat > 0 ? g.kaza * 1e6 / saat : NaN), agirlik: Number.isFinite(g.agirlik) ? g.agirlik : (saat > 0 ? g.kayip * 1e6 / saat : NaN), hiz: Number.isFinite(g.hiz) ? g.hiz : (cal > 0 ? g.kaza / cal : NaN)};
+  });
+}
+// Bir yıl + kategori için {etiket: adet}
+function ksKYilKategori(y, fab, kat) {
+  const kaynak = kazaItems.filter(k => (fab === 'tumu' || k.fab === fab) && (k.tarih || '').slice(0, 4) === y && k.tur === 'kaza');
+  if (!kaynak.length) { const g = ksKGecmis(fab)[y]; return (g && g.cats && g.cats[kat]) || {}; }
+  if (kat === 'ay') return ksKSayim(kaynak, k => KAZA_AYLAR[Number((k.tarih || '').slice(5, 7)) - 1] || '');
+  if (kat === 'hafta') return ksKSayim(kaynak, k => { const d = Number((k.tarih || '').slice(8, 10)); return d ? Math.min(4, Math.ceil(d / 7)) + '. hafta' : ''; });
+  if (kat === 'tip') return ksKSayim(kaynak, k => (Array.isArray(k.injuries) && k.injuries.length ? k.injuries.map(i => i.damageType) : [k.yaralanma]).map(x => String(x || '').trim()).filter(Boolean));
+  const D = ksKDagilimlar(kaynak), tum = [].concat(D.zaman, D.yer, D.kisi, D.siddet);
+  const key = {gun: 'gun', saat: 'saat', vardiya: 'vardiya', bolge: 'bolge', siddet: 'siddet', bolum: 'bolum', ogr: 'ogr', yas: 'yas', kidem: 'kidem'}[kat];
+  const d = tum.find(x => x.key === key); const o = {};
+  if (d) d.labels.forEach((l, i) => { if (d.vals[i]) o[l] = d.vals[i]; });
+  return o;
+}
+let ksKKat = 'gun';
+function ksKKatSec(k) { ksKKat = k; kazaStatsRender(); }
+const KS_K_YIL_RENK = ['#C9D9EC', '#9FBFE3', '#6FA0D6', '#378ADD', '#1F6BB8', '#0D2B46', '#E09000'];
 
 let ksKKuyruk = [];   // render sonrası oluşturulacak Chart.js grafikleri
 function ksKTemizle() { Object.keys(ksCharts).filter(k => k.startsWith('ksk-')).forEach(k => { try { ksCharts[k].destroy(); } catch (e) {} delete ksCharts[k]; }); ksKKuyruk = []; }
@@ -16047,7 +16277,7 @@ function ksKKart(key, baslik, alt, icerik) {
 
 const KS_K_SID = {hafif: 'Hafif', ciddi: 'Ciddi', uzuv: 'Uzuv kaybı', olum: 'Ölüm'};
 const KS_K_OGR = {okumamis: 'Okumamış', ilkokul: 'İlkokul', ortaokul: 'Ortaokul', lise: 'Lise', onlisans: 'Ön lisans', lisans: 'Lisans+'};
-const KS_K_BOLGELER = ['Baş', 'Göz', 'Boyun', 'Omuz', 'Kol', 'El / Bilek', 'Parmak', 'Gövde', 'Bel / Sırt', 'Kalça', 'Bacak / Diz', 'Ayak'];
+const KS_K_BOLGELER = ['Baş', 'Göz', 'Yüz', 'Boyun', 'Omuz', 'Kol', 'El / Bilek', 'Parmak', 'Gövde', 'Bel / Sırt', 'Kalça', 'Bacak / Diz', 'Ayak'];
 // Tam kategori listesi + listede olmayan ama kayıtlarda geçen değerler; çok→az, 0'lar sonda
 function ksKTamListe(d, key, baslik, sayim, liste) {
   const norm = x => kzNorm(x), gor = new Set(liste.map(norm)), tum = liste.slice();
@@ -16083,14 +16313,7 @@ function ksKRaporSection(no, liste, period, fab) {
   const fmt4 = v => Number.isFinite(v) ? v.toFixed(4).replace('.', ',') : '—';
   const m = kazaOranMetrikleri(liste, period);
   const kpi = ksReportTable(['Kaza', 'Kayıp gün', 'Çalışma saati', 'Kaza Sıklık', 'Kaza Ağırlık', 'Sıklık Hızı'], [[m.kazaSay, m.kayipGun, m.saat ? m.saat.toLocaleString('tr-TR') : '—', fmt(m.siklik), fmt(m.agirlik), fmt4(m.siklikHizi)]]);
-  const kaynak = kazaItems.filter(k => fab === 'tumu' || k.fab === fab);
-  const yillar = [...new Set(kaynak.map(k => (k.tarih || '').slice(0, 4)).filter(y => /^\d{4}$/.test(y)))].sort();
-  const satir = yillar.map(y => {
-    const it = kaynak.filter(k => (k.tarih || '').slice(0, 4) === y && k.tur === 'kaza');
-    const kayip = it.reduce((t, k) => t + (parseInt(k.kayip) || 0), 0);
-    const saat = kazaCalismaSaati(y), cal = kazaCalisanToplam(y, fab === 'tumu' ? '' : fab);
-    return [y, it.length, kayip, fmt(saat > 0 ? it.length * 1e6 / saat : NaN), fmt(saat > 0 ? kayip * 1e6 / saat : NaN), fmt4(cal > 0 ? it.length / cal : NaN)];
-  });
+  const satir = ksKYilSatirlari(fab).map(r => [r.y, r.kaza, r.kayip, fmt(r.siklik), fmt(r.agirlik), fmt4(r.hiz)]);
   const D = ksKDagilimlar(liste);
   const blok = (d) => {
     const pairs = d.labels.map((l, i) => [l, d.vals[i]]).filter(p => p[1] > 0).sort((a, b) => b[1] - a[1]);
@@ -16138,15 +16361,9 @@ function ksRenderKiyas(liste) {
     ${tile('Kaza Sıklık', fmt(m.siklik), 'kaza / milyon saat')}${tile('Kaza Ağırlık', fmt(m.agirlik), 'gün / milyon saat')}${tile('Sıklık Hızı', fmt4(m.siklikHizi), 'kaza / Σ çalışan')}</div>`;
 
   // Yıllık kıyas (dönem filtresinden bağımsız, yalnız fabrika filtresi)
-  const kaynak = kazaItems.filter(k => fab === 'tumu' || k.fab === fab);
-  const yillar = [...new Set(kaynak.map(k => (k.tarih || '').slice(0, 4)).filter(y => /^\d{4}$/.test(y)))].sort();
-  const satir = yillar.map(y => {
-    const it = kaynak.filter(k => (k.tarih || '').slice(0, 4) === y && k.tur === 'kaza');
-    const kayip = it.reduce((t, k) => t + (parseInt(k.kayip) || 0), 0);
-    const saat = kazaCalismaSaati(y), cal = kazaCalisanToplam(y, fab === 'tumu' ? '' : fab);
-    return {y, kaza: it.length, kayip, siklik: saat > 0 ? it.length * 1e6 / saat : NaN, agirlik: saat > 0 ? kayip * 1e6 / saat : NaN, hiz: cal > 0 ? it.length / cal : NaN};
-  });
-  if (satir.length && ksKAcik.kiyas) ksKKuyruk.push(['ksk-yillar', ksKEksen({type: 'bar', data: {labels: satir.slice(-10).map(r => r[0]), datasets: [{label: 'Kaza sayısı', data: satir.slice(-10).map(r => r[1]), backgroundColor: '#378ADD', borderRadius: 4, maxBarThickness: 38}]}, options: ksBarOptions(satir.slice(-10).map(r => r[1]), false)}, 'Kaza sayısı')]);
+  const satir = ksKYilSatirlari(fab);
+  const yillar = satir.map(r => r.y);
+  if (satir.length && ksKAcik.kiyas) ksKKuyruk.push(['ksk-yillar', ksKEksen({type: 'bar', data: {labels: satir.slice(-10).map(r => r.y), datasets: [{label: 'Kaza sayısı', data: satir.slice(-10).map(r => r.kaza), backgroundColor: '#378ADD', borderRadius: 4, maxBarThickness: 38}]}, options: ksBarOptions(satir.slice(-10).map(r => r.kaza), false)}, 'Kaza sayısı')]);
   const tablo = satir.length ? `<div style="border:1px solid #E3E7EB;border-radius:10px;overflow:hidden;margin-top:10px">
       <div style="display:grid;grid-template-columns:44px repeat(5,minmax(0,1fr));gap:4px;padding:8px 10px;background:#F1F7FD;font-size:10.5px;font-weight:700;color:#5B6775;text-align:center"><div style="text-align:left">Yıl</div><div>Kaza</div><div>Kayıp gün</div><div>Sıklık</div><div>Ağırlık</div><div>Hız</div></div>
       ${satir.map((r, i) => `<div style="display:grid;grid-template-columns:44px repeat(5,minmax(0,1fr));gap:4px;padding:8px 10px;font-size:12px;text-align:center;border-top:1px solid #EEF1F4;${i === satir.length - 1 ? 'background:#E8F1FB;color:#0D2B46' : 'color:#334155'}"><div style="text-align:left;font-weight:700">${r.y}</div><div>${r.kaza}</div><div>${r.kayip}</div><div>${fmt(r.siklik)}</div><div>${fmt(r.agirlik)}</div><div>${fmt4(r.hiz)}</div></div>`).join('')}</div>
@@ -16157,8 +16374,22 @@ function ksRenderKiyas(liste) {
   // Dağılımlar
   const D = ksKDagilimlar(liste);
   const g = (d) => d.vals.some(x => x > 0) ? ksKGrafikHTML(d.key, d.baslik, d.labels, d.vals, d.not ? {not: d.not} : {}) : `<div style="font-size:11.5px;color:#7a8794;margin-top:10px">${ksEsc(d.baslik)}: veri yok.</div>`;
+  let yilkat = '';
+  if (ksKAcik.yilkat) {
+    const yy = satir.slice(-6).map(r => r.y), per = yy.map(y => ksKYilKategori(y, fab, ksKKat));
+    const ek = new Set(); per.forEach(o => Object.keys(o).forEach(l => ek.add(l)));
+    let lab = (KS_K_SABIT[ksKKat] || (ksKKat === 'bolge' ? KS_K_BOLGELER : ksKKat === 'bolum' ? kazaBolumListesi(fab) : [])).slice();
+    const kn = x => kzNorm(x); ek.forEach(l => { if (!lab.some(t => kn(t) === kn(l))) lab.push(l); });
+    if (!KS_K_SABIT[ksKKat]) { const top = l => per.reduce((t, o) => t + (o[Object.keys(o).find(k => kn(k) === kn(l))] || 0), 0); lab = lab.map((l, i) => [l, top(l), i]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map(x => x[0]); }
+    const ds = yy.map((y, i) => ({label: y, data: lab.map(l => { const o = per[i], k = Object.keys(o).find(x => kn(x) === kn(l)); return k ? o[k] : 0; }), backgroundColor: KS_K_YIL_RENK[Math.max(0, KS_K_YIL_RENK.length - 1 - (yy.length - 1 - i))] || '#378ADD', borderRadius: 3, maxBarThickness: 22}));
+    ksKKuyruk.push(['ksk-yilkat', ksKEksen({type: 'bar', data: {labels: lab, datasets: ds}, options: ksBarOptions([].concat(...ds.map(d => d.data)), true)}, 'Kaza sayısı')]);
+    yilkat = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${KS_K_KATEGORILER.map(([k, ad]) => `<button type="button" onclick="ksKKatSec('${k}')" style="min-height:32px;padding:0 10px;border:1px solid ${ksKKat === k ? '#378ADD' : '#D5DBE1'};border-radius:99px;background:${ksKKat === k ? '#378ADD' : '#fff'};color:${ksKKat === k ? '#fff' : '#334155'};font-size:12px;font-weight:${ksKKat === k ? 700 : 500};cursor:pointer;font-family:inherit">${ad}</button>`).join('')}</div>
+      <div class="ks-canvas-wrap" style="position:relative;height:300px"><canvas id="ksk-yilkat"></canvas></div>
+      <div style="font-size:11.5px;color:#5B6775;line-height:1.45">Her renk bir yıl. 2020–2024 değerleri Excel'deki ESKİ VERİLER özetinden, ayrıntılı kaydı olan yıllar kayıtlardan hesaplanır.</div>`;
+  }
   const ic = {
     kiyas: tablo,
+    yilkat,
     zaman: D.zaman.map(g).join(''),
     yer: D.yer.map(g).join(''),
     kisi: D.kisi.map(g).join(''),
@@ -16167,6 +16398,7 @@ function ksRenderKiyas(liste) {
   body.innerHTML = `<div style="display:flex;flex-direction:column;gap:14px;padding:4px 0 16px">
     ${kpi}
     ${ksKKart('kiyas', 'Yıllık Kıyas', yillar.length ? `${yillar[0]} – ${yillar[yillar.length - 1]}` : 'Yıl bazlı karşılaştırma', ic.kiyas)}
+    ${ksKKart('yilkat', 'Yıllara Göre Kategori Kıyası', 'Seçtiğiniz kategoride yıl yıl karşılaştırma', ic.yilkat)}
     ${ksKKart('zaman', 'Zaman Analizi', 'Gün · vardiya · vardiyanın saati', ic.zaman)}
     ${ksKKart('yer', 'Yer Analizi', 'Bölüm · vücut bölgesi', ic.yer)}
     ${ksKKart('kisi', 'Kazazede Profili', 'Yaş · kıdem · öğrenim', ic.kisi)}
