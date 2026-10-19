@@ -16397,8 +16397,8 @@ function ksKPdfSec() {
       ${kart('Güncel Dönem Dağılımları', 'Seçili dönem · her biri için grafik ve/veya Pareto', `<div style="display:grid;grid-template-columns:1fr 64px 64px;gap:6px;font-size:11px;font-weight:700;color:#5B6775"><span></span><span style="text-align:center">Grafik</span><span style="text-align:center">Pareto</span></div>${dag.map(dRow).join('')}`, dk)}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px;background:#fff;border-top:1px solid #E3E7EB">
-      <button type="button" onclick="ksKPdf(false)" style="min-height:46px;border:1px solid #378ADD;border-radius:10px;background:#fff;color:#17559A;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Yazdır</button>
-      <button type="button" onclick="ksKPdf(true)" style="min-height:46px;border:1px solid #378ADD;border-radius:10px;background:#378ADD;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">PDF İndir / Paylaş</button></div></div>`;
+      <button type="button" onclick="ksKPdf(true)" style="min-height:46px;border:1px solid #378ADD;border-radius:10px;background:#fff;color:#17559A;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">↗ Paylaş</button>
+      <button type="button" onclick="ksKPdf(false)" style="min-height:46px;border:1px solid #378ADD;border-radius:10px;background:#378ADD;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">PDF İndir / Yazdır</button></div></div>`;
   document.body.appendChild(bg);
 }
 function ksKRaporGrafik(cfg, yBaslik, y1Baslik, h) {
