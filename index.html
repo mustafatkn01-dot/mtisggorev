@@ -7173,6 +7173,11 @@ px}
         </label>
       </div>
 
+      <div id="kaza-s-fab-wrap" class="kaza-rate-field" style="display:none;margin-bottom:8px">
+        <span>Fabrika <em>YENİ</em></span>
+        <select id="kaza-s-fab" onchange="kazaAylikTablo()"></select>
+        <small>Saatler seçili fabrikaya göre kaydedilir. "Tüm fabrikalar" görünümü fabrikaların toplamını kullanır.</small>
+      </div>
       <div class="kaza-rate-monthly">
         <div class="kaza-rate-section-head">
           <div>
@@ -7185,11 +7190,23 @@ px}
         <div id="kaza-s-aylik-toplam" class="kaza-rate-total"></div>
       </div>
 
+      <div class="kz-prof" id="kaza-s-cal-card" style="margin-top:8px">
+        <button type="button" class="kz-prof-h" onclick="document.getElementById('kaza-s-cal-card').classList.toggle('open')">
+          <span><b>Aylık çalışan sayısı <em style="font-size:10px;color:#17559a;font-style:normal">YENİ · isteğe bağlı</em></b><small>Sıklık Hızı (kaza / Σ aylık çalışan) için</small></span>
+          <svg class="kz-prof-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6775" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <div class="kz-prof-body">
+          <div id="kaza-s-cal-aylik" class="kaza-rate-month-grid"></div>
+          <div id="kaza-s-cal-toplam" class="kaza-rate-total"></div>
+        </div>
+      </div>
+
       <div class="kaza-rate-formulas">
         <div><b>Kaza Sıklık</b><span>İş Kazası × 1.000.000 / saat</span></div>
         <div><b>Kaza Ağırlık</b><span>Kayıp Gün × 1.000.000 / saat</span></div>
         <div><b>LTIFR</b><span>Kayıp zamanlı iş kazası × 1.000.000 / saat</span></div>
         <div><b>TRIFR</b><span>(İş Kazası + İlk Yardım) × 1.000.000 / saat</span></div>
+        <div><b>Sıklık Hızı</b><span>İş Kazası / Σ aylık çalışan sayısı</span></div>
       </div>
 
       <div class="kaza-rate-trifr-note">
@@ -13932,10 +13949,39 @@ function kazaInit() {
   kazaRender();
 }
 
+// Fabrika bazlı aylık saat / çalışan haritaları (eski genel kayıtlarla uyumlu)
+function kazaAktifFab() {
+  const w = document.getElementById('kaza-stats-panel-wrap');
+  const ks = w && w.offsetParent !== null;
+  const v = ks ? (document.getElementById('ks-f-fab')?.value || '') : (document.getElementById('kaza-f-fab')?.value || '');
+  return (v === 'tumu') ? '' : v;
+}
+function kazaAylikMap(fab, alan) {
+  alan = alan || 'aylik';                       // 'aylik' (saat) | 'calisanAylik' (kişi)
+  if (fab === undefined) fab = kazaAktifFab();
+  const genel = alan === 'aylik' ? (kazaAyar.aylik || {}) : (kazaAyar.calisanGenel || {});
+  const fm = (alan === 'aylik' ? kazaAyar.fabAylik : kazaAyar.calisanAylik) || {};
+  if (fab) {
+    const o = fm[fab];
+    if (o && Object.keys(o).length) return o;
+    return (typeof fabrikalar !== 'undefined' && fabrikalar.length === 1) ? genel : {};
+  }
+  const toplam = { ...genel };
+  const aylar = new Set();
+  Object.values(fm).forEach(o => Object.keys(o || {}).forEach(k => aylar.add(k)));
+  aylar.forEach(k => { toplam[k] = Object.values(fm).reduce((t, o) => t + (parseInt((o || {})[k]) || 0), 0); });
+  return toplam;
+}
+// Sıklık Hızı paydası: seçili yıldaki aylık çalışan sayıları toplamı
+function kazaCalisanToplam(yil, fab) {
+  const m = kazaAylikMap(fab, 'calisanAylik');
+  return Object.entries(m).filter(([k]) => !yil || k.startsWith(yil + '-')).reduce((t, [, v]) => t + (parseInt(v) || 0), 0);
+}
+
 // Oran hesabının paydası — önce seçili yılın aylık girişleri, sonra yıllık, sonra çalışan sayısı
 function kazaCalismaSaati(yil) {
   yil = yil || document.getElementById('kaza-f-yil')?.value || '';
-  const aylik = kazaAyar.aylik || {};
+  const aylik = kazaAylikMap();
   if (yil) {
     const toplam = Object.entries(aylik)
       .filter(([k]) => k.startsWith(yil + '-'))
@@ -13952,7 +13998,7 @@ function kazaCalismaSaati(yil) {
 
 function kazaCalismaSaatiKaynak(yil){
   yil=String(yil||'');
-  const aylik=kazaAyar.aylik||{};
+  const aylik=kazaAylikMap();
   const ayTop=Object.entries(aylik)
     .filter(([k])=>!yil||k.startsWith(yil+'-'))
     .reduce((sum,[,v])=>sum+(parseInt(v)||0),0);
@@ -13964,7 +14010,7 @@ function kazaCalismaSaatiKaynak(yil){
 
 function kazaCalismaSaatiDonem(period){
   period=String(period||'ytd');
-  const aylik=kazaAyar.aylik||{};
+  const aylik=kazaAylikMap();
   const now=new Date();
   let start=null,end=null;
 
@@ -14021,7 +14067,8 @@ function kazaOranMetrikleri(liste,period){
     siklik:saat>0?kazaSay*1000000/saat:NaN,
     agirlik:saat>0?kayipGun*1000000/saat:NaN,
     ltifr:saat>0?lostTimeCases*1000000/saat:NaN,
-    trifr:saat>0?trifrCases*1000000/saat:NaN
+    trifr:saat>0?trifrCases*1000000/saat:NaN,
+    siklikHizi:(()=>{const y=/^year:\d{4}$/.test(String(period||''))?String(period).slice(5):(/^\d{4}$/.test(String(period||''))?String(period):'');const c=kazaCalisanToplam(y);return c>0?kazaSay/c:NaN;})()
   };
 }
 
@@ -14431,7 +14478,22 @@ function kazaOnlemGorev(id) {
 // ── Ayarlar ─────────────────────────────────────────────────
 const KAZA_AYLAR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
+let kazaDraft = null;
 function kazaOpenSettings() {
+  kazaDraft = {
+    aylik: { ...(kazaAyar.aylik || {}) },
+    calisanGenel: { ...(kazaAyar.calisanGenel || {}) },
+    fabAylik: JSON.parse(JSON.stringify(kazaAyar.fabAylik || {})),
+    calisanAylik: JSON.parse(JSON.stringify(kazaAyar.calisanAylik || {}))
+  };
+  const fw = document.getElementById('kaza-s-fab-wrap'), fs = document.getElementById('kaza-s-fab');
+  if (fw && fs) {
+    const cok = fabrikalar.length > 1;
+    fw.style.display = cok ? 'flex' : 'none';
+    fs.innerHTML = '<option value="">Tüm fabrikalar (genel)</option>' + fabrikalar.map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`).join('');
+    const a = kazaAktifFab();
+    fs.value = (cok && a && fabrikalar.some(f => f.name === a)) ? a : '';
+  }
   document.getElementById('kaza-s-calisan').value = kazaAyar.calisan || '';
   document.getElementById('kaza-s-saat').value    = kazaAyar.saat || '';
   // Yıl seçeneklerini kur
@@ -14448,15 +14510,37 @@ function kazaOpenSettings() {
   requestAnimationFrame(()=>kazaOranAyarOnizleme());
 }
 
+function kazaDraftHedef(alan) {
+  const fab = document.getElementById('kaza-s-fab')?.value || '';
+  if (!kazaDraft) return {};
+  if (fab && fabrikalar.length > 1) {
+    const kok = alan === 'aylik' ? kazaDraft.fabAylik : kazaDraft.calisanAylik;
+    return (kok[fab] = kok[fab] || {});
+  }
+  return alan === 'aylik' ? kazaDraft.aylik : kazaDraft.calisanGenel;
+}
+function kazaDraftYaz(inp, alan) {
+  const hedef = kazaDraftHedef(alan), v = parseInt(inp.value) || 0;
+  if (v > 0) hedef[inp.dataset.ay] = v; else delete hedef[inp.dataset.ay];
+}
 function kazaAylikTablo() {
   const yil = document.getElementById('kaza-s-yil').value;
-  const aylik = kazaAyar.aylik || {};
+  const aylik = kazaDraftHedef('aylik'), cal = kazaDraftHedef('calisan');
   document.getElementById('kaza-s-aylik').innerHTML = KAZA_AYLAR.map((ad,i) => {
     const anahtar = yil + '-' + String(i+1).padStart(2,'0');
     return `<label class="mfield">
       <span>${ad}</span>
       <input type="number" min="0" class="kaza-ay-inp" data-ay="${anahtar}" value="${aylik[anahtar] || ''}"
-             oninput="kazaAylikToplam();kazaOranAyarOnizleme()" placeholder="saat"/>
+             oninput="kazaDraftYaz(this,'aylik');kazaAylikToplam();kazaOranAyarOnizleme()" placeholder="saat"/>
+    </label>`;
+  }).join('');
+  const ce = document.getElementById('kaza-s-cal-aylik');
+  if (ce) ce.innerHTML = KAZA_AYLAR.map((ad,i) => {
+    const anahtar = yil + '-' + String(i+1).padStart(2,'0');
+    return `<label class="mfield">
+      <span>${ad}</span>
+      <input type="number" min="0" class="kaza-cal-inp" data-ay="${anahtar}" value="${cal[anahtar] || ''}"
+             oninput="kazaDraftYaz(this,'calisanAylik');kazaAylikToplam();kazaOranAyarOnizleme()" placeholder="kişi"/>
     </label>`;
   }).join('');
   kazaAylikToplam();
@@ -14469,6 +14553,9 @@ function kazaAylikToplam() {
   if (el) el.innerHTML = t > 0
     ? `Bu yıl için girilmiş aylık toplam: <b>${t.toLocaleString('tr-TR')} saat</b> · öncelikli kaynak`
     : 'Aylık gerçek saat girilmedi · yıllık saat veya ortalama çalışan yedeği kullanılacak';
+  const ct = Array.from(document.querySelectorAll('.kaza-cal-inp')).reduce((sum,i) => sum + (parseInt(i.value)||0), 0);
+  const ce = document.getElementById('kaza-s-cal-toplam');
+  if (ce) ce.innerHTML = ct > 0 ? `Σ aylık çalışan: <b>${ct.toLocaleString('tr-TR')}</b>` : 'Girilmedi · Sıklık Hızı hesaplanmaz';
 }
 
 function kazaOranAyarOnizleme(){
@@ -14481,8 +14568,11 @@ function kazaOranAyarOnizleme(){
   const saat=monthly>0?monthly:(annual>0?annual:(calisan>0?calisan*2340:0));
   const kaynak=monthly>0?'Aylık gerçek saatler':annual>0?'Yıllık gerçek saat':calisan>0?'Ortalama çalışan × 2.340':'Veri yok';
 
-  const liste=kazaItems.filter(k=>(k.tarih||'').slice(0,4)===yil);
-  const kazaSay=liste.filter(k=>k.tur==='kaza').length;
+  const pFab=document.getElementById('kaza-s-fab')?.value||'';
+  const liste=kazaItems.filter(k=>(k.tarih||'').slice(0,4)===yil&&(!pFab||k.fab===pFab));
+  const calTop=Array.from(document.querySelectorAll('.kaza-cal-inp')).reduce((sum,i)=>sum+(parseInt(i.value)||0),0);
+  const kazaSay0=liste.filter(k=>k.tur==='kaza').length;
+  const kazaSay=kazaSay0;
   const ilkSay=liste.filter(k=>k.tur==='ilkyardim').length;
   const lti=liste.filter(k=>k.tur==='kaza'&&(parseInt(k.kayip)||0)>0).length;
   const kayip=liste.reduce((a,k)=>a+(parseInt(k.kayip)||0),0);
@@ -14501,21 +14591,25 @@ function kazaOranAyarOnizleme(){
     <div class="krp"><span>LTIFR</span><b>${fmt(ltifr)}</b></div>
     <div class="krp"><span>TRIFR</span><b>${fmt(trifr)}</b></div>
     <div class="krp"><span>TRIFR vakası</span><b>${kazaSay+ilkSay}</b></div>
-    <div class="krp"><span>Kayıp gün</span><b>${kayip}</b></div>`;
+    <div class="krp"><span>Kayıp gün</span><b>${kayip}</b></div>
+    <div class="krp"><span>Sıklık Hızı</span><b>${calTop>0?(kazaSay/calTop).toFixed(4):'—'}</b></div>`;
 }
 function kazaCloseSettings() { document.getElementById('kaza-settings-bg').style.display = 'none'; }
 function kazaSaveSettings() {
-  const aylik = { ...(kazaAyar.aylik || {}) };
-  document.querySelectorAll('.kaza-ay-inp').forEach(i => {
-    const v = parseInt(i.value) || 0;
-    if (v > 0) aylik[i.dataset.ay] = v; else delete aylik[i.dataset.ay];
-  });
+  const temiz = o => { const r = {}; Object.keys(o || {}).forEach(k => { if ((parseInt(o[k]) || 0) > 0) r[k] = parseInt(o[k]); }); return r; };
+  const temizFab = m => { const r = {}; Object.keys(m || {}).forEach(f => { const t = temiz(m[f]); if (Object.keys(t).length) r[f] = t; }); return r; };
+  const d = kazaDraft || { aylik: kazaAyar.aylik, calisanGenel: kazaAyar.calisanGenel, fabAylik: kazaAyar.fabAylik, calisanAylik: kazaAyar.calisanAylik };
   kazaAyar = {
     calisan: parseInt(document.getElementById('kaza-s-calisan').value) || 0,
     saat:    parseInt(document.getElementById('kaza-s-saat').value)    || 0,
-    aylik
+    aylik: temiz(d.aylik),
+    calisanGenel: temiz(d.calisanGenel),
+    fabAylik: temizFab(d.fabAylik),
+    calisanAylik: temizFab(d.calisanAylik)
   };
+  kazaDraft = null;
   kazaSaveAyarLS(); kazaCloseSettings(); kazaRender();
+  if (typeof kazaStatsRender === 'function' && document.getElementById('kaza-stats-panel-wrap')?.offsetParent) kazaStatsRender();
   toast('Ayarlar kaydedildi');
 }
 
@@ -15683,7 +15777,7 @@ function ksToggleRateCharts(){
 function ksRateTrendData(source,period){
   source=Array.isArray(source)?source:[];
   period=String(period||'ytd');
-  const aylik=(typeof kazaAyar!=='undefined'&&kazaAyar?.aylik)||{};
+  const aylik=(typeof kazaAylikMap==='function')?kazaAylikMap():((typeof kazaAyar!=='undefined'&&kazaAyar?.aylik)||{});
   const now=new Date();
   const calc=(items,saat)=>({
     ltifr:saat>0?items.filter(k=>k.tur==='kaza'&&(parseInt(k.kayip)||0)>0).length*1000000/saat:null,
