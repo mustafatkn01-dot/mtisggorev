@@ -7024,8 +7024,8 @@ px}
           <div class="mfield"><label>İş Günü Kaybı</label><input type="number" id="kaza-m-kayip" min="0" value="0"/></div>
         </div>
         <div class="mrow2">
-          <div class="mfield"><label>Fabrika *</label><select id="kaza-m-fab"></select></div>
-          <div class="mfield"><label>Bölüm / Birim</label><input id="kaza-m-bolum" placeholder="örn: Presler, Depo"/></div>
+          <div class="mfield"><label>Fabrika *</label><select id="kaza-m-fab" onchange="kazaBolumDatalist()"></select></div>
+          <div class="mfield"><label>Bölüm / Birim</label><input id="kaza-m-bolum" list="kaza-bolum-list" autocomplete="off" placeholder="Listeden seçin veya yazın"/><datalist id="kaza-bolum-list"></datalist></div>
         </div>
         <div class="mrow2">
           <div class="mfield"><label>Kazazede <span>(zorunlu değil)</span></label><input id="kaza-m-kisi" placeholder="Baş harf yeterli — örn: A.Y."/></div>
@@ -7192,6 +7192,18 @@ px}
         </div>
         <div id="kaza-s-aylik" class="kaza-rate-month-grid"></div>
         <div id="kaza-s-aylik-toplam" class="kaza-rate-total"></div>
+      </div>
+
+      <div class="kz-prof" id="kaza-s-bol-card" style="margin-top:8px">
+        <button type="button" class="kz-prof-h" onclick="document.getElementById('kaza-s-bol-card').classList.toggle('open');kazaBolumAyarYukle()">
+          <span><b>Bölüm listesi <em style="font-size:10px;color:#17559a;font-style:normal">YENİ</em></b><small>Kayıt formu listesi ve bölüm grafikleri için (fabrika bazlı)</small></span>
+          <svg class="kz-prof-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6775" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <div class="kz-prof-body">
+          <select id="kaza-s-bfab" onchange="kazaBolumAyarYukle()" style="width:100%"></select>
+          <textarea id="kaza-s-bolumler" rows="6" oninput="kazaBolumAyarYaz()" placeholder="Her satıra bir bölüm yazın"></textarea>
+          <div id="kaza-s-bol-not" class="kaza-rate-total"></div>
+        </div>
       </div>
 
       <div class="kz-prof" id="kaza-s-cal-card" style="margin-top:8px">
@@ -14325,6 +14337,7 @@ function kazaOpenAdd(editId) {
   const fabSel = document.getElementById('kaza-m-fab');
   fabSel.innerHTML = fabrikalar.map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`).join('');
   if (k && k.fab) fabSel.value = k.fab;
+  kazaBolumDatalist();
 
   kazaRenderYaralanmaListesi();
   kazaRenderKokNedenListesi();
@@ -14490,8 +14503,11 @@ function kazaOpenSettings() {
     aylik: { ...(kazaAyar.aylik || {}) },
     calisanGenel: { ...(kazaAyar.calisanGenel || {}) },
     fabAylik: JSON.parse(JSON.stringify(kazaAyar.fabAylik || {})),
-    calisanAylik: JSON.parse(JSON.stringify(kazaAyar.calisanAylik || {}))
+    calisanAylik: JSON.parse(JSON.stringify(kazaAyar.calisanAylik || {})),
+    bolumler: JSON.parse(JSON.stringify(kazaAyar.bolumler || {}))
   };
+  const bf = document.getElementById('kaza-s-bfab'); if (bf) bf.innerHTML = '';
+  document.getElementById('kaza-s-bol-card')?.classList.remove('open');
   const fw = document.getElementById('kaza-s-fab-wrap'), fs = document.getElementById('kaza-s-fab');
   if (fw && fs) {
     const cok = fabrikalar.length > 1;
@@ -14516,6 +14532,21 @@ function kazaOpenSettings() {
   requestAnimationFrame(()=>kazaOranAyarOnizleme());
 }
 
+function kazaBolumAyarYukle() {
+  const fs = document.getElementById('kaza-s-bfab'), ta = document.getElementById('kaza-s-bolumler');
+  if (!fs || !ta || !kazaDraft) return;
+  if (!fs.options.length) fs.innerHTML = fabrikalar.map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`).join('');
+  const fab = fs.value || (fabrikalar[0] && fabrikalar[0].name) || '';
+  ta.value = ((kazaDraft.bolumler || {})[fab] || []).join('\n');
+  const hse = (kazaHseBolum[fab] || []).length;
+  const n = document.getElementById('kaza-s-bol-not');
+  if (n) n.innerHTML = hse ? `HSE Verim'den gelen <b>${hse}</b> bölüm otomatik eklenir.` : 'HSE Verim\'deki bölüm adlarını buraya aynen yazın; kayıt formunda liste, istatistikte tüm bölümler (boş olanlar dahil) görünür.';
+}
+function kazaBolumAyarYaz() {
+  const fab = document.getElementById('kaza-s-bfab')?.value; if (!fab || !kazaDraft) return;
+  kazaDraft.bolumler = kazaDraft.bolumler || {};
+  kazaDraft.bolumler[fab] = document.getElementById('kaza-s-bolumler').value.split('\n').map(x => x.trim()).filter(Boolean);
+}
 function kazaDraftHedef(alan) {
   const fab = document.getElementById('kaza-s-fab')?.value || '';
   if (!kazaDraft) return {};
@@ -14604,14 +14635,15 @@ function kazaCloseSettings() { document.getElementById('kaza-settings-bg').style
 function kazaSaveSettings() {
   const temiz = o => { const r = {}; Object.keys(o || {}).forEach(k => { if ((parseInt(o[k]) || 0) > 0) r[k] = parseInt(o[k]); }); return r; };
   const temizFab = m => { const r = {}; Object.keys(m || {}).forEach(f => { const t = temiz(m[f]); if (Object.keys(t).length) r[f] = t; }); return r; };
-  const d = kazaDraft || { aylik: kazaAyar.aylik, calisanGenel: kazaAyar.calisanGenel, fabAylik: kazaAyar.fabAylik, calisanAylik: kazaAyar.calisanAylik };
+  const d = kazaDraft || { bolumler: kazaAyar.bolumler, aylik: kazaAyar.aylik, calisanGenel: kazaAyar.calisanGenel, fabAylik: kazaAyar.fabAylik, calisanAylik: kazaAyar.calisanAylik };
   kazaAyar = {
     calisan: parseInt(document.getElementById('kaza-s-calisan').value) || 0,
     saat:    parseInt(document.getElementById('kaza-s-saat').value)    || 0,
     aylik: temiz(d.aylik),
     calisanGenel: temiz(d.calisanGenel),
     fabAylik: temizFab(d.fabAylik),
-    calisanAylik: temizFab(d.calisanAylik)
+    calisanAylik: temizFab(d.calisanAylik),
+    bolumler: (() => { const r = {}; Object.keys(d.bolumler || {}).forEach(f => { if ((d.bolumler[f] || []).length) r[f] = d.bolumler[f]; }); return r; })()
   };
   kazaDraft = null;
   kazaSaveAyarLS(); kazaCloseSettings(); kazaRender();
@@ -15917,6 +15949,23 @@ function ksRateChartConfig(labels,values,label,color){
 }
 
 // ── Kıyas & Dağılım sekmesi ─────────────────────────────────
+// ── Bölüm listesi (fabrika bazlı): HSE Verim'in yayınladığı + elle girilen ──
+let kazaHseBolum = {};   // HSE Verim köprüsünden gelen {fabrika: [bölüm,...]}
+function kazaBolumListesi(fab) {
+  const man = (kazaAyar && kazaAyar.bolumler) || {};
+  const fabs = fab && fab !== 'tumu' ? [fab] : fabrikalar.map(f => f.name);
+  const out = [], gor = new Set();
+  fabs.forEach(f => [].concat(kazaHseBolum[f] || [], man[f] || []).forEach(n => {
+    const ad = String(n || '').trim(), k = kzNorm(ad);
+    if (ad && !gor.has(k)) { gor.add(k); out.push(ad); }
+  }));
+  return out;
+}
+function kazaBolumDatalist() {
+  const dl = document.getElementById('kaza-bolum-list'); if (!dl) return;
+  const fab = document.getElementById('kaza-m-fab')?.value || '';
+  dl.innerHTML = kazaBolumListesi(fab).map(b => `<option value="${esc(b)}"></option>`).join('');
+}
 let ksKAcik = {};      // açık kartlar (varsayılan hepsi kapalı)
 let ksKPg = {};        // açık Pareto alanları
 function ksKReset() {
@@ -15951,6 +16000,13 @@ function ksKEksen(cfg, yBaslik, y1Baslik) {
   return cfg;
 }
 
+// Kıyas & Dağılım Pareto'su: tüm kategoriler (0 değerliler dahil), büyükten küçüğe
+function ksKParetoVeri(labels, vals) {
+  const pairs = labels.map((l, i) => [l, vals[i] || 0, i]).sort((a, b) => b[1] - a[1] || a[2] - b[2]);
+  const top = pairs.reduce((t, p) => t + p[1], 0);
+  let kum = 0;
+  return pairs.map(p => { kum += p[1]; return {label: p[0], val: p[1], kumPct: top ? Math.round(kum / top * 1000) / 10 : 0}; });
+}
 function ksKGrafikHTML(key, baslik, labels, vals, opt) {
   opt = opt || {};
   const acik = !!ksKPg[key];
@@ -15960,8 +16016,8 @@ function ksKGrafikHTML(key, baslik, labels, vals, opt) {
   ksKKuyruk.push([cid, bar]);
   let par = '';
   if (acik) {
-    const data = ksParetoVerisi(labels.map((l, i) => [l, vals[i]]));
-    if (!data.length) par = '<div style="font-size:11.5px;color:#7a8794">Veri yok.</div>';
+    const data = ksKParetoVeri(labels, vals);
+    if (!data.length || !data.some(d => d.val > 0)) par = '<div style="font-size:11.5px;color:#7a8794">Veri yok.</div>';
     else {
       ksKKuyruk.push([cid + '-p', ksKEksen(ksParetoConfig(data), 'Adet', 'Kümülatif %')]);
       const kk = Math.max(1, data.findIndex(d => d.kumPct >= 80) + 1 || data.length);
@@ -15991,6 +16047,15 @@ function ksKKart(key, baslik, alt, icerik) {
 
 const KS_K_SID = {hafif: 'Hafif', ciddi: 'Ciddi', uzuv: 'Uzuv kaybı', olum: 'Ölüm'};
 const KS_K_OGR = {okumamis: 'Okumamış', ilkokul: 'İlkokul', ortaokul: 'Ortaokul', lise: 'Lise', onlisans: 'Ön lisans', lisans: 'Lisans+'};
+const KS_K_BOLGELER = ['Baş', 'Göz', 'Boyun', 'Omuz', 'Kol', 'El / Bilek', 'Parmak', 'Gövde', 'Bel / Sırt', 'Kalça', 'Bacak / Diz', 'Ayak'];
+// Tam kategori listesi + listede olmayan ama kayıtlarda geçen değerler; çok→az, 0'lar sonda
+function ksKTamListe(d, key, baslik, sayim, liste) {
+  const norm = x => kzNorm(x), gor = new Set(liste.map(norm)), tum = liste.slice();
+  Object.keys(sayim).forEach(k => { if (!gor.has(norm(k))) tum.push(k); });
+  const say = {}; Object.keys(sayim).forEach(k => { const hit = tum.find(t => norm(t) === norm(k)) || k; say[hit] = (say[hit] || 0) + sayim[k]; });
+  const sira = tum.map((l, i) => [l, say[l] || 0, i]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map(x => x[0]);
+  return d(key, baslik, say, sira);
+}
 function ksKDagilimlar(liste) {
   liste = Array.isArray(liste) ? liste : [];
   const gunAd = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
@@ -16004,7 +16069,7 @@ function ksKDagilimlar(liste) {
   const ilkYil = kdn.length ? Math.round(kdn.filter(k => k.kidemYil === '1').length * 100 / kdn.length) : null;
   return {
     zaman: [d('gun', 'Haftanın gününe göre', gunSay, gunAd), d('vardiya', 'Vardiyaya göre', vSay, ['1. (08–16)', '2. (16–24)', '3. (24–08)']), d('saat', 'Vardiyanın saatine göre', vsSay, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'])],
-    yer: [d('bolum', 'Bölüme göre', ksKSayim(liste, k => (k.bolum || '').trim())), d('bolge', 'Vücut bölgesine göre', ksKSayim(liste, k => (Array.isArray(k.injuries) ? k.injuries : []).map(i => ksKBolgeGrup(i.bodyRegion)).filter(Boolean)))],
+    yer: [ksKTamListe(d, 'bolum', 'Bölüme göre', ksKSayim(liste, k => (k.bolum || '').trim()), kazaBolumListesi(document.getElementById('ks-f-fab')?.value || 'tumu')), ksKTamListe(d, 'bolge', 'Vücut bölgesine göre', ksKSayim(liste, k => (Array.isArray(k.injuries) ? k.injuries : []).map(i => ksKBolgeGrup(i.bodyRegion)).filter(Boolean)), KS_K_BOLGELER)],
     kisi: [d('yas', 'Yaş grubuna göre', ksKSayim(liste, k => k.yasGrubu || ''), yasSira), d('kidem', 'Fabrikadaki kıdeme göre (yıl)', ksKSayim(liste, k => k.kidemYil || ''), kSira, ilkYil != null ? `Kaza kayıtlarının %${ilkYil}'i ilk yıl çalışanlarında.` : ''), d('ogr', 'Öğrenim durumuna göre', ksKSayim(liste, k => KS_K_OGR[k.ogrenim] || ''), Object.values(KS_K_OGR))],
     siddet: [d('siddet', 'Gerçekleşen şiddete göre', ksKSayim(liste, k => KS_K_SID[k.gercekSiddet] || ''), Object.values(KS_K_SID))],
     minor: liste.filter(k => k.gercekSiddet === 'hafif').length,
@@ -19574,6 +19639,8 @@ window.addEventListener('resize', calMobInit);
       });
       hseKoprusuHazir = true;
       ROOT.child('hseGelen').on('child_added', hseIceAl, err => console.error('HSE gelen kutusu okunamadı', err));
+      // Sözleşme: isg/hseBolumler/{anahtar} = { fab: 'Fabrika adı', list: ['Bölüm', ...] } (HSE Verim yayınlar; yoksa sessizce atlanır)
+      try { ROOT.child('hseBolumler').on('value', sn => { const v = sn.val() || {}, o = {}; Object.keys(v).forEach(k => { const e = v[k] || {}, ad = hseFabBul(e.fab || k); if (!ad) return; const l = Array.isArray(e.list) ? e.list : Object.values(e.list || {}); o[ad] = (o[ad] || []).concat(l.map(x => typeof x === 'string' ? x : (x && x.name)).filter(Boolean)); }); kazaHseBolum = o; }, () => {}); } catch (e) {}
       hseDurumPlanla();
     } catch (e) { console.error('HSE köprüsü başlatılamadı', e); }
   }
