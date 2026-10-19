@@ -35,7 +35,7 @@ self.addEventListener('fetch', e => {
       url.includes('gemini')) return;
 
   e.respondWith(
-    fetch(e.request).then(res => {
+    fetch(e.request, { cache: 'no-cache' }).then(res => {
       // Başarılı network yanıtını önbelleğe yaz
       if (res && res.status === 200 && res.type === 'basic') {
         const clone = res.clone();
