@@ -909,6 +909,24 @@ html, body { height: 100%; overflow: hidden;
 
 /* ── KAZA / RAMAK KALA MODÜLÜ ── */
 .kz-lbl { font-size:11px; font-weight:600; color:var(--text2); display:block; margin-bottom:4px; }
+
+.kz-prof{border:1px solid var(--border,#e3e7eb);border-radius:12px;background:#fff;overflow:hidden}
+.kz-prof-h{width:100%;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 14px;border:none;background:#fff;text-align:left;cursor:pointer;font-family:inherit;color:inherit}
+.kz-prof-h b{display:block;font-size:13px}
+.kz-prof-h small{display:block;font-size:11px;color:var(--text3,#7a8794);margin-top:2px}
+.kz-prof-h>span{flex:1}
+.kz-prof-chev{transition:transform .15s}
+.kz-prof.open .kz-prof-chev{transform:rotate(180deg)}
+.kz-prof-body{display:none;flex-direction:column;gap:12px;padding:4px 14px 14px;border-top:1px solid #eef1f4}
+.kz-prof.open .kz-prof-body{display:flex}
+.kz-prof-grp{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.kz-prof-chips{display:grid;gap:6px}
+.kz-pchip{min-height:38px;padding:4px 6px;border:1px solid #d5dbe1;border-radius:8px;background:#fff;font-size:12px;color:#334155;cursor:pointer;font-family:inherit;line-height:1.2}
+.kz-pchip.on{background:#378ADD;border-color:#378ADD;color:#fff;font-weight:700}
+.kz-prof-info{font-size:11.5px;color:#5b6775;line-height:1.45;background:#f7f9fb;border-radius:8px;padding:8px 10px}
+.kz-prof-info b{color:#0d2b46}
+.kz-prof-hint{font-size:11.5px;color:#7a4b00;background:#fff0d6;border-radius:8px;padding:8px 10px;display:none}
+.kz-prof-hint button{margin-left:6px;border:1px solid #e0a040;background:#fff;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer}
 #kaza-stats { grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); }
 .kaza-scard {
   background:var(--surface); border:1px solid var(--border);
@@ -6997,8 +7015,8 @@ px}
         <h4>Olayın Temel Bilgileri</h4>
         <div><label class="kz-lbl">Olay Türü *</label><div id="kaza-m-tur" class="kaza-type-row"></div></div>
         <div class="kaza-date-row">
-          <div class="mfield"><label>Tarih *</label><input type="date" id="kaza-m-tarih"/></div>
-          <div class="mfield"><label>Saat</label><input type="time" id="kaza-m-saat"/></div>
+          <div class="mfield"><label>Tarih *</label><input type="date" id="kaza-m-tarih" onchange="kazaProfilRender()"/></div>
+          <div class="mfield"><label>Saat</label><input type="time" id="kaza-m-saat" onchange="kazaProfilRender()"/></div>
           <div class="mfield"><label>İş Günü Kaybı</label><input type="number" id="kaza-m-kayip" min="0" value="0"/></div>
         </div>
         <div class="mrow2">
@@ -7030,6 +7048,23 @@ px}
           <div class="kaza-ai-head"><div><b>Kayıt Sınıflandırma Desteği</b><span>Olay anlatımına göre standart listelerden ön değerlendirme üretir.</span></div><button type="button" id="kaza-ai-analyze-btn" onclick="kazaAnalizEt()" class="kaza-ai-btn">✨ Analiz Et</button></div>
           <div id="kaza-ai-result" class="kaza-ai-result"><div><span>Yaralanma / Hasar Türü</span><b>—</b></div><div><span>Kök Neden</span><b>—</b></div><div><span>Ana Kök Neden</span><b>—</b></div><div><span>Potansiyel Şiddet</span><b>—</b></div></div>
           <div id="kaza-ai-note" class="kaza-ai-note">Henüz analiz edilmedi.</div>
+        </div>
+      </section>
+
+      <section class="kaza-form-section">
+        <div id="kz-prof" class="kz-prof">
+          <button type="button" class="kz-prof-h" onclick="kazaProfilToggle()" aria-expanded="false">
+            <span><b>Kazazede Profili ve Şiddet</b><small id="kz-prof-ozet">İsteğe bağlı · istatistikler için</small></span>
+            <svg class="kz-prof-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6775" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+          </button>
+          <div class="kz-prof-body">
+            <div class="kz-prof-grp"><label class="kz-lbl">Gerçekleşen şiddet</label><div id="kz-p-siddet" class="kz-prof-chips" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div></div>
+            <div id="kz-p-hint" class="kz-prof-hint">Uzuv kaybı / ölüm için 6.000 gün önerilir.<button type="button" onclick="kazaProfilGun6000()">6.000 gün yaz</button></div>
+            <div class="kz-prof-grp"><label class="kz-lbl">Yaş grubu</label><div id="kz-p-yas" class="kz-prof-chips" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
+            <div class="kz-prof-grp"><label class="kz-lbl">Öğrenim durumu</label><div id="kz-p-ogr" class="kz-prof-chips" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div></div>
+            <div class="kz-prof-grp"><label class="kz-lbl">Fabrikadaki kıdem</label><div id="kz-p-kidem" class="kz-prof-chips" style="grid-template-columns:repeat(5,minmax(0,1fr))"></div></div>
+            <div id="kz-p-info" class="kz-prof-info"></div>
+          </div>
         </div>
       </section>
 
@@ -14157,6 +14192,61 @@ function kazaRender() {
 }
 
 // ── Ekle / Düzenle ──────────────────────────────────────────
+const KZ_PROF = {
+  siddet:[['hafif','Hafif'],['ciddi','Ciddi'],['uzuv','Uzuv kaybı'],['olum','Ölüm']],
+  yas:[['16-19','16-19'],['19-25','19-25'],['25-30','25-30'],['30-35','30-35'],['35-40','35-40'],['40-45','40-45'],['45+','45+'],['','Bilinmiyor']],
+  ogr:[['okumamis','Okumamış'],['ilkokul','İlkokul'],['ortaokul','Ortaokul'],['lise','Lise'],['onlisans','Ön lisans'],['lisans','Lisans+']],
+  kidem:[['1','1'],['2','2'],['3','3'],['4','4'],['5','5'],['6','6'],['7','7'],['8','8'],['9','9'],['10+','10+']]
+};
+let kazaProfil = {siddet:'', yas:'', ogr:'', kidem:''};
+function kazaProfilToggle(ac) {
+  const el = document.getElementById('kz-prof'); if (!el) return;
+  const open = typeof ac === 'boolean' ? ac : !el.classList.contains('open');
+  el.classList.toggle('open', open);
+  const h = el.querySelector('.kz-prof-h'); if (h) h.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function kazaProfilSec(alan, deger) {
+  kazaProfil[alan] = (kazaProfil[alan] === deger && deger !== '') ? '' : deger;
+  kazaProfilRender();
+}
+function kazaProfilGun6000() { const e = document.getElementById('kaza-m-kayip'); if (e) e.value = 6000; }
+function kazaProfilRender() {
+  const map = {siddet:'kz-p-siddet', yas:'kz-p-yas', ogr:'kz-p-ogr', kidem:'kz-p-kidem'};
+  Object.keys(map).forEach(a => {
+    const el = document.getElementById(map[a]); if (!el) return;
+    el.innerHTML = KZ_PROF[a].map(([v,l]) => {
+      const on = kazaProfil[a] === v && !(v === '' && a !== 'yas');
+      return `<button type="button" class="kz-pchip${on?' on':''}" onclick="kazaProfilSec('${a}','${v}')">${l}</button>`;
+    }).join('');
+  });
+  const hint = document.getElementById('kz-p-hint');
+  if (hint) hint.style.display = (kazaProfil.siddet === 'uzuv' || kazaProfil.siddet === 'olum') ? 'block' : 'none';
+  // Otomatik türetilenler
+  const t = document.getElementById('kaza-m-tarih')?.value || '';
+  const sa = document.getElementById('kaza-m-saat')?.value || '';
+  const parts = [];
+  if (kazaProfil.siddet) parts.push('Risk türü: <b>' + (kazaProfil.siddet === 'hafif' ? 'Minör' : 'Majör') + '</b>');
+  if (t) {
+    const d = new Date(t + 'T00:00:00');
+    if (!isNaN(d)) parts.push('Gün: <b>' + ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'][d.getDay()] + '</b>');
+  }
+  if (sa) {
+    const h = parseInt(sa.split(':')[0]);
+    const v = (h >= 8 && h < 16) ? 1 : (h >= 16 ? 2 : 3);
+    const vs = v === 1 ? 8 : (v === 2 ? 16 : 0);
+    parts.push('Vardiya: <b>' + v + '</b>', 'Vardiyanın saati: <b>' + (((h - vs + 24) % 24) + 1) + '</b>');
+  }
+  const info = document.getElementById('kz-p-info');
+  if (info) info.innerHTML = parts.length ? 'Otomatik: ' + parts.join(' · ') : 'Tarih ve saat girilince gün, vardiya ve risk türü otomatik hesaplanır.';
+  const oz = document.getElementById('kz-prof-ozet');
+  if (oz) {
+    const sec = [];
+    if (kazaProfil.siddet) sec.push(KZ_PROF.siddet.find(x => x[0] === kazaProfil.siddet)[1]);
+    if (kazaProfil.yas) sec.push(kazaProfil.yas + ' yaş');
+    if (kazaProfil.kidem) sec.push(kazaProfil.kidem + '. yıl');
+    oz.textContent = sec.length ? sec.join(' · ') : 'İsteğe bağlı · istatistikler için';
+  }
+}
 function kazaOpenAdd(editId) {
   kazaEditId = editId || null;
   const k = editId ? kazaItems.find(x => String(x.id) === String(editId)) : null;
@@ -14195,6 +14285,8 @@ function kazaOpenAdd(editId) {
   kazaSelectSet(document.getElementById('kaza-m-koknedan'), k ? (k.kokNeden||'') : '');
   document.getElementById('kaza-m-potansiyel').value = k && k.potansiyelSiddet ? String(k.potansiyelSiddet) : '';
 
+  kazaProfil = k ? {siddet:k.gercekSiddet||'', yas:k.yasGrubu||'', ogr:k.ogrenim||'', kidem:k.kidemYil||''} : {siddet:'', yas:'', ogr:'', kidem:''};
+  kazaProfilToggle(false); kazaProfilRender();
   kazaAnalizStateReset(k);
   kazaAnalizRenderSavedState();
   kazaOnlemOnceki = null; kazaOnlemUndoGoster(false);
@@ -14237,13 +14329,18 @@ function kazaSubmit() {
     potansiyelSiddet: parseInt(document.getElementById('kaza-m-potansiyel').value) || null,
     onlem:      document.getElementById('kaza-m-onlem').value.trim(),
     onlemTamam: document.getElementById('kaza-m-onlem-tamam').checked,
+    gercekSiddet: kazaProfil.siddet || '',
+    yasGrubu: kazaProfil.yas || '',
+    ogrenim: kazaProfil.ogr || '',
+    kidemYil: kazaProfil.kidem || '',
     classificationAssist: kazaAnalizStateSnapshot(),
   };
 
   if (kazaEditId) {
     const k = kazaItems.find(x => x.id === kazaEditId);
-    if (k) { Object.assign(k, veri); if (k.linkedTaskId) gorevDurumUygula(tasks.find(t => String(t.id) === String(k.linkedTaskId)), !!k.onlemTamam); }
+    if (k) { if (veri.onlemTamam && !k.onlemKapanis) veri.onlemKapanis = new Date().toISOString().slice(0,10); else if (!veri.onlemTamam) veri.onlemKapanis = ''; Object.assign(k, veri); if (k.linkedTaskId) gorevDurumUygula(tasks.find(t => String(t.id) === String(k.linkedTaskId)), !!k.onlemTamam); }
   } else {
+    if (veri.onlemTamam) veri.onlemKapanis = new Date().toISOString().slice(0,10);
     kazaItems.unshift({ id: Date.now()+'', ...veri, createdAt: Date.now() });
   }
   kazaSave(); kazaCloseAdd(); kazaRenderFiltreler(); kazaRender();
@@ -14263,6 +14360,7 @@ function kazaOnlemDurum(id, deger) {
   const k = kazaItems.find(x => x.id === id);
   if (!k) return;
   k.onlemTamam = (deger === 'kapali');
+  k.onlemKapanis = k.onlemTamam ? (k.onlemKapanis || new Date().toISOString().slice(0,10)) : '';
   if (k.linkedTaskId) gorevDurumUygula(tasks.find(t => String(t.id) === String(k.linkedTaskId)), k.onlemTamam);
   if (window._hseDurumPlanla) window._hseDurumPlanla();
   kazaSave();
