@@ -15584,6 +15584,12 @@ function ksMakeChart(canvasId, config) {
   if (!el || typeof Chart === 'undefined') return;
   if (ksCharts[canvasId]) { ksCharts[canvasId].destroy(); }
   ksPrepareResponsiveChart(canvasId, config);
+  // Pareto dışındaki sütun grafiklerinde değerler okunaklı etiketle yazılır
+  const pl = config.options && config.options.plugins;
+  if (pl && pl.ksDataLabel && pl.ksDataLabel.enabled && !(config.data.datasets || []).some(d => d.type === 'line')) {
+    pl.ksDataLabel = {enabled: false};
+    config.plugins = (config.plugins || []).concat([ksValueLabelPlugin]);
+  }
   ksCharts[canvasId] = new Chart(el.getContext('2d'), config);
 }
 
@@ -16461,16 +16467,21 @@ function ksKPdfSec() {
       <button type="button" onclick="ksKPdf(false)" style="min-height:46px;border:1px solid #378ADD;border-radius:10px;background:#378ADD;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">PDF İndir / Yazdır</button></div></div>`;
   document.body.appendChild(bg);
 }
+// Sütun değer etiketi: koyu lacivert, beyaz çerçeveli (her zeminde ve baskıda okunur); yatay grafiklerde sütun ucunda
 const ksValueLabelPlugin = {
   id: 'ksVL',
   afterDatasetsDraw(chart) {
-    const ctx = chart.ctx;
+    const ctx = chart.ctx, yatay = chart.options && chart.options.indexAxis === 'y';
     chart.data.datasets.forEach((ds, i) => {
-      const meta = chart.getDatasetMeta(i); if (meta.type === 'line') return;
+      const meta = chart.getDatasetMeta(i); if (meta.type === 'line' || meta.hidden) return;
       meta.data.forEach((bar, j) => {
         const v = ds.data[j]; if (v == null || !(v > 0)) return;
-        ctx.save(); ctx.fillStyle = '#23384a'; ctx.font = 'bold 10px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-        ctx.fillText(Number.isInteger(v) ? String(v) : v.toLocaleString('tr-TR', {maximumFractionDigits: v < 1 ? 4 : 2}), bar.x, bar.y - 3); ctx.restore();
+        const bw = yatay ? 14 : (bar.width || 20), size = Math.max(8, Math.min(12, Math.round(bw * .75)));
+        ctx.save(); ctx.font = 'bold ' + size + 'px Arial, sans-serif'; ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.fillStyle = '#0d2b46';
+        ctx.textAlign = yatay ? 'left' : 'center'; ctx.textBaseline = yatay ? 'middle' : 'bottom';
+        const t = Number.isInteger(v) ? String(v) : v.toLocaleString('tr-TR', {maximumFractionDigits: v < 1 ? 4 : 2});
+        const x = yatay ? bar.x + 4 : bar.x, y = yatay ? bar.y : bar.y - 3;
+        ctx.strokeText(t, x, y); ctx.fillText(t, x, y); ctx.restore();
       });
     });
   }
@@ -16532,7 +16543,7 @@ function ksKRaporSecili(liste, period, fab, no) {
       const {lab, ds} = ksKYilKatVeri(c[0], yy, fab);
       if (!ds.some(d => d.data.some(v => v > 0))) return ksKBlok(`<h3 style="margin:10px 0 4px;font-size:12px">${ksEsc(c[1])}</h3><div class="hse-pr-empty">Bu kategori için veri yok.</div>`);
       ds.forEach(d => { d.maxBarThickness = 16; });
-      const img = ksKRaporGrafik({type: 'bar', data: {labels: lab, datasets: ds}, options: {plugins: {legend: {position: 'top', labels: {boxWidth: 10, color: '#53616e', font: {size: 10}}}}}}, 'Kaza sayısı', null, 420);
+      const img = ksKRaporGrafik({type: 'bar', data: {labels: lab, datasets: ds}, options: {plugins: {legend: {position: 'top', labels: {boxWidth: 10, color: '#53616e', font: {size: 10}}}}}}, 'Kaza sayısı', null, 420, {vl: true});
       return ksKBlok(`<h3 style="margin:10px 0 4px;font-size:12px">${ksEsc(c[1])} — Yıllara Göre</h3>` + ksReportImgHTML(img, c[1], ''));
     }).join('');
     sec.push(ksKSayfa + ksReportSection(no(), 'Yıllara Göre Kategori Kıyası', 'Seçilen kategorilerde yıllara göre kaza sayıları.', body, ''));
@@ -16599,7 +16610,7 @@ function ksRenderKiyas(liste) {
     const vals = satir.slice(-10).map(r => Number.isFinite(r[g[0]]) ? Math.round(r[g[0]] * 10000) / 10000 : null);
     if (!vals.some(v => v != null)) return `<div style="font-size:11.5px;color:#7a8794;margin-top:10px">${g[1]}: çalışma saati / çalışan sayısı girilmemiş.</div>`;
     const op = ksBarOptions(vals.map(v => v || 0), false);
-    if (g[4]) { op.scales.y.ticks = {color: '#444'}; delete op.scales.y.max; op.scales.y.suggestedMax = Math.max(...vals.filter(v => v != null)) * 1.15; op.plugins.ksDataLabel = {enabled: false}; }
+    if (g[4]) { op.scales.y.ticks = {color: '#444'}; delete op.scales.y.max; op.scales.y.suggestedMax = Math.max(...vals.filter(v => v != null)) * 1.15; }
     ksKKuyruk.push(['ksk-y-' + g[0], ksKEksen({type: 'bar', data: {labels: satir.slice(-10).map(r => r.y), datasets: [{label: g[1], data: vals, backgroundColor: g[3], borderRadius: 4, maxBarThickness: 38}]}, options: op}, g[2])]);
     return `<div style="display:flex;flex-direction:column;gap:6px;margin-top:10px"><span style="font-size:12px;font-weight:700;color:#334155">${g[1]}</span><div class="ks-canvas-wrap" style="position:relative;height:210px"><canvas id="ksk-y-${g[0]}"></canvas></div></div>`;
   }).join('') : '';
