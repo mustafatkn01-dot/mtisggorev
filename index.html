@@ -15589,6 +15589,15 @@ function ksMakeChart(canvasId, config) {
   if (pl && pl.ksDataLabel && pl.ksDataLabel.enabled && !(config.data.datasets || []).some(d => d.type === 'line')) {
     pl.ksDataLabel = {enabled: false};
     config.plugins = (config.plugins || []).concat([ksValueLabelPlugin]);
+    // Değer etiketi sütunun üstüne sığsın: değer ekseni en büyük değerin üstünde pay bırakır
+    const hor = config.options.indexAxis === 'y', ax = config.options.scales && config.options.scales[hor ? 'x' : 'y'];
+    const tum = [].concat(...config.data.datasets.map(d => (d.data || []).filter(v => typeof v === 'number')));
+    const mx = tum.length ? Math.max(...tum) : 0;
+    if (ax && mx > 0) {
+      const hedef = Number.isInteger(mx) && mx <= 5 ? mx + 1 : mx * 1.2;
+      if (typeof ax.max !== 'number' || ax.max < hedef) { delete ax.max; ax.suggestedMax = hedef; }
+      if (ax.ticks && ax.ticks.stepSize === 1 && mx > 10) delete ax.ticks.stepSize;
+    }
   }
   ksCharts[canvasId] = new Chart(el.getContext('2d'), config);
 }
