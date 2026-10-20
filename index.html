@@ -910,7 +910,8 @@ html, body { height: 100%; overflow: hidden;
 /* ── KAZA / RAMAK KALA MODÜLÜ ── */
 .kz-lbl { font-size:11px; font-weight:600; color:var(--text2); display:block; margin-bottom:4px; }
 
-.kz-prof{border:1px solid var(--border,#e3e7eb);border-radius:12px;background:#fff;overflow:hidden}
+.kz-prof{border:1px solid var(--border,#e3e7eb);border-radius:12px;background:#fff;overflow:hidden;flex-shrink:0}
+.kaza-rate-body>*{flex-shrink:0}
 .kz-prof-h{width:100%;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 14px;border:none;background:#fff;text-align:left;cursor:pointer;font-family:inherit;color:inherit}
 .kz-prof-h b{display:block;font-size:13px}
 .kz-prof-h small{display:block;font-size:11px;color:var(--text3,#7a8794);margin-top:2px}
@@ -7233,7 +7234,7 @@ px}
         <div class="kz-prof-body">
           <select id="kaza-s-gfab" onchange="kazaGecmisAyarYukle(true)" style="width:100%"></select>
           <div style="font-size:11px;color:#5B6775;line-height:1.5">Excel tablosunu kopyalayıp yapıştırın. Sütunlar sırasıyla: <b>Yıl · Toplam Kaza · Toplam Gün Kaybı · Toplam Çalışan (Σ aylık) · Toplam Çalışma Saati</b>.</div>
-          <textarea id="kaza-s-gtablo" rows="7" placeholder="2020&#9;3&#9;1&#9;1105&#9;217560,5" style="font-family:monospace;font-size:12px"></textarea>
+          <textarea id="kaza-s-gtablo" rows="7" wrap="off" placeholder="2020&#9;3&#9;1&#9;1105&#9;217560,5" style="font-family:monospace;font-size:12px"></textarea>
           <button type="button" onclick="kazaGecmisIsle()" style="min-height:42px;border:1px solid #378ADD;border-radius:10px;background:#378ADD;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Tabloyu İşle ve Kaydet</button>
           <div id="kaza-s-gliste" class="kaza-rate-total"></div>
         </div>
@@ -16593,10 +16594,20 @@ function ksRenderKiyas(liste) {
   const satir = ksKYilSatirlari(fab);
   const yillar = satir.map(r => r.y);
   if (satir.length && ksKAcik.kiyas) ksKKuyruk.push(['ksk-yillar', ksKEksen({type: 'bar', data: {labels: satir.slice(-10).map(r => r.y), datasets: [{label: 'Kaza sayısı', data: satir.slice(-10).map(r => r.kaza), backgroundColor: '#378ADD', borderRadius: 4, maxBarThickness: 38}]}, options: ksBarOptions(satir.slice(-10).map(r => r.kaza), false)}, 'Kaza sayısı')]);
+  const yEk = [['kayip', 'Kayıp gün — yıllara göre', 'Kayıp gün', '#7167c7', 0], ['siklik', 'Kaza Sıklık Oranı — yıllara göre', 'Kaza / milyon saat', '#1F8A5B', 1], ['agirlik', 'Kaza Ağırlık Oranı — yıllara göre', 'Gün / milyon saat', '#D9822B', 1], ['hiz', 'Sıklık Hızı — yıllara göre', 'Kaza / Σ çalışan', '#A12A1E', 1]];
+  const yEkHTML = (satir.length && ksKAcik.kiyas) ? yEk.map(g => {
+    const vals = satir.slice(-10).map(r => Number.isFinite(r[g[0]]) ? Math.round(r[g[0]] * 10000) / 10000 : null);
+    if (!vals.some(v => v != null)) return `<div style="font-size:11.5px;color:#7a8794;margin-top:10px">${g[1]}: çalışma saati / çalışan sayısı girilmemiş.</div>`;
+    const op = ksBarOptions(vals.map(v => v || 0), false);
+    if (g[4]) { op.scales.y.ticks = {color: '#444'}; delete op.scales.y.max; op.scales.y.suggestedMax = Math.max(...vals.filter(v => v != null)) * 1.15; op.plugins.ksDataLabel = {enabled: false}; }
+    ksKKuyruk.push(['ksk-y-' + g[0], ksKEksen({type: 'bar', data: {labels: satir.slice(-10).map(r => r.y), datasets: [{label: g[1], data: vals, backgroundColor: g[3], borderRadius: 4, maxBarThickness: 38}]}, options: op}, g[2])]);
+    return `<div style="display:flex;flex-direction:column;gap:6px;margin-top:10px"><span style="font-size:12px;font-weight:700;color:#334155">${g[1]}</span><div class="ks-canvas-wrap" style="position:relative;height:210px"><canvas id="ksk-y-${g[0]}"></canvas></div></div>`;
+  }).join('') : '';
   const tablo = satir.length ? `<div style="border:1px solid #E3E7EB;border-radius:10px;overflow:hidden;margin-top:10px">
       <div style="display:grid;grid-template-columns:44px repeat(5,minmax(0,1fr));gap:4px;padding:8px 10px;background:#F1F7FD;font-size:10.5px;font-weight:700;color:#5B6775;text-align:center"><div style="text-align:left">Yıl</div><div>Kaza</div><div>Kayıp gün</div><div>Sıklık</div><div>Ağırlık</div><div>Hız</div></div>
       ${satir.map((r, i) => `<div style="display:grid;grid-template-columns:44px repeat(5,minmax(0,1fr));gap:4px;padding:8px 10px;font-size:12px;text-align:center;border-top:1px solid #EEF1F4;${i === satir.length - 1 ? 'background:#E8F1FB;color:#0D2B46' : 'color:#334155'}"><div style="text-align:left;font-weight:700">${r.y}</div><div>${r.kaza}</div><div>${r.kayip}</div><div>${fmt(r.siklik)}</div><div>${fmt(r.agirlik)}</div><div>${fmt4(r.hiz)}</div></div>`).join('')}</div>
     <div class="ks-canvas-wrap" style="position:relative;height:230px"><canvas id="ksk-yillar"></canvas></div>
+    ${yEkHTML}
     <div style="font-size:11.5px;color:#5B6775;line-height:1.45">Sıklık, ağırlık ve hız; o yılın çalışma saati / çalışan sayısı Oran Hesabı Ayarları'nda girildiğinde dolar.</div>`
     : '<div style="font-size:12px;color:#7a8794;margin-top:10px">Kıyaslanacak yıl verisi yok.</div>';
 
