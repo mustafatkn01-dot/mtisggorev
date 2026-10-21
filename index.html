@@ -20076,6 +20076,23 @@ window.addEventListener('resize', calMobInit);
     }
   }
 
+  // HSE Verim'de aksiyon alındı kaydedilince (isg/hseAksiyon/{anahtar} = {tx, at}) bağlı görev kapatılır;
+  // aksiyon metni göreve not olarak eklenir. Aynı kayıt tekrar işlenmez (hseAksiyonAt).
+  function hseAksiyonIsle(snap) {
+    const key = snap.key, v = snap.val();
+    if (!v || typeof v !== 'object' || !String(v.tx || '').trim()) return;
+    const t = tasks.find(x => x && x.hseKey === key) || archived.find(x => x && x.hseKey === key);
+    if (!t) return;
+    const imza = String(v.at || 0) + '|' + String(v.tx).trim();
+    if (t.hseAksiyonAt === imza) return;
+    t.hseAksiyonAt = imza;
+    const d = new Date(+v.at || Date.now()), p2 = n => String(n).padStart(2, '0');
+    t.note = ((t.note || '') + `\nAksiyon alındı (HSE Verim · ${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()}): ${String(v.tx).trim()}`).trim();
+    if (!gorevDurumUygula(t, true)) { try { if (window._fbUpdate) window._fbUpdate(t); save(); render(); } catch (e) {} }
+    hseBilgi('Aksiyon bilgisi', `${t.fab || ''}${t.text ? ' · ' + String(t.text).slice(0, 60) : ''}`, 'Görev kapatıldı');
+    hseDurumPlanla();
+  }
+
   function hseDurumPlanla() {
     clearTimeout(hseDurumZmn);
     hseDurumZmn = setTimeout(hseDurumYayinla, 900);
@@ -20118,6 +20135,7 @@ window.addEventListener('resize', calMobInit);
   async function hseKoprusuBaslat() {
     try {
       ROOT.child('hseGelen').off();
+      ROOT.child('hseAksiyon').off();
       const mevcut = (await ROOT.child('hseDurum').once('value')).val() || {};
       Object.keys(mevcut).forEach(k => {
         const m = mevcut[k] || {};
@@ -20126,6 +20144,8 @@ window.addEventListener('resize', calMobInit);
       });
       hseKoprusuHazir = true;
       ROOT.child('hseGelen').on('child_added', hseIceAl, err => console.error('HSE gelen kutusu okunamadı', err));
+      ROOT.child('hseAksiyon').on('child_added', hseAksiyonIsle, err => console.error('HSE aksiyon kutusu okunamadı', err));
+      ROOT.child('hseAksiyon').on('child_changed', hseAksiyonIsle, () => {});
       // Sözleşme: isg/hseBolumler/{anahtar} = { fab: 'Fabrika adı', list: ['Bölüm', ...] } (HSE Verim yayınlar; yoksa sessizce atlanır)
       try { ROOT.child('hseBolumler').on('value', sn => { const v = sn.val() || {}, o = {}; Object.keys(v).forEach(k => { const e = v[k] || {}, ad = hseFabBul(e.fab || k); if (!ad) return; const l = Array.isArray(e.list) ? e.list : Object.values(e.list || {}); o[ad] = (o[ad] || []).concat(l.map(x => typeof x === 'string' ? x : (x && x.name)).filter(Boolean)); }); kazaHseBolum = o; }, () => {}); } catch (e) {}
       hseDurumPlanla();
