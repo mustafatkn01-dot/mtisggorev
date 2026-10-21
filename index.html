@@ -22760,8 +22760,8 @@ window.addEventListener('DOMContentLoaded',()=>{
         cand.push(y)});
       // Uzun raporlarda tarayıcı canvas sınırı (özellikle mobil) boş sayfa üretir: yüksek içerik parçalara bölünerek çizilir
       var H=Math.ceil(el.getBoundingClientRect().height),CH=5000,base={scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:W};
-      function grab(y0,h){return mode==='svg'?svgGrab(el,W,H,y0,h,2):window.html2canvas(el,Object.assign({},base,{y:top+y0,height:h}))}
-      if(H<=CH+800)return (mode==='svg'?svgGrab(el,W,H,0,H,2):window.html2canvas(el,base)).then(function(cv){return {chunks:[{y0:0,y1:cv.height/(cv.width/W),cv:cv}],k:cv.width/W,total:cv.height/(cv.width/W),forced:forced,cand:cand}});
+      function grab(y0,h){return mode==='svg'?svgGrab(el,W,H,y0,h,1.8):window.html2canvas(el,Object.assign({},base,{y:top+y0,height:h}))}
+      if(H<=CH+800)return (mode==='svg'?svgGrab(el,W,H,0,H,1.8):window.html2canvas(el,base)).then(function(cv){return {chunks:[{y0:0,y1:cv.height/(cv.width/W),cv:cv}],k:cv.width/W,total:cv.height/(cv.width/W),forced:forced,cand:cand}});
       var parts=[],y0=0;while(y0<H){parts.push([y0,Math.min(H,y0+CH)]);y0+=CH}
       var out=[],i=0;
       function nxt(){if(i>=parts.length)return Promise.resolve({chunks:out,k:out[0].cv.width/W,total:H,forced:forced,cand:cand});
@@ -22804,7 +22804,7 @@ window.addEventListener('DOMContentLoaded',()=>{
         r.chunks.forEach(function(c){var a=Math.max(p[0],c.y0),z=Math.min(p[1],c.y1);if(z<=a)return;
           var dh=Math.round((z-a)*k),sy=Math.round((a-c.y0)*k),dy=Math.round((a-p[0])*k);if(dh<1)return;
           cx.drawImage(c.cv,0,sy,c.cv.width,dh,0,dy,c.cv.width,dh)});
-        pdf.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',mx,tp,cw,(p[1]-p[0])/opt.width*cw);
+        pdf.addImage(pc.toDataURL('image/jpeg',.85),'JPEG',mx,tp,cw,(p[1]-p[0])/opt.width*cw);
         pdf.setFontSize(8);pdf.setTextColor(100);pdf.text('Sayfa '+(i+1)+'/'+pages.length,PW/2,PH-8,{align:'center'});
       });
       var name=(opt.name||'Rapor').replace(/[\\\/:*?"<>|]+/g,' ').trim()+'.pdf';
