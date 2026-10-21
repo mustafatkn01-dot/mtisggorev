@@ -22729,8 +22729,20 @@ window.addEventListener('DOMContentLoaded',()=>{
   window.isgSharePdf=function(opt){
     if(busy)return;busy=true;var ov=overlay('PDF hazırlanıyor…'),b=null;
     function done(){busy=false;if(ov)ov.remove();if(b&&b.fr)b.fr.remove()}
-    function blank(cv){try{var w=200,h=Math.max(1,Math.round(w*cv.height/cv.width)),c=document.createElement('canvas');c.width=w;c.height=Math.min(h,2000);var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,c.height);x.drawImage(cv,0,0,w,c.height);var d=x.getImageData(0,0,w,c.height).data,n=0;for(var i=0;i<d.length;i+=4){if(d[i]<235||d[i+1]<235||d[i+2]<235)n++}return n<30}catch(e){return false}}
-    function render(el,doc){
+    // Tarayıcının kendi yerleşim motoruyla çizim (SVG foreignObject): html2canvas'a bağımlı değil, yazdırma düzeniyle aynı sonuç
+    function svgGrab(el,W,H,y0,h,scale){
+      return new Promise(function(ok,no){try{
+        var css=printCss().replace(new RegExp('body\\.'+opt.bodyClass.replace(/[-]/g,'\\-'),'g'),'.pr-wrap')+'.pr-wrap #'+opt.rootId+'{display:block!important}';
+        var c=el.cloneNode(true);c.setAttribute('style','display:block');
+        var xml='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+h+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'" transform="translate(0,'+(-y0)+')"><div xmlns="http://www.w3.org/1999/xhtml" class="pr-wrap" style="width:'+W+'px;background:#fff;margin:0;padding:0"><style><![CDATA['+css+']]></style>'+new XMLSerializer().serializeToString(c)+'</div></foreignObject></svg>';
+        var url='data:image\/svg+xml;charset=utf-8,'+encodeURIComponent(xml),im=new Image();
+        im.onload=function(){try{var cv=document.createElement('canvas');cv.width=Math.round(W*scale);cv.height=Math.round(h*scale);var x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.scale(scale,scale);x.drawImage(im,0,0);URL.revokeObjectURL(url);ok(cv)}catch(e){no(e)}};
+        im.onerror=function(){URL.revokeObjectURL(url);no(new Error('svg'))};
+        im.src=url;
+      }catch(e){no(e)}});
+    }
+    function blank(cv){try{var w=200,h=Math.max(1,Math.round(w*cv.height/cv.width)),c=document.createElement('canvas');c.width=w;c.height=Math.min(h,2000);var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,c.height);x.drawImage(cv,0,0,w,c.height);var d=x.getImageData(0,0,w,c.height).data,n=0;for(var i=0;i<d.length;i+=4){if(d[i]<235||d[i+1]<235||d[i+2]<235)n++}return n<30}catch(e){return true}}
+    function render(el,doc,mode){
       var W=opt.width,top=el.getBoundingClientRect().top;
       var forced=[],cand=[];
       var keeps=[],heads=[];
@@ -22748,12 +22760,13 @@ window.addEventListener('DOMContentLoaded',()=>{
         cand.push(y)});
       // Uzun raporlarda tarayıcı canvas sınırı (özellikle mobil) boş sayfa üretir: yüksek içerik parçalara bölünerek çizilir
       var H=Math.ceil(el.getBoundingClientRect().height),CH=5000,base={scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:W};
-      if(H<=CH+800)return window.html2canvas(el,base).then(function(cv){return {chunks:[{y0:0,y1:cv.height/(cv.width/W),cv:cv}],k:cv.width/W,total:cv.height/(cv.width/W),forced:forced,cand:cand}});
+      function grab(y0,h){return mode==='svg'?svgGrab(el,W,H,y0,h,2):window.html2canvas(el,Object.assign({},base,{y:top+y0,height:h}))}
+      if(H<=CH+800)return (mode==='svg'?svgGrab(el,W,H,0,H,2):window.html2canvas(el,base)).then(function(cv){return {chunks:[{y0:0,y1:cv.height/(cv.width/W),cv:cv}],k:cv.width/W,total:cv.height/(cv.width/W),forced:forced,cand:cand}});
       var parts=[],y0=0;while(y0<H){parts.push([y0,Math.min(H,y0+CH)]);y0+=CH}
       var out=[],i=0;
       function nxt(){if(i>=parts.length)return Promise.resolve({chunks:out,k:out[0].cv.width/W,total:H,forced:forced,cand:cand});
-        var pr=parts[i++],o=Object.assign({},base,{y:top+pr[0],height:pr[1]-pr[0]});
-        return window.html2canvas(el,o).then(function(cv){out.push({y0:pr[0],y1:pr[1],cv:cv});return nxt()})}
+        var pr=parts[i++];
+        return grab(pr[0],pr[1]-pr[0]).then(function(cv){out.push({y0:pr[0],y1:pr[1],cv:cv});return nxt()})}
       return nxt()
     }
     function anyInk(r){return r.chunks.some(function(c){return !blank(c.cv)})}
@@ -22768,7 +22781,8 @@ window.addEventListener('DOMContentLoaded',()=>{
         src.style.cssText=old;if(!cls)document.body.classList.remove(opt.bodyClass);throw e});
     }
     libs().then(function(){b=build(opt);return new Promise(function(r){setTimeout(r,350)})}).then(function(){
-      return render(b.el,b.doc).then(function(r){if(anyInk(r))return r;return renderInDoc()});
+      var p0=opt.rootId==='hse-print'?render(b.el,b.doc,'svg').catch(function(e){try{console.warn('PDF svg yolu:',e&&e.message||e)}catch(x){}return null}):Promise.resolve(null);
+      return p0.then(function(r){if(r&&anyInk(r))return r;return render(b.el,b.doc).then(function(r2){if(anyInk(r2))return r2;return renderInDoc()})});
     }).then(function(r){
       var J=window.jspdf.jsPDF,pdf=new J({unit:'mm',format:'a4',orientation:'portrait'});
       var PW=210,PH=297,mx=opt.mx||8,tp=opt.top||10,bt=opt.bottom||16;
