@@ -16322,6 +16322,8 @@ function ksKYilKatVeri(kat, yy, fab) {
   const ds = yy.map((y, i) => ({label: y, data: lab.map(l => { const o = per[i], k = Object.keys(o).find(x => kn(x) === kn(l)); return k ? o[k] : 0; }), backgroundColor: KS_K_YIL_RENK[Math.max(0, KS_K_YIL_RENK.length - 1 - (yy.length - 1 - i))] || '#378ADD', borderRadius: 3, maxBarThickness: 22}));
   return {lab, ds};
 }
+// Yıllara göre kategori kıyasında Pareto: seçili yılların toplamı üzerinden, kategori başına kümülatif %
+function ksKYilKatParetoVeri(lab, ds) { return ksKParetoVeri(lab, lab.map((l, i) => ds.reduce((t, d) => t + (d.data[i] || 0), 0))); }
 let ksKKuyruk = [];   // render sonrası oluşturulacak Chart.js grafikleri
 function ksKTemizle() { Object.keys(ksCharts).filter(k => k.startsWith('ksk-')).forEach(k => { try { ksCharts[k].destroy(); } catch (e) {} delete ksCharts[k]; }); ksKKuyruk = []; }
 function ksKEksen(cfg, yBaslik, y1Baslik) {
@@ -16452,11 +16454,11 @@ function ksKPdfSec() {
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><div style="flex:1"><div style="font-size:13.5px;font-weight:700;color:#0D2B46">${baslik}</div>${alt ? `<div style="font-size:11px;color:#5B6775">${alt}</div>` : ''}</div>
       <button type="button" onclick="ksKSecGrup(true,${ksEsc(JSON.stringify(anahtarlar))})" style="border:none;background:none;color:#17559A;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit">Tümü</button>
       <button type="button" onclick="ksKSecGrup(false,${ksEsc(JSON.stringify(anahtarlar))})" style="border:none;background:none;color:#7A8794;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit">Hiçbiri</button></div>${icerik}</section>`;
-  const yk = KS_K_YGRAF.map(g => 'y:' + g[0]), kk = KS_K_KATEGORILER.map(c => 'k:' + c[0]);
+  const yk = KS_K_YGRAF.map(g => 'y:' + g[0]), kk = [].concat(...KS_K_KATEGORILER.map(c => ['k:' + c[0], 'kp:' + c[0]]));
   const dk = []; dag.forEach(d => { dk.push('d:' + d.key + ':g', 'd:' + d.key + ':p'); });
-  const dRow = d => `<div style="display:grid;grid-template-columns:1fr 64px 64px;align-items:center;min-height:36px;font-size:13px;color:#1F2A37;gap:6px"><span>${ksEsc(d.baslik)}</span>
-    <label style="display:flex;justify-content:center"><input type="checkbox" data-k="d:${d.key}:g" ${ksKSec['d:' + d.key + ':g'] ? 'checked' : ''} onchange="ksKSecSet('d:${d.key}:g',this.checked)" style="width:18px;height:18px;accent-color:#378ADD"></label>
-    <label style="display:flex;justify-content:center"><input type="checkbox" data-k="d:${d.key}:p" ${ksKSec['d:' + d.key + ':p'] ? 'checked' : ''} onchange="ksKSecSet('d:${d.key}:p',this.checked)" style="width:18px;height:18px;accent-color:#378ADD"></label></div>`;
+  const dRow = (d, kg, kp) => { kg = kg || 'd:' + d.key + ':g'; kp = kp || 'd:' + d.key + ':p'; return `<div style="display:grid;grid-template-columns:1fr 64px 64px;align-items:center;min-height:36px;font-size:13px;color:#1F2A37;gap:6px"><span>${ksEsc(d.baslik)}</span>
+    <label style="display:flex;justify-content:center"><input type="checkbox" data-k="${kg}" ${ksKSec[kg] ? 'checked' : ''} onchange="ksKSecSet('${kg}',this.checked)" style="width:18px;height:18px;accent-color:#378ADD"></label>
+    <label style="display:flex;justify-content:center"><input type="checkbox" data-k="${kp}" ${ksKSec[kp] ? 'checked' : ''} onchange="ksKSecSet('${kp}',this.checked)" style="width:18px;height:18px;accent-color:#378ADD"></label></div>`; };
   const yrChips = yillar.map(y => `<label style="display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 10px;border:1px solid #D5DBE1;border-radius:99px;font-size:12.5px;cursor:pointer"><input type="checkbox" data-k="yr:${y}" ${ksKSec['yr:' + y] ? 'checked' : ''} onchange="ksKSecSet('yr:${y}',this.checked)" style="width:16px;height:16px;accent-color:#378ADD">${y}</label>`).join('');
   const bg = document.createElement('div'); bg.id = 'ks-kpdf-bg';
   bg.style.cssText = 'position:fixed;inset:0;z-index:9990;background:rgba(15,30,45,.5);display:flex;align-items:flex-end;justify-content:center';
@@ -16468,7 +16470,7 @@ function ksKPdfSec() {
       ${kart('Güncel Dönem', 'Seçili dönem: ' + ksEsc(ksPeriodLabel(period)), cb('ozet', 'Dönem göstergeleri (kaza, kayıp gün, saat, sıklık, ağırlık, hız)'), ['ozet'])}
       ${kart('Kıyaslanacak Yıllar', 'Aşağıdaki yıllık tablo ve grafikler bu yıllarla hazırlanır', `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0">${yrChips || '<span style="font-size:12px;color:#7A8794">Yıl verisi yok.</span>'}</div>`, yillar.map(y => 'yr:' + y))}
       ${kart('Yıllık Kıyas', 'Güncel ve geçmiş yıllar', cb('tablo', 'Yıllık kıyas tablosu') + KS_K_YGRAF.map(g => cb('y:' + g[0], g[1] + ' grafiği')).join(''), ['tablo'].concat(yk))}
-      ${kart('Yıllara Göre Kategori Kıyası', 'Seçilen yılların kategori bazında grafiği', KS_K_KATEGORILER.map(c => cb('k:' + c[0], c[1])).join(''), kk)}
+      ${kart('Yıllara Göre Kategori Kıyası', 'Seçilen yıllar · her kategori için grafik ve/veya Pareto (yıllar toplamı)', `<div style="display:grid;grid-template-columns:1fr 64px 64px;gap:6px;font-size:11px;font-weight:700;color:#5B6775"><span></span><span style="text-align:center">Grafik</span><span style="text-align:center">Pareto</span></div>${KS_K_KATEGORILER.map(c => dRow({key: '', baslik: c[1]}, 'k:' + c[0], 'kp:' + c[0])).join('')}`, kk)}
       ${kart('Güncel Dönem Dağılımları', 'Seçili dönem · her biri için grafik ve/veya Pareto', `<div style="display:grid;grid-template-columns:1fr 64px 64px;gap:6px;font-size:11px;font-weight:700;color:#5B6775"><span></span><span style="text-align:center">Grafik</span><span style="text-align:center">Pareto</span></div>${dag.map(dRow).join('')}`, dk)}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px;background:#fff;border-top:1px solid #E3E7EB">
@@ -16545,15 +16547,25 @@ function ksKRaporSecili(liste, period, fab, no) {
     }).join('');
     sec.push(ksKSayfa + ksReportSection(no(), 'Yıllık Kıyas Grafikleri', 'Kaza sayısı, kayıp gün, sıklık, ağırlık ve sıklık hızının yıllara göre değişimi.', body, ''));
   }
-  const kats = KS_K_KATEGORILER.filter(c => on('k:' + c[0]));
+  const kats = KS_K_KATEGORILER.filter(c => on('k:' + c[0]) || on('kp:' + c[0]));
   if (kats.length && satir.length) {
     const yy = satir.map(r => r.y);
     const body = kats.map(c => {
       const {lab, ds} = ksKYilKatVeri(c[0], yy, fab);
       if (!ds.some(d => d.data.some(v => v > 0))) return ksKBlok(`<h3 style="margin:10px 0 4px;font-size:12px">${ksEsc(c[1])}</h3><div class="hse-pr-empty">Bu kategori için veri yok.</div>`);
-      ds.forEach(d => { d.maxBarThickness = 16; });
-      const img = ksKRaporGrafik({type: 'bar', data: {labels: lab, datasets: ds}, options: {plugins: {legend: {position: 'top', labels: {boxWidth: 10, color: '#53616e', font: {size: 10}}}}}}, 'Kaza sayısı', null, 420, {vl: true});
-      return ksKBlok(`<h3 style="margin:10px 0 4px;font-size:12px">${ksEsc(c[1])} — Yıllara Göre</h3>` + ksReportImgHTML(img, c[1], ''));
+      let h = '';
+      if (on('k:' + c[0])) {
+        ds.forEach(d => { d.maxBarThickness = 16; });
+        const img = ksKRaporGrafik({type: 'bar', data: {labels: lab, datasets: ds}, options: {plugins: {legend: {position: 'top', labels: {boxWidth: 10, color: '#53616e', font: {size: 10}}}}}}, 'Kaza sayısı', null, 420, {vl: true});
+        h += ksKBlok(`<h3 style="margin:10px 0 4px;font-size:12px">${ksEsc(c[1])} — Yıllara Göre</h3>` + ksReportImgHTML(img, c[1], ''));
+      }
+      if (on('kp:' + c[0])) {
+        const pv = ksKYilKatParetoVeri(lab, ds), cfg = ksParetoConfig(pv); cfg.type = 'bar';
+        const kk = ksKParetoVurgu(cfg, pv);
+        cfg.options.plugins.legend = {display: true, position: 'top', labels: {color: '#444', font: {size: 10}, boxWidth: 12, boxHeight: 8, usePointStyle: true}};
+        h += ksKBlok(`<h3 style="margin:10px 0 4px;font-size:12px">${ksEsc(c[1])} — Pareto Analizi (80/20, ${ksEsc(yy[0])}–${ksEsc(yy[yy.length - 1])} toplamı)</h3>` + ksReportImgHTML(ksReportFreshChart(ksKEksen(cfg, 'Adet', 'Kümülatif %'), 820, 440), c[1] + ' Pareto', `Koyu sütunlar toplamın %80'ini oluşturan ilk ${kk} kategoridir: ${pv.slice(0, kk).map(x => x.label).join(', ')} (kümülatif %${pv[kk - 1].kumPct}). Kırmızı kesikli çizgi %80 Pareto sınırıdır.`));
+      }
+      return h;
     }).join('');
     sec.push(ksKSayfa + ksReportSection(no(), 'Yıllara Göre Kategori Kıyası', 'Seçilen kategorilerde yıllara göre kaza sayıları.', body, ''));
   }
@@ -16638,8 +16650,25 @@ function ksRenderKiyas(liste) {
   if (ksKAcik.yilkat) {
     const yy = satir.slice(-6).map(r => r.y), {lab, ds} = ksKYilKatVeri(ksKKat, yy, fab);
     ksKKuyruk.push(['ksk-yilkat', ksKEksen({type: 'bar', data: {labels: lab, datasets: ds}, options: ksBarOptions([].concat(...ds.map(d => d.data)), true)}, 'Kaza sayısı')]);
+    const ykKey = 'yk-' + ksKKat, ykAcik = !!ksKPg[ykKey], ykAd = (KS_K_KATEGORILER.find(c => c[0] === ksKKat) || [0, ''])[1];
+    let ykPareto = '';
+    if (ykAcik) {
+      const pv = ksKYilKatParetoVeri(lab, ds);
+      if (!pv.some(d => d.val > 0)) ykPareto = '<div style="font-size:11.5px;color:#7a8794">Veri yok.</div>';
+      else {
+        ksKKuyruk.push(['ksk-yilkat-p', ksKEksen(ksParetoConfig(pv), 'Adet', 'Kümülatif %')]);
+        const kk = Math.max(1, pv.findIndex(d => d.kumPct >= 80) + 1 || pv.length);
+        ykPareto = `<div style="display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:10px;background:#F7F9FB;border:1px solid #E3E7EB">
+          <div style="font-size:11.5px;font-weight:700;color:#0D2B46">${ksEsc(ykAd)} — Pareto Analizi (${ksEsc(yy[0] || '')}–${ksEsc(yy[yy.length - 1] || '')} toplamı)</div>
+          <div class="ks-canvas-wrap" style="position:relative;height:270px"><canvas id="ksk-yilkat-p"></canvas></div>
+          <div style="font-size:11.5px;color:#334155;line-height:1.4">İlk ${kk} kategori kümülatif %${pv[kk - 1].kumPct} — ${ksEsc(pv.slice(0, kk).map(d => d.label).join(', '))}.</div></div>`;
+      }
+    }
+    ykPareto = `<button type="button" onclick="ksKPareto('${ykKey}')" aria-expanded="${ykAcik}" style="align-self:flex-start;display:flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid #C9D6E3;border-radius:8px;background:#fff;color:#17559A;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">${ykAcik ? 'Pareto gizle' : 'Pareto göster'}
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#17559A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transition:transform .15s;transform:rotate(${ykAcik ? 180 : 0}deg)"><path d="m6 9 6 6 6-6"></path></svg></button>` + ykPareto;
     yilkat = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${KS_K_KATEGORILER.map(([k, ad]) => `<button type="button" onclick="ksKKatSec('${k}')" style="min-height:32px;padding:0 10px;border:1px solid ${ksKKat === k ? '#378ADD' : '#D5DBE1'};border-radius:99px;background:${ksKKat === k ? '#378ADD' : '#fff'};color:${ksKKat === k ? '#fff' : '#334155'};font-size:12px;font-weight:${ksKKat === k ? 700 : 500};cursor:pointer;font-family:inherit">${ad}</button>`).join('')}</div>
       <div class="ks-canvas-wrap" style="position:relative;height:300px"><canvas id="ksk-yilkat"></canvas></div>
+      ${ykPareto}
       <div style="font-size:11.5px;color:#5B6775;line-height:1.45">Her renk bir yıl. 2020–2024 değerleri Excel'deki ESKİ VERİLER özetinden, ayrıntılı kaydı olan yıllar kayıtlardan hesaplanır.</div>`;
   }
   const ic = {
