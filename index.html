@@ -901,17 +901,22 @@ html, body { height: 100%; overflow: hidden;
   body.print-denetim #denetim-print * { box-sizing:border-box; }
   body.print-denetim #denetim-print p { margin:0; }
   body.print-denetim #denetim-print .g { color:#60717F; }
-  body.print-denetim #denetim-print .dnr-top { display:flex; justify-content:space-between; align-items:flex-end; height:12mm; }
-  body.print-denetim #denetim-print h1 { margin:0; font-size:15pt; font-weight:700; color:#17324A; line-height:1.15; }
-  body.print-denetim #denetim-print .dnr-sub { font-size:9pt; color:#60717F; margin-top:1.5mm; line-height:1.15; }
-  body.print-denetim #denetim-print .dnr-rt { font-size:9pt; color:#60717F; }
+  body.print-denetim #denetim-print .dnr-wrap { width:100%; border-collapse:collapse; table-layout:auto; }
+  body.print-denetim #denetim-print .dnr-wrap > thead { display:table-header-group; }
+  body.print-denetim #denetim-print .dnr-wrap > thead > tr > td, body.print-denetim #denetim-print .dnr-wrap > tbody > tr > td { padding:0; border:0; vertical-align:top; }
+  body.print-denetim #denetim-print .dnr-runw { height:12mm; }
+  body.print-denetim #denetim-print .dnr-run { height:9.7mm; border-bottom:.5pt solid #CBD5DC; overflow:hidden; }
+  body.print-denetim #denetim-print .dnr-run .t { display:flex; justify-content:space-between; align-items:flex-end; height:5.5mm; line-height:5.5mm; }
+  body.print-denetim #denetim-print h1 { margin:0; font-size:13pt; font-weight:700; color:#17324A; line-height:5.5mm; }
+  body.print-denetim #denetim-print .dnr-rt { font-size:8.5pt; color:#60717F; line-height:5.5mm; }
+  body.print-denetim #denetim-print .dnr-sub { font-size:8.5pt; color:#60717F; line-height:4mm; height:4mm; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   body.print-denetim #denetim-print .dnr-sp { height:4mm; }
   body.print-denetim #denetim-print table { border-collapse:collapse; table-layout:fixed; }
   body.print-denetim #denetim-print .dnr-oz td { background:#EEF3F7; border:1.5pt solid #fff; text-align:center; padding:0 1mm; height:13mm; vertical-align:middle; width:20%; }
   body.print-denetim #denetim-print .dnr-oz .n { font-size:14pt; font-weight:700; color:#17324A; line-height:1.15; }
   body.print-denetim #denetim-print .dnr-oz .l { font-size:7.5pt; color:#60717F; line-height:1.15; }
   body.print-denetim #denetim-print .dnr-main th { background:#17324A; color:#fff; font-size:8pt; font-weight:700; border:.5pt solid #CBD5DC; padding:0 1.5mm; height:6.5mm; text-align:center; vertical-align:middle; line-height:1.15; }
-  body.print-denetim #denetim-print .dnr-main .dnr-bar th { background:#EEF3F7; color:#17324A; font-size:9pt; text-align:left; height:7mm; }
+  body.print-denetim #denetim-print .dnr-main .dnr-bar th { background:#EEF3F7; color:#17324A; font-size:9pt; text-align:left; height:7mm; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   body.print-denetim #denetim-print .dnr-main .dnr-bar th span { color:#60717F; font-weight:400; margin-left:2mm; }
   body.print-denetim #denetim-print .dnr-main td { border:.5pt solid #CBD5DC; padding:1.2mm 1.5mm; vertical-align:middle; font-size:8pt; line-height:1.15; height:var(--rm); word-wrap:break-word; text-align:left; }
   body.print-denetim #denetim-print .dnr-main td.c { text-align:center; }
@@ -19578,7 +19583,7 @@ const DNR_YER = {
 };
 const DNR_TOPH = 12, DNR_STRIPH = 13, DNR_HEADH = 6.5, DNR_BARH = 7;
 function dnrYerlesim(yon, foto) {
-  const L = Object.assign({ mx:10, mt:10, mb:14 }, DNR_YER[yon + (foto ? 'F' : '')]);
+  const L = Object.assign({ mx:10, mt:8, mb:12, hh:12 }, DNR_YER[yon + (foto ? 'F' : '')]);
   L.cw = L.w - 2 * L.mx;
   if (L.cols.reduce((a, c) => a + c[1], 0) !== L.cw) console.warn('Rapor sütun toplamı içerik genişliğine eşit değil');
   return L;
@@ -19672,24 +19677,39 @@ function dnrOzet(rows) {
   return [['Toplam bulgu', rows.length], ['Açık', rows.filter(r => !r.kapali).length], ['Kapalı', rows.filter(r => r.kapali).length],
           ['Yüksek önem', rows.filter(r => r.yuksek).length], ['Terminsiz', rows.filter(r => r.terminsiz).length]];
 }
-function dnrDnBilgi(d, kisa) {
+// Uzun adlar: "Ali Ahmet KOÇ" → "Ali A. KOÇ"
+function dnrKisaAd(ad) {
+  const t = String(ad || '').trim().split(/\s+/).filter(Boolean);
+  if (t.length < 3) return t.join(' ');
+  return t[0] + ' ' + t.slice(1, -1).map(x => x.charAt(0).toLocaleUpperCase('tr-TR') + '.').join(' ') + ' ' + t[t.length - 1];
+}
+function dnrKes(m, max) { m = String(m || ''); return m.length > max ? m.slice(0, Math.max(1, max - 1)).trimEnd() + '…' : m; }
+// Denetim bilgisi tek satıra sığar: önce fabrika listesi sayıya, sonra denetim adı kısaltılır
+function dnrDnBilgi(d, kisa, max, adsiz) {
   if (!d) return '';
-  return [d.ad, dnrTarih(d.tarih), kisa ? '' : dnFabListesi(d).join(', '), d.denetci ? 'Denetçi: ' + d.denetci : ''].filter(Boolean).join(' · ');
+  max = max || 999;
+  const fab = dnFabListesi(d), den = d.denetci ? 'Denetçi: ' + dnrKisaAd(d.denetci) : '';
+  const yap = (ad, f) => [adsiz ? '' : ad, dnrTarih(d.tarih), kisa ? '' : f, den].filter(Boolean).join(' · ');
+  let m = yap(d.ad, fab.join(', '));
+  if (m.length > max && fab.length > 1) m = yap(d.ad, fab.length + ' fabrika');
+  if (m.length > max && !adsiz && d.ad) { const bos = yap('', fab.length > 1 ? fab.length + ' fabrika' : fab.join(', ')).length + (d.ad ? 3 : 0); m = yap(dnrKes(d.ad, Math.max(8, max - bos)), fab.length > 1 ? fab.length + ' fabrika' : fab.join(', ')); }
+  return dnrKes(m, max);
 }
 function dnrAlt(v, gruplar) {
   const tur = { denetim:'denetim', bolum:'bölüm', sorumlu:'sorumlu' }[v.grup];
+  const MAX = Math.floor(v.L.cw / 1.75);
   if (v.grup === 'denetim') {
     if (gruplar.length > 1) return gruplar.length + ' denetim';
-    return [gruplar[0].ad, gruplar[0].meta].filter(Boolean).join(' · ');
+    return dnrKes([gruplar[0].ad, gruplar[0].meta].filter(Boolean).join(' · '), MAX);
   }
   // Bölüm / sorumlu gruplamasında da denetim tarihi ve denetçi bilgisi korunur
   const ids = Array.from(new Set(gruplar.reduce((a, g) => a.concat(g.satirlar.map(r => r.did)), [])));
   const d = ids.length === 1 ? denetimler.find(x => x.id === ids[0]) : null;
-  const parcalar = [];
-  if (gruplar.length === 1) parcalar.push({ bolum:'Bölüm', sorumlu:'Sorumlu' }[v.grup] + ': ' + gruplar[0].ad);
-  if (d) parcalar.push(dnrDnBilgi(d)); else parcalar.push(ids.length + ' denetim');
-  if (gruplar.length > 1) parcalar.push(gruplar.length + ' ' + tur);
-  return parcalar.join(' · ');
+  const on = gruplar.length === 1 ? { bolum:'Bölüm', sorumlu:'Sorumlu' }[v.grup] + ': ' + gruplar[0].ad : '';
+  const son = gruplar.length > 1 ? gruplar.length + ' ' + tur : '';
+  const kalan = MAX - on.length - son.length - 6;
+  const orta = d ? dnrDnBilgi(d, false, kalan) : ids.length + ' denetim';
+  return dnrKes([on, orta, son].filter(Boolean).join(' · '), MAX);
 }
 function dnrModel(opt) {
   const liste = dnrListe(opt);
@@ -19723,12 +19743,12 @@ function dnrModel(opt) {
       const dn = denetimler.find(x => x.id === b.denetimId);
       return { no: i + 1, bolum: b.bolum || '—', tespit: b.metin || '', oneri: dnrOneriSatirlar(b.oneri), onem: on, sorumlu: b.sorumlu || '—',
         termin: dnrTarih(b.termin) || '—', durum: du, foto: '', fotoSrc: fotoli ? dnrAlfaFoto(b) : '', kapali: b.durum === 'kapali', yuksek: b.onem === 'yuksek',
-        terminsiz: !b.termin, did: b.denetimId, dnAd: gosterDenetim && dn ? dnrDnBilgi(dn, true) : '' };
+        terminsiz: !b.termin, did: b.denetimId, dnAd: gosterDenetim && dn ? dnrDnBilgi(dn, true, Math.floor(L.cw / 4)) : '' };
     });
     let ad, meta;
     if (opt.grup === 'denetim') {
       const d = denetimler.find(x => x.id === k) || {};
-      ad = d.ad || ''; meta = [dnrTarih(d.tarih), dnFabListesi(d).join(', '), d.denetci ? 'Denetçi: ' + d.denetci : ''].filter(Boolean).join(' · ');
+      ad = d.ad || ''; meta = dnrDnBilgi(d, false, Math.floor(L.cw / 1.85) - ad.length - 3, true);
     } else { ad = k; meta = satirlar.length + ' bulgu'; }
     return { ad, meta, satirlar };
   });
@@ -19751,11 +19771,11 @@ function dnrParcala(v) {
 // Sayfa sayısı tahmini (özet çipi için)
 function dnrTahmin(v) {
   const L = v.L, cpl = w => Math.max(8, (w - 3) / 1.41), kol = n => L.cols.find(c => c[0] === n)[1];
-  const wT = kol('Tespit'), wO = kol('Öneri'), kul = L.h - L.mt - L.mb;
+  const wT = kol('Tespit'), wO = kol('Öneri'), kul = L.h - L.mt - L.hh - L.mb;
   const yuk = r => { const lt = Math.ceil(Math.max(1, r.tespit.length + (r.dnAd ? 14 + r.dnAd.length : 0)) / cpl(wT));
     const lo = r.oneri.reduce((a, o) => a + Math.ceil(((o.lab ? o.lab.length + 1 : 0) + o.txt.length) / cpl(wO)), 0);
     return Math.max(L.rowmin, 2.4 + 3.24 * Math.max(lt, lo)); };
-  let sayfa = 1, y = DNR_TOPH + 4 + (v.ozetGoster ? DNR_STRIPH + 4 : 0);
+  let sayfa = 1, y = (v.ozetGoster ? DNR_STRIPH + 4 : 0);
   v.gruplar.forEach(g => {
     const baslik = DNR_HEADH + (v.coklu ? DNR_BARH : 0);
     if (y + baslik + 20 > kul) { sayfa++; y = 0; }
@@ -19801,8 +19821,8 @@ function dnrHtml(v, ek) {
     const ayir = gi > 0 && ek && ek.sayfaAyir ? '<div class="dnr-pb"></div>' : '';
     return `${ayir}<table class="dnr-main" style="width:${L.cw}mm;--rm:${L.rowmin}mm">${colg}<thead>${bar}${hr}</thead><tbody>${trs}</tbody></table><div class="dnr-sp"></div>`;
   }).join('');
-  return `<div class="dnr-top" style="width:${L.cw}mm"><div><h1>${esc(v.baslik)}</h1><div class="dnr-sub">${esc(v.alt)}</div></div><div class="dnr-rt">Rapor tarihi: ${esc(v.rapor)}</div></div>
-    <div class="dnr-sp"></div>${v.ozetGoster ? `<table class="dnr-oz" style="width:${L.cw}mm"><tr>${oz}</tr></table><div class="dnr-sp"></div>` : ''}${tablolar}`;
+  const ust = `<div class="dnr-runw"><div class="dnr-run" style="width:${L.cw}mm"><div class="t"><h1>${esc(v.baslik)}</h1><div class="dnr-rt">Rapor tarihi: ${esc(v.rapor)}</div></div><div class="dnr-sub">${esc(v.alt)}</div></div></div>`;
+  return `<table class="dnr-wrap" style="width:${L.cw}mm"><thead><tr><td>${ust}</td></tr></thead><tbody><tr><td>${v.ozetGoster ? `<table class="dnr-oz" style="width:${L.cw}mm"><tr>${oz}</tr></table><div class="dnr-sp"></div>` : ''}${tablolar}</td></tr></tbody></table>`;
 }
 function dnrSayfaStili(v) {
   let s = document.getElementById('dnr-page-style');
@@ -19810,7 +19830,7 @@ function dnrSayfaStili(v) {
   document.body.appendChild(s);   // sayfa sonunda olmalı: diğer @page kurallarını ezsin
   const L = v.L;
   s.textContent = `@media print{@page{size:A4 ${v.yon === 'yatay' ? 'landscape' : 'portrait'};margin:${L.mt}mm ${L.mx - 0.4}mm ${L.mb}mm ${L.mx}mm;` +
-    `@bottom-center{content:""}@bottom-left{content:"Kurum içi";font-family:Arial,sans-serif;font-size:7pt;color:#60717F}` +
+    `@bottom-center{content:""}` +
     `@bottom-right{content:"Sayfa " counter(page) " / " counter(pages);font-family:Arial,sans-serif;font-size:7pt;color:#60717F}}}`;
   const temizle = () => { s.remove(); window.removeEventListener('afterprint', temizle); };
   window.addEventListener('afterprint', temizle);
@@ -19834,14 +19854,14 @@ async function dnrCikti(tur) {
   }
   let el = document.getElementById('denetim-print');
   if (!el) { el = document.createElement('div'); el.id = 'denetim-print'; document.body.appendChild(el); }
-  const pdfOpt = pv => ({ rootId:'denetim-print', bodyClass:'print-denetim', name:pv.dosya, width:Math.round(pv.L.cw / 25.4 * 96), mx:pv.L.mx, top:pv.L.mt, bottom:pv.L.mb + 2, orientation: pv.yon === 'yatay' ? 'landscape' : 'portrait' });
+  const pdfOpt = pv => ({ rootId:'denetim-print', bodyClass:'print-denetim', name:pv.dosya, width:Math.round(pv.L.cw / 25.4 * 96), mx:pv.L.mx, top:pv.L.mt, bottom:pv.L.mb + 2, repeatSel:'.dnr-runw', footRight:true, orientation: pv.yon === 'yatay' ? 'landscape' : 'portrait' });
   if (tur === 'paylas') {
     dnrClose();
-    if (!parca) { el.innerHTML = dnrHtml(v); isgSharePdf(pdfOpt(v)); return; }
+    if (!parca) { el.innerHTML = dnrHtml(v, { paylas: true }); isgSharePdf(pdfOpt(v)); return; }
     const dosyalar = []; let hata = false;
     for (let i = 0; i < parca.length && !hata; i++) {
       toast('PDF hazırlanıyor ' + (i + 1) + '/' + parca.length);
-      el.innerHTML = dnrHtml(parca[i]);
+      el.innerHTML = dnrHtml(parca[i], { paylas: true });
       await new Promise(res => isgSharePdf(Object.assign(pdfOpt(parca[i]), {
         onBlob: async (blob, ad) => { dosyalar.push({ name: ad, data: await dnrBlobU8(blob) }); res(); },
         onError: () => { hata = true; res(); } })));
@@ -19872,7 +19892,7 @@ function dnrDocx(v) {
   const tabRun = sz => `<w:r><w:rPr>${FONT}<w:sz w:val="${sz * 2}"/></w:rPr><w:tab/></w:r>`;
   const par = (runs, o) => { o = o || {};
     const sp = o.exact ? `<w:spacing w:before="0" w:after="0" w:line="${tw(o.exact)}" w:lineRule="exact"/>` : `<w:spacing w:before="${Math.round((o.before || 0) * 56.6929 / 1)}" w:after="0" w:line="240" w:lineRule="auto"/>`;
-    return `<w:p><w:pPr>${o.tabs || ''}${sp}${o.jc ? `<w:jc w:val="${o.jc}"/>` : ''}</w:pPr>${runs}</w:p>`; };
+    return `<w:p><w:pPr>${o.bdr || ''}${o.tabs || ''}${sp}${o.jc ? `<w:jc w:val="${o.jc}"/>` : ''}</w:pPr>${runs}</w:p>`; };
   const spacer = mm => par(run('', { sz: 1 }), { exact: mm });
   const cell = (w, inner, o) => { o = o || {};
     return `<w:tc><w:tcPr><w:tcW w:w="${tw(w)}" w:type="dxa"/>${o.span ? `<w:gridSpan w:val="${o.span}"/>` : ''}${o.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>` : ''}<w:vAlign w:val="${o.va || 'center'}"/></w:tcPr>${inner}</w:tc>`; };
@@ -19895,12 +19915,6 @@ function dnrDocx(v) {
       `<pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`; };
 
   let body = '';
-  // Üst blok
-  const wl = L.cw - 50;
-  body += table([wl, 50], row(
-    cell(wl, par(run(v.baslik, { sz: 15, b: 1, color: DNR_NAVY })) + par(run(v.alt, { sz: 9, color: DNR_GRAY }), { before: 1.5 }), { va: 'bottom' }) +
-    cell(50, par(run('Rapor tarihi: ' + v.rapor, { sz: 9, color: DNR_GRAY }), { jc: 'right' }), { va: 'bottom' }), { h: DNR_TOPH }), { nil: 1, mar: [0, 0] });
-  body += spacer(4);
   // Özet şeridi
   const ow = L.cw / 5;
   if (v.ozetGoster) body += table([ow, ow, ow, ow, ow], row(v.ozet.map(o => cell(ow,
@@ -19929,24 +19943,28 @@ function dnrDocx(v) {
     });
     body += table(widths, rows) + spacer(4);
   });
-  const pg = `<w:pgSz w:w="${tw(L.w)}" w:h="${tw(L.h)}"${L.w > L.h ? ' w:orient="landscape"' : ''}/><w:pgMar w:top="${tw(L.mt)}" w:right="${tw(L.mx)}" w:bottom="${tw(L.mb)}" w:left="${tw(L.mx)}" w:header="${tw(4)}" w:footer="${tw(5)}" w:gutter="0"/>`;
+  const pg = `<w:pgSz w:w="${tw(L.w)}" w:h="${tw(L.h)}"${L.w > L.h ? ' w:orient="landscape"' : ''}/><w:pgMar w:top="${tw(L.mt + L.hh)}" w:right="${tw(L.mx)}" w:bottom="${tw(L.mb)}" w:left="${tw(L.mx)}" w:header="${tw(L.mt)}" w:footer="${tw(5)}" w:gutter="0"/>`;
   const NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
-  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${NS}><w:body>${body}<w:sectPr><w:footerReference w:type="default" r:id="rIdFtr"/>${pg}</w:sectPr></w:body></w:document>`;
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${NS}><w:body>${body}<w:sectPr><w:headerReference w:type="default" r:id="rIdHdr"/><w:footerReference w:type="default" r:id="rIdFtr"/>${pg}</w:sectPr></w:body></w:document>`;
   const fr = (t, extra) => `<w:r><w:rPr>${FONT}<w:color w:val="${DNR_GRAY}"/><w:sz w:val="14"/><w:szCs w:val="14"/></w:rPr>${extra || `<w:t xml:space="preserve">${X(t)}</w:t>`}</w:r>`;
   const fld = ins => fr('', '<w:fldChar w:fldCharType="begin"/>') + fr('', `<w:instrText xml:space="preserve"> ${ins} </w:instrText>`) + fr('', '<w:fldChar w:fldCharType="separate"/>') + fr('1') + fr('', '<w:fldChar w:fldCharType="end"/>');
   const ftr = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr ${NS}><w:p><w:pPr><w:tabs><w:tab w:val="right" w:pos="${tw(L.cw)}"/></w:tabs><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/></w:pPr>` +
-    fr('Kurum içi') + fr('', '<w:tab/>') + fr('Sayfa ') + fld('PAGE') + fr(' / ') + fld('NUMPAGES') + '</w:p></w:ftr>';
+    fr('', '<w:tab/>') + fr('Sayfa ') + fld('PAGE') + fr(' / ') + fld('NUMPAGES') + '</w:p></w:ftr>';
+  const hdr = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:hdr ${NS}>` +
+    par(run(v.baslik, { sz: 13, b: 1, color: DNR_NAVY }) + tabRun(13) + run('Rapor tarihi: ' + v.rapor, { sz: 8.5, color: DNR_GRAY }), { exact: 5.5, tabs: `<w:tabs><w:tab w:val="right" w:pos="${tw(L.cw)}"/></w:tabs>` }) +
+    par(run(v.alt, { sz: 8.5, color: DNR_GRAY }), { exact: 4, bdr: `<w:pBdr><w:bottom w:val="single" w:sz="4" w:space="0" w:color="${DNR_LINE}"/></w:pBdr>` }) + '</w:hdr>';
   const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ${NS}><w:docDefaults><w:rPrDefault><w:rPr>${FONT}<w:sz w:val="16"/><w:szCs w:val="16"/><w:lang w:val="tr-TR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`;
   const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
     `<Relationship Id="rIdSty" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+    `<Relationship Id="rIdHdr" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>` +
     `<Relationship Id="rIdFtr" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>` +
     media.map(m => `<Relationship Id="${m.rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${m.name.split('/').pop()}"/>`).join('') + '</Relationships>';
   const ct = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/>` +
-    `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>`;
+    `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>`;
   const root = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
   const te = new TextEncoder();
   const dosyalar = [{ name: '[Content_Types].xml', data: te.encode(ct) }, { name: '_rels/.rels', data: te.encode(root) }, { name: 'word/document.xml', data: te.encode(doc) },
-    { name: 'word/styles.xml', data: te.encode(styles) }, { name: 'word/footer1.xml', data: te.encode(ftr) }, { name: 'word/_rels/document.xml.rels', data: te.encode(rels) }].concat(media.map(m => ({ name: m.name, data: m.data })));
+    { name: 'word/styles.xml', data: te.encode(styles) }, { name: 'word/header1.xml', data: te.encode(hdr) }, { name: 'word/footer1.xml', data: te.encode(ftr) }, { name: 'word/_rels/document.xml.rels', data: te.encode(rels) }].concat(media.map(m => ({ name: m.name, data: m.data })));
   return new Blob([dnrZip(dosyalar)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 }
 // Sıkıştırmasız (store) minimal ZIP
@@ -23584,12 +23602,13 @@ window.addEventListener('DOMContentLoaded',()=>{
         for(var h=0;h<heads.length;h++){if(y>heads[h]+3&&y<heads[h]+75)return}
         cand.push(y)});
       // Uzun raporlarda tarayıcı canvas sınırı (özellikle mobil) boş sayfa üretir: yüksek içerik parçalara bölünerek çizilir
+      var rp=0;if(opt.repeatSel){var hn=el.querySelector(opt.repeatSel);if(hn)rp=hn.getBoundingClientRect().bottom-top}
       var H=Math.ceil(el.getBoundingClientRect().height),CH=5000,base={scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:W};
       function grab(y0,h){return mode==='svg'?svgGrab(el,W,H,y0,h,2):window.html2canvas(el,Object.assign({},base,{y:top+y0,height:h}))}
-      if(H<=CH+800)return (mode==='svg'?svgGrab(el,W,H,0,H,2):window.html2canvas(el,base)).then(function(cv){return {chunks:[{y0:0,y1:cv.height/(cv.width/W),cv:cv}],k:cv.width/W,total:cv.height/(cv.width/W),forced:forced,cand:cand}});
+      if(H<=CH+800)return (mode==='svg'?svgGrab(el,W,H,0,H,2):window.html2canvas(el,base)).then(function(cv){return {chunks:[{y0:0,y1:cv.height/(cv.width/W),cv:cv}],k:cv.width/W,total:cv.height/(cv.width/W),forced:forced,cand:cand,rp:rp}});
       var parts=[],y0=0;while(y0<H){parts.push([y0,Math.min(H,y0+CH)]);y0+=CH}
       var out=[],i=0;
-      function nxt(){if(i>=parts.length)return Promise.resolve({chunks:out,k:out[0].cv.width/W,total:H,forced:forced,cand:cand});
+      function nxt(){if(i>=parts.length)return Promise.resolve({chunks:out,k:out[0].cv.width/W,total:H,forced:forced,cand:cand,rp:rp});
         var pr=parts[i++];
         return grab(pr[0],pr[1]-pr[0]).then(function(cv){out.push({y0:pr[0],y1:pr[1],cv:cv});return nxt()})}
       return nxt()
@@ -23612,8 +23631,8 @@ window.addEventListener('DOMContentLoaded',()=>{
       var ori=opt.orientation==='landscape'?'landscape':'portrait';var J=window.jspdf.jsPDF,pdf=new J({unit:'mm',format:'a4',orientation:ori});
       var PW=ori==='landscape'?297:210,PH=ori==='landscape'?210:297,mx=opt.mx||8,tp=opt.top||10,bt=opt.bottom||16;
       var k=r.k,cw=PW-2*mx,ch=PH-tp-bt;
-      var pagePx=Math.floor(ch/cw*opt.width);
-      var total=r.total,pages=[],y=0,guard=0;
+      var rp=r.rp||0,rpmm=rp/opt.width*cw;var pagePx=Math.floor((ch-rpmm)/cw*opt.width);
+      var total=r.total,pages=[],y=rp,guard=0;
       while(y<total-2&&guard++<200){
         var end=y+pagePx,f=r.forced.filter(function(v){return v>y+20&&v<end}).sort(function(a,b){return a-b})[0];
         if(f!==undefined)end=f;
@@ -23623,14 +23642,15 @@ window.addEventListener('DOMContentLoaded',()=>{
         pages.push([y,end]);y=end}
       pages.forEach(function(p,i){
         if(i)pdf.addPage();
-        var sh=Math.max(1,Math.round((p[1]-p[0])*k));
+        var segs=rp?[[0,rp,0],[p[0],p[1],rp]]:[[p[0],p[1],0]],th=(rp+(p[1]-p[0]))*k;
+        var sh=Math.max(1,Math.round(rp?th:(p[1]-p[0])*k));
         var pc=document.createElement('canvas');pc.width=r.chunks[0].cv.width;pc.height=sh;
         var cx=pc.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,pc.width,sh);
-        r.chunks.forEach(function(c){var a=Math.max(p[0],c.y0),z=Math.min(p[1],c.y1);if(z<=a)return;
-          var dh=Math.round((z-a)*k),sy=Math.round((a-c.y0)*k),dy=Math.round((a-p[0])*k);if(dh<1)return;
-          cx.drawImage(c.cv,0,sy,c.cv.width,dh,0,dy,c.cv.width,dh)});
-        pdf.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',mx,tp,cw,(p[1]-p[0])/opt.width*cw);
-        pdf.setFontSize(8);pdf.setTextColor(100);pdf.text('Sayfa '+(i+1)+'/'+pages.length,PW/2,PH-8,{align:'center'});
+        segs.forEach(function(sg){r.chunks.forEach(function(c){var a=Math.max(sg[0],c.y0),z=Math.min(sg[1],c.y1);if(z<=a)return;
+          var dh=Math.round((z-a)*k),sy=Math.round((a-c.y0)*k),dy=Math.round((a-sg[0]+sg[2])*k);if(dh<1)return;
+          cx.drawImage(c.cv,0,sy,c.cv.width,dh,0,dy,c.cv.width,dh)})});
+        pdf.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',mx,tp,cw,(rp+(p[1]-p[0]))/opt.width*cw);
+        pdf.setFontSize(8);pdf.setTextColor(100);pdf.text('Sayfa '+(i+1)+'/'+pages.length,opt.footRight?PW-mx:PW/2,PH-8,{align:opt.footRight?'right':'center'});
       });
       var name=(opt.name||'Rapor').replace(/[\\\/:*?"<>|]+/g,' ').trim()+'.pdf';
       var blob=pdf.output('blob');done();if(typeof opt.onBlob==='function'){opt.onBlob(blob,name);return}dialog(blob,name);
