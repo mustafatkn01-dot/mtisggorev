@@ -798,6 +798,14 @@ html, body { height: 100%; overflow: hidden;
 .dn-grup-body { padding:10px; display:flex; flex-direction:column; gap:8px; }
 .dn-tur-badge { font-size:9px; font-weight:700; padding:1px 7px; border-radius:99px; color:#fff; white-space:nowrap; }
 /* Her bulgu kendi kutusunda — arşivde tek tek ayırt edilsin */
+.isg-onay-bg{position:fixed;inset:0;z-index:100000;background:rgba(10,22,34,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.isg-onay-card{width:100%;max-width:380px;background:var(--surface,#fff);color:var(--text,#17324A);border:1px solid var(--border,#DCE3EA);border-radius:18px;box-shadow:0 18px 48px rgba(0,0,0,.35);padding:20px 18px 16px;display:flex;flex-direction:column;gap:8px}
+.isg-onay-b{font-size:16px;font-weight:800}
+.isg-onay-m{font-size:13.5px;line-height:1.5;color:var(--text2,#5A6B7B);word-break:break-word}
+.isg-onay-a{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:10px}
+.isg-onay-btn{min-height:40px;padding:0 16px;border-radius:10px;border:1px solid var(--border2,#C9D3DC);background:var(--surface,#fff);color:var(--text,#17324A);font-weight:700;font-size:13px;cursor:pointer}
+.isg-onay-btn.sil{background:#C0392B;border-color:#C0392B;color:#fff}
+.isg-onay-btn.ok{background:var(--accent,#378ADD);border-color:var(--accent,#378ADD);color:#fff}
 /* Bulgu satırı: iki katmanlı (kapalı özet + açılan ayrıntı) */
 .bgs-row{border:1px solid var(--border);border-radius:13px;overflow:hidden;background:var(--surface)}
 .bgs-row.kapali .bgs-sum{opacity:.65}
@@ -19025,14 +19033,37 @@ function denetimSubmit() {
   denetimSave(); denetimCloseAdd(); denetimFiltreKur(); denetimRender();
   toast(dnEditId ? 'Denetim güncellendi' : 'Denetim eklendi');
 }
+/* Tema uyumlu onay kartı (tarayıcının kendi confirm penceresi yerine) */
+function isgOnay(o, onEvet, onDiger) {
+  const eski = document.getElementById('isg-onay-bg'); if (eski) eski.remove();
+  const bg = document.createElement('div'); bg.id = 'isg-onay-bg'; bg.className = 'isg-onay-bg';
+  const kapat = () => { bg.remove(); document.removeEventListener('keydown', tus); };
+  const tus = e => { if (e.key === 'Escape') kapat(); };
+  const dgr = o.diger ? `<button class="isg-onay-btn" data-k="diger">${esc(o.diger)}</button>` : '';
+  bg.innerHTML = `<div class="isg-onay-card" role="alertdialog" aria-modal="true">
+    <div class="isg-onay-b">${esc(o.baslik || 'Onay')}</div>
+    <div class="isg-onay-m">${esc(o.mesaj || '').replace(/\n/g, '<br>')}</div>
+    <div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">${esc(o.iptal || 'Vazgeç')}</button>${dgr}<button class="isg-onay-btn ${o.tehlike === false ? 'ok' : 'sil'}" data-k="evet">${esc(o.evet || 'Tamam')}</button></div></div>`;
+  bg.addEventListener('click', e => {
+    if (e.target === bg) { kapat(); return; }
+    const k = e.target.closest('[data-k]'); if (!k) return;
+    kapat();
+    if (k.dataset.k === 'evet' && onEvet) onEvet();
+    else if (k.dataset.k === 'diger' && onDiger) onDiger();
+  });
+  document.addEventListener('keydown', tus);
+  document.body.appendChild(bg);
+  const ilk = bg.querySelector('[data-k="iptal"]'); if (ilk) ilk.focus();
+}
 function denetimSil(id) {
   const say = bulgular.filter(b => b.denetimId === id).length;
   const d = denetimler.find(x => x.id === id);
-  if (!confirm(`"${d?.ad}" denetimi ve içindeki ${say} bulgu silinsin mi? Geri alınamaz.`)) return;
-  denetimler = denetimler.filter(x => x.id !== id);
-  bulgular   = bulgular.filter(b => b.denetimId !== id);
-  denetimSave(); denetimFiltreKur(); denetimRender();
-  toast('Denetim silindi');
+  isgOnay({ baslik:'Denetim silinsin mi?', mesaj:`"${d?.ad}" denetimi ve içindeki ${say} bulgu silinecek. Geri alınamaz.`, evet:'Sil' }, () => {
+    denetimler = denetimler.filter(x => x.id !== id);
+    bulgular   = bulgular.filter(b => b.denetimId !== id);
+    denetimSave(); denetimFiltreKur(); denetimRender();
+    toast('Denetim silindi');
+  });
 }
 
 // ── Tek bulgu ekle / düzenle ────────────────────────────────
@@ -19114,11 +19145,12 @@ function bulguFotoCiz() {
 }
 function bulguFotoAlfa(i) { bgAlfa = i; bulguFotoCiz(); }
 function bulguFotoSil(i) {
-  if (!confirm('Bu fotoğraf kaldırılsın mı?')) return;
-  bgFotolar.splice(i, 1);
-  if (bgAlfa === i) bgAlfa = 0; else if (bgAlfa > i) bgAlfa--;
-  if (bgAlfa >= bgFotolar.length) bgAlfa = 0;
-  bulguFotoCiz();
+  isgOnay({ baslik:'Fotoğraf kaldırılsın mı?', mesaj:'Bu fotoğraf bulgudan kaldırılacak. Kaydetmeden çıkarsanız eski hali korunur.', evet:'Kaldır' }, () => {
+    bgFotolar.splice(i, 1);
+    if (bgAlfa === i) bgAlfa = 0; else if (bgAlfa > i) bgAlfa--;
+    if (bgAlfa >= bgFotolar.length) bgAlfa = 0;
+    bulguFotoCiz();
+  });
 }
 
 // Bölüm açılır listesi: seçili denetimin fabrikalarındaki kayıtlı bölümler + önceki bulgulardaki bölümler
@@ -19191,10 +19223,11 @@ function bulguSubmit() {
   toast(bgEditId ? 'Bulgu güncellendi' : 'Bulgu eklendi');
 }
 function bulguSil(id) {
-  if (!confirm('Bu bulgu silinsin mi?')) return;
-  bulgular = bulgular.filter(x => x.id !== id);
-  denetimSave(); denetimRender();
-  toast('Bulgu silindi');
+  isgOnay({ baslik:'Bulgu silinsin mi?', mesaj:'Bu bulgu kalıcı olarak silinecek.', evet:'Sil' }, () => {
+    bulgular = bulgular.filter(x => x.id !== id);
+    denetimSave(); denetimRender();
+    toast('Bulgu silindi');
+  });
 }
 function bulguDurumDegistir(id, durum) {
   const b = bulgular.find(x => x.id === id);
@@ -19281,8 +19314,9 @@ function bulguGoreveEkle(id) {
     .filter(x=>x.skor>=.52).sort((a,z)=>z.skor-a.skor).slice(0,3);
   if (adaylar.length) {
     const ad=adaylar[0].t;
-    const sec=confirm(`Benzer açık görev bulundu:\n\n"${ad.text}"\n\nTamam = mevcut göreve bağla\nİptal = yeni görev oluştur`);
-    if(sec){ bulguGorevBagla(b,ad,d); return; }
+    isgOnay({ baslik:'Benzer açık görev bulundu', mesaj:`"${ad.text}"`, evet:'Mevcut göreve bağla', diger:'Yeni görev oluştur', iptal:'Vazgeç', tehlike:false },
+      () => bulguGorevBagla(b,ad,d), () => bulguYeniGorevOlustur(b,d));
+    return;
   }
   bulguYeniGorevOlustur(b,d);
 }
