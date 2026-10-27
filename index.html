@@ -892,20 +892,42 @@ html, body { height: 100%; overflow: hidden;
   body.print-modul #modul-print tr { break-inside:avoid; page-break-inside:avoid; }
 }
 
-/* Denetim raporu yazdırma */
+/* Denetim raporu yazdırma / PDF paylaş (Word ile aynı ölçüler: mm) */
 #denetim-print { display:none; }
 @media print {
   body.print-denetim #app, body.print-denetim #toast,
   body.print-denetim #mob-fab, body.print-denetim #loading-msg { display:none !important; }
-  body.print-denetim #denetim-print { display:block !important; color:#111; }
-  body.print-denetim #denetim-print h1 { font-size:16px; margin-bottom:2px; }
-  body.print-denetim #denetim-print h2 { font-size:12px; margin:12px 0 4px; border-bottom:1px solid #999; padding-bottom:2px; }
-  body.print-denetim #denetim-print .dp-meta { font-size:10px; color:#666; margin-bottom:10px; }
-  body.print-denetim #denetim-print table { width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px; }
-  body.print-denetim #denetim-print th, body.print-denetim #denetim-print td { border:1px solid #ccc; padding:4px 5px; text-align:left; vertical-align:top; }
-  body.print-denetim #denetim-print th { background:#eee !important; font-weight:700; }
-  body.print-denetim #denetim-print tr { break-inside:avoid; page-break-inside:avoid; }
+  body.print-denetim #denetim-print { display:block !important; color:#1d2b36; font-family:Arial,'Liberation Sans',sans-serif; font-size:8pt; line-height:1.15; margin:0; padding:0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body.print-denetim #denetim-print * { box-sizing:border-box; }
+  body.print-denetim #denetim-print p { margin:0; }
+  body.print-denetim #denetim-print .g { color:#60717F; }
+  body.print-denetim #denetim-print .dnr-top { display:flex; justify-content:space-between; align-items:flex-end; height:12mm; }
+  body.print-denetim #denetim-print h1 { margin:0; font-size:15pt; font-weight:700; color:#17324A; line-height:1.15; }
+  body.print-denetim #denetim-print .dnr-sub { font-size:9pt; color:#60717F; margin-top:1.5mm; line-height:1.15; }
+  body.print-denetim #denetim-print .dnr-rt { font-size:9pt; color:#60717F; }
+  body.print-denetim #denetim-print .dnr-sp { height:4mm; }
+  body.print-denetim #denetim-print table { border-collapse:collapse; table-layout:fixed; }
+  body.print-denetim #denetim-print .dnr-oz td { background:#EEF3F7; border:1.5pt solid #fff; text-align:center; padding:0 1mm; height:13mm; vertical-align:middle; width:20%; }
+  body.print-denetim #denetim-print .dnr-oz .n { font-size:14pt; font-weight:700; color:#17324A; line-height:1.15; }
+  body.print-denetim #denetim-print .dnr-oz .l { font-size:7.5pt; color:#60717F; line-height:1.15; }
+  body.print-denetim #denetim-print .dnr-main th { background:#17324A; color:#fff; font-size:8pt; font-weight:700; border:.5pt solid #CBD5DC; padding:0 1.5mm; height:6.5mm; text-align:center; vertical-align:middle; line-height:1.15; }
+  body.print-denetim #denetim-print .dnr-main .dnr-bar th { background:#EEF3F7; color:#17324A; font-size:9pt; text-align:left; height:7mm; }
+  body.print-denetim #denetim-print .dnr-main .dnr-bar th span { color:#60717F; font-weight:400; margin-left:2mm; }
+  body.print-denetim #denetim-print .dnr-main td { border:.5pt solid #CBD5DC; padding:1.2mm 1.5mm; vertical-align:middle; font-size:8pt; line-height:1.15; height:var(--rm); word-wrap:break-word; text-align:left; }
+  body.print-denetim #denetim-print .dnr-main td.c { text-align:center; }
+  body.print-denetim #denetim-print .dnr-main td img { width:30mm; height:22.5mm; display:inline-block; vertical-align:middle; }
+  body.print-denetim #denetim-print .dnr-main tr { break-inside:avoid; page-break-inside:avoid; }
+  body.print-denetim #denetim-print .dnr-main thead { display:table-header-group; }
 }
+/* Rapor seçenekleri penceresi */
+.dnr-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border2);border-radius:10px;background:var(--surface2);cursor:pointer}
+.dnr-opt input{margin-top:2px;width:16px;height:16px;accent-color:#378ADD;flex-shrink:0}
+.dnr-opt b{display:block;font-size:12px;color:var(--text)}
+.dnr-opt small{display:block;font-size:10.5px;color:var(--text3);margin-top:2px}
+.dnr-bilgi{font-size:11px;color:var(--text3);text-align:center}
+.dnr-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dnr-actions button{padding:11px 6px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12.5px;font-weight:700;cursor:pointer}
+.dnr-actions button:first-child{background:#378ADD;border-color:#378ADD;color:#fff}
 
 /* ── KAZA / RAMAK KALA MODÜLÜ ── */
 .kz-lbl { font-size:11px; font-weight:600; color:var(--text2); display:block; margin-bottom:4px; }
@@ -6796,8 +6818,7 @@ px}
     <button onclick="denetimOpenAdd()" class="dn-primary">+ Denetim</button>
     <div class="dn-head-actions">
       <button onclick="topluOpen()" class="dn-secondary">📥 Excel / Toplu Yükle</button>
-      <button onclick="denetimPrint()" class="dn-secondary">🖨 Rapor</button>
-      <button onclick="denetimPrint(true)" class="dn-secondary" title="PDF hazırla ve cihaza kaydetmeden paylaş">↗ Paylaş</button>
+      <button onclick="dnrOpen()" class="dn-secondary" title="PDF, paylaş veya Word raporu">📄 Rapor</button>
     </div>
   </div>
   <div class="dn-scroll">
@@ -6847,6 +6868,28 @@ px}
     <div class="audit-modal-footer">
       <button class="mbtn-cancel" onclick="denetimCloseAdd()">İptal</button>
       <button class="audit-save-btn" onclick="denetimSubmit()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Denetim Raporu seçenekleri -->
+<div id="dnr-modal-bg" class="audit-modal-bg" onclick="if(event.target===this)dnrClose()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:62;align-items:center;justify-content:center;">
+  <div class="audit-modal-box" style="background:var(--surface);border-radius:12px;padding:20px;width:420px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
+    <div class="audit-modal-head" style="display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-size:14px;font-weight:700;color:var(--text);">Rapor Seçenekleri</h3>
+      <button onclick="dnrClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
+    </div>
+    <label class="dnr-opt"><input type="checkbox" id="dnr-foto" onchange="dnrBilgi()"><span><b>Alfa fotoğrafları ekle</b><small id="dnr-foto-not"></small></span></label>
+    <label class="dnr-opt"><input type="checkbox" id="dnr-acik" onchange="dnrBilgi()"><span><b>Yalnızca açık bulgular</b><small>Kapalı bulgular rapora girmez.</small></span></label>
+    <div class="mrow2">
+      <div class="mfield"><label>Bölüm</label><select id="dnr-bolum" onchange="dnrBilgi()"></select></div>
+      <div class="mfield"><label>Sorumlu</label><select id="dnr-sorumlu" onchange="dnrBilgi()"></select></div>
+    </div>
+    <div id="dnr-bilgi" class="dnr-bilgi"></div>
+    <div class="dnr-actions">
+      <button type="button" onclick="dnrCikti('yazdir')" title="Yazdır veya PDF olarak kaydet">🖨 PDF</button>
+      <button type="button" onclick="dnrCikti('paylas')" title="PDF hazırla ve paylaş">↗ Paylaş</button>
+      <button type="button" onclick="dnrCikti('word')" title="Düzenlenebilir Word dosyası">📝 Word</button>
     </div>
   </div>
 </div>
@@ -19486,38 +19529,294 @@ function topluDosyaIsle(satirlar) {
   toast(bulguEklenen + ' bulgu' + (denetimEklenen ? ' ve ' + denetimEklenen + ' yeni denetim' : '') + ' içe aktarıldı');
 }
 
-// ── Rapor ───────────────────────────────────────────────────
-function denetimPrint(share) {
+// ── Rapor: seçenekler penceresi → PDF yazdır / PDF paylaş / Word (.docx) ──
+// Tek veri modeli (dnrHazirla) üç çıktıyı da besler; sütun ölçüleri (mm) ortaktır, böylece PDF ve Word tablosu aynı olur.
+const DNR_NAVY = '17324A', DNR_GRAY = '60717F', DNR_LINE = 'CBD5DC', DNR_FILL = 'EEF3F7';
+const DNR_ONEM = { yuksek:{ ad:'Yüksek', renk:'C0392B', sira:0 }, orta:{ ad:'Orta', renk:'B7791F', sira:1 }, dusuk:{ ad:'Düşük', renk:'2E7D32', sira:2 } };
+const DNR_DURUM = { acik:{ ad:'Açık', renk:'C0392B' }, devam:{ ad:'Devam ediyor', renk:'B7791F' }, kapali:{ ad:'Kapalı', renk:'2E7D32' } };
+const DNR_YERLESIM = {
+  yatay: { w:297, h:210, mx:10, mt:10, mb:14, rowmin:28, foto:true,
+    cols:[['No',8],['Bölüm',24],['Fotoğraf',36],['Tespit',52],['Öneri',79],['Önem',16],['Sorumlu',22],['Termin',18],['Durum',22]] },
+  dikey: { w:210, h:297, mx:10, mt:10, mb:14, rowmin:14, foto:false,
+    cols:[['No',7],['Bölüm',20],['Tespit',38],['Öneri',52],['Önem',17],['Sorumlu',20],['Termin',18],['Durum',18]] }
+};
+const DNR_TOPH = 12, DNR_STRIPH = 13, DNR_HEADH = 6.5, DNR_BARH = 7;
+
+function dnrTarih(s) { return s ? new Date(s + 'T00:00:00').toLocaleDateString('tr-TR') : ''; }
+function dnrAlfaFoto(b) {
+  const f = Array.isArray(b.fotolar) ? b.fotolar : [];
+  if (!f.length) return '';
+  const i = Number.isInteger(b.alfa) && b.alfa >= 0 && b.alfa < f.length ? b.alfa : 0;
+  return f[i] || '';
+}
+function dnrOneriSatirlar(t) {
+  const out = [];
+  String(t || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean).forEach(s => {
+    const m = /^(Hızlı aksiyon|Kalıcı önlem|İzleme ve kontrol|Acil \/ düzeltici|Kalıcı \/ önleyici|Doğrulama \/ izleme)\s*:\s*(.*)$/i.exec(s);
+    out.push(m ? { lab: m[1] + ':', txt: m[2] } : { lab: '', txt: s });
+  });
+  return out.length ? out : [{ lab: '', txt: '—' }];
+}
+// Fotoğrafı 4:3 oranına ortadan kırp (PDF ve Word'de aynı görüntü)
+function dnrFotoKirp(src) {
+  return new Promise(res => {
+    const im = new Image();
+    im.onerror = () => res('');
+    im.onload = () => {
+      const W = 640, H = 480, tr = W / H, r = im.width / im.height;
+      let sx = 0, sy = 0, sw = im.width, sh = im.height;
+      if (r > tr) { sw = im.height * tr; sx = (im.width - sw) / 2; } else { sh = im.width / tr; sy = (im.height - sh) / 2; }
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      c.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, W, H);
+      res(c.toDataURL('image/jpeg', 0.8));
+    };
+    im.src = src;
+  });
+}
+
+// ── Pencere ──
+function dnrSecili() {
+  return {
+    foto:    !!document.getElementById('dnr-foto')?.checked && !document.getElementById('dnr-foto')?.disabled,
+    acik:    !!document.getElementById('dnr-acik')?.checked,
+    bolum:   document.getElementById('dnr-bolum')?.value || '',
+    sorumlu: document.getElementById('dnr-sorumlu')?.value || ''
+  };
+}
+function dnrListe(opt) {
+  return dnFiltreliBulgular().filter(b => {
+    if (opt.acik && b.durum === 'kapali') return false;
+    if (opt.bolum && (b.bolum || '') !== opt.bolum) return false;
+    if (opt.sorumlu && (b.sorumlu || '') !== opt.sorumlu) return false;
+    return true;
+  });
+}
+function dnrOpen() {
   const liste = dnFiltreliBulgular();
-  const simdi = new Date().toLocaleString('tr-TR');
+  const uniq = f => Array.from(new Set(liste.map(f).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'tr'));
+  const doldur = (id, ad, arr) => { document.getElementById(id).innerHTML = '<option value="">' + ad + '</option>' + arr.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join(''); };
+  doldur('dnr-bolum', 'Tüm bölümler', uniq(b => (b.bolum || '').trim()));
+  doldur('dnr-sorumlu', 'Tüm sorumlular', uniq(b => (b.sorumlu || '').trim()));
+  const fotoVar = liste.some(b => dnrAlfaFoto(b));
+  const f = document.getElementById('dnr-foto'); f.disabled = !fotoVar; f.checked = fotoVar;
+  document.getElementById('dnr-foto-not').textContent = fotoVar ? 'Her bulgunun alfa fotoğrafı eklenir; sayfa yatay olur.' : 'Fotoğraflı bulgu yok.';
+  document.getElementById('dnr-acik').checked = false;
+  dnrBilgi();
+  document.getElementById('dnr-modal-bg').style.display = 'flex';
+}
+function dnrClose() { document.getElementById('dnr-modal-bg').style.display = 'none'; }
+function dnrBilgi() {
+  const o = dnrSecili(), l = dnrListe(o), fs = l.filter(b => dnrAlfaFoto(b)).length;
+  document.getElementById('dnr-bilgi').textContent = (o.foto && fs ? 'A4 yatay' : 'A4 dikey') + ' · ' + l.length + ' bulgu' + (o.foto ? ' · ' + fs + ' fotoğraf' : '');
+}
+
+// ── Veri modeli ──
+async function dnrHazirla(opt) {
+  const liste = dnrListe(opt);
+  if (!liste.length) { alert('Seçilen koşullara uyan bulgu yok.'); return null; }
+  const fotoli = opt.foto && liste.some(b => dnrAlfaFoto(b));
+  const yon = fotoli ? 'yatay' : 'dikey';
+  const L = Object.assign({ cw: DNR_YERLESIM[yon].w - 2 * DNR_YERLESIM[yon].mx }, DNR_YERLESIM[yon]);
   const grup = {};
   liste.forEach(b => { (grup[b.denetimId] = grup[b.denetimId] || []).push(b); });
-  const sirali = [...denetimler].sort((a,b) => (b.tarih||'').localeCompare(a.tarih||''))
-                                .filter(d => (grup[d.id]||[]).length);
+  const sirali = [...denetimler].sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')).filter(d => (grup[d.id] || []).length);
+  const gruplar = [];
+  for (const d of sirali) {
+    const bl = grup[d.id].slice().sort((a, b) =>
+      ((DNR_ONEM[a.onem] || { sira: 9 }).sira - (DNR_ONEM[b.onem] || { sira: 9 }).sira) ||
+      (a.bolum || '').localeCompare(b.bolum || '', 'tr') || ((a.createdAt || 0) - (b.createdAt || 0)));
+    const satirlar = [];
+    for (let i = 0; i < bl.length; i++) {
+      const b = bl[i], on = DNR_ONEM[b.onem] || { ad: '—', renk: DNR_GRAY }, du = DNR_DURUM[b.durum] || { ad: '—', renk: DNR_GRAY };
+      const foto = fotoli ? await dnrFotoKirp(dnrAlfaFoto(b)) : '';
+      satirlar.push({ no: i + 1, bolum: b.bolum || '—', tespit: b.metin || '', oneri: dnrOneriSatirlar(b.oneri), onem: on, sorumlu: b.sorumlu || '—',
+        termin: dnrTarih(b.termin) || '—', durum: du, foto, kapali: b.durum === 'kapali', yuksek: b.onem === 'yuksek', terminsiz: !b.termin });
+    }
+    const fabs = dnFabListesi(d).join(', ');
+    gruplar.push({ ad: d.ad || '', tarih: dnrTarih(d.tarih), fabrika: fabs, denetci: d.denetci || '', satirlar });
+  }
+  const tum = gruplar.reduce((a, g) => a.concat(g.satirlar), []);
+  const bilgi = g => [g.tarih, g.fabrika, g.denetci ? 'Denetçi: ' + g.denetci : ''].filter(Boolean).join(' · ');
+  return {
+    yon, L, gruplar, coklu: gruplar.length > 1,
+    baslik: 'İSG Denetim Bulguları Raporu',
+    alt: gruplar.length > 1 ? gruplar.length + ' denetim' : [gruplar[0].ad, bilgi(gruplar[0])].filter(Boolean).join(' · '),
+    rapor: new Date().toLocaleDateString('tr-TR'),
+    ozet: [['Toplam bulgu', tum.length], ['Açık', tum.filter(r => !r.kapali).length], ['Kapalı', tum.filter(r => r.kapali).length],
+           ['Yüksek önem', tum.filter(r => r.yuksek).length], ['Terminsiz', tum.filter(r => r.terminsiz).length]],
+    bilgi,
+    dosya: 'Denetim Bulguları Raporu ' + new Date().toLocaleDateString('tr-TR')
+  };
+}
 
+// ── HTML (yazdırma + PDF paylaş) ──
+function dnrHtml(v) {
+  const L = v.L, ncol = L.cols.length;
+  const colg = '<colgroup>' + L.cols.map(c => `<col style="width:${c[1]}mm">`).join('') + '</colgroup>';
+  const hr = '<tr class="dnr-hr">' + L.cols.map(c => `<th>${c[0]}</th>`).join('') + '</tr>';
+  const oz = v.ozet.map(o => `<td><div class="n">${o[1]}</div><div class="l">${o[0]}</div></td>`).join('');
+  const tablolar = v.gruplar.map(g => {
+    const bar = v.coklu ? `<tr class="dnr-bar"><th colspan="${ncol}"><b>${esc(g.ad)}</b> <span>${esc(v.bilgi(g))}</span></th></tr>` : '';
+    const trs = g.satirlar.map(r => {
+      const oneri = r.oneri.map(o => `<p>${o.lab ? '<b>' + esc(o.lab) + '</b> ' : ''}${esc(o.txt)}</p>`).join('');
+      return '<tr class="dnr-r">' +
+        `<td class="c">${r.no}</td><td><b>${esc(r.bolum)}</b></td>` +
+        (L.foto ? `<td class="c">${r.foto ? `<img src="${r.foto}" alt="">` : '<span class="g">—</span>'}</td>` : '') +
+        `<td><p>${esc(r.tespit)}</p></td><td>${oneri}</td>` +
+        `<td class="c"><p><span style="color:#${r.onem.renk}">●</span> ${esc(r.onem.ad)}</p></td>` +
+        `<td><p>${esc(r.sorumlu)}</p></td>` +
+        `<td class="c"><p>${esc(r.termin)}</p></td>` +
+        `<td class="c"><p><b style="color:#${r.durum.renk}">${esc(r.durum.ad)}</b></p></td></tr>`;
+    }).join('');
+    return `<table class="dnr-main" style="width:${L.cw}mm;--rm:${L.rowmin}mm">${colg}<thead>${bar}${hr}</thead><tbody>${trs}</tbody></table><div class="dnr-sp"></div>`;
+  }).join('');
+  return `<div class="dnr-top" style="width:${L.cw}mm"><div><h1>${esc(v.baslik)}</h1><div class="dnr-sub">${esc(v.alt)}</div></div><div class="dnr-rt">Rapor tarihi: ${esc(v.rapor)}</div></div>
+    <div class="dnr-sp"></div><table class="dnr-oz" style="width:${L.cw}mm"><tr>${oz}</tr></table><div class="dnr-sp"></div>${tablolar}`;
+}
+function dnrSayfaStili(v) {
+  let s = document.getElementById('dnr-page-style');
+  if (!s) { s = document.createElement('style'); s.id = 'dnr-page-style'; }
+  document.body.appendChild(s);   // sayfa sonunda olmalı: diğer @page kurallarını ezsin
+  const L = v.L;
+  s.textContent = `@media print{@page{size:A4 ${v.yon === 'yatay' ? 'landscape' : 'portrait'};margin:${L.mt}mm ${L.mx - 0.4}mm ${L.mb}mm ${L.mx}mm;` +
+    `@bottom-center{content:""}@bottom-left{content:"Kurum içi";font-family:Arial,sans-serif;font-size:7pt;color:#60717F}` +
+    `@bottom-right{content:"Sayfa " counter(page) " / " counter(pages);font-family:Arial,sans-serif;font-size:7pt;color:#60717F}}}`;
+  const temizle = () => { s.remove(); window.removeEventListener('afterprint', temizle); };
+  window.addEventListener('afterprint', temizle);
+}
+async function dnrCikti(tur) {
+  const v = await dnrHazirla(dnrSecili());
+  if (!v) return;
+  if (tur === 'word') { dnrIndir(dnrDocx(v), v.dosya + '.docx'); dnrClose(); return; }
   let el = document.getElementById('denetim-print');
   if (!el) { el = document.createElement('div'); el.id = 'denetim-print'; document.body.appendChild(el); }
-  el.innerHTML = `
-    <h1>İSG Denetim Bulguları Raporu</h1>
-    <div class="dp-meta">Toplam ${liste.length} bulgu · ${sirali.length} denetim · Rapor tarihi: ${esc(simdi)}</div>
-    ${sirali.map(d => {
-      const bl = grup[d.id] || [];
-      return `<h2>${esc(d.ad)} — ${d.tarih ? new Date(d.tarih+'T00:00:00').toLocaleDateString('tr-TR') : ''}${dnFabListesi(d).length?' · '+esc(dnFabListesi(d).join(', ')):''}${d.denetci?' · '+esc(d.denetci):''}</h2>
-      <table>
-        <thead><tr><th style="width:24px">#</th><th>Tespit</th><th>Öneri</th>
-          <th style="width:60px">Tür</th><th style="width:44px">Önem</th>
-          <th style="width:70px">Sorumlu</th><th style="width:58px">Termin</th><th style="width:52px">Durum</th></tr></thead>
-        <tbody>${bl.map((b,i) => `<tr>
-          <td>${i+1}</td><td>${esc(b.metin)}</td><td>${esc(b.oneri||'-')}</td>
-          <td>${(BG_TURLER[b.tur]||{}).ad||'-'}</td><td>${(BG_ONEM[b.onem]||{}).ad||'-'}</td>
-          <td>${esc(b.sorumlu||'-')}</td>
-          <td>${b.termin ? new Date(b.termin+'T00:00:00').toLocaleDateString('tr-TR') : '-'}</td>
-          <td>${BG_DURUM[b.durum]||'-'}</td></tr>`).join('')}</tbody>
-      </table>`;
-    }).join('') || '<p>Kayıt yok</p>'}`;
-  if (share === true) { isgSharePdf({ rootId:'denetim-print', bodyClass:'print-denetim', name:'Denetim Bulguları Raporu ' + new Date().toLocaleDateString('tr-TR'), width:733, mx:8, top:10, bottom:16 }); return; }
-  isgPrintNow('print-denetim',{title:'İSG Denetim Bulguları Raporu'},()=>window.print());
+  el.innerHTML = dnrHtml(v);
+  dnrClose();
+  if (tur === 'paylas') {
+    const pw = Math.round(v.L.cw / 25.4 * 96);
+    isgSharePdf({ rootId:'denetim-print', bodyClass:'print-denetim', name:v.dosya, width:pw, mx:v.L.mx, top:v.L.mt, bottom:v.L.mb + 2, orientation: v.yon === 'yatay' ? 'landscape' : 'portrait' });
+    return;
+  }
+  dnrSayfaStili(v);
+  isgPrintNow('print-denetim', { title:'İSG Denetim Bulguları Raporu' }, () => window.print());
 }
+function denetimPrint() { dnrOpen(); }
+
+// ── Word (.docx): bağımlılıksız yazıcı ──
+function dnrIndir(blob, ad) {
+  const u = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = u; a.download = ad.replace(/[\\\/:*?"<>|]+/g, ' ').trim(); document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 4000);
+  toast('Word dosyası hazırlandı');
+}
+function dnrDocx(v) {
+  const L = v.L, tw = mm => Math.round(mm * 56.6929), X = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const FONT = '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>';
+  const run = (t, o) => { o = o || {}; const z = (o.sz || 8) * 2;
+    return `<w:r><w:rPr>${FONT}${o.b ? '<w:b/>' : ''}${o.color ? `<w:color w:val="${o.color}"/>` : ''}<w:sz w:val="${z}"/><w:szCs w:val="${z}"/></w:rPr><w:t xml:space="preserve">${X(t)}</w:t></w:r>`; };
+  const tabRun = sz => `<w:r><w:rPr>${FONT}<w:sz w:val="${sz * 2}"/></w:rPr><w:tab/></w:r>`;
+  const par = (runs, o) => { o = o || {};
+    const sp = o.exact ? `<w:spacing w:before="0" w:after="0" w:line="${tw(o.exact)}" w:lineRule="exact"/>` : `<w:spacing w:before="${Math.round((o.before || 0) * 56.6929 / 1)}" w:after="0" w:line="240" w:lineRule="auto"/>`;
+    return `<w:p><w:pPr>${o.tabs || ''}${sp}${o.jc ? `<w:jc w:val="${o.jc}"/>` : ''}</w:pPr>${runs}</w:p>`; };
+  const spacer = mm => par(run('', { sz: 1 }), { exact: mm });
+  const cell = (w, inner, o) => { o = o || {};
+    return `<w:tc><w:tcPr><w:tcW w:w="${tw(w)}" w:type="dxa"/>${o.span ? `<w:gridSpan w:val="${o.span}"/>` : ''}${o.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>` : ''}<w:vAlign w:val="${o.va || 'center'}"/></w:tcPr>${inner}</w:tc>`; };
+  const row = (cells, o) => { o = o || {};
+    return `<w:tr><w:trPr><w:cantSplit/>${o.h ? `<w:trHeight w:val="${tw(o.h)}" w:hRule="${o.rule || 'exact'}"/>` : ''}${o.head ? '<w:tblHeader/>' : ''}</w:trPr>${cells}</w:tr>`; };
+  const table = (widths, rows, o) => { o = o || {};
+    const bd = o.nil ? ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(s => `<w:${s} w:val="nil"/>`).join('')
+      : ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(s => `<w:${s} w:val="single" w:sz="${o.bsz || 4}" w:space="0" w:color="${o.bcol || DNR_LINE}"/>`).join('');
+    const m = o.mar || [68, 85];
+    return `<w:tbl><w:tblPr><w:tblW w:w="${widths.reduce((a, x) => a + tw(x), 0)}" w:type="dxa"/><w:tblInd w:w="0" w:type="dxa"/><w:tblBorders>${bd}</w:tblBorders><w:tblLayout w:type="fixed"/>` +
+      `<w:tblCellMar><w:top w:w="${m[0]}" w:type="dxa"/><w:left w:w="${m[1]}" w:type="dxa"/><w:bottom w:w="${m[0]}" w:type="dxa"/><w:right w:w="${m[1]}" w:type="dxa"/></w:tblCellMar></w:tblPr>` +
+      `<w:tblGrid>${widths.map(x => `<w:gridCol w:w="${tw(x)}"/>`).join('')}</w:tblGrid>${rows}</w:tbl>`; };
+  const media = []; let imgId = 0;
+  const pic = (dataUrl, wmm, hmm) => {
+    const n = ++imgId, rid = 'rIdImg' + n, cx = Math.round(wmm * 36000), cy = Math.round(hmm * 36000);
+    const b64 = dataUrl.split(',')[1], bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    media.push({ name: `word/media/img${n}.jpg`, data: u8, rid });
+    return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${n}" name="Fotoğraf ${n}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>` +
+      `<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${n}" name="img${n}.jpg"/><pic:cNvPicPr/></pic:nvPicPr>` +
+      `<pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`; };
+
+  let body = '';
+  // Üst blok
+  const wl = L.cw - 50;
+  body += table([wl, 50], row(
+    cell(wl, par(run(v.baslik, { sz: 15, b: 1, color: DNR_NAVY })) + par(run(v.alt, { sz: 9, color: DNR_GRAY }), { before: 1.5 }), { va: 'bottom' }) +
+    cell(50, par(run('Rapor tarihi: ' + v.rapor, { sz: 9, color: DNR_GRAY }), { jc: 'right' }), { va: 'bottom' }), { h: DNR_TOPH }), { nil: 1, mar: [0, 0] });
+  body += spacer(4);
+  // Özet şeridi
+  const ow = L.cw / 5;
+  body += table([ow, ow, ow, ow, ow], row(v.ozet.map(o => cell(ow,
+    par(run(String(o[1]), { sz: 14, b: 1, color: DNR_NAVY }), { jc: 'center' }) + par(run(o[0], { sz: 7.5, color: DNR_GRAY }), { jc: 'center' }), { fill: DNR_FILL })).join(''), { h: DNR_STRIPH }),
+    { bsz: 12, bcol: 'FFFFFF', mar: [0, tw(1)] });
+  body += spacer(4);
+  // Tablolar
+  const widths = L.cols.map(c => c[1]), ncol = widths.length;
+  v.gruplar.forEach(g => {
+    let rows = '';
+    if (v.coklu) rows += row(cell(L.cw, par(run(g.ad, { sz: 9, b: 1, color: DNR_NAVY }) + run('  ' + v.bilgi(g), { sz: 9, color: DNR_GRAY })), { span: ncol, fill: DNR_FILL }), { h: DNR_BARH, head: 1 });
+    rows += row(L.cols.map((c, i) => cell(widths[i], par(run(c[0], { sz: 8, b: 1, color: 'FFFFFF' }), { jc: 'center' }), { fill: DNR_NAVY })).join(''), { h: DNR_HEADH, head: 1 });
+    g.satirlar.forEach(r => {
+      const c = [];
+      let k = 0;
+      c.push(cell(widths[k++], par(run(String(r.no)), { jc: 'center' })));
+      c.push(cell(widths[k++], par(run(r.bolum, { b: 1 }))));
+      if (L.foto) c.push(cell(widths[k++], par(r.foto ? pic(r.foto, 30, 22.5) : run('—', { color: DNR_GRAY }), { jc: 'center' })));
+      c.push(cell(widths[k++], par(run(r.tespit))));
+      c.push(cell(widths[k++], r.oneri.map(o => par((o.lab ? run(o.lab, { b: 1 }) + run(' ' + o.txt) : run(o.txt)))).join('')));
+      c.push(cell(widths[k++], par(run('●', { color: r.onem.renk }) + run(' ' + r.onem.ad), { jc: 'center' })));
+      c.push(cell(widths[k++], par(run(r.sorumlu))));
+      c.push(cell(widths[k++], par(run(r.termin), { jc: 'center' })));
+      c.push(cell(widths[k++], par(run(r.durum.ad, { b: 1, color: r.durum.renk }), { jc: 'center' })));
+      rows += row(c.join(''), { h: L.rowmin, rule: 'atLeast' });
+    });
+    body += table(widths, rows) + spacer(4);
+  });
+  const pg = `<w:pgSz w:w="${tw(L.w)}" w:h="${tw(L.h)}"${L.w > L.h ? ' w:orient="landscape"' : ''}/><w:pgMar w:top="${tw(L.mt)}" w:right="${tw(L.mx)}" w:bottom="${tw(L.mb)}" w:left="${tw(L.mx)}" w:header="${tw(4)}" w:footer="${tw(5)}" w:gutter="0"/>`;
+  const NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${NS}><w:body>${body}<w:sectPr><w:footerReference w:type="default" r:id="rIdFtr"/>${pg}</w:sectPr></w:body></w:document>`;
+  const fr = (t, extra) => `<w:r><w:rPr>${FONT}<w:color w:val="${DNR_GRAY}"/><w:sz w:val="14"/><w:szCs w:val="14"/></w:rPr>${extra || `<w:t xml:space="preserve">${X(t)}</w:t>`}</w:r>`;
+  const fld = ins => fr('', '<w:fldChar w:fldCharType="begin"/>') + fr('', `<w:instrText xml:space="preserve"> ${ins} </w:instrText>`) + fr('', '<w:fldChar w:fldCharType="separate"/>') + fr('1') + fr('', '<w:fldChar w:fldCharType="end"/>');
+  const ftr = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr ${NS}><w:p><w:pPr><w:tabs><w:tab w:val="right" w:pos="${tw(L.cw)}"/></w:tabs><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/></w:pPr>` +
+    fr('Kurum içi') + fr('', '<w:tab/>') + fr('Sayfa ') + fld('PAGE') + fr(' / ') + fld('NUMPAGES') + '</w:p></w:ftr>';
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ${NS}><w:docDefaults><w:rPrDefault><w:rPr>${FONT}<w:sz w:val="16"/><w:szCs w:val="16"/><w:lang w:val="tr-TR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`;
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+    `<Relationship Id="rIdSty" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+    `<Relationship Id="rIdFtr" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>` +
+    media.map(m => `<Relationship Id="${m.rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${m.name.split('/').pop()}"/>`).join('') + '</Relationships>';
+  const ct = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/>` +
+    `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>`;
+  const root = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  const te = new TextEncoder();
+  const dosyalar = [{ name: '[Content_Types].xml', data: te.encode(ct) }, { name: '_rels/.rels', data: te.encode(root) }, { name: 'word/document.xml', data: te.encode(doc) },
+    { name: 'word/styles.xml', data: te.encode(styles) }, { name: 'word/footer1.xml', data: te.encode(ftr) }, { name: 'word/_rels/document.xml.rels', data: te.encode(rels) }].concat(media.map(m => ({ name: m.name, data: m.data })));
+  return new Blob([dnrZip(dosyalar)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
+// Sıkıştırmasız (store) minimal ZIP
+function dnrZip(files) {
+  const tbl = dnrZip.t || (dnrZip.t = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })());
+  const crc = u8 => { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = tbl[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  const te = new TextEncoder(), parts = [], cen = []; let off = 0;
+  const dt = 0, dd = ((2026 - 1980) << 9) | (10 << 5) | 27;
+  files.forEach(f => {
+    const nm = te.encode(f.name), c = crc(f.data), n = f.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true); lh.setUint16(10, dt, true); lh.setUint16(12, dd, true);
+    lh.setUint32(14, c, true); lh.setUint32(18, n, true); lh.setUint32(22, n, true); lh.setUint16(26, nm.length, true); lh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lh.buffer), nm, f.data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true); ch.setUint16(12, dt, true); ch.setUint16(14, dd, true);
+    ch.setUint32(16, c, true); ch.setUint32(20, n, true); ch.setUint32(24, n, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
+    cen.push(new Uint8Array(ch.buffer), nm);
+    off += 30 + nm.length + n;
+  });
+  const cs = cen.reduce((a, x) => a + x.length, 0), end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cs, true); end.setUint32(16, off, true);
+  return new Blob(parts.concat(cen, [new Uint8Array(end.buffer)]));
+}
+
 // ── End Denetimler Modülü ──
 </script>
 
@@ -23116,7 +23415,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       var W=opt.width,top=el.getBoundingClientRect().top;
       var forced=[],cand=[];
       var keeps=[],heads=[];
-      el.querySelectorAll('.kaza-keep,.kaza-why-block,.kaza-fishbone-diagram,.facts,.kaza-report-note,table.kz-short').forEach(function(n){
+      el.querySelectorAll('.kaza-keep,.kaza-why-block,.kaza-fishbone-diagram,.facts,.kaza-report-note,table.kz-short,tr.dnr-r').forEach(function(n){
         var r=n.getBoundingClientRect();keeps.push([r.top-top,r.bottom-top]);});
       el.querySelectorAll('h1,h2,h3,h4').forEach(function(n){heads.push(n.getBoundingClientRect().top-top)});
       el.querySelectorAll('tr,h1,h2,h3,h4,img,section,.hse-pr-section,.hse-pr-chart,p,.kaza-keep,.kaza-why-block').forEach(function(n){
@@ -23151,11 +23450,11 @@ window.addEventListener('DOMContentLoaded',()=>{
         src.style.cssText=old;if(!cls)document.body.classList.remove(opt.bodyClass);throw e});
     }
     libs().then(function(){b=build(opt);return new Promise(function(r){setTimeout(r,350)})}).then(function(){
-      var p0=opt.rootId==='hse-print'?render(b.el,b.doc,'svg').catch(function(e){try{console.warn('PDF svg yolu:',e&&e.message||e)}catch(x){}return null}):Promise.resolve(null);
+      var p0=(opt.rootId==='hse-print'||opt.rootId==='denetim-print')?render(b.el,b.doc,'svg').catch(function(e){try{console.warn('PDF svg yolu:',e&&e.message||e)}catch(x){}return null}):Promise.resolve(null);
       return p0.then(function(r){if(r&&anyInk(r))return r;return render(b.el,b.doc).then(function(r2){if(anyInk(r2))return r2;return renderInDoc()})});
     }).then(function(r){
-      var J=window.jspdf.jsPDF,pdf=new J({unit:'mm',format:'a4',orientation:'portrait'});
-      var PW=210,PH=297,mx=opt.mx||8,tp=opt.top||10,bt=opt.bottom||16;
+      var ori=opt.orientation==='landscape'?'landscape':'portrait';var J=window.jspdf.jsPDF,pdf=new J({unit:'mm',format:'a4',orientation:ori});
+      var PW=ori==='landscape'?297:210,PH=ori==='landscape'?210:297,mx=opt.mx||8,tp=opt.top||10,bt=opt.bottom||16;
       var k=r.k,cw=PW-2*mx,ch=PH-tp-bt;
       var pagePx=Math.floor(ch/cw*opt.width);
       var total=r.total,pages=[],y=0,guard=0;
