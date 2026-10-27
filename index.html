@@ -19672,14 +19672,24 @@ function dnrOzet(rows) {
   return [['Toplam bulgu', rows.length], ['Açık', rows.filter(r => !r.kapali).length], ['Kapalı', rows.filter(r => r.kapali).length],
           ['Yüksek önem', rows.filter(r => r.yuksek).length], ['Terminsiz', rows.filter(r => r.terminsiz).length]];
 }
+function dnrDnBilgi(d, kisa) {
+  if (!d) return '';
+  return [d.ad, dnrTarih(d.tarih), kisa ? '' : dnFabListesi(d).join(', '), d.denetci ? 'Denetçi: ' + d.denetci : ''].filter(Boolean).join(' · ');
+}
 function dnrAlt(v, gruplar) {
   const tur = { denetim:'denetim', bolum:'bölüm', sorumlu:'sorumlu' }[v.grup];
-  if (gruplar.length > 1) return gruplar.length + ' ' + tur;
-  const g = gruplar[0];
-  if (v.grup === 'denetim') return [g.ad, g.meta].filter(Boolean).join(' · ');
-  const dn = Array.from(new Set(g.satirlar.map(r => r.did)));
-  const d = dn.length === 1 ? denetimler.find(x => x.id === dn[0]) : null;
-  return [{ bolum:'Bölüm', sorumlu:'Sorumlu' }[v.grup] + ': ' + g.ad, d ? d.ad + (d.tarih ? ' · ' + dnrTarih(d.tarih) : '') : ''].filter(Boolean).join(' · ');
+  if (v.grup === 'denetim') {
+    if (gruplar.length > 1) return gruplar.length + ' denetim';
+    return [gruplar[0].ad, gruplar[0].meta].filter(Boolean).join(' · ');
+  }
+  // Bölüm / sorumlu gruplamasında da denetim tarihi ve denetçi bilgisi korunur
+  const ids = Array.from(new Set(gruplar.reduce((a, g) => a.concat(g.satirlar.map(r => r.did)), [])));
+  const d = ids.length === 1 ? denetimler.find(x => x.id === ids[0]) : null;
+  const parcalar = [];
+  if (gruplar.length === 1) parcalar.push({ bolum:'Bölüm', sorumlu:'Sorumlu' }[v.grup] + ': ' + gruplar[0].ad);
+  if (d) parcalar.push(dnrDnBilgi(d)); else parcalar.push(ids.length + ' denetim');
+  if (gruplar.length > 1) parcalar.push(gruplar.length + ' ' + tur);
+  return parcalar.join(' · ');
 }
 function dnrModel(opt) {
   const liste = dnrListe(opt);
@@ -19713,7 +19723,7 @@ function dnrModel(opt) {
       const dn = denetimler.find(x => x.id === b.denetimId);
       return { no: i + 1, bolum: b.bolum || '—', tespit: b.metin || '', oneri: dnrOneriSatirlar(b.oneri), onem: on, sorumlu: b.sorumlu || '—',
         termin: dnrTarih(b.termin) || '—', durum: du, foto: '', fotoSrc: fotoli ? dnrAlfaFoto(b) : '', kapali: b.durum === 'kapali', yuksek: b.onem === 'yuksek',
-        terminsiz: !b.termin, did: b.denetimId, dnAd: gosterDenetim && dn ? dn.ad : '' };
+        terminsiz: !b.termin, did: b.denetimId, dnAd: gosterDenetim && dn ? dnrDnBilgi(dn, true) : '' };
     });
     let ad, meta;
     if (opt.grup === 'denetim') {
