@@ -798,6 +798,46 @@ html, body { height: 100%; overflow: hidden;
 .dn-grup-body { padding:10px; display:flex; flex-direction:column; gap:8px; }
 .dn-tur-badge { font-size:9px; font-weight:700; padding:1px 7px; border-radius:99px; color:#fff; white-space:nowrap; }
 /* Her bulgu kendi kutusunda — arşivde tek tek ayırt edilsin */
+/* Bulgu satırı: iki katmanlı (kapalı özet + açılan ayrıntı) */
+.bgs-row{border:1px solid var(--border);border-radius:13px;overflow:hidden;background:var(--surface)}
+.bgs-row.kapali .bgs-sum{opacity:.65}
+.bgs-sum{display:grid;grid-template-columns:4px 56px minmax(0,1fr) 18px;gap:10px;align-items:center;padding:12px 12px 12px 0;cursor:pointer}
+.bgs-bar{align-self:stretch;border-radius:0 3px 3px 0;background:var(--bgs-onem,#888)}
+.bgs-th{position:relative;width:56px;height:56px;border-radius:10px;overflow:hidden;background:var(--surface2)}
+.bgs-th img{width:100%;height:100%;object-fit:cover;display:block}
+.bgs-n{position:absolute;right:3px;bottom:3px;background:rgba(0,0,0,.62);color:#fff;font-size:10.5px;font-weight:700;border-radius:99px;padding:0 6px;line-height:16px}
+.bgs-th.no{background:none;border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.bgs-th.no svg{width:22px;height:22px;opacity:.75}
+.bgs-tx{min-width:0;display:flex;flex-direction:column;gap:5px}
+.bgs-t{font-weight:600;font-size:13.5px;line-height:1.35;color:var(--text);word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bgs-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);min-width:0;white-space:nowrap}
+.bgs-who{overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.bgs-dot{opacity:.5}
+.bgs-gec{color:#C0392B;font-weight:700}
+.bgs-dur{margin-left:auto;font-weight:700;font-size:11px;border-radius:99px;padding:2px 9px;flex:none}
+.bgs-dur.a{background:#FBE7E5;color:#C0392B}.bgs-dur.d{background:#FCF0DA;color:#B8740A}.bgs-dur.k{background:#E2F3E8;color:#2F7D4A}
+.bgs-chev{width:18px;height:18px;color:var(--text3);transition:transform .15s}
+.bgs-row.open .bgs-chev{transform:rotate(180deg)}
+.bgs-det{display:none;flex-direction:column;gap:12px;padding:0 14px 14px}
+.bgs-row.open .bgs-det{display:flex}
+.bgs-full{font-size:13.5px;line-height:1.5;color:var(--text);word-break:break-word}
+.bgs-oneri{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5;color:var(--text2)}
+.bgs-oneri b{display:block;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.bgs-ph3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bgs-ph3 div{aspect-ratio:1/1;border-radius:10px;overflow:hidden}
+.bgs-ph3 div.al{outline:2px solid #F5A623;outline-offset:-2px}
+.bgs-ph3 img{width:100%;height:100%;object-fit:cover;display:block}
+.bgs-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11.5px;font-weight:600}
+.bgs-tag{border-radius:99px;padding:2px 10px;background:var(--surface2);color:var(--text2)}
+.bgs-tag.gec{color:#C0392B}
+.bgs-act{display:flex;align-items:center;gap:8px}
+.bgs-sp{flex:1}
+.bgs-ib{width:40px;height:40px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;padding:0}
+.bgs-ib.sil{border-color:#fde8e8}
+.bgs-onay{font-size:12.5px;font-weight:600;color:var(--text)}
+.bgs-btn{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:700;font-size:12.5px;cursor:pointer}
+.bgs-btn.sil{background:#C0392B;border-color:#C0392B;color:#fff}
+.bgs-act .dn-durum-sel{max-width:150px}
 /* Yeni kaza-tarzı bulgu kartı — dikey düzen, mobilde ferah */
 .dn-bulgu-kart {
   display:flex; flex-direction:column; gap:6px;
@@ -10290,6 +10330,7 @@ const CAL_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
 let curMainTab = 'dash';
 function switchTab(tab) {
   curMainTab = tab;
+  if (tab !== 'denetim') { dnBAcik = {}; dnBSilId = null; }
   ['dash','board','cal','per','kontrol','denetim','kaza'].forEach(t => {
     const b  = document.getElementById('tab-'+t);
     const mb = document.getElementById('mob-tab-'+t);
@@ -18683,6 +18724,8 @@ window._denetimReady = window._denetimReady || false;
 let dnEditId = null, bgEditId = null;
 let dnFDurum = null, dnFOnem = null;
 let dnKapali = {};      // hangi denetim grubu kapalı (akordeon)
+let dnBAcik = {};       // hangi bulgu satırı açık (varsayılan kapalı; sekmeden çıkınca sıfırlanır)
+let dnBSilId = null;    // silme onayı bekleyen bulgu
 
 const DN_TURLER = {
   ic:'İç Denetim', dis:'Dış Denetim', saha:'Saha Turu',
@@ -18843,38 +18886,37 @@ function denetimRender() {
       const bFab  = bFabs.length ? bFabs[0] : (b.bolum || '');
       const bFabRenk = bFabs.length ? fabColor(bFabs[0]) : '#888780';
       const terminStr = b.termin ? new Date(b.termin+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '';
-      return `<div class="dn-bulgu-kart ${b.durum==='kapali'?'kapali':''}" style="--dn-onem:${onem.renk};--dn-fab:${bFabRenk}">
-        <div class="dnk-ust">
-          <span class="dnk-no">${i+1}.</span>
-          ${bFabs.length ? `<span class="cfab-tag" style="background:${bFabRenk};color:${contrastText(bFabRenk)}">${esc(bFabs[0])}</span>` : ''}
-          ${b.bolum ? `<span class="dnk-bolum">${esc(b.bolum)}</span>` : ''}
-          <div style="flex:1"></div>
-          <button onclick="bulguOpen('${b.id}')" title="Düzenle" class="dnk-ikon">✏️</button>
-          <button onclick="bulguSil('${b.id}')" title="Sil" class="dnk-ikon sil">🗑</button>
+      const fl = Array.isArray(b.fotolar) ? b.fotolar : [];
+      const alfaI = Number.isInteger(b.alfa) && b.alfa >= 0 && b.alfa < fl.length ? b.alfa : 0;
+      const acik = !!dnBAcik[b.id];
+      const kisaTer = b.termin ? new Date(b.termin+'T00:00:00').toLocaleDateString('tr-TR') : '—';
+      const dCls = { acik:'a', devam:'d', kapali:'k' }[b.durum] || 'a';
+      const thumb = fl.length
+        ? `<span class="bgs-th"><img src="${fl[alfaI]}" alt=""><span class="bgs-n">${fl.length}</span></span>`
+        : `<span class="bgs-th no" title="Fotoğraf yok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.2"/></svg></span>`;
+      const fotolar = fl.length ? `<div class="bgs-ph3">${fl.map((f, k) => `<div class="${k===alfaI?'al':''}"><img src="${f}" alt=""></div>`).join('')}</div>` : '';
+      const eylem = dnBSilId === b.id
+        ? `<div class="bgs-act bgs-onay"><span>Bu bulgu silinsin mi?</span><span class="bgs-sp"></span><button class="bgs-btn" onclick="bulguSilIptal()">Vazgeç</button><button class="bgs-btn sil" onclick="bulguSilOnayli('${b.id}')">Sil</button></div>`
+        : `<div class="bgs-act"><button class="bgs-ib" onclick="bulguOpen('${b.id}')" title="Düzenle" aria-label="Düzenle">✏️</button>
+            <select class="dn-durum-sel ${b.durum}" onchange="bulguDurumDegistir('${b.id}',this.value)">
+              ${Object.entries(BG_DURUM).map(([k,v]) => `<option value="${k}"${b.durum===k?' selected':''}>${v}</option>`).join('')}
+            </select><span class="bgs-sp"></span><button class="bgs-ib sil" onclick="bulguSilSor('${b.id}')" title="Sil" aria-label="Sil">🗑</button></div>`;
+      return `<div class="bgs-row ${acik?'open':''} ${b.durum==='kapali'?'kapali':''}" style="--bgs-onem:${onem.renk}">
+        <div class="bgs-sum" onclick="dnBulguAcKapa('${b.id}')" role="button" tabindex="0" aria-expanded="${acik}">
+          <span class="bgs-bar"></span>${thumb}
+          <span class="bgs-tx"><span class="bgs-t">${esc(b.metin)}</span>
+            <span class="bgs-meta"><span class="bgs-who">${b.sorumlu ? esc(b.sorumlu) : 'Sorumlu atanmadı'}</span><span class="bgs-dot">·</span><span class="${gecikmis?'bgs-gec':''}">${kisaTer}</span><span class="bgs-dur ${dCls}">${BG_DURUM[b.durum]||''}</span></span></span>
+          <svg class="bgs-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
         </div>
-
-        <div class="dnk-tespit">${esc(b.metin)}</div>
-        ${b.oneri ? `<div class="dnk-oneri">💡 <b>Öneri / Düzeltici Faaliyet:</b> ${esc(b.oneri)}</div>` : ''}
-
-        <div class="dnk-satir">
-          <span class="dn-tur-badge" style="background:${tur.renk}">${tur.ad}</span>
-          <span class="dnk-bosluk"></span>
-          <span class="dn-tur-badge" style="background:${onem.renk}">${onem.ad}</span>
-        </div>
-        <div class="dnk-satir">
-          <span class="dnk-sorumlu">👤 ${b.sorumlu ? esc(b.sorumlu) : '<span style=\'color:var(--text3)\'>Sorumlu atanmadı</span>'}</span>
-          <div style="flex:1"></div>
-          <select class="dn-durum-sel ${b.durum}" onchange="bulguDurumDegistir('${b.id}',this.value)">
-            ${Object.entries(BG_DURUM).map(([k,v]) => `<option value="${k}"${b.durum===k?' selected':''}>${v}</option>`).join('')}
-          </select>
-        </div>
-
-        <div class="dnk-alt">
-          ${b.linkedTaskId
-            ? `<span class="dnk-linked-badge" title="Bu bulgu görev panosundaki bir görevle bağlantılı">🔎 Göreve Bağlı${(b.auditRepeatCount||0)>1?' · '+b.auditRepeatCount+' Denetim Bulgusu':''}</span>`
-            : `<button onclick="bulguGoreveEkle('${b.id}')" title="Mevcut benzer görevi bağla veya yeni görev oluştur" class="dnk-gorev-btn">📋 Göreve Ekle</button>`}
-          <div style="flex:1"></div>
-          ${terminStr ? `<span class="dnk-termin ${gecikmis?'gecikmis':''}">📅 ${terminStr}${gecikmis?' · Termini geçti':''}</span>` : ''}
+        <div class="bgs-det">
+          <div class="bgs-full">${esc(b.metin)}</div>
+          ${b.oneri ? `<div class="bgs-oneri"><b>Öneri / Düzeltici faaliyet</b>${esc(b.oneri)}</div>` : ''}
+          ${fotolar}
+          <div class="bgs-tags"><span class="bgs-tag">${tur.ad}</span><span class="bgs-tag" style="background:${onem.renk};color:#fff">${onem.ad} önem</span>${b.bolum ? `<span class="bgs-tag">Bölüm: ${esc(b.bolum)}</span>` : ''}${terminStr ? `<span class="bgs-tag ${gecikmis?'gec':''}">📅 ${terminStr}${gecikmis?' · Termini geçti':''}</span>` : ''}
+            ${b.linkedTaskId
+              ? `<span class="dnk-linked-badge" title="Bu bulgu görev panosundaki bir görevle bağlantılı">🔎 Göreve Bağlı${(b.auditRepeatCount||0)>1?' · '+b.auditRepeatCount+' Denetim Bulgusu':''}</span>`
+              : `<button onclick="bulguGoreveEkle('${b.id}')" title="Mevcut benzer görevi bağla veya yeni görev oluştur" class="dnk-gorev-btn">📋 Göreve Ekle</button>`}</div>
+          ${eylem}
         </div>
       </div>`;
     }).join('') || '<div style="font-size:11px;color:var(--text3);padding:8px;text-align:center;">Bu denetimde bulgu yok — “+ Bulgu” ile ekle.</div>';
@@ -18904,6 +18946,15 @@ function denetimRender() {
   }).join('');
 
   body.innerHTML = govde || `<div style="text-align:center;padding:48px;font-size:13px;color:var(--text3);">Bu filtrede bulgu yok.</div>`;
+}
+function dnBulguAcKapa(id) { dnBAcik[id] = !dnBAcik[id]; if (!dnBAcik[id] && dnBSilId === id) dnBSilId = null; denetimRender(); }
+function bulguSilSor(id) { dnBSilId = id; denetimRender(); }
+function bulguSilIptal() { dnBSilId = null; denetimRender(); }
+function bulguSilOnayli(id) {
+  dnBSilId = null; delete dnBAcik[id];
+  bulgular = bulgular.filter(x => x.id !== id);
+  denetimSave(); denetimRender();
+  toast('Bulgu silindi');
 }
 function dnGrupAcKapa(id) { dnKapali[id] = !dnKapali[id]; denetimRender(); }
 
