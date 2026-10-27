@@ -19110,7 +19110,6 @@ function bulguFotoCiz() {
       <img src="${s}" alt="Kanıt ${i + 1}">
       <button type="button" class="bg-foto-yildiz" title="Alfa fotoğraf yap" onclick="bulguFotoAlfa(${i})">★</button>
       <button type="button" class="bg-foto-sil" title="Fotoğrafı kaldır" onclick="bulguFotoSil(${i})">×</button>
-      ${i === bgAlfa ? '<div class="bg-foto-etiket">ALFA</div>' : ''}
     </div>`).join('');
 }
 function bulguFotoAlfa(i) { bgAlfa = i; bulguFotoCiz(); }
