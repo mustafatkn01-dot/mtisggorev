@@ -8644,13 +8644,24 @@ async function aiDenetimOneri(btn) {
     'prosedür, eğitim/yetkinlik, bakım/denetim, yönetim/sorumluluk? Tespitte desteklenmeyen kök nedeni kesinmiş gibi yazma. ' +
     '(3) Önlemleri kontrol hiyerarşisine göre kur: ortadan kaldırma > ikame > mühendislik kontrolü > idari kontrol > KKD.\n\n' +
     'ÇIKTI BİÇİMİ: Türkçe, düz metin, başlık/markdown/yıldız/madde işareti yok. Tam olarak şu 3 satır:\n' +
-    'Hızlı aksiyon: (riski hemen düşüren geçici düzeltme; ne yapılacak, nerede)\n' +
+    'Hızlı aksiyon: (bulgu kapanana kadar riski hemen düşüren ilk müdahale)\n' +
     'Kalıcı önlem: (kök nedene yönelik kalıcı çözüm; mümkünse ortadan kaldırma veya mühendislik kontrolü öne çıksın; yalnız eğitim/uyarı/KKD ile yetinme)\n' +
     'İzleme ve kontrol: (önlemin etkinliği nasıl doğrulanacak; hangi kontrol/gösterge, ne sıklıkla, hangi birim)\n' +
-    'Her satır en fazla 2 cümle. "Dikkat edilecektir" gibi genel ifadeler yasak; ne, nerede, hangi ekipmanda belirt. ' +
-    'Sayı, tarih, yasal madde veya yönetmelik numarası uydurma. ' +
-    (c.onem === 'Yüksek' ? 'Önem yüksek: hızlı aksiyon anında/vardiya içinde uygulanabilir olsun. ' : '') +
-    (c.tur.indexOf('Gözlem') === 0 || c.tur.indexOf('Öneri') === 0 ? 'Bu bir uygunsuzluk değil; iyileştirme fırsatı dilini kullan. ' : '') + '\n\n' +
+    'Her satır en fazla 2 cümle.\n\n' +
+    'DİL KURALI (çok önemli): Denetim raporu dili kullan. Her cümle gereklilik kipinde bitmeli: "-malıdır / -melidir" (örn. "kaldırılmalıdır", "işaretlenmelidir", ' +
+    '"yaptırılmalıdır", "kontrol edilmelidir"). Gelecek zaman ("-ecektir / -acaktır"), "-ınız / -yın" emir kipi ve "yapılabilir" gibi çekingen ifadeler kullanılmamalı. ' +
+    'Fabrika ve bölüm adlarını metne tekrar yazma. "Dikkat edilmelidir" gibi genel ifadeler yasak; ne, nerede, hangi ekipmanda belirt. ' +
+    'Sayı, tarih, yasal madde veya yönetmelik numarası uydurma.\n\n' +
+    'HIZLI AKSİYON KARAR MANTIĞI (denetçi gözüyle): Hızlı aksiyon her bulguda "makine/alan kapatılmalı" demek DEĞİLDİR; riskle orantılı en hafif etkili müdahaledir. ' +
+    'Önce şunu sor: tehlike kaynağı şimdi, kolayca giderilebilir mi? Buna göre seç:\n' +
+    'A) Kolayca giderilebiliyorsa (engel, dökülme, açıkta kablo, eksik işaret, yığılmış malzeme): kaynağı hemen gider ve alanı işaretle. ' +
+    'Örnek: yangın tüpünün önüne malzeme konulmuşsa "Malzeme hemen kaldırılmalı, tüp önü yer işaretiyle serbest bırakılmalı ve vardiya sorumlusu bilgilendirilmelidir."\n' +
+    'B) Hemen giderilemiyor ama izole edilebiliyorsa: geçici bariyer, uyarı levhası, erişim kısıtı veya geçici gözcü/yönlendirme uygula.\n' +
+    'C) Ciddi yaralanma, ölüm, yangın veya patlama potansiyeli var ve hemen kontrol altına alınamıyorsa (korumasız hareketli parça, açıkta enerjili hat, korkuluksuz yüksek açıklık, gaz kaçağı): yalnızca bu durumda ekipman veya alan kullanım dışı bırakılmalıdır.\n' +
+    'D) Belge, eğitim, yetkinlik, kayıt veya prosedür eksikliğiyse: üretimi durdurma; geçici idari önlem yaz (sorumlu görevlendirme, kısa bilgilendirme, geçici talimat, eksik kaydın tamamlanması).\n' +
+    'Seçimi tespitteki tehlikenin ciddiyetine ve önem derecesine göre yap; her bulguda aynı kalıbı kullanma. ' +
+    (c.onem === 'Yüksek' ? 'Önem yüksek: hızlı aksiyon vardiya içinde uygulanabilir olsun. ' : '') +
+    (c.tur.indexOf('Gözlem') === 0 || c.tur.indexOf('Öneri') === 0 ? 'Bu bir uygunsuzluk değil; iyileştirme fırsatı dilini kullan, hızlı aksiyon yerine kısa bir ilk adım yaz. ' : '') + '\n\n' +
     (resimler.length ? BG_AI_FOTO_KURAL : '') +
     bulguAiBaglamMetni(c) +
     (c.oneri ? '\nKULLANICININ YAZDIĞI MEVCUT ÖNERİ (yazdığı gerçek eylemleri SİLME ve çelişme; koru, eksik kalan kalıcı önlem ve izleme adımını tamamlayarak 3 satıra oturt):\n' + c.oneri + '\n' : '');
@@ -8680,14 +8691,13 @@ function bulguOneriGeriAl() {
 // ── "✨ Oluştur": HSE Performans Bağlantısı alanlarını öner (hibrit: elle seçilenlere dokunmaz) ──
 let bgHseOnceki = null;
 function bulguHseManuel(el) { if (el) el.dataset.manuel = (el.id === 'bg-m-hse-iliski' && !el.value) ? '' : '1'; }
-function bulguHseManuelSifirla(kayitli) {
+function bulguHseManuelSifirla() {
+  // Elle seçilmiş sayılan alanlar yalnız bu oturumda kullanıcının kendisinin değiştirdikleridir;
+  // kayıtlı değerler "Oluştur" ile yeniden önerilebilir ("Geri al" ile dönülür).
   ['iliski', 'kritik', 'tedbir', 'kok'].forEach(k => {
     const el = document.getElementById('bg-m-hse-' + k);
-    if (el) el.dataset.manuel = (kayitli && el.value) ? '1' : '';
+    if (el) el.dataset.manuel = '';
   });
-  if (!kayitli) {
-    const kok = document.getElementById('bg-m-hse-kok'); if (kok) kok.dataset.manuel = '';
-  }
   bgHseOnceki = null;
   const n = document.getElementById('bg-hse-ai-not'); if (n) n.style.display = 'none';
 }
@@ -18913,7 +18923,7 @@ function bulguOpen(editId, denetimId) {
   document.getElementById('bg-m-hse-kritik').value = b ? (b.hseKritik||'Orta') : 'Orta';
   document.getElementById('bg-m-hse-tedbir').value = b ? (b.hseTedbir||'İdari / Organizasyonel Kontrol') : 'İdari / Organizasyonel Kontrol';
   document.getElementById('bg-m-hse-kok').value = b ? (b.hseKok||'') : '';
-  bulguHseManuelSifirla(!!(b && b.hseIliski));
+  bulguHseManuelSifirla();
   bulguHseToggle();
   bgOneriOnceki = null; { const u = document.getElementById('bg-oneri-undo'); if (u) u.style.display = 'none'; }
   document.getElementById('bulgu-modal-bg').style.display = 'flex';
