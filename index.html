@@ -4888,16 +4888,61 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 }
 
 /* Denetim fabrika seçimleri */
-#audit-modal-box #dn-m-fab-list,
+.dn-fab-wrap{
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:11px;
+  padding:8px;
+  display:flex;flex-direction:column;gap:7px;
+}
 #dn-m-fab-list{
-  background:#fff!important;
-  border:1px solid #D8E1E8!important;
-  border-radius:11px!important;
-  padding:8px!important;
+  display:flex;flex-wrap:wrap;gap:6px;
+  max-height:96px;overflow-y:auto;
 }
-#dn-m-fab-all{
-  accent-color:#378ADD!important;
+.dn-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;line-height:1;
+  padding:7px 11px;border-radius:999px;
+  border:1px solid var(--border2);
+  background:var(--surface);color:var(--text2);
+  cursor:pointer;user-select:none;width:max-content;
+  transition:background .15s,border-color .15s,color .15s;
 }
+.dn-chip input{position:absolute;opacity:0;pointer-events:none;width:0;height:0;}
+.dn-chip .dn-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dn-chip.on{
+  background:rgba(55,138,221,.12);
+  border-color:#378ADD;color:#185FA5;
+}
+.dn-chip-all.on{background:#378ADD;border-color:#378ADD;color:#fff;}
+
+/* Bulgu görsel kanıt alanı */
+.bg-foto-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.bg-foto-btn{
+  padding:9px 8px;border-radius:9px;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text2);font-size:11.5px;font-weight:600;cursor:pointer;
+}
+.bg-foto-btn:hover{border-color:#378ADD;color:#185FA5;}
+.bg-foto-liste{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.bg-foto-liste:empty{display:none;}
+.bg-foto{position:relative;aspect-ratio:1/1;border-radius:9px;overflow:hidden;border:2px solid var(--border2);background:var(--surface2);}
+.bg-foto.alfa{border-color:#F5A623;}
+.bg-foto img{width:100%;height:100%;object-fit:cover;display:block;}
+.bg-foto button{
+  position:absolute;top:4px;width:24px;height:24px;border-radius:50%;border:0;
+  background:rgba(0,0,0,.55);color:#fff;font-size:13px;line-height:24px;padding:0;cursor:pointer;
+}
+.bg-foto .bg-foto-sil{right:4px;}
+.bg-foto .bg-foto-yildiz{left:4px;}
+.bg-foto.alfa .bg-foto-yildiz{background:#F5A623;}
+.bg-foto-etiket{
+  position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:9.5px;font-weight:700;
+  background:#F5A623;color:#fff;padding:2px 0;
+}
+#bg-hse-ai-btn{white-space:nowrap;flex-shrink:0;margin-left:8px!important;}
+.bg-hse-ai-not{font-size:10.5px;line-height:1.45;color:#3D5568;background:rgba(55,138,221,.08);border-radius:8px;padding:7px 9px;margin-bottom:9px;}
+.bg-hse-ai-not button{background:none;border:0;color:#185FA5;font-weight:700;font-size:10.5px;cursor:pointer;padding:0;margin-left:6px;}
+.bg-foto-not{display:block;color:var(--text3);font-size:10.5px;line-height:1.4;}
 
 /* Bulgu öneri butonu */
 .audit-finding-box .kaza-onlem-ai-btn{
@@ -6780,17 +6825,6 @@ px}
     <div class="mfield"><label>Denetim Adı *</label><input id="dn-m-ad" placeholder="örn: 2026 1. Dönem İç Denetim"/></div>
     <div class="mrow2">
       <div class="mfield"><label>Tarih *</label><input type="date" id="dn-m-tarih"/></div>
-      <div class="mfield">
-        <label>Fabrika(lar)
-          <span style="color:var(--text3);font-weight:400">— birden fazla seçebilirsin</span>
-        </label>
-        <label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);user-select:none;width:max-content;">
-          <input type="checkbox" id="dn-m-fab-all" onchange="dnFabTumu(this.checked)" style="accent-color:#378ADD;width:13px;height:13px;"> Tümünü seç
-        </label>
-        <div id="dn-m-fab-list" style="display:flex;flex-wrap:wrap;gap:5px;max-height:130px;overflow-y:auto;margin-top:4px;"></div>
-      </div>
-    </div>
-    <div class="mrow2">
       <div class="mfield"><label>Denetim Türü</label>
         <select id="dn-m-tur">
           <option value="ic">İç Denetim</option>
@@ -6800,8 +6834,15 @@ px}
           <option value="musteri">Müşteri Denetimi</option>
         </select>
       </div>
-      <div class="mfield"><label>Denetçi</label><input id="dn-m-denetci" placeholder="örn: Ahmet Y."/></div>
     </div>
+    <div class="mfield">
+      <label>Fabrika(lar) <span style="color:var(--text3);font-weight:400">— birden fazla seçebilirsin</span></label>
+      <div class="dn-fab-wrap">
+        <label class="dn-chip dn-chip-all" id="dn-chip-all"><input type="checkbox" id="dn-m-fab-all" onchange="dnFabTumu(this.checked)"><span>Tümünü seç</span></label>
+        <div id="dn-m-fab-list"></div>
+      </div>
+    </div>
+    <div class="mfield"><label>Denetçi</label><input id="dn-m-denetci" placeholder="örn: Ahmet Y."/></div>
     <div class="mfield"><label>Not</label><textarea id="dn-m-not" placeholder="Kapsam, katılımcılar..." style="min-height:50px"></textarea></div>
     <div class="audit-modal-footer">
       <button class="mbtn-cancel" onclick="denetimCloseAdd()">İptal</button>
@@ -6817,14 +6858,26 @@ px}
       <h3 id="bg-modal-h" style="font-size:14px;font-weight:700;color:var(--text);">Bulgu</h3>
       <button onclick="bulguClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
     </div>
-    <div class="mfield"><label>Ait Olduğu Denetim *</label><select id="bg-m-denetim"></select></div>
+    <div class="mfield"><label>Ait Olduğu Denetim *</label><select id="bg-m-denetim" onchange="bulguBolumDoldur()"></select></div>
     <div class="mfield"><label>Tespit / Uygunsuzluk *</label><textarea id="bg-m-metin" placeholder="Ne tespit edildi?"></textarea></div>
+    <div class="mfield bg-foto-alan">
+      <label>Görsel Kanıt <span style="color:var(--text3);font-weight:400">— en fazla 3 fotoğraf</span></label>
+      <div class="bg-foto-btns">
+        <button type="button" class="bg-foto-btn" onclick="document.getElementById('bg-foto-kamera').click()">📷 Fotoğraf çek</button>
+        <button type="button" class="bg-foto-btn" onclick="document.getElementById('bg-foto-dosya').click()">🖼 Dosyadan ekle</button>
+      </div>
+      <input type="file" id="bg-foto-kamera" accept="image/*" capture="environment" onchange="bulguFotoEkle(this)" style="display:none"/>
+      <input type="file" id="bg-foto-dosya" accept="image/*" multiple onchange="bulguFotoEkle(this)" style="display:none"/>
+      <div id="bg-foto-liste" class="bg-foto-liste"></div>
+      <small class="bg-foto-not"><i>KVKK gereği fotoğraflarda kişi yüzlerinin yer almamasına özen gösteriniz.</i></small>
+    </div>
     <div class="mfield">
       <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Öneri / Düzeltici Faaliyet
         <button type="button" onclick="aiDenetimOneri(this)" title="Tespit içeriğine göre yapay zeka önerisi üret"
           class="kaza-onlem-ai-btn">✨ Öneri Oluştur</button>
       </label>
-      <textarea id="bg-m-oneri" placeholder="Ne yapılmalı?" style="min-height:50px"></textarea>
+      <textarea id="bg-m-oneri" placeholder="Hızlı aksiyon, kalıcı önlem, izleme ve kontrol…" style="min-height:96px"></textarea>
+      <button type="button" id="bg-oneri-undo" onclick="bulguOneriGeriAl()" style="display:none;align-self:flex-start;margin-top:4px;background:none;border:0;color:#185FA5;font-size:11px;font-weight:600;cursor:pointer;padding:2px 0;">↶ Önceki metne dön</button>
     </div>
     <div class="mrow3">
       <div class="mfield"><label>Tür</label>
@@ -6850,7 +6903,13 @@ px}
       </div>
     </div>
     <div class="mrow3">
-      <div class="mfield"><label>Bölüm</label><input id="bg-m-bolum" placeholder="örn: Depo"/></div>
+      <div class="mfield"><label>Bölüm</label>
+        <select id="bg-m-bolum-sel" onchange="bulguBolumSec()"></select>
+        <div id="bg-bolum-manuel" style="display:none;gap:4px;align-items:stretch;">
+          <input id="bg-m-bolum" placeholder="Bölüm adı" style="min-width:0;flex:1"/>
+          <button type="button" onclick="bulguBolumListeyeDon()" title="Listeden seç" style="flex-shrink:0;width:30px;border-radius:9px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;">▾</button>
+        </div>
+      </div>
       <div class="mfield"><label>Sorumlu</label><input id="bg-m-sorumlu" placeholder="örn: Ad Soyad"/></div>
       <div class="mfield"><label>Termin</label><input type="date" id="bg-m-termin"/></div>
     </div>
@@ -6858,10 +6917,13 @@ px}
       <div class="hse-task-layer-head"><div>
         <b>HSE Performans Bağlantısı</b>
         <span>İSG ile ilişkili denetim bulgularını performans ve aksiyon takibine bağlar.</span>
-      </div></div>
+      </div>
+      <button type="button" id="bg-hse-ai-btn" onclick="aiBulguHse(this)" title="Tespit ve fotoğrafa göre HSE alanlarını öner (seçtiklerini değiştirmez)"
+        class="kaza-onlem-ai-btn">✨ Oluştur</button></div>
+      <div id="bg-hse-ai-not" class="bg-hse-ai-not" style="display:none"></div>
       <div class="mfield">
         <label>İSG / HSE İlişkisi</label>
-        <select id="bg-m-hse-iliski" onchange="bulguHseToggle()">
+        <select id="bg-m-hse-iliski" onchange="bulguHseManuel(this);bulguHseToggle()">
           <option value="">İSG ilişkisi yok</option>
           <option>Makine / Ekipman Güvenliği</option><option>KKD</option>
           <option>Forklift / Araç / Yaya Güvenliği</option><option>Kimyasal Güvenlik</option>
@@ -6874,17 +6936,17 @@ px}
       <div id="bg-m-hse-extra" class="hse-task-extra">
         <div class="mfield">
           <label>İSG Kritikliği</label>
-          <select id="bg-m-hse-kritik"><option>Düşük</option><option>Orta</option><option>Yüksek</option><option>Kritik</option></select>
+          <select id="bg-m-hse-kritik" onchange="bulguHseManuel(this)"><option>Düşük</option><option>Orta</option><option>Yüksek</option><option>Kritik</option></select>
         </div>
         <div class="mfield"><label>Kontrol / Tedbir Türü</label>
-          <select id="bg-m-hse-tedbir">
+          <select id="bg-m-hse-tedbir" onchange="bulguHseManuel(this)">
             <option>Tehlikenin Ortadan Kaldırılması</option><option>İkame</option>
             <option>Mühendislik Kontrolü</option><option>İdari / Organizasyonel Kontrol</option>
             <option>KKD</option><option>İzleme / Ölçüm</option><option>Eğitim / Yetkinlik</option><option>Diğer</option>
           </select>
         </div>
         <div class="mfield"><label>İlişkili Kök Neden <span style="font-weight:400;color:var(--text3)">(opsiyonel)</span></label>
-          <select id="bg-m-hse-kok"><option value="">Seçiniz</option></select>
+          <select id="bg-m-hse-kok" onchange="bulguHseManuel(this)"><option value="">Seçiniz</option></select>
         </div>
       </div>
     </div>
@@ -8520,34 +8582,178 @@ function aiBtnDurum(btn, yukleniyor) {
   }
 }
 
-// ── DENETİM: Tespit içeriğinden düzeltici faaliyet önerisi ──
+// ── DENETİM: ISO 45001 çerçevesinde bulgu analizi (Öneri Oluştur + HSE Oluştur ortak altyapısı) ──
+const BG_DENETIM_TUR = { ic:'İç denetim', dis:'Dış denetim', saha:'Saha turu', resmi:'Resmi denetim', musteri:'Müşteri denetimi' };
+const BG_TUR_AD = { uygunsuzluk:'Uygunsuzluk', oneri:'Öneri (iyileştirme fırsatı)', gozlem:'Gözlem' };
+const BG_ONEM_AD = { yuksek:'Yüksek', orta:'Orta', dusuk:'Düşük' };
+let bgOneriOnceki = null;   // "Önceki metne dön" için
+
+// Formdaki bulguyu yapay zekâ için tek bir bağlam nesnesine toplar
+function bulguAiBaglam() {
+  const g = id => (document.getElementById(id)?.value || '').trim();
+  const d = denetimler.find(x => x.id === g('bg-m-denetim'));
+  return {
+    tespit: g('bg-m-metin'), oneri: g('bg-m-oneri'),
+    tur: BG_TUR_AD[g('bg-m-tur')] || '', onem: BG_ONEM_AD[g('bg-m-onem')] || '',
+    bolum: g('bg-m-bolum'),
+    fabrika: d ? dnFabListesi(d).join(', ') : '',
+    denetimTuru: d ? (BG_DENETIM_TUR[d.tur] || '') : ''
+  };
+}
+// Fotoğraflar (alfa önce) → Gemini inline_data parçaları. Yardımcı kanıttır, yazılı tespit esastır.
+function bulguAiResimler() {
+  const sira = bgFotolar.map((s, i) => i).sort((a, b) => (a === bgAlfa ? -1 : b === bgAlfa ? 1 : a - b));
+  return sira.map(i => {
+    const m = /^data:([^;]+);base64,(.+)$/.exec(bgFotolar[i] || '');
+    return m ? { inline_data: { mime_type: m[1], data: m[2] } } : null;
+  }).filter(Boolean);
+}
+const BG_AI_ROL =
+  'Sen ISO 45001:2018 baş denetçisi ve 20 yıllık deneyime sahip kıdemli bir İş Sağlığı ve Güvenliği (İSG) uzmanısın. ' +
+  'Üretim tesislerinde saha denetimi bulgularını değerlendiriyorsun. Cevapların somut, doğru, uygulanabilir ve kısa olmalı.\n\n';
+const BG_AI_FOTO_KURAL =
+  'FOTOĞRAF KURALI: Yazılı tespit ana bilgi kaynağıdır. Eklenen fotoğraf yalnızca onu destekleyen yardımcı kanıttır. ' +
+  'Fotoğrafta açıkça görünmeyen hiçbir şeyi varsayma; fotoğraf ile yazılı tespit çelişirse yazılı tespite güven. ' +
+  'Fotoğrafta tespitte geçmeyen ama açıkça görünen ek bir tehlike varsa bunu en fazla bir kısa cümleyle belirt. ' +
+  'Fotoğraftaki kişileri tanımlamaya veya tanımlayıcı bilgi yazmaya çalışma.\n\n';
+function bulguAiBaglamMetni(c) {
+  return 'Tespit: ' + c.tespit + '\n' +
+    (c.tur ? 'Bulgu türü: ' + c.tur + '\n' : '') +
+    (c.onem ? 'Önem derecesi (kullanıcı belirledi, değiştirme; yalnızca aciliyet tonu için bağlam): ' + c.onem + '\n' : '') +
+    (c.bolum ? 'Bölüm: ' + c.bolum + '\n' : '') +
+    (c.fabrika ? 'Fabrika: ' + c.fabrika + '\n' : '') +
+    (c.denetimTuru ? 'Denetim türü: ' + c.denetimTuru + '\n' : '');
+}
+async function bulguGeminiIstek(prompt, resimler, maxToken, json) {
+  const parts = [{ text: prompt }].concat(resimler || []);
+  const gen = { temperature: json ? 0.2 : 0.4, maxOutputTokens: maxToken };
+  if (json) gen.responseMimeType = 'application/json';
+  const r = await geminiHamIstek({ contents: [{ parts }], generationConfig: gen }, { hizli: true });
+  return r.metin;
+}
+
+// ── "✨ Öneri Oluştur": hızlı aksiyon / kalıcı önlem / izleme ve kontrol ──
 async function aiDenetimOneri(btn) {
-  const tespit = (document.getElementById('bg-m-metin')?.value || '').trim();
-  const tur    = document.getElementById('bg-m-tur')?.value || '';
-  const onem   = document.getElementById('bg-m-onem')?.value || '';
-  if (!tespit) { alert('Önce "Tespit" alanına bulguyu yazın; öneri onun içeriğine göre üretilir.'); return; }
-  const prompt =
-    'Sen bir İş Sağlığı ve Güvenliği (İSG) uzmanısın. Aşağıdaki denetim bulgusu için ' +
-    'somut, uygulanabilir bir DÜZELTİCİ FAALİYET / ÖNERİ yaz. ' +
-    'Kurallar: Türkçe yaz, en fazla 2 kısa cümle, madde işareti veya başlık kullanma, ' +
-    'doğrudan yapılacak eylemi belirt.\n\n' +
-    'Tespit: ' + tespit + '\n' +
-    (tur ? 'Bulgu türü: ' + tur + '\n' : '') +
-    (onem ? 'Önem: ' + onem + '\n' : '');
+  const c = bulguAiBaglam();
+  if (!c.tespit) { alert('Önce "Tespit" alanına bulguyu yazın; öneri onun içeriğine göre üretilir.'); return; }
+  const resimler = bulguAiResimler();
+  const prompt = BG_AI_ROL +
+    'GÖREV: Aşağıdaki denetim bulgusu için, ISO 45001 madde 10.2 (uygunsuzluk ve düzeltici faaliyet) ve 8.1.2 (kontrol hiyerarşisi) çerçevesinde ' +
+    'bulgunun GERÇEK mekanizmasına ve muhtemel kök nedenine bağlı bir "Öneri / Düzeltici Faaliyet" metni yaz.\n\n' +
+    'YÖNTEM (çıktıya yazma, sadece düşün): (1) Tehlike nedir, kim/ne etkilenir, olası sonuç ne? (2) Muhtemel kök neden hangi alanda: ekipman/yerleşim, ' +
+    'prosedür, eğitim/yetkinlik, bakım/denetim, yönetim/sorumluluk? Tespitte desteklenmeyen kök nedeni kesinmiş gibi yazma. ' +
+    '(3) Önlemleri kontrol hiyerarşisine göre kur: ortadan kaldırma > ikame > mühendislik kontrolü > idari kontrol > KKD.\n\n' +
+    'ÇIKTI BİÇİMİ: Türkçe, düz metin, başlık/markdown/yıldız/madde işareti yok. Tam olarak şu 3 satır:\n' +
+    'Hızlı aksiyon: (riski hemen düşüren geçici düzeltme; ne yapılacak, nerede)\n' +
+    'Kalıcı önlem: (kök nedene yönelik kalıcı çözüm; mümkünse ortadan kaldırma veya mühendislik kontrolü öne çıksın; yalnız eğitim/uyarı/KKD ile yetinme)\n' +
+    'İzleme ve kontrol: (önlemin etkinliği nasıl doğrulanacak; hangi kontrol/gösterge, ne sıklıkla, hangi birim)\n' +
+    'Her satır en fazla 2 cümle. "Dikkat edilecektir" gibi genel ifadeler yasak; ne, nerede, hangi ekipmanda belirt. ' +
+    'Sayı, tarih, yasal madde veya yönetmelik numarası uydurma. ' +
+    (c.onem === 'Yüksek' ? 'Önem yüksek: hızlı aksiyon anında/vardiya içinde uygulanabilir olsun. ' : '') +
+    (c.tur.indexOf('Gözlem') === 0 || c.tur.indexOf('Öneri') === 0 ? 'Bu bir uygunsuzluk değil; iyileştirme fırsatı dilini kullan. ' : '') + '\n\n' +
+    (resimler.length ? BG_AI_FOTO_KURAL : '') +
+    bulguAiBaglamMetni(c) +
+    (c.oneri ? '\nKULLANICININ YAZDIĞI MEVCUT ÖNERİ (yazdığı gerçek eylemleri SİLME ve çelişme; koru, eksik kalan kalıcı önlem ve izleme adımını tamamlayarak 3 satıra oturt):\n' + c.oneri + '\n' : '');
   aiBtnDurum(btn, true);
   try {
-    const oneri = await geminiUret(prompt, 1024);
-    if (oneri) {
-      document.getElementById('bg-m-oneri').value = oneri;
-      toast('Öneri oluşturuldu');
-    } else {
-      alert('Öneri üretilemedi, tekrar deneyin.');
-    }
+    let oneri = await bulguGeminiIstek(prompt, resimler, 4096, false);
+    oneri = String(oneri || '').replace(/\*\*/g, '').replace(/^\s*[-•*]\s+/gm, '').trim();
+    if (!oneri) { alert('Öneri üretilemedi, tekrar deneyin.'); return; }
+    bgOneriOnceki = c.oneri;
+    document.getElementById('bg-m-oneri').value = oneri;
+    const u = document.getElementById('bg-oneri-undo');
+    if (u) { u.style.display = 'inline-block'; u.textContent = c.oneri ? '↶ Önceki metne dön' : '↶ Üretimi kaldır'; }
+    toast(c.oneri ? 'Öneri geliştirildi' : 'Öneri oluşturuldu');
   } catch (e) {
     alert(e.message);
   } finally {
     aiBtnDurum(btn, false);
   }
+}
+function bulguOneriGeriAl() {
+  document.getElementById('bg-m-oneri').value = bgOneriOnceki || '';
+  bgOneriOnceki = null;
+  const u = document.getElementById('bg-oneri-undo'); if (u) u.style.display = 'none';
+  toast('Öneri metni geri alındı');
+}
+
+// ── "✨ Oluştur": HSE Performans Bağlantısı alanlarını öner (hibrit: elle seçilenlere dokunmaz) ──
+let bgHseOnceki = null;
+function bulguHseManuel(el) { if (el) el.dataset.manuel = (el.id === 'bg-m-hse-iliski' && !el.value) ? '' : '1'; }
+function bulguHseManuelSifirla(kayitli) {
+  ['iliski', 'kritik', 'tedbir', 'kok'].forEach(k => {
+    const el = document.getElementById('bg-m-hse-' + k);
+    if (el) el.dataset.manuel = (kayitli && el.value) ? '1' : '';
+  });
+  if (!kayitli) {
+    const kok = document.getElementById('bg-m-hse-kok'); if (kok) kok.dataset.manuel = '';
+  }
+  bgHseOnceki = null;
+  const n = document.getElementById('bg-hse-ai-not'); if (n) n.style.display = 'none';
+}
+function bulguSelSecenekler(id) {
+  return Array.from(document.getElementById(id)?.options || []).map(o => o.value || o.textContent).filter(Boolean);
+}
+async function aiBulguHse(btn) {
+  const c = bulguAiBaglam();
+  if (!c.tespit) { alert('Önce "Tespit" alanına bulguyu yazın; HSE alanları onun içeriğine göre önerilir.'); return; }
+  const sel = k => document.getElementById('bg-m-hse-' + k);
+  const manuel = k => sel(k)?.dataset.manuel === '1';
+  const listeler = {
+    iliski: bulguSelSecenekler('bg-m-hse-iliski').filter(x => x !== 'İSG ilişkisi yok'),
+    kritik: bulguSelSecenekler('bg-m-hse-kritik'),
+    tedbir: bulguSelSecenekler('bg-m-hse-tedbir'),
+    kok:    bulguSelSecenekler('bg-m-hse-kok')
+  };
+  const resimler = bulguAiResimler();
+  const secili = ['iliski', 'kritik', 'tedbir', 'kok'].filter(manuel)
+    .map(k => ({ iliski:'İSG ilişkisi', kritik:'Kritiklik', tedbir:'Tedbir türü', kok:'Kök neden' }[k] + ': ' + sel(k).value)).join('; ');
+  const prompt = BG_AI_ROL +
+    'GÖREV: Aşağıdaki denetim bulgusunu HSE performans takibine bağlamak için dört alan öner. Yalnızca verilen listelerden BİREBİR değer seç.\n\n' +
+    '1) iliski — İSG / HSE ilişkisi: ' + listeler.iliski.join(' | ') + ' (İSG ile ilgisi yoksa boş "" bırak)\n' +
+    '2) kritik — İSG kritikliği (olası sonucun ciddiyeti ve tekrar olasılığına göre): ' + listeler.kritik.join(' | ') + '\n' +
+    '3) tedbir — Kontrol / tedbir türü: ISO 45001 8.1.2 kontrol hiyerarşisine göre bu bulguyu kalıcı kapatacak en etkili ve gerçekçi tür: ' + listeler.tedbir.join(' | ') + '\n' +
+    '4) kok — İlişkili kök neden (yalnız tespit ve varsa fotoğraf güçlü destekliyorsa seç, emin değilsen ""): ' + listeler.kok.join(' | ') + '\n\n' +
+    'ÇIKTI: Yalnızca şu JSON: {"iliski":"","kritik":"","tedbir":"","kok":"","gerekce":"en fazla 2 kısa cümle Türkçe gerekçe"}\n' +
+    (secili ? 'Kullanıcı şu alanları kendisi seçti, bunlarla çelişme ve bunları dikkate alarak diğerlerini seç: ' + secili + '\n' : '') + '\n' +
+    (resimler.length ? BG_AI_FOTO_KURAL : '') +
+    bulguAiBaglamMetni(c) +
+    (c.oneri ? 'Öneri / Düzeltici faaliyet: ' + c.oneri + '\n' : '');
+  aiBtnDurum(btn, true);
+  try {
+    let ham = await bulguGeminiIstek(prompt, resimler, 2048, true);
+    ham = String(ham || '').replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+    let j; try { j = JSON.parse(ham); } catch (e) { const m = /\{[\s\S]*\}/.exec(ham); j = m ? JSON.parse(m[0]) : null; }
+    if (!j) { alert('Sonuç anlaşılamadı, tekrar deneyin.'); return; }
+    bgHseOnceki = ['iliski', 'kritik', 'tedbir', 'kok'].reduce((o, k) => (o[k] = sel(k).value, o), {});
+    const dolan = [], korunan = [];
+    ['iliski', 'kritik', 'tedbir', 'kok'].forEach(k => {
+      const v = String(j[k] || '').trim();
+      if (manuel(k)) { korunan.push(k); return; }
+      if (v && listeler[k].includes(v)) { sel(k).value = v; dolan.push(v); }
+    });
+    bulguHseToggle();
+    const n = document.getElementById('bg-hse-ai-not');
+    if (n) {
+      n.innerHTML = (dolan.length ? '✨ ' + dolan.map(esc).join(' · ') : 'Uygun öneri bulunamadı.') +
+        (j.gerekce ? '<br>' + esc(String(j.gerekce)) : '') +
+        (korunan.length ? '<br><i>Elle seçtikleriniz korundu.</i>' : '') +
+        (dolan.length ? '<button type="button" onclick="bulguHseGeriAl()">↶ Geri al</button>' : '');
+      n.style.display = '';
+    }
+    toast(dolan.length ? 'HSE alanları önerildi — kontrol edip Kaydet’e basın' : 'Değişiklik yapılmadı');
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    aiBtnDurum(btn, false);
+  }
+}
+function bulguHseGeriAl() {
+  if (!bgHseOnceki) return;
+  Object.keys(bgHseOnceki).forEach(k => { const el = document.getElementById('bg-m-hse-' + k); if (el) el.value = bgHseOnceki[k]; });
+  bgHseOnceki = null;
+  bulguHseToggle();
+  const n = document.getElementById('bg-hse-ai-not'); if (n) n.style.display = 'none';
 }
 
 // ── KAZA: olay + yaralanma + kök neden + potansiyel şiddetten önlem önerisi ──
@@ -18620,11 +18826,11 @@ function denetimOpenAdd(editId) {
   // Fabrika kutucukları — çoklu seçim
   const secili = dnFabListesi(d);
   document.getElementById('dn-m-fab-list').innerHTML = fabrikalar.map(f => `
-    <label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;padding:3px 9px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);user-select:none;">
+    <label class="dn-chip">
       <input type="checkbox" class="dn-fab-chk" value="${esc(f.name)}" ${secili.includes(f.name)?'checked':''}
-             onchange="dnFabSenkron()" style="accent-color:${f.color};width:13px;height:13px;">
-      <span style="width:8px;height:8px;border-radius:50%;background:${f.color};display:inline-block"></span>
-      ${esc(f.name)}
+             onchange="dnFabSenkron()">
+      <span class="dn-dot" style="background:${f.color}"></span>
+      <span>${esc(f.name)}</span>
     </label>`).join('');
   dnFabSenkron();
   document.getElementById('denetim-modal-bg').style.display = 'flex';
@@ -18638,11 +18844,15 @@ function dnFabListesi(d) {
 }
 function dnFabTumu(isaretli) {
   document.querySelectorAll('.dn-fab-chk').forEach(c => { c.checked = isaretli; });
+  dnFabSenkron();
 }
 function dnFabSenkron() {
   const hepsi = Array.from(document.querySelectorAll('.dn-fab-chk'));
   const all = document.getElementById('dn-m-fab-all');
   if (all) all.checked = hepsi.length > 0 && hepsi.every(c => c.checked);
+  hepsi.forEach(c => c.closest('.dn-chip').classList.toggle('on', c.checked));
+  const allChip = document.getElementById('dn-chip-all');
+  if (allChip) allChip.classList.toggle('on', !!(all && all.checked));
 }
 function denetimCloseAdd() { document.getElementById('denetim-modal-bg').style.display = 'none'; dnEditId = null; }
 function denetimSubmit() {
@@ -18692,7 +18902,10 @@ function bulguOpen(editId, denetimId) {
   document.getElementById('bg-m-tur').value     = b ? (b.tur||'uygunsuzluk') : 'uygunsuzluk';
   document.getElementById('bg-m-onem').value    = b ? (b.onem||'orta') : 'orta';
   document.getElementById('bg-m-durum').value   = b ? (b.durum||'acik') : 'acik';
-  document.getElementById('bg-m-bolum').value   = b ? (b.bolum||'') : '';
+  bulguBolumDoldur(b ? (b.bolum||'') : '');
+  bgFotolar = b && Array.isArray(b.fotolar) ? b.fotolar.slice(0, BG_FOTO_MAX) : [];
+  bgAlfa = b && Number.isInteger(b.alfa) && b.alfa >= 0 && b.alfa < bgFotolar.length ? b.alfa : 0;
+  bulguFotoCiz();
   document.getElementById('bg-m-sorumlu').value = b ? (b.sorumlu||'') : '';
   document.getElementById('bg-m-termin').value  = b ? (b.termin||'') : '';
   bulguHseKokDoldur();
@@ -18700,9 +18913,105 @@ function bulguOpen(editId, denetimId) {
   document.getElementById('bg-m-hse-kritik').value = b ? (b.hseKritik||'Orta') : 'Orta';
   document.getElementById('bg-m-hse-tedbir').value = b ? (b.hseTedbir||'İdari / Organizasyonel Kontrol') : 'İdari / Organizasyonel Kontrol';
   document.getElementById('bg-m-hse-kok').value = b ? (b.hseKok||'') : '';
+  bulguHseManuelSifirla(!!(b && b.hseIliski));
   bulguHseToggle();
+  bgOneriOnceki = null; { const u = document.getElementById('bg-oneri-undo'); if (u) u.style.display = 'none'; }
   document.getElementById('bulgu-modal-bg').style.display = 'flex';
   setTimeout(() => document.getElementById('bg-m-metin').focus(), 80);
+}
+// ── Bulgu görsel kanıt (en fazla 3, biri alfa) ──────────────
+let bgFotolar = [];   // data URL dizisi
+let bgAlfa = 0;       // alfa fotoğrafın dizindeki yeri
+const BG_FOTO_MAX = 3;
+function bulguFotoKucult(file) {
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onerror = () => res(null);
+    r.onload = () => {
+      const img = new Image();
+      img.onerror = () => res(null);
+      img.onload = () => {
+        const olcek = Math.min(1, 900 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * olcek); c.height = Math.round(img.height * olcek);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+async function bulguFotoEkle(input) {
+  const dosyalar = Array.from(input.files || []);
+  input.value = '';
+  if (!dosyalar.length) return;
+  const bos = BG_FOTO_MAX - bgFotolar.length;
+  if (bos <= 0) { toast('En fazla ' + BG_FOTO_MAX + ' fotoğraf eklenebilir'); return; }
+  if (dosyalar.length > bos) toast('Yalnızca ' + bos + ' fotoğraf daha eklenebilir');
+  for (const f of dosyalar.slice(0, bos)) {
+    const veri = await bulguFotoKucult(f);
+    if (veri) bgFotolar.push(veri);
+  }
+  if (bgAlfa >= bgFotolar.length) bgAlfa = 0;
+  bulguFotoCiz();
+}
+function bulguFotoCiz() {
+  const k = document.getElementById('bg-foto-liste'); if (!k) return;
+  k.innerHTML = bgFotolar.map((s, i) => `
+    <div class="bg-foto${i === bgAlfa ? ' alfa' : ''}">
+      <img src="${s}" alt="Kanıt ${i + 1}">
+      <button type="button" class="bg-foto-yildiz" title="Alfa fotoğraf yap" onclick="bulguFotoAlfa(${i})">★</button>
+      <button type="button" class="bg-foto-sil" title="Fotoğrafı kaldır" onclick="bulguFotoSil(${i})">×</button>
+      ${i === bgAlfa ? '<div class="bg-foto-etiket">ALFA</div>' : ''}
+    </div>`).join('');
+}
+function bulguFotoAlfa(i) { bgAlfa = i; bulguFotoCiz(); }
+function bulguFotoSil(i) {
+  if (!confirm('Bu fotoğraf kaldırılsın mı?')) return;
+  bgFotolar.splice(i, 1);
+  if (bgAlfa === i) bgAlfa = 0; else if (bgAlfa > i) bgAlfa--;
+  if (bgAlfa >= bgFotolar.length) bgAlfa = 0;
+  bulguFotoCiz();
+}
+
+// Bölüm açılır listesi: seçili denetimin fabrikalarındaki kayıtlı bölümler + önceki bulgulardaki bölümler
+function bulguBolumListesi() {
+  const dId = document.getElementById('bg-m-denetim')?.value;
+  const d = denetimler.find(x => x.id === dId);
+  const fabs = dnFabListesi(d);
+  const out = [], gor = new Set();
+  const ekle = n => { const ad = String(n || '').trim(), k = ad.toLocaleLowerCase('tr'); if (ad && !gor.has(k)) { gor.add(k); out.push(ad); } };
+  (fabs.length ? fabs : [null]).forEach(f => kazaBolumListesi(f || 'tumu').forEach(ekle));
+  bulgular.forEach(x => ekle(x.bolum));
+  return out.sort((a, b) => a.localeCompare(b, 'tr'));
+}
+function bulguBolumGoster(manuel) {
+  document.getElementById('bg-m-bolum-sel').style.display = manuel ? 'none' : '';
+  document.getElementById('bg-bolum-manuel').style.display = manuel ? 'flex' : 'none';
+}
+function bulguBolumDoldur(deger) {
+  const sel = document.getElementById('bg-m-bolum-sel'), inp = document.getElementById('bg-m-bolum');
+  if (!sel || !inp) return;
+  const mevcut = deger !== undefined ? String(deger || '') : inp.value.trim();
+  const liste = bulguBolumListesi();
+  const esles = liste.find(x => x.toLocaleLowerCase('tr') === mevcut.toLocaleLowerCase('tr'));
+  sel.innerHTML = '<option value="">Bölüm seçiniz</option>' +
+    liste.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('') +
+    '<option value="__diger">✎ Elle yaz…</option>';
+  if (!mevcut) { sel.value = ''; inp.value = ''; bulguBolumGoster(false); }
+  else if (esles) { sel.value = esles; inp.value = esles; bulguBolumGoster(false); }
+  else { sel.value = '__diger'; inp.value = mevcut; bulguBolumGoster(true); }
+}
+function bulguBolumSec() {
+  const sel = document.getElementById('bg-m-bolum-sel'), inp = document.getElementById('bg-m-bolum');
+  if (sel.value === '__diger') { inp.value = ''; bulguBolumGoster(true); inp.focus(); }
+  else { inp.value = sel.value; bulguBolumGoster(false); }
+}
+function bulguBolumListeyeDon() {
+  const sel = document.getElementById('bg-m-bolum-sel');
+  document.getElementById('bg-m-bolum').value = '';
+  sel.value = ''; bulguBolumGoster(false);
 }
 function bulguClose() { document.getElementById('bulgu-modal-bg').style.display = 'none'; bgEditId = null; }
 function bulguSubmit() {
@@ -18719,6 +19028,8 @@ function bulguSubmit() {
     bolum:   document.getElementById('bg-m-bolum').value.trim(),
     sorumlu: document.getElementById('bg-m-sorumlu').value.trim(),
     termin:  document.getElementById('bg-m-termin').value,
+    fotolar: bgFotolar.slice(),
+    alfa:    bgFotolar.length ? bgAlfa : 0,
     hseIliski: document.getElementById('bg-m-hse-iliski')?.value || '',
     hseKritik: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-kritik')?.value || 'Orta') : '',
     hseTedbir: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-tedbir')?.value || '') : '',
