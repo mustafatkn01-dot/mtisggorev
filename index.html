@@ -915,19 +915,44 @@ html, body { height: 100%; overflow: hidden;
   body.print-denetim #denetim-print .dnr-main .dnr-bar th span { color:#60717F; font-weight:400; margin-left:2mm; }
   body.print-denetim #denetim-print .dnr-main td { border:.5pt solid #CBD5DC; padding:1.2mm 1.5mm; vertical-align:middle; font-size:8pt; line-height:1.15; height:var(--rm); word-wrap:break-word; text-align:left; }
   body.print-denetim #denetim-print .dnr-main td.c { text-align:center; }
-  body.print-denetim #denetim-print .dnr-main td img { width:30mm; height:22.5mm; display:inline-block; vertical-align:middle; }
+  body.print-denetim #denetim-print .dnr-main td img { display:inline-block; vertical-align:middle; }
+  body.print-denetim #denetim-print .sm { font-size:7.5pt; margin-top:.6mm; }
+  body.print-denetim #denetim-print .dnr-pb { break-before:page; page-break-before:always; height:0; }
   body.print-denetim #denetim-print .dnr-main tr { break-inside:avoid; page-break-inside:avoid; }
   body.print-denetim #denetim-print .dnr-main thead { display:table-header-group; }
 }
-/* Rapor seçenekleri penceresi */
-.dnr-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border2);border-radius:10px;background:var(--surface2);cursor:pointer}
-.dnr-opt input{margin-top:2px;width:16px;height:16px;accent-color:#378ADD;flex-shrink:0}
-.dnr-opt b{display:block;font-size:12px;color:var(--text)}
-.dnr-opt small{display:block;font-size:10.5px;color:var(--text3);margin-top:2px}
-.dnr-bilgi{font-size:11px;color:var(--text3);text-align:center}
-.dnr-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.dnr-actions button{padding:11px 6px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12.5px;font-weight:700;cursor:pointer}
-.dnr-actions button:first-child{background:#378ADD;border-color:#378ADD;color:#fff}
+/* Rapor seçenekleri penceresi (ortada yüzen kart) */
+.dnr-bg{display:none;position:fixed;inset:0;z-index:62;background:rgba(10,22,34,.55);align-items:center;justify-content:center;padding:16px}
+.dnr-card{width:100%;max-width:420px;max-height:calc(100dvh - 32px);background:var(--surface,#fff);color:var(--text,#17324A);border-radius:18px;box-shadow:0 18px 48px rgba(0,0,0,.35);overflow:hidden;display:flex;flex-direction:column}
+.dnr-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 14px;background:linear-gradient(135deg,#17324A,#21456a);color:#fff;flex-shrink:0}
+.dnr-hd b{font-size:16px;display:block}.dnr-hd small{font-size:11px;opacity:.75}
+.dnr-x{width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:19px;line-height:1;cursor:pointer;padding:0}
+.dnr-bd{padding:16px 18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;min-height:0}
+.dnr-lb{font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--text3,#74818D);text-transform:uppercase;margin-bottom:7px}
+.dnr-seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface2,#EEF3F7);border-radius:11px;padding:3px;gap:3px}
+.dnr-seg>div{text-align:center;padding:9px 4px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--text2,#4a5d6c);cursor:pointer}
+.dnr-seg>div.on{background:var(--surface,#fff);color:var(--text,#17324A);box-shadow:0 1px 4px rgba(23,50,74,.18)}
+.dnr-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dnr-sel{width:100%;border:1px solid var(--border2,#D7E1E8);border-radius:11px;padding:11px 10px;font-size:13px;color:var(--text,#17324A);background:var(--surface,#fff);min-width:0}
+.dnr-sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border2,#E1E8EE);border-radius:12px;cursor:pointer}
+.dnr-sw b{font-size:13px;display:block}.dnr-sw small{font-size:11px;color:var(--text3,#74818D)}
+.dnr-sw.dis{opacity:.5;cursor:default}
+.dnr-tg{width:42px;height:24px;border-radius:99px;background:#CBD5DC;position:relative;flex-shrink:0;transition:background .15s}
+.dnr-tg:after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+.dnr-tg.on{background:#378ADD}.dnr-tg.on:after{left:21px}
+.dnr-adv{border:1px solid var(--border2,#E1E8EE);border-radius:12px}
+.dnr-advh{display:flex;justify-content:space-between;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer}
+.dnr-advh i{font-style:normal;color:var(--text3,#8a97a3)}
+.dnr-advb{padding:12px 14px 14px;flex-direction:column;gap:12px;border-top:1px solid var(--border2,#EEF3F7)}
+.dnr-advb .dnr-sw{padding:10px 12px}
+.dnr-chips{display:flex;gap:6px;flex-wrap:wrap}
+.dnr-chips>div{padding:7px 11px;border-radius:99px;border:1px solid var(--border2,#D7E1E8);font-size:12px;font-weight:600;color:var(--text2,#4a5d6c);cursor:pointer}
+.dnr-chips>div.on{background:rgba(55,138,221,.12);border-color:#378ADD;color:#185FA5}
+.dnr-sum{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.dnr-sum span{background:var(--surface2,#EEF3F7);border-radius:99px;padding:6px 12px;font-size:11.5px;font-weight:600;color:var(--text,#17324A)}
+.dnr-ft{padding:14px 18px 18px;border-top:1px solid var(--border2,#EEF3F7);display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px;flex-shrink:0;background:var(--surface,#fff)}
+.dnr-ft button{padding:13px 6px;border-radius:12px;border:1px solid var(--border2,#D7E1E8);background:var(--surface2,#F4F7FA);color:var(--text,#17324A);font-weight:700;font-size:13px;cursor:pointer}
+.dnr-ft button.p{background:#378ADD;border-color:#378ADD;color:#fff}
 
 /* ── KAZA / RAMAK KALA MODÜLÜ ── */
 .kz-lbl { font-size:11px; font-weight:600; color:var(--text2); display:block; margin-bottom:4px; }
@@ -6873,21 +6898,32 @@ px}
 </div>
 
 <!-- Denetim Raporu seçenekleri -->
-<div id="dnr-modal-bg" class="audit-modal-bg" onclick="if(event.target===this)dnrClose()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:62;align-items:center;justify-content:center;">
-  <div class="audit-modal-box" style="background:var(--surface);border-radius:12px;padding:20px;width:420px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
-    <div class="audit-modal-head" style="display:flex;align-items:center;justify-content:space-between;">
-      <h3 style="font-size:14px;font-weight:700;color:var(--text);">Rapor Seçenekleri</h3>
-      <button onclick="dnrClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
+<div id="dnr-modal-bg" class="dnr-bg" onclick="if(event.target===this)dnrClose()">
+  <div class="dnr-card" onclick="dnrTik(event)">
+    <div class="dnr-hd"><div><b>Rapor</b><small>İSG Denetim Bulguları</small></div><button type="button" class="dnr-x" onclick="dnrClose()" aria-label="Kapat">×</button></div>
+    <div class="dnr-bd">
+      <div><div class="dnr-lb">Durum</div>
+        <div class="dnr-seg" data-k="durum"><div data-v="">Tümü</div><div data-v="acik">Açık</div><div data-v="kapali">Kapalı</div></div></div>
+      <div class="dnr-row2">
+        <div><div class="dnr-lb">Bölüm</div><select id="dnr-bolum" class="dnr-sel" onchange="dnrBilgi()"></select></div>
+        <div><div class="dnr-lb">Sorumlu</div><select id="dnr-sorumlu" class="dnr-sel" onchange="dnrBilgi()"></select></div>
+      </div>
+      <div class="dnr-sw" data-k="foto"><div><b>Alfa fotoğrafları ekle</b><small id="dnr-foto-not"></small></div><div class="dnr-tg"></div></div>
+      <div class="dnr-adv">
+        <div class="dnr-advh" onclick="dnrAdv()">Gelişmiş seçenekler <i id="dnr-adv-i">▾</i></div>
+        <div class="dnr-advb" id="dnr-advb" style="display:none">
+          <div><div class="dnr-lb">Sayfa yönü</div><div class="dnr-seg" data-k="yon"><div data-v="oto">Otomatik</div><div data-v="yatay">Yatay</div><div data-v="dikey">Dikey</div></div></div>
+          <div><div class="dnr-lb">Gruplama</div><div class="dnr-chips" data-k="grup"><div data-v="denetim">Denetime göre</div><div data-v="bolum">Bölüme göre</div><div data-v="sorumlu">Sorumluya göre</div></div></div>
+          <div class="dnr-sw" data-k="ayri"><div><b>Her grup için ayrı dosya</b><small>Birden fazla grup varsa ZIP olarak iner</small></div><div class="dnr-tg"></div></div>
+          <div><div class="dnr-lb">Sıralama</div><div class="dnr-chips" data-k="sira"><div data-v="onem">Önem</div><div data-v="termin">Termin</div><div data-v="bolum">Bölüm</div></div></div>
+          <div class="dnr-sw" data-k="geciken"><div><b>Yalnızca geciken termin</b><small>Termini geçmiş açık bulgular</small></div><div class="dnr-tg"></div></div>
+          <div class="dnr-sw" data-k="ozet"><div><b>Özet şeridi</b><small>Sayfa başındaki sayılar</small></div><div class="dnr-tg"></div></div>
+        </div>
+      </div>
+      <div class="dnr-sum" id="dnr-sum"></div>
     </div>
-    <label class="dnr-opt"><input type="checkbox" id="dnr-foto" onchange="dnrBilgi()"><span><b>Alfa fotoğrafları ekle</b><small id="dnr-foto-not"></small></span></label>
-    <label class="dnr-opt"><input type="checkbox" id="dnr-acik" onchange="dnrBilgi()"><span><b>Yalnızca açık bulgular</b><small>Kapalı bulgular rapora girmez.</small></span></label>
-    <div class="mrow2">
-      <div class="mfield"><label>Bölüm</label><select id="dnr-bolum" onchange="dnrBilgi()"></select></div>
-      <div class="mfield"><label>Sorumlu</label><select id="dnr-sorumlu" onchange="dnrBilgi()"></select></div>
-    </div>
-    <div id="dnr-bilgi" class="dnr-bilgi"></div>
-    <div class="dnr-actions">
-      <button type="button" onclick="dnrCikti('yazdir')" title="Yazdır veya PDF olarak kaydet">🖨 PDF</button>
+    <div class="dnr-ft">
+      <button type="button" class="p" onclick="dnrCikti('yazdir')" title="Yazdır veya PDF olarak kaydet">🖨 PDF</button>
       <button type="button" onclick="dnrCikti('paylas')" title="PDF hazırla ve paylaş">↗ Paylaş</button>
       <button type="button" onclick="dnrCikti('word')" title="Düzenlenebilir Word dosyası">📝 Word</button>
     </div>
@@ -19530,17 +19566,23 @@ function topluDosyaIsle(satirlar) {
 }
 
 // ── Rapor: seçenekler penceresi → PDF yazdır / PDF paylaş / Word (.docx) ──
-// Tek veri modeli (dnrHazirla) üç çıktıyı da besler; sütun ölçüleri (mm) ortaktır, böylece PDF ve Word tablosu aynı olur.
+// Tek veri modeli (dnrModel) üç çıktıyı da besler; sütun ölçüleri (mm) ortaktır, böylece PDF ve Word tablosu aynı olur.
 const DNR_NAVY = '17324A', DNR_GRAY = '60717F', DNR_LINE = 'CBD5DC', DNR_FILL = 'EEF3F7';
 const DNR_ONEM = { yuksek:{ ad:'Yüksek', renk:'C0392B', sira:0 }, orta:{ ad:'Orta', renk:'B7791F', sira:1 }, dusuk:{ ad:'Düşük', renk:'2E7D32', sira:2 } };
 const DNR_DURUM = { acik:{ ad:'Açık', renk:'C0392B' }, devam:{ ad:'Devam ediyor', renk:'B7791F' }, kapali:{ ad:'Kapalı', renk:'2E7D32' } };
-const DNR_YERLESIM = {
-  yatay: { w:297, h:210, mx:10, mt:10, mb:14, rowmin:28, foto:true,
-    cols:[['No',8],['Bölüm',24],['Fotoğraf',36],['Tespit',52],['Öneri',79],['Önem',16],['Sorumlu',22],['Termin',18],['Durum',22]] },
-  dikey: { w:210, h:297, mx:10, mt:10, mb:14, rowmin:14, foto:false,
-    cols:[['No',7],['Bölüm',20],['Tespit',38],['Öneri',52],['Önem',17],['Sorumlu',20],['Termin',18],['Durum',18]] }
+const DNR_YER = {
+  yatayF: { w:297, h:210, rowmin:28, foto:true,  fw:30, fh:22.5, cols:[['No',8],['Bölüm',24],['Fotoğraf',36],['Tespit',52],['Öneri',79],['Önem',16],['Sorumlu',22],['Termin',18],['Durum',22]] },
+  yatay:  { w:297, h:210, rowmin:14, foto:false, cols:[['No',8],['Bölüm',26],['Tespit',62],['Öneri',101],['Önem',17],['Sorumlu',24],['Termin',18],['Durum',21]] },
+  dikeyF: { w:210, h:297, rowmin:18, foto:true,  fw:20, fh:15, cols:[['No',7],['Bölüm',16],['Fotoğraf',24],['Tespit',30],['Öneri',42],['Önem',16],['Sorumlu',19],['Termin',18],['Durum',18]] },
+  dikey:  { w:210, h:297, rowmin:14, foto:false, cols:[['No',7],['Bölüm',20],['Tespit',38],['Öneri',52],['Önem',17],['Sorumlu',20],['Termin',18],['Durum',18]] }
 };
 const DNR_TOPH = 12, DNR_STRIPH = 13, DNR_HEADH = 6.5, DNR_BARH = 7;
+function dnrYerlesim(yon, foto) {
+  const L = Object.assign({ mx:10, mt:10, mb:14 }, DNR_YER[yon + (foto ? 'F' : '')]);
+  L.cw = L.w - 2 * L.mx;
+  if (L.cols.reduce((a, c) => a + c[1], 0) !== L.cw) console.warn('Rapor sütun toplamı içerik genişliğine eşit değil');
+  return L;
+}
 
 function dnrTarih(s) { return s ? new Date(s + 'T00:00:00').toLocaleDateString('tr-TR') : ''; }
 function dnrAlfaFoto(b) {
@@ -19575,21 +19617,40 @@ function dnrFotoKirp(src) {
 }
 
 // ── Pencere ──
+const DNR_S = { durum:'', yon:'oto', grup:'denetim', sira:'onem', foto:true, ayri:false, geciken:false, ozet:true };
 function dnrSecili() {
-  return {
-    foto:    !!document.getElementById('dnr-foto')?.checked && !document.getElementById('dnr-foto')?.disabled,
-    acik:    !!document.getElementById('dnr-acik')?.checked,
+  return Object.assign({}, DNR_S, {
     bolum:   document.getElementById('dnr-bolum')?.value || '',
     sorumlu: document.getElementById('dnr-sorumlu')?.value || ''
-  };
+  });
 }
 function dnrListe(opt) {
+  const bugun = new Date(), bg = bugun.getFullYear() + '-' + String(bugun.getMonth() + 1).padStart(2, '0') + '-' + String(bugun.getDate()).padStart(2, '0');
   return dnFiltreliBulgular().filter(b => {
-    if (opt.acik && b.durum === 'kapali') return false;
+    if (opt.durum === 'acik' && b.durum === 'kapali') return false;
+    if (opt.durum === 'kapali' && b.durum !== 'kapali') return false;
     if (opt.bolum && (b.bolum || '') !== opt.bolum) return false;
     if (opt.sorumlu && (b.sorumlu || '') !== opt.sorumlu) return false;
+    if (opt.geciken && !(b.durum !== 'kapali' && b.termin && b.termin < bg)) return false;
     return true;
   });
+}
+function dnrUygula() {
+  document.querySelectorAll('#dnr-modal-bg [data-k]').forEach(el => {
+    const k = el.dataset.k;
+    if (el.classList.contains('dnr-sw')) el.querySelector('.dnr-tg').classList.toggle('on', !!DNR_S[k]);
+    else el.querySelectorAll('[data-v]').forEach(c => c.classList.toggle('on', c.dataset.v === String(DNR_S[k])));
+  });
+}
+function dnrTik(e) {
+  const sw = e.target.closest('.dnr-sw');
+  if (sw) { if (sw.classList.contains('dis')) return; DNR_S[sw.dataset.k] = !DNR_S[sw.dataset.k]; dnrUygula(); dnrBilgi(); return; }
+  const c = e.target.closest('[data-v]');
+  if (c) { DNR_S[c.parentElement.dataset.k] = c.dataset.v; dnrUygula(); dnrBilgi(); }
+}
+function dnrAdv(ac) {
+  const b = document.getElementById('dnr-advb'), ac2 = ac === undefined ? b.style.display === 'none' : ac;
+  b.style.display = ac2 ? 'flex' : 'none'; document.getElementById('dnr-adv-i').textContent = ac2 ? '▴' : '▾';
 }
 function dnrOpen() {
   const liste = dnFiltreliBulgular();
@@ -19598,80 +19659,140 @@ function dnrOpen() {
   doldur('dnr-bolum', 'Tüm bölümler', uniq(b => (b.bolum || '').trim()));
   doldur('dnr-sorumlu', 'Tüm sorumlular', uniq(b => (b.sorumlu || '').trim()));
   const fotoVar = liste.some(b => dnrAlfaFoto(b));
-  const f = document.getElementById('dnr-foto'); f.disabled = !fotoVar; f.checked = fotoVar;
-  document.getElementById('dnr-foto-not').textContent = fotoVar ? 'Her bulgunun alfa fotoğrafı eklenir; sayfa yatay olur.' : 'Fotoğraflı bulgu yok.';
-  document.getElementById('dnr-acik').checked = false;
-  dnrBilgi();
+  Object.assign(DNR_S, { durum:'', yon:'oto', grup:'denetim', sira:'onem', foto:fotoVar, ayri:false, geciken:false, ozet:true });
+  const fs = document.querySelector('#dnr-modal-bg .dnr-sw[data-k="foto"]'); fs.classList.toggle('dis', !fotoVar);
+  document.getElementById('dnr-foto-not').textContent = fotoVar ? 'Sayfa otomatik yatay olur' : 'Fotoğraflı bulgu yok';
+  dnrAdv(false); dnrUygula(); dnrBilgi();
   document.getElementById('dnr-modal-bg').style.display = 'flex';
 }
-function dnrClose() { document.getElementById('dnr-modal-bg').style.display = 'none'; }
-function dnrBilgi() {
-  const o = dnrSecili(), l = dnrListe(o), fs = l.filter(b => dnrAlfaFoto(b)).length;
-  document.getElementById('dnr-bilgi').textContent = (o.foto && fs ? 'A4 yatay' : 'A4 dikey') + ' · ' + l.length + ' bulgu' + (o.foto ? ' · ' + fs + ' fotoğraf' : '');
-}
+function dnrClose() { document.getElementById('dnr-modal-bg').style.display = 'none'; dnrAdv(false); }
 
 // ── Veri modeli ──
-async function dnrHazirla(opt) {
+function dnrOzet(rows) {
+  return [['Toplam bulgu', rows.length], ['Açık', rows.filter(r => !r.kapali).length], ['Kapalı', rows.filter(r => r.kapali).length],
+          ['Yüksek önem', rows.filter(r => r.yuksek).length], ['Terminsiz', rows.filter(r => r.terminsiz).length]];
+}
+function dnrAlt(v, gruplar) {
+  const tur = { denetim:'denetim', bolum:'bölüm', sorumlu:'sorumlu' }[v.grup];
+  if (gruplar.length > 1) return gruplar.length + ' ' + tur;
+  const g = gruplar[0];
+  if (v.grup === 'denetim') return [g.ad, g.meta].filter(Boolean).join(' · ');
+  const dn = Array.from(new Set(g.satirlar.map(r => r.did)));
+  const d = dn.length === 1 ? denetimler.find(x => x.id === dn[0]) : null;
+  return [{ bolum:'Bölüm', sorumlu:'Sorumlu' }[v.grup] + ': ' + g.ad, d ? d.ad + (d.tarih ? ' · ' + dnrTarih(d.tarih) : '') : ''].filter(Boolean).join(' · ');
+}
+function dnrModel(opt) {
   const liste = dnrListe(opt);
-  if (!liste.length) { alert('Seçilen koşullara uyan bulgu yok.'); return null; }
-  const fotoli = opt.foto && liste.some(b => dnrAlfaFoto(b));
-  const yon = fotoli ? 'yatay' : 'dikey';
-  const L = Object.assign({ cw: DNR_YERLESIM[yon].w - 2 * DNR_YERLESIM[yon].mx }, DNR_YERLESIM[yon]);
-  const grup = {};
-  liste.forEach(b => { (grup[b.denetimId] = grup[b.denetimId] || []).push(b); });
-  const sirali = [...denetimler].sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')).filter(d => (grup[d.id] || []).length);
-  const gruplar = [];
-  for (const d of sirali) {
-    const bl = grup[d.id].slice().sort((a, b) =>
-      ((DNR_ONEM[a.onem] || { sira: 9 }).sira - (DNR_ONEM[b.onem] || { sira: 9 }).sira) ||
-      (a.bolum || '').localeCompare(b.bolum || '', 'tr') || ((a.createdAt || 0) - (b.createdAt || 0)));
-    const satirlar = [];
-    for (let i = 0; i < bl.length; i++) {
-      const b = bl[i], on = DNR_ONEM[b.onem] || { ad: '—', renk: DNR_GRAY }, du = DNR_DURUM[b.durum] || { ad: '—', renk: DNR_GRAY };
-      const foto = fotoli ? await dnrFotoKirp(dnrAlfaFoto(b)) : '';
-      satirlar.push({ no: i + 1, bolum: b.bolum || '—', tespit: b.metin || '', oneri: dnrOneriSatirlar(b.oneri), onem: on, sorumlu: b.sorumlu || '—',
-        termin: dnrTarih(b.termin) || '—', durum: du, foto, kapali: b.durum === 'kapali', yuksek: b.onem === 'yuksek', terminsiz: !b.termin });
-    }
-    const fabs = dnFabListesi(d).join(', ');
-    gruplar.push({ ad: d.ad || '', tarih: dnrTarih(d.tarih), fabrika: fabs, denetci: d.denetci || '', satirlar });
+  if (!liste.length) return null;
+  const fotoli = !!opt.foto && liste.some(b => dnrAlfaFoto(b));
+  const yon = opt.yon === 'yatay' || opt.yon === 'dikey' ? opt.yon : (fotoli ? 'yatay' : 'dikey');
+  const L = dnrYerlesim(yon, fotoli);
+  const dnSay = new Set(liste.map(b => b.denetimId)).size;
+  const ON = b => (DNR_ONEM[b.onem] || { sira: 9 }).sira;
+  const sirala = {
+    onem:   (a, b) => ON(a) - ON(b) || (a.bolum || '').localeCompare(b.bolum || '', 'tr'),
+    termin: (a, b) => (a.termin ? 0 : 1) - (b.termin ? 0 : 1) || (a.termin || '').localeCompare(b.termin || '') || ON(a) - ON(b),
+    bolum:  (a, b) => (a.bolum || '').localeCompare(b.bolum || '', 'tr') || ON(a) - ON(b)
+  }[opt.sira] || null;
+  const anahtar = b => opt.grup === 'bolum' ? ((b.bolum || '').trim() || 'Bölümsüz') : opt.grup === 'sorumlu' ? ((b.sorumlu || '').trim() || 'Atanmamış') : b.denetimId;
+  const harita = new Map();
+  liste.forEach(b => { const k = anahtar(b); if (!harita.has(k)) harita.set(k, []); harita.get(k).push(b); });
+  let anahtarlar = Array.from(harita.keys());
+  if (opt.grup === 'denetim') {
+    const tr = id => (denetimler.find(d => d.id === id) || {}).tarih || '';
+    anahtarlar.sort((a, b) => tr(b).localeCompare(tr(a)));
+  } else {
+    const son = opt.grup === 'bolum' ? 'Bölümsüz' : 'Atanmamış';
+    anahtarlar.sort((a, b) => (a === son) - (b === son) || a.localeCompare(b, 'tr'));
   }
+  const gosterDenetim = opt.grup !== 'denetim' && dnSay > 1;
+  const gruplar = anahtarlar.map(k => {
+    const bl = harita.get(k).slice().sort((a, b) => sirala(a, b) || (a.createdAt || 0) - (b.createdAt || 0));
+    const satirlar = bl.map((b, i) => {
+      const on = DNR_ONEM[b.onem] || { ad: '—', renk: DNR_GRAY }, du = DNR_DURUM[b.durum] || { ad: '—', renk: DNR_GRAY };
+      const dn = denetimler.find(x => x.id === b.denetimId);
+      return { no: i + 1, bolum: b.bolum || '—', tespit: b.metin || '', oneri: dnrOneriSatirlar(b.oneri), onem: on, sorumlu: b.sorumlu || '—',
+        termin: dnrTarih(b.termin) || '—', durum: du, foto: '', fotoSrc: fotoli ? dnrAlfaFoto(b) : '', kapali: b.durum === 'kapali', yuksek: b.onem === 'yuksek',
+        terminsiz: !b.termin, did: b.denetimId, dnAd: gosterDenetim && dn ? dn.ad : '' };
+    });
+    let ad, meta;
+    if (opt.grup === 'denetim') {
+      const d = denetimler.find(x => x.id === k) || {};
+      ad = d.ad || ''; meta = [dnrTarih(d.tarih), dnFabListesi(d).join(', '), d.denetci ? 'Denetçi: ' + d.denetci : ''].filter(Boolean).join(' · ');
+    } else { ad = k; meta = satirlar.length + ' bulgu'; }
+    return { ad, meta, satirlar };
+  });
   const tum = gruplar.reduce((a, g) => a.concat(g.satirlar), []);
-  const bilgi = g => [g.tarih, g.fabrika, g.denetci ? 'Denetçi: ' + g.denetci : ''].filter(Boolean).join(' · ');
-  return {
-    yon, L, gruplar, coklu: gruplar.length > 1,
-    baslik: 'İSG Denetim Bulguları Raporu',
-    alt: gruplar.length > 1 ? gruplar.length + ' denetim' : [gruplar[0].ad, bilgi(gruplar[0])].filter(Boolean).join(' · '),
-    rapor: new Date().toLocaleDateString('tr-TR'),
-    ozet: [['Toplam bulgu', tum.length], ['Açık', tum.filter(r => !r.kapali).length], ['Kapalı', tum.filter(r => r.kapali).length],
-           ['Yüksek önem', tum.filter(r => r.yuksek).length], ['Terminsiz', tum.filter(r => r.terminsiz).length]],
-    bilgi,
-    dosya: 'Denetim Bulguları Raporu ' + new Date().toLocaleDateString('tr-TR')
-  };
+  const v = { yon, L, grup: opt.grup, gruplar, coklu: gruplar.length > 1, ozetGoster: opt.ozet !== false,
+    baslik: 'İSG Denetim Bulguları Raporu', rapor: new Date().toLocaleDateString('tr-TR'), ozet: dnrOzet(tum),
+    dosya: 'Denetim Bulguları Raporu ' + new Date().toLocaleDateString('tr-TR') };
+  v.alt = dnrAlt(v, gruplar);
+  return v;
+}
+async function dnrFotolar(v) {
+  for (const g of v.gruplar) for (const r of g.satirlar) if (r.fotoSrc) r.foto = await dnrFotoKirp(r.fotoSrc);
+}
+// "Her grup için ayrı dosya": her grubu kendi başına rapor modeline çevir
+function dnrParcala(v) {
+  const tarih = new Date().toLocaleDateString('tr-TR');
+  return v.gruplar.map(g => { const p = Object.assign({}, v, { gruplar: [g], coklu: false, ozet: dnrOzet(g.satirlar) });
+    p.alt = dnrAlt(p, [g]); p.dosya = 'Denetim Bulguları Raporu - ' + g.ad + ' - ' + tarih; return p; });
+}
+// Sayfa sayısı tahmini (özet çipi için)
+function dnrTahmin(v) {
+  const L = v.L, cpl = w => Math.max(8, (w - 3) / 1.41), kol = n => L.cols.find(c => c[0] === n)[1];
+  const wT = kol('Tespit'), wO = kol('Öneri'), kul = L.h - L.mt - L.mb;
+  const yuk = r => { const lt = Math.ceil(Math.max(1, r.tespit.length + (r.dnAd ? 14 + r.dnAd.length : 0)) / cpl(wT));
+    const lo = r.oneri.reduce((a, o) => a + Math.ceil(((o.lab ? o.lab.length + 1 : 0) + o.txt.length) / cpl(wO)), 0);
+    return Math.max(L.rowmin, 2.4 + 3.24 * Math.max(lt, lo)); };
+  let sayfa = 1, y = DNR_TOPH + 4 + (v.ozetGoster ? DNR_STRIPH + 4 : 0);
+  v.gruplar.forEach(g => {
+    const baslik = DNR_HEADH + (v.coklu ? DNR_BARH : 0);
+    if (y + baslik + 20 > kul) { sayfa++; y = 0; }
+    y += baslik;
+    g.satirlar.forEach(r => { const h = yuk(r); if (y + h > kul) { sayfa++; y = baslik; } y += h; });
+    y += 4;
+  });
+  return sayfa;
+}
+function dnrBilgi() {
+  const k = document.getElementById('dnr-sum'); if (!k) return;
+  const v = dnrModel(dnrSecili());
+  if (!v) { k.innerHTML = '<span>Bu koşullara uyan bulgu yok</span>'; return; }
+  const n = v.gruplar.reduce((a, g) => a + g.satirlar.length, 0), f = v.gruplar.reduce((a, g) => a + g.satirlar.filter(r => r.fotoSrc).length, 0);
+  let sayfa = dnrTahmin(v), ayri = DNR_S.ayri && v.gruplar.length > 1;
+  if (ayri) sayfa = dnrParcala(v).reduce((a, p) => a + dnrTahmin(p), 0);
+  const c = ['A4 ' + (v.yon === 'yatay' ? 'yatay' : 'dikey'), n + ' bulgu'];
+  if (f) c.push(f + ' fotoğraf');
+  c.push('≈ ' + sayfa + ' sayfa');
+  if (ayri) c.push(v.gruplar.length + ' ayrı dosya');
+  k.innerHTML = c.map(x => `<span>${esc(x)}</span>`).join('');
 }
 
 // ── HTML (yazdırma + PDF paylaş) ──
-function dnrHtml(v) {
+function dnrHtml(v, ek) {
   const L = v.L, ncol = L.cols.length;
   const colg = '<colgroup>' + L.cols.map(c => `<col style="width:${c[1]}mm">`).join('') + '</colgroup>';
   const hr = '<tr class="dnr-hr">' + L.cols.map(c => `<th>${c[0]}</th>`).join('') + '</tr>';
   const oz = v.ozet.map(o => `<td><div class="n">${o[1]}</div><div class="l">${o[0]}</div></td>`).join('');
-  const tablolar = v.gruplar.map(g => {
-    const bar = v.coklu ? `<tr class="dnr-bar"><th colspan="${ncol}"><b>${esc(g.ad)}</b> <span>${esc(v.bilgi(g))}</span></th></tr>` : '';
+  const tablolar = v.gruplar.map((g, gi) => {
+    const bar = v.coklu ? `<tr class="dnr-bar"><th colspan="${ncol}"><b>${esc(g.ad)}</b> <span>${esc(g.meta)}</span></th></tr>` : '';
     const trs = g.satirlar.map(r => {
       const oneri = r.oneri.map(o => `<p>${o.lab ? '<b>' + esc(o.lab) + '</b> ' : ''}${esc(o.txt)}</p>`).join('');
       return '<tr class="dnr-r">' +
         `<td class="c">${r.no}</td><td><b>${esc(r.bolum)}</b></td>` +
-        (L.foto ? `<td class="c">${r.foto ? `<img src="${r.foto}" alt="">` : '<span class="g">—</span>'}</td>` : '') +
-        `<td><p>${esc(r.tespit)}</p></td><td>${oneri}</td>` +
+        (L.foto ? `<td class="c">${r.foto ? `<img src="${r.foto}" alt="" style="width:${L.fw}mm;height:${L.fh}mm">` : '<span class="g">—</span>'}</td>` : '') +
+        `<td><p>${esc(r.tespit)}</p>${r.dnAd ? `<p class="g sm">Denetim: ${esc(r.dnAd)}</p>` : ''}</td><td>${oneri}</td>` +
         `<td class="c"><p><span style="color:#${r.onem.renk}">●</span> ${esc(r.onem.ad)}</p></td>` +
         `<td><p>${esc(r.sorumlu)}</p></td>` +
         `<td class="c"><p>${esc(r.termin)}</p></td>` +
         `<td class="c"><p><b style="color:#${r.durum.renk}">${esc(r.durum.ad)}</b></p></td></tr>`;
     }).join('');
-    return `<table class="dnr-main" style="width:${L.cw}mm;--rm:${L.rowmin}mm">${colg}<thead>${bar}${hr}</thead><tbody>${trs}</tbody></table><div class="dnr-sp"></div>`;
+    const ayir = gi > 0 && ek && ek.sayfaAyir ? '<div class="dnr-pb"></div>' : '';
+    return `${ayir}<table class="dnr-main" style="width:${L.cw}mm;--rm:${L.rowmin}mm">${colg}<thead>${bar}${hr}</thead><tbody>${trs}</tbody></table><div class="dnr-sp"></div>`;
   }).join('');
   return `<div class="dnr-top" style="width:${L.cw}mm"><div><h1>${esc(v.baslik)}</h1><div class="dnr-sub">${esc(v.alt)}</div></div><div class="dnr-rt">Rapor tarihi: ${esc(v.rapor)}</div></div>
-    <div class="dnr-sp"></div><table class="dnr-oz" style="width:${L.cw}mm"><tr>${oz}</tr></table><div class="dnr-sp"></div>${tablolar}`;
+    <div class="dnr-sp"></div>${v.ozetGoster ? `<table class="dnr-oz" style="width:${L.cw}mm"><tr>${oz}</tr></table><div class="dnr-sp"></div>` : ''}${tablolar}`;
 }
 function dnrSayfaStili(v) {
   let s = document.getElementById('dnr-page-style');
@@ -19684,30 +19805,54 @@ function dnrSayfaStili(v) {
   const temizle = () => { s.remove(); window.removeEventListener('afterprint', temizle); };
   window.addEventListener('afterprint', temizle);
 }
+const DNR_GRUP_AD = { denetim:'Denetime göre', bolum:'Bölüme göre', sorumlu:'Sorumluya göre' };
+function dnrDosyaAdi(s) { return String(s).replace(/[\\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+async function dnrBlobU8(b) { return new Uint8Array(await b.arrayBuffer()); }
 async function dnrCikti(tur) {
-  const v = await dnrHazirla(dnrSecili());
-  if (!v) return;
-  if (tur === 'word') { dnrIndir(dnrDocx(v), v.dosya + '.docx'); dnrClose(); return; }
+  const o = dnrSecili(), v = dnrModel(o);
+  if (!v) { alert('Seçilen koşullara uyan bulgu yok.'); return; }
+  await dnrFotolar(v);
+  const ayri = o.ayri && v.gruplar.length > 1, parca = ayri ? dnrParcala(v) : null;
+  const zipAdi = 'Denetim Bulguları Raporları (' + DNR_GRUP_AD[o.grup] + ') ' + v.rapor;
+  if (tur === 'word') {
+    if (parca) {
+      const dosyalar = [];
+      for (const p of parca) dosyalar.push({ name: dnrDosyaAdi(p.dosya) + '.docx', data: await dnrBlobU8(dnrDocx(p)) });
+      dnrIndir(dnrZip(dosyalar), zipAdi + '.zip', parca.length + ' Word dosyası ZIP olarak hazırlandı');
+    } else dnrIndir(dnrDocx(v), v.dosya + '.docx');
+    dnrClose(); return;
+  }
   let el = document.getElementById('denetim-print');
   if (!el) { el = document.createElement('div'); el.id = 'denetim-print'; document.body.appendChild(el); }
-  el.innerHTML = dnrHtml(v);
-  dnrClose();
+  const pdfOpt = pv => ({ rootId:'denetim-print', bodyClass:'print-denetim', name:pv.dosya, width:Math.round(pv.L.cw / 25.4 * 96), mx:pv.L.mx, top:pv.L.mt, bottom:pv.L.mb + 2, orientation: pv.yon === 'yatay' ? 'landscape' : 'portrait' });
   if (tur === 'paylas') {
-    const pw = Math.round(v.L.cw / 25.4 * 96);
-    isgSharePdf({ rootId:'denetim-print', bodyClass:'print-denetim', name:v.dosya, width:pw, mx:v.L.mx, top:v.L.mt, bottom:v.L.mb + 2, orientation: v.yon === 'yatay' ? 'landscape' : 'portrait' });
+    dnrClose();
+    if (!parca) { el.innerHTML = dnrHtml(v); isgSharePdf(pdfOpt(v)); return; }
+    const dosyalar = []; let hata = false;
+    for (let i = 0; i < parca.length && !hata; i++) {
+      toast('PDF hazırlanıyor ' + (i + 1) + '/' + parca.length);
+      el.innerHTML = dnrHtml(parca[i]);
+      await new Promise(res => isgSharePdf(Object.assign(pdfOpt(parca[i]), {
+        onBlob: async (blob, ad) => { dosyalar.push({ name: ad, data: await dnrBlobU8(blob) }); res(); },
+        onError: () => { hata = true; res(); } })));
+    }
+    el.innerHTML = '';
+    if (!hata && dosyalar.length) window.isgShowFileDialog(dnrZip(dosyalar), zipAdi + '.zip', 'application/zip');
     return;
   }
+  el.innerHTML = dnrHtml(v, { sayfaAyir: ayri });
+  dnrClose();
   dnrSayfaStili(v);
   isgPrintNow('print-denetim', { title:'İSG Denetim Bulguları Raporu' }, () => window.print());
 }
 function denetimPrint() { dnrOpen(); }
 
 // ── Word (.docx): bağımlılıksız yazıcı ──
-function dnrIndir(blob, ad) {
+function dnrIndir(blob, ad, mesaj) {
   const u = URL.createObjectURL(blob), a = document.createElement('a');
   a.href = u; a.download = ad.replace(/[\\\/:*?"<>|]+/g, ' ').trim(); document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(u), 4000);
-  toast('Word dosyası hazırlandı');
+  toast(mesaj || 'Word dosyası hazırlandı');
 }
 function dnrDocx(v) {
   const L = v.L, tw = mm => Math.round(mm * 56.6929), X = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -19748,23 +19893,23 @@ function dnrDocx(v) {
   body += spacer(4);
   // Özet şeridi
   const ow = L.cw / 5;
-  body += table([ow, ow, ow, ow, ow], row(v.ozet.map(o => cell(ow,
+  if (v.ozetGoster) body += table([ow, ow, ow, ow, ow], row(v.ozet.map(o => cell(ow,
     par(run(String(o[1]), { sz: 14, b: 1, color: DNR_NAVY }), { jc: 'center' }) + par(run(o[0], { sz: 7.5, color: DNR_GRAY }), { jc: 'center' }), { fill: DNR_FILL })).join(''), { h: DNR_STRIPH }),
     { bsz: 12, bcol: 'FFFFFF', mar: [0, tw(1)] });
-  body += spacer(4);
+  if (v.ozetGoster) body += spacer(4);
   // Tablolar
   const widths = L.cols.map(c => c[1]), ncol = widths.length;
   v.gruplar.forEach(g => {
     let rows = '';
-    if (v.coklu) rows += row(cell(L.cw, par(run(g.ad, { sz: 9, b: 1, color: DNR_NAVY }) + run('  ' + v.bilgi(g), { sz: 9, color: DNR_GRAY })), { span: ncol, fill: DNR_FILL }), { h: DNR_BARH, head: 1 });
+    if (v.coklu) rows += row(cell(L.cw, par(run(g.ad, { sz: 9, b: 1, color: DNR_NAVY }) + run('  ' + g.meta, { sz: 9, color: DNR_GRAY })), { span: ncol, fill: DNR_FILL }), { h: DNR_BARH, head: 1 });
     rows += row(L.cols.map((c, i) => cell(widths[i], par(run(c[0], { sz: 8, b: 1, color: 'FFFFFF' }), { jc: 'center' }), { fill: DNR_NAVY })).join(''), { h: DNR_HEADH, head: 1 });
     g.satirlar.forEach(r => {
       const c = [];
       let k = 0;
       c.push(cell(widths[k++], par(run(String(r.no)), { jc: 'center' })));
       c.push(cell(widths[k++], par(run(r.bolum, { b: 1 }))));
-      if (L.foto) c.push(cell(widths[k++], par(r.foto ? pic(r.foto, 30, 22.5) : run('—', { color: DNR_GRAY }), { jc: 'center' })));
-      c.push(cell(widths[k++], par(run(r.tespit))));
+      if (L.foto) c.push(cell(widths[k++], par(r.foto ? pic(r.foto, L.fw, L.fh) : run('—', { color: DNR_GRAY }), { jc: 'center' })));
+      c.push(cell(widths[k++], par(run(r.tespit)) + (r.dnAd ? par(run('Denetim: ' + r.dnAd, { sz: 7.5, color: DNR_GRAY })) : '')));
       c.push(cell(widths[k++], r.oneri.map(o => par((o.lab ? run(o.lab, { b: 1 }) + run(' ' + o.txt) : run(o.txt)))).join('')));
       c.push(cell(widths[k++], par(run('●', { color: r.onem.renk }) + run(' ' + r.onem.ad), { jc: 'center' })));
       c.push(cell(widths[k++], par(run(r.sorumlu))));
@@ -23383,11 +23528,11 @@ window.addEventListener('DOMContentLoaded',()=>{
     d.body.appendChild(clone);
     return {fr:fr,doc:d,el:clone};
   }
-  function dialog(blob,name){
-    var file=new File([blob],name,{type:'application/pdf'});
+  function dialog(blob,name,type){
+    var mime=type||'application/pdf',file=new File([blob],name,{type:mime});
     var can=!!(navigator.canShare&&navigator.canShare({files:[file]}));
     var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:100001;background:rgba(15,30,45,.5);display:flex;align-items:center;justify-content:center;padding:16px';
-    o.innerHTML='<div style="position:relative;background:#fff;color:#23384a;border-radius:14px;padding:22px 18px 16px;width:100%;max-width:340px;font-family:Arial,sans-serif;box-shadow:0 10px 36px rgba(0,0,0,.3)"><button data-x style="position:absolute;top:8px;right:8px;width:35px;height:35px;border:none;border-radius:8px;background:#D6382E;color:#fff;font-size:18px;cursor:pointer;line-height:1">✕</button><div style="font-weight:700;font-size:15px;margin:0 40px 4px 0">PDF hazır</div><div style="font-size:12px;color:#66798a;margin-bottom:14px;word-break:break-word">'+name.replace(/</g,'&lt;')+'</div><div style="display:flex;gap:8px">'+(can?'<button data-s style="flex:1;min-height:42px;border:none;border-radius:8px;background:#378ADD;color:#fff;font-weight:700;font-size:13px;cursor:pointer">↗ Paylaş</button>':'')+'<button data-d style="flex:1;min-height:42px;border:1px solid #cfd8e0;border-radius:8px;background:#f4f7fa;color:#23384a;font-weight:700;font-size:13px;cursor:pointer">⬇ İndir</button></div></div>';
+    o.innerHTML='<div style="position:relative;background:#fff;color:#23384a;border-radius:14px;padding:22px 18px 16px;width:100%;max-width:340px;font-family:Arial,sans-serif;box-shadow:0 10px 36px rgba(0,0,0,.3)"><button data-x style="position:absolute;top:8px;right:8px;width:35px;height:35px;border:none;border-radius:8px;background:#D6382E;color:#fff;font-size:18px;cursor:pointer;line-height:1">✕</button><div style="font-weight:700;font-size:15px;margin:0 40px 4px 0">'+(mime==='application/pdf'?'PDF hazır':'Dosyalar hazır (ZIP)')+'</div><div style="font-size:12px;color:#66798a;margin-bottom:14px;word-break:break-word">'+name.replace(/</g,'&lt;')+'</div><div style="display:flex;gap:8px">'+(can?'<button data-s style="flex:1;min-height:42px;border:none;border-radius:8px;background:#378ADD;color:#fff;font-weight:700;font-size:13px;cursor:pointer">↗ Paylaş</button>':'')+'<button data-d style="flex:1;min-height:42px;border:1px solid #cfd8e0;border-radius:8px;background:#f4f7fa;color:#23384a;font-weight:700;font-size:13px;cursor:pointer">⬇ İndir</button></div></div>';
     document.body.appendChild(o);
     function close(){o.remove()}
     o.querySelector('[data-x]').onclick=close;
@@ -23395,6 +23540,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     var s=o.querySelector('[data-s]');if(s)s.onclick=function(){navigator.share({files:[file],title:name}).then(close).catch(function(e){if(e&&e.name!=='AbortError')toast('Paylaşılamadı, İndir seçeneğini deneyin')})};
     o.querySelector('[data-d]').onclick=function(){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000)};
   }
+  window.isgShowFileDialog=dialog;
   window.isgSharePdf=function(opt){
     if(busy)return;busy=true;var ov=overlay('PDF hazırlanıyor…'),b=null;
     function done(){busy=false;if(ov)ov.remove();if(b&&b.fr)b.fr.remove()}
@@ -23477,8 +23623,8 @@ window.addEventListener('DOMContentLoaded',()=>{
         pdf.setFontSize(8);pdf.setTextColor(100);pdf.text('Sayfa '+(i+1)+'/'+pages.length,PW/2,PH-8,{align:'center'});
       });
       var name=(opt.name||'Rapor').replace(/[\\\/:*?"<>|]+/g,' ').trim()+'.pdf';
-      var blob=pdf.output('blob');done();dialog(blob,name);
-    }).catch(function(e){done();toast('PDF hazırlanamadı: '+(e&&e.message||e))});
+      var blob=pdf.output('blob');done();if(typeof opt.onBlob==='function'){opt.onBlob(blob,name);return}dialog(blob,name);
+    }).catch(function(e){done();toast('PDF hazırlanamadı: '+(e&&e.message||e));if(typeof opt.onError==='function')opt.onError(e)});
   };
 })();
 </script>
