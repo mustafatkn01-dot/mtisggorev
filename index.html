@@ -6974,11 +6974,14 @@ px}
       </div>
       <div>
         <label class="kx-lb">Fabrika(lar)</label>
-        <div class="dn-fabrow">
-          <label class="kx-chp" id="dn-chip-all"><input type="checkbox" id="dn-m-fab-all" onchange="dnFabTumu(this.checked)"> Tümünü seç</label>
-          <span id="dn-m-fab-list" style="display:contents"></span>
+        <button type="button" class="kx-in dn-fabbtn" id="dn-fab-btn" onclick="dnFabAcKapa()" aria-expanded="false">
+          <span id="dn-fab-txt">Fabrika seçin</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dn-fabpanel" id="dn-fab-panel" style="display:none">
+          <label class="dn-fi all"><input type="checkbox" id="dn-m-fab-all" onchange="dnFabTumu(this.checked)"><i></i><span>Tümünü seç</span></label>
+          <div id="dn-m-fab-list"></div>
         </div>
-        <div id="dn-fab-hint" style="font-size:12px;color:var(--text2);margin-top:6px">Birden fazla seçebilirsiniz.</div>
       </div>
       <div><label class="kx-lb">Denetçi</label><input id="dn-m-denetci" class="kx-in" placeholder="örn: Ahmet Y."/></div>
       <div><label class="kx-lb">Not</label><textarea id="dn-m-not" class="kx-in" placeholder="Kapsam, katılımcılar..." style="height:64px;padding:10px 12px;resize:none"></textarea></div>
@@ -18843,6 +18846,7 @@ function dnFiltreliBulgular() {
 
 // ── Ana render ──────────────────────────────────────────────
 function denetimRender() {
+  denetimFiltreKur();   // fabrika/denetim listeleri bulut verisi gelince de güncel kalsın
   const body  = document.getElementById('dn-body');
   const stats = document.getElementById('dn-stats');
   if (!body) return;
@@ -19025,10 +19029,11 @@ function denetimOpenAdd(editId) {
   // Fabrika kutucukları — çoklu seçim
   const secili = dnFabListesi(d);
   document.getElementById('dn-m-fab-list').innerHTML = fabrikalar.map(f => `
-    <label class="kx-chp" style="--c:${f.color}">
+    <label class="dn-fi" style="--c:${f.color}">
       <input type="checkbox" class="dn-fab-chk" value="${esc(f.name)}" ${secili.includes(f.name)?'checked':''}
-             onchange="dnFabSenkron()"><i></i>${esc(f.name)}
+             onchange="dnFabSenkron()"><i></i><span>${esc(f.name)}</span>
     </label>`).join('');
+  dnFabPanel(false);
   dnFabSenkron();
   document.getElementById('denetim-modal-bg').style.display = 'flex';
   setTimeout(() => document.getElementById('dn-m-ad').focus(), 80);
@@ -19047,9 +19052,20 @@ function dnFabSenkron() {
   const hepsi = Array.from(document.querySelectorAll('.dn-fab-chk'));
   const all = document.getElementById('dn-m-fab-all');
   if (all) all.checked = hepsi.length > 0 && hepsi.every(c => c.checked);
-  const n = hepsi.filter(c => c.checked).length;
-  const h = document.getElementById('dn-fab-hint');
-  if (h) h.textContent = n ? n + ' fabrika seçildi' : 'Birden fazla seçebilirsiniz.';
+  const sec = hepsi.filter(c => c.checked).map(c => c.value);
+  const t = document.getElementById('dn-fab-txt');
+  if (t) t.textContent = !sec.length ? 'Fabrika seçin' : sec.length === 1 ? sec[0] : sec.length + ' fabrika seçildi';
+  const bt = document.getElementById('dn-fab-btn');
+  if (bt) bt.classList.toggle('dolu', sec.length > 0);
+}
+function dnFabPanel(ac) {
+  const pn = document.getElementById('dn-fab-panel'), bt = document.getElementById('dn-fab-btn');
+  if (pn) pn.style.display = ac ? 'flex' : 'none';
+  if (bt) { bt.classList.toggle('open', !!ac); bt.setAttribute('aria-expanded', ac ? 'true' : 'false'); }
+}
+function dnFabAcKapa() {
+  const pn = document.getElementById('dn-fab-panel');
+  dnFabPanel(!pn || pn.style.display === 'none');
 }
 function denetimCloseAdd() { document.getElementById('denetim-modal-bg').style.display = 'none'; dnEditId = null; }
 function denetimSubmit() {
@@ -23745,9 +23761,20 @@ html .kem-foot,html .ktp-foot{flex-wrap:nowrap !important}
 .dng-st .hi{font-size:11px;font-weight:700;background:rgba(192,57,43,.12);color:#C0392B;border-radius:99px;padding:2px 8px;white-space:nowrap}
 .dng-st .pc{margin-left:auto;font-weight:800;color:var(--text)}
 .dng-hd{padding-bottom:10px !important}
-.dn-fabrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
-.dn-fabrow::-webkit-scrollbar{display:none}
-.dn-fabrow .kx-chp{--c:var(--kx-acc)}
+.dn-fabbtn{display:flex !important;align-items:center;justify-content:space-between;gap:8px;text-align:left;cursor:pointer;min-height:0}
+.dn-fabbtn span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)}
+.dn-fabbtn.dolu span{color:var(--text);font-weight:600}
+.dn-fabbtn svg{width:18px;height:18px;flex:none;color:var(--text2);transition:transform .15s}
+.dn-fabbtn.open svg{transform:rotate(180deg)}
+.dn-fabpanel{flex-direction:column;border:1px solid var(--kx-line);border-radius:12px;margin-top:8px;overflow:hidden;background:var(--surface)}
+#dn-m-fab-list{display:block;max-height:176px;overflow-y:auto}
+.dn-fi{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:center;padding:11px 12px;border-top:1px solid var(--kx-line);cursor:pointer;font-size:14px;color:var(--text)}
+.dn-fpanel-first,.dn-fi.all{border-top:0;background:var(--kx-soft);font-weight:700}
+.dn-fi input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.dn-fi i{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--kx-line);display:grid;place-items:center;font-style:normal;box-sizing:border-box}
+.dn-fi:has(input:checked) i{background:var(--c,var(--kx-acc));border-color:var(--c,var(--kx-acc))}
+.dn-fi:has(input:checked) i::after{content:"✓";color:#fff;font-size:13px;line-height:1}
+.dn-fi > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Periyodik Kontroller grup başlığı biraz sadeleşsin */
 #kontrol-body .kontrol-ekipman-toolbar{display:none !important}
 </style>
