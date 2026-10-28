@@ -6658,78 +6658,81 @@ px}
   </div>
   <!-- Fabrika filtre chips -->
   <div id="kontrol-fab-filter" class="module-filter-strip"></div>
+  <div class="kx-mgr">
+    <button type="button" onclick="kontrolEkipmanOpen()">☑ Ekipmanları Yönet</button>
+    <button type="button" onclick="kontrolTopluOpen()">↻ Toplu Güncelle</button>
+  </div>
   <!-- Liste -->
   <div id="kontrol-body" style="flex:1;overflow-y:auto;padding:8px 14px 80px;display:flex;flex-direction:column;gap:6px;"></div>
 </div>
 
 <!-- Kontrol Ekle Modal -->
-<div id="kontrol-modal-bg" onclick="if(event.target===this)kontrolCloseAdd()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border-radius:12px;padding:20px;width:420px;max-width:95vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <h3 id="kontrol-modal-h" style="font-size:14px;font-weight:700;color:var(--text);">Kontrol Ekle</h3>
-      <button onclick="kontrolCloseAdd()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
+<div id="kontrol-modal-bg" onclick="if(event.target===this)kontrolCloseAdd()" style="display:none;position:fixed;inset:0;z-index:50;">
+  <div class="kx-card">
+    <div class="kx-hd">
+      <div><h3 id="kontrol-modal-h">Kontrol Ekle</h3><small>Periyodik kontrol kaydı</small></div>
+      <button type="button" class="kx-x" onclick="kontrolCloseAdd()" title="Kapat">×</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
+    <div class="kx-bd">
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Ana Kontrol Grubu *</label>
-        <select id="km-grup" style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;">
+        <label class="kx-lb">Ana kontrol grubu *</label>
+        <select id="km-grup" class="kx-sel">
           <option value="su">Su Analiz Kontrolleri</option>
           <option value="makine">Makine Ekipman Kontrolleri</option>
           <option value="cevre">Çevre Süreçleri</option>
         </select>
-        <div style="font-size:9.5px;color:var(--text3);margin-top:3px;">Makine/Ekipman için hazır katalogdan seçim yapmak isterseniz ana karttaki “Ekipmanları Yönet” düğmesini kullanın.</div>
       </div>
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Kontrol Tipi *</label>
-        <input id="km-name" placeholder="örn. Basınçlı kap kontrolü, Gürültü ölçümü, Su analizi..." style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;"/>
+        <label class="kx-lb">Kontrol tipi *</label>
+        <input id="km-name" class="kx-in" placeholder="örn. Basınçlı kap kontrolü, Gürültü ölçümü…"/>
       </div>
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Fabrika *</label>
-        <div style="margin-bottom:4px;">
-          <label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);user-select:none;">
-            <input type="checkbox" id="km-fab-all" onchange="kontrolToggleAllFabs(this.checked)" style="accent-color:#378ADD;width:13px;height:13px;"> Tümünü Seç
-          </label>
-        </div>
-        <div id="km-fab-list" style="display:flex;flex-wrap:wrap;gap:5px;max-height:140px;overflow-y:auto;"></div>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Son Yapılma Tarihi *</label>
-        <input type="date" id="km-lastdate" style="padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;width:180px;"/>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Periyot</label>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <input type="number" id="km-period-val" value="1" min="1" max="99" style="width:60px;padding:7px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;text-align:center;"/>
-          <select id="km-period-unit" style="padding:7px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;">
-            <option value="year">Yıl</option>
-            <option value="month">Ay</option>
-            <option value="week">Hafta</option>
-          </select>
+        <label class="kx-lb">Fabrika *</label>
+        <div class="kx-chips" id="km-fab-wrap">
+          <label class="kx-chp"><input type="checkbox" id="km-fab-all" onchange="kontrolToggleAllFabs(this.checked)"> Tümünü seç</label>
+          <span id="km-fab-list" style="display:contents"></span>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1.35fr .9fr;gap:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div>
-          <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Kontrol Firması / Yetkili</label>
-          <input id="km-firm" placeholder="örn. ABC Periyodik Kontrol"
-            style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;"/>
+          <label class="kx-lb">Son yapılma tarihi *</label>
+          <input type="date" id="km-lastdate" class="kx-in"/>
         </div>
         <div>
-          <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Kontrol Sonucu</label>
-          <select id="km-result"
-            style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;">
-            <option value="bekliyor">Bekliyor</option>
-            <option value="uygun">Uygun</option>
-            <option value="sartli">Takip Gerekli</option>
-            <option value="uygun-degil">Uygun Değil</option>
-          </select>
+          <label class="kx-lb">Periyot</label>
+          <div style="display:grid;grid-template-columns:.8fr 1.2fr;gap:6px;">
+            <input type="number" id="km-period-val" class="kx-in" value="1" min="1" max="99" style="text-align:center;padding:0 4px;"/>
+            <select id="km-period-unit" class="kx-sel" style="padding:0 8px;">
+              <option value="year">Yıl</option>
+              <option value="month">Ay</option>
+              <option value="week">Hafta</option>
+            </select>
+          </div>
         </div>
       </div>
       <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Not (opsiyonel)</label>
-        <input id="km-note" placeholder="Açıklama..." style="width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;outline:none;"/>
+        <label class="kx-lb">Kontrol sonucu</label>
+        <select id="km-result" class="kx-sel">
+          <option value="bekliyor">Bekliyor</option>
+          <option value="uygun">Uygun</option>
+          <option value="sartli">Takip Gerekli</option>
+          <option value="uygun-degil">Uygun Değil</option>
+        </select>
+      </div>
+      <div>
+        <label class="kx-lb">Kontrol firması / yetkili</label>
+        <input id="km-firm" class="kx-in" placeholder="örn. ABC Periyodik Kontrol"/>
+      </div>
+      <div>
+        <label class="kx-lb">Not (opsiyonel)</label>
+        <input id="km-note" class="kx-in" placeholder="Açıklama…"/>
       </div>
     </div>
-    <button onclick="kontrolSubmit()" style="padding:9px;background:#378ADD;color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;">Kaydet</button>
+    <div class="kx-ft">
+      <button type="button" class="kx-btn" onclick="kontrolCloseAdd()">Vazgeç</button>
+      <span class="cnt"></span>
+      <button type="button" class="kx-btn pri" onclick="kontrolSubmit()">Kaydet</button>
+    </div>
   </div>
 </div>
 
@@ -6759,9 +6762,9 @@ px}
     <div id="kem-body"></div>
     <div class="kem-foot">
       <span id="kem-selected-count">Yeni seçim yok</span>
-      <button class="kem-btn-cancel" onclick="kontrolEkipmanClose()">İptal</button>
+      <button class="kem-btn-cancel" onclick="kontrolEkipmanClose()">Vazgeç</button>
       <button class="kem-btn-add" id="kem-add-btn" onclick="kontrolEkipmanAddSelected()" disabled>
-        Seçilenleri Takip Listesine Ekle
+        Listeye Ekle
       </button>
     </div>
   </div>
@@ -6770,17 +6773,16 @@ px}
 
 <!-- AŞAMA 5 — Makine / Ekipman Toplu Kontrol Güncelleme -->
 <div id="kontrol-toplu-bg" onclick="if(event.target===this)kontrolTopluClose()">
-  <div id="kontrol-toplu-modal">
+  <div id="kontrol-toplu-modal" class="adim1">
     <div class="ktp-head">
       <div style="font-size:20px;">☑️</div>
       <div class="ktp-head-main">
-        <h3>Makine / Ekipman Toplu Kontrol Güncelleme</h3>
-        <div class="ktp-head-sub">
-          Aynı gün ve aynı firma tarafından kontrol edilen ekipmanları seçin. Her kaydın mevcut kontrol periyodu korunur; sonraki kontrol tarihi kendi periyoduna göre otomatik hesaplanır.
-        </div>
+        <h3>Toplu kontrol güncelleme</h3>
+        <div class="ktp-head-sub" id="ktp-head-sub">Adım 1/2 · Kayıtları seçin</div>
       </div>
       <button class="ktp-close" onclick="kontrolTopluClose()" title="Kapat">×</button>
     </div>
+    <div class="ktp-steps"><span class="on" id="ktp-s1"></span><span id="ktp-s2"></span></div>
 
     <div class="ktp-controls">
       <div class="ktp-selectbar">
@@ -6799,12 +6801,13 @@ px}
         <span id="ktp-update-summary" style="margin-left:auto;font-size:9.5px;font-weight:650;color:var(--text3);">0 kayıt seçildi</span>
       </button>
       <div class="ktp-update-content">
-    <div class="ktp-target-box">
-      <div class="ktp-target-title">🏭 Hedef Fabrika(lar)</div>
+    <div class="ktp-sumbox"><b id="ktp-sum-n">0</b><span>kayıt güncellenecek</span><span class="sp"></span><button type="button" onclick="kontrolTopluAdimGit(1)">Seçimi düzenle</button></div>
+    <details class="ktp-target-box">
+      <summary>Başka fabrikalara da uygula (isteğe bağlı)</summary>
       <div class="ktp-target-hint">Hedef fabrika seçerseniz seçili kayıtlar o fabrikalarda yoksa oluşturulur, varsa mevcut kayıt güncellenir. Hedef seçmezseniz yalnız mevcut seçili kayıtlar güncellenir.</div>
       <div id="ktp-target-list" class="ktp-target-list"></div>
       <div id="ktp-transfer-info" class="ktp-transfer-info" style="display:none;"></div>
-    </div>
+    </details>
     <div class="ktp-form">
       <div class="ktp-field">
         <label>Kontrol Tarihi *</label>
@@ -6838,10 +6841,8 @@ px}
 
     <div class="ktp-foot">
       <span id="ktp-selected-count">0 kayıt seçildi</span>
-      <button class="ktp-cancel" onclick="kontrolTopluClose()">İptal</button>
-      <button class="ktp-save" id="ktp-save-btn" onclick="kontrolTopluKaydet()" disabled>
-        Kayıtları Uygula
-      </button>
+      <button class="ktp-cancel" id="ktp-cancel-btn" onclick="kontrolTopluGeri()">Vazgeç</button>
+      <button class="ktp-save" id="ktp-save-btn" onclick="kontrolTopluIleri()" disabled>Devam</button>
     </div>
   </div>
 </div>
@@ -10365,6 +10366,7 @@ let curMainTab = 'dash';
 function switchTab(tab) {
   curMainTab = tab;
   if (tab !== 'denetim') { dnBAcik = {}; dnBSilId = null; }
+  if (tab !== 'kontrol' && typeof kontrolSatirAcik !== 'undefined') kontrolSatirAcik.clear();
   ['dash','board','cal','per','kontrol','denetim','kaza'].forEach(t => {
     const b  = document.getElementById('tab-'+t);
     const mb = document.getElementById('mob-tab-'+t);
@@ -12475,6 +12477,7 @@ function kontrolEkipmanRender() {
         <strong>${esc(kat.ad)}</strong>
         <span class="kem-cat-count">${takipte}/${eslesen.length} takipte</span>
       </div>
+      <div class="kx-gp"><i style="width:${Math.round(takipte/eslesen.length*100)}%"></i></div>
       ${acik ? `<div class="kem-cat-body">${eslesen.map(i => {
         const hedefler = kontrolKatalogHedefFabrikalar(kontrolEkipmanHedefFabs);
         const varMi = hedefler.length > 0 && hedefler.every(fab => kontrolEkipmanTakipte(i[0],i[1],fab));
@@ -12595,6 +12598,7 @@ function kontrolTopluBilgiToggle(force){
 function kontrolTopluBilgiDurum(){
   const s=document.getElementById('ktp-update-summary');
   if(s) s.textContent = `${kontrolTopluSecili.size} kayıt seçildi`;
+  const sn=document.getElementById('ktp-sum-n'); if(sn) sn.textContent = kontrolTopluSecili.size;
 }
 
 function kontrolTopluHedefRender(){
@@ -12709,12 +12713,40 @@ function kontrolTopluOpen() {
   document.getElementById('kontrol-toplu-bg').classList.add('on');
   kontrolTopluHedefRender();
   kontrolTopluRender();
-  kontrolTopluBilgiToggle(false);
+  kontrolTopluAdimGit(1);
 
   requestAnimationFrame(() => {
     const liste = document.getElementById('ktp-list');
     if (liste) liste.scrollTop = 0;
   });
+}
+function kontrolTopluAdimGit(n) {
+  const m = document.getElementById('kontrol-toplu-modal');
+  if (!m) return;
+  m.classList.toggle('adim1', n === 1);
+  m.classList.toggle('adim2', n === 2);
+  m.dataset.adim = n;
+  const sub = document.getElementById('ktp-head-sub');
+  if (sub) sub.textContent = n === 1 ? 'Adım 1/2 · Kayıtları seçin' : 'Adım 2/2 · Güncelleme bilgileri';
+  const s2 = document.getElementById('ktp-s2');
+  if (s2) s2.classList.toggle('on', n === 2);
+  const sv = document.getElementById('ktp-save-btn');
+  const cn = document.getElementById('ktp-cancel-btn');
+  if (sv) sv.textContent = n === 2 ? 'Kayıtları Uygula' : 'Devam';
+  if (cn) cn.textContent = n === 2 ? 'Geri' : 'Vazgeç';
+  if (n === 2) kontrolTopluBilgiToggle(true);
+  const w = document.querySelector('#kontrol-toplu-modal .ktp-update-wrap');
+  if (w) w.scrollTop = 0;
+}
+function kontrolTopluIleri() {
+  const m = document.getElementById('kontrol-toplu-modal');
+  if (m && m.dataset.adim === '2') kontrolTopluKaydet();
+  else if (kontrolTopluSecili.size) kontrolTopluAdimGit(2);
+}
+function kontrolTopluGeri() {
+  const m = document.getElementById('kontrol-toplu-modal');
+  if (m && m.dataset.adim === '2') kontrolTopluAdimGit(1);
+  else kontrolTopluClose();
 }
 function kontrolTopluClose() {
   document.getElementById('kontrol-toplu-bg').classList.remove('on');
@@ -12789,7 +12821,7 @@ function kontrolTopluRender() {
 
   liste.innerHTML=[...fabrikalarMap.entries()].map(([fab,fabKayitlari])=>{
     const fabKey=fab;
-    const fabOpen = kontrolTopluFabFilter!=='all' || kontrolTopluAcikFabrika===fabKey;
+    const fabOpen = true;
     const fabSecili=fabKayitlari.filter(it=>kontrolTopluSecili.has(it.id)).length;
 
     const kategoriMap=new Map();
@@ -13095,6 +13127,7 @@ function kontrolCevreRender() {
         <strong>${esc(kat.ad)}</strong>
         <span class="kem-cat-count">${takipte}/${eslesen.length} takipte</span>
       </div>
+      <div class="kx-gp"><i style="width:${Math.round(takipte/eslesen.length*100)}%"></i></div>
       ${acik ? `<div class="kem-cat-body">${eslesen.map(i => {
         const hedefler = kontrolKatalogHedefFabrikalar(kontrolCevreHedefFabs);
         const varMi = hedefler.length > 0 && hedefler.every(fab => kontrolCevreTakipte(i[0],i[1],fab));
@@ -13268,126 +13301,64 @@ function kontrolFabrikaAtanmamisMi(it) {
   return (it?.equipmentKey || it?.environmentKey) && kontrolKayitFabrikalari(it).length === 0;
 }
 
+let kontrolSatirAcik = new Set();
+function kontrolSatirToggle(id, btn) {
+  if (kontrolSatirAcik.has(id)) kontrolSatirAcik.delete(id); else kontrolSatirAcik.add(id);
+  const row = btn && btn.closest('.kx-row');
+  if (row) row.classList.toggle('open', kontrolSatirAcik.has(id));
+  if (btn) btn.setAttribute('aria-expanded', kontrolSatirAcik.has(id) ? 'true' : 'false');
+}
 function kontrolKartHtml(it) {
   const dl = it.daysLeft;
   const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
   const periodStr = `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
   const sonuc = kontrolSonucBilgi(it.result || 'bekliyor');
   const firma = (it.firm || '').trim();
+  const tarihli = !(dl === null || !it.lastDate || !it.nextDate);
+  const idJs = String(it.id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 
-  // Katalogdan eklenen fakat henüz tarih/fabrika bilgisi tamamlanmamış kayıt.
-  if (dl === null || !it.lastDate || !it.nextDate) {
-    return `<div class="kontrol-card kontrol-nodate">
-      <div class="kc-layout">
-        <div>
-          <div class="kc-title-row">
-            <div class="kc-title">${esc(it.name||'')}</div>
-            ${(it.equipmentKey||it.environmentKey)?'<span style="font-size:9px;font-weight:700;color:#4f7f16;background:#EAF3DE;padding:2px 6px;border-radius:99px;">KATALOG</span>':''}
-          </div>
-          <div class="kc-tags">
-            ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
-            ${kontrolFabrikaAtanmamisMi(it)?'<span class="kontrol-unassigned-tag">⚠ Fabrika Atanmamış</span>':''}
-            <span class="kc-period">⏱ ${esc(periodStr)}</span>
-          </div>
-          <div class="kc-dategrid">
-            <div class="kc-datebox">
-              <span class="kc-lbl">Son Kontrol</span>
-              <span class="kc-val">Tarih girilmedi</span>
-            </div>
-            <div class="kc-datebox">
-              <span class="kc-lbl">Sonraki Kontrol</span>
-              <span class="kc-val">—</span>
-            </div>
-          </div>
-          <div class="kc-bottom">
-            ${firma?`<span class="kc-firm">🏢 ${esc(firma)}</span>`:''}
-            <span class="kc-result ${sonuc.cls}">${sonuc.ikon} ${sonuc.ad}</span>
-            ${it.note?`<div class="kc-note">📝 ${esc(it.note)}</div>`:''}
-          </div>
-          <div class="kc-status-line" style="color:#888780;">Kontrol bilgileri bekleniyor</div>
-        </div>
-        <div class="kc-actions">
-          <div class="kontrol-nodate-badge">Tarih Bekliyor</div>
-          <button class="kc-icon-btn" onclick="kontrolEdit('${it.id}')" title="Düzenle">✏️</button>
-          <button class="kc-icon-btn danger" onclick="kontrolDel('${it.id}')" title="Sil">🗑</button>
-        </div>
-      </div>
-    </div>`;
+  let ton = 'gry', dgB = '—', dgS = 'tarihsiz';
+  if (tarihli) {
+    ton = dl < 0 ? 'red' : dl <= 30 ? 'org' : dl <= 90 ? 'yel' : 'grn';
+    if (dl < 0) { dgB = Math.abs(dl); dgS = 'gün geçti'; }
+    else if (dl === 0) { dgB = 'Bugün'; dgS = 'son gün'; }
+    else { dgB = dl; dgS = 'gün kaldı'; }
   }
+  const fmt = d => d.toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
+  const nextStr = tarihli ? fmt(it.nextDate) : '—';
+  const lastStr = tarihli ? fmt(new Date(it.lastDate+'T00:00:00')) : 'Tarih girilmedi';
+  const acik = kontrolSatirAcik.has(it.id);
+  const fabHtml = fabs.length
+    ? `<span class="kx-fb" style="--c:${kxFabRenk(fabs[0])}"><i></i>${esc(fabs[0])}</span>${fabs.length>1?`<span class="kx-more">+${fabs.length-1}</span>`:''}`
+    : (kontrolFabrikaAtanmamisMi(it) ? '<span class="kx-fb" style="color:var(--kx-org)">⚠ Fabrika atanmamış</span>' : '');
 
-  let urgCls='', urgTxt='', urgColor='var(--text3)', badgeBg='#639922';
-  if (dl < 0) {
-    urgCls='kontrol-overdue';
-    urgTxt=`${Math.abs(dl)} gün gecikti`;
-    urgColor='#D4537E';
-    badgeBg='#D4537E';
-  } else if (dl === 0) {
-    urgCls='kontrol-today';
-    urgTxt='Bugün';
-    urgColor='#EA580C';
-    badgeBg='#F97316';
-  } else if (dl <= 30) {
-    // 0–30 gün: belirgin turuncu — kritik yaklaşma dönemi
-    urgCls='kontrol-soon';
-    urgTxt=`${dl} gün kaldı`;
-    urgColor='#EA580C';
-    badgeBg='#F97316';
-  } else if (dl <= 90) {
-    // 31–90 gün: gerçek sarı — ön uyarı dönemi
-    urgCls='kontrol-medium';
-    urgTxt=`${dl} gün kaldı`;
-    urgColor='#8A6500';
-    badgeBg='#FACC15';
-  } else {
-    urgCls='kontrol-ok';
-    urgTxt=`${dl} gün kaldı`;
-    urgColor='#4f7f16';
-    badgeBg='#639922';
-  }
-
-  const nextStr = it.nextDate.toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
-  const lastStr = new Date(it.lastDate+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
-
-  return `<div class="kontrol-card ${urgCls}">
-    <div class="kc-layout">
-      <div>
-        <div class="kc-title-row">
-          <div class="kc-title">${esc(it.name||'')}</div>
-        </div>
-
-        <div class="kc-tags">
-          ${fabs.map(f=>`<span class="kontrol-fab-tag">${esc(f)}</span>`).join('')}
-          ${kontrolFabrikaAtanmamisMi(it)?'<span class="kontrol-unassigned-tag">⚠ Fabrika Atanmamış</span>':''}
-          <span class="kc-period">⏱ ${esc(periodStr)}</span>
-        </div>
-
-        <div class="kc-dategrid">
-          <div class="kc-datebox">
-            <span class="kc-lbl">Son Kontrol</span>
-            <span class="kc-val">${lastStr}</span>
-          </div>
-          <div class="kc-datebox">
-            <span class="kc-lbl">Sonraki Kontrol</span>
-            <span class="kc-val" style="color:${urgColor};">${nextStr}</span>
-          </div>
-        </div>
-
-        <div class="kc-bottom">
-          ${firma?`<span class="kc-firm">🏢 ${esc(firma)}</span>`:'<span class="kc-firm" style="opacity:.65;">🏢 Firma girilmedi</span>'}
-          <span class="kc-result ${sonuc.cls}">${sonuc.ikon} ${sonuc.ad}</span>
-          ${it.note?`<div class="kc-note">📝 ${esc(it.note)}</div>`:''}
-        </div>
-
-        <div class="kc-status-line" style="color:${urgColor};">${urgTxt}</div>
+  return `<div class="kx-row kx-${ton}${acik?' open':''}${tarihli?'':' kontrol-nodate'}">
+    <button type="button" class="kx-sum" aria-expanded="${acik?'true':'false'}" onclick="kontrolSatirToggle('${idJs}',this)">
+      <span class="kx-bar"></span>
+      <span style="min-width:0;">
+        <div class="kx-nm">${esc(it.name||'')}</div>
+        <div class="kx-mt">${fabHtml}<span style="white-space:nowrap">${esc(periodStr)}${tarihli?` · Sonraki: ${esc(nextStr)}`:''}</span></div>
+      </span>
+      <span class="kx-dg"><b>${dgB}</b><span>${dgS}</span></span>
+      <svg class="kx-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="kx-det">
+      <div class="kx-two">
+        <div class="kx-kv"><small>Son kontrol</small><b>${esc(lastStr)}</b></div>
+        <div class="kx-kv"><small>Sonraki kontrol</small><b>${esc(nextStr)}</b></div>
       </div>
-
-      <div class="kc-actions">
-        <div class="kontrol-days-badge"
-             style="background:${badgeBg};color:${(dl>30 && dl<=90)?'#4A3A00':'#fff'};">
-          ${dl<0?Math.abs(dl)+' Gün Gecikti':dl===0?'Bugün':dl+' Gün Kaldı'}
-        </div>
-        <button class="kc-icon-btn" onclick="kontrolEdit('${it.id}')" title="Düzenle">✏️</button>
-        <button class="kc-icon-btn danger" onclick="kontrolDel('${it.id}')" title="Sil">🗑</button>
+      ${fabs.length>1?`<div class="kx-inf">${fabs.map(f=>`<span class="kx-fb" style="--c:${kxFabRenk(f)}"><i></i>${esc(f)}</span>`).join('')}</div>`:''}
+      <div class="kx-inf">
+        <span>🏢 ${firma?esc(firma):'Firma girilmedi'}</span>
+        <span class="kx-pill ${sonuc.cls}">${sonuc.ikon} ${sonuc.ad}</span>
+        ${(it.equipmentKey||it.environmentKey)?'<span class="kx-pill" style="background:var(--kx-soft);color:var(--text2)">Katalog</span>':''}
+      </div>
+      ${it.note?`<div class="kx-note">📝 ${esc(it.note)}</div>`:''}
+      <div class="kx-act">
+        <button type="button" class="kx-btn out" onclick="kontrolEdit('${idJs}')">Tarih güncelle</button>
+        <span class="sp"></span>
+        <button type="button" class="kx-btn" onclick="kontrolEdit('${idJs}')">Düzenle</button>
+        <button type="button" class="kx-btn del" onclick="kontrolDel('${idJs}')">Sil</button>
       </div>
     </div>
   </div>`;
@@ -13482,15 +13453,22 @@ function kontrolOpenAdd(editId) {
   const selFabs = it ? (Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : [])) : [];
   // Fabrika checkbox listesi
   const list = document.getElementById('km-fab-list');
-  list.innerHTML = kontrolFabs.map(f => `
-    <label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);user-select:none;">
-      <input type="checkbox" class="km-fab-chk" value="${esc(f)}" ${selFabs.includes(f)?'checked':''} style="accent-color:#378ADD;width:12px;height:12px;"> ${esc(f)}
-    </label>`).join('');
+  list.innerHTML = kontrolFabs.map((f,i) => `
+    <label class="kx-chp" style="--c:${kxFabRenk(f)}"><input type="checkbox" class="km-fab-chk" value="${esc(f)}" ${selFabs.includes(f)?'checked':''} onchange="kontrolFabAllSync()"><i></i>${esc(f)}</label>`).join('');
   // Tümünü seç checkbox sync
   const allChk = document.getElementById('km-fab-all');
   if (allChk) allChk.checked = selFabs.length === kontrolFabs.length && kontrolFabs.length > 0;
   document.getElementById('kontrol-modal-bg').style.display = 'flex';
   setTimeout(()=>document.getElementById('km-name').focus(),80);
+}
+function kxFabRenk(f) {
+  const i = Math.max(0, (kontrolFabs||[]).indexOf(f));
+  return `var(--kx-f${(i%5)+1})`;
+}
+function kontrolFabAllSync() {
+  const all = document.getElementById('km-fab-all');
+  const l = document.querySelectorAll('.km-fab-chk');
+  if (all) all.checked = l.length > 0 && [...l].every(c => c.checked);
 }
 function kontrolToggleAllFabs(checked) {
   document.querySelectorAll('.km-fab-chk').forEach(c => { c.checked = checked; });
@@ -23546,6 +23524,175 @@ function kazaRaporRender(draft,inc){
   }
 }
 </style>
+<style id="kx-style">
+/* ===== Kontroller yeni görünüm (kx) ===== */
+:root{--kx-red:#C0392B;--kx-org:#D9641E;--kx-yel:#A87400;--kx-grn:#2F8F5E;--kx-gry:#6B7A88;--kx-acc:#4A86D8;--kx-f1:#4A86D8;--kx-f2:#D9641E;--kx-f3:#5E9B2F;--kx-f4:#8A5BC4;--kx-f5:#C0488A;
+--kx-red-bg:color-mix(in srgb,var(--kx-red) 14%,var(--surface));--kx-org-bg:color-mix(in srgb,var(--kx-org) 15%,var(--surface));--kx-yel-bg:color-mix(in srgb,#E5B53A 22%,var(--surface));--kx-grn-bg:color-mix(in srgb,var(--kx-grn) 15%,var(--surface));--kx-gry-bg:color-mix(in srgb,var(--kx-gry) 15%,var(--surface));
+--kx-soft:var(--surface2);--kx-line:var(--border2);--kx-navy:#17324A}
+/* fabrika filtresi: tek satır, yatay kaydırma */
+#kontrol-fab-filter.module-filter-strip{flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:8px 14px;scrollbar-width:none}
+#kontrol-fab-filter::-webkit-scrollbar{display:none}
+#kontrol-fab-filter .kontrol-fab-chip{flex:none;height:34px;display:inline-flex;align-items:center;padding:0 14px;font-size:12.5px;font-weight:600;border-radius:99px;border:1px solid var(--kx-line);background:var(--surface);color:var(--text)}
+#kontrol-fab-filter .kontrol-fab-chip.active{background:var(--kx-acc);border-color:var(--kx-acc);color:#fff}
+/* iki eşit yönetim düğmesi */
+.kx-mgr{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 14px 0}
+.kx-mgr button{height:42px;border-radius:12px;border:1px solid var(--kx-line);background:var(--surface);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;min-height:0}
+.kx-mgr button:first-child{border-color:var(--kx-acc);color:var(--kx-acc)}
+/* kontrol satırı */
+.kx-row{background:var(--surface);border:1px solid var(--kx-line);border-radius:14px;overflow:hidden;flex:none}
+.kx-sum{display:grid;grid-template-columns:4px minmax(0,1fr) auto 18px;gap:10px;align-items:center;padding:12px 12px 12px 0;cursor:pointer;width:100%;border:0;background:none;text-align:left;color:var(--text);min-height:0}
+.kx-bar{align-self:stretch;border-radius:0 3px 3px 0}
+.kx-nm{font-weight:700;font-size:14.5px;line-height:1.3}
+.kx-mt{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:5px;font-size:12px;color:var(--text2)}
+.kx-fb{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.kx-more{font-size:11px;font-weight:700;background:var(--kx-soft);border-radius:99px;padding:1px 7px}
+.kx-fb i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--text3));flex:none}
+.kx-dg{border-radius:12px;padding:5px 10px;text-align:center;min-width:64px;line-height:1.1}
+.kx-dg b{display:block;font-size:17px}.kx-dg span{font-size:10.5px;font-weight:700}
+.kx-red .kx-bar{background:var(--kx-red)}.kx-red .kx-dg{background:var(--kx-red-bg);color:var(--kx-red)}
+.kx-org .kx-bar{background:var(--kx-org)}.kx-org .kx-dg{background:var(--kx-org-bg);color:var(--kx-org)}
+.kx-yel .kx-bar{background:#E5B53A}.kx-yel .kx-dg{background:var(--kx-yel-bg);color:var(--kx-yel)}
+.kx-grn .kx-bar{background:var(--kx-grn)}.kx-grn .kx-dg{background:var(--kx-grn-bg);color:var(--kx-grn)}
+.kx-gry .kx-bar{background:var(--kx-gry)}.kx-gry .kx-dg{background:var(--kx-gry-bg);color:var(--kx-gry)}
+.kx-chev{width:18px;height:18px;color:var(--text2);transition:transform .15s}
+.kx-row.open .kx-chev{transform:rotate(180deg)}
+.kx-det{display:none;flex-direction:column;gap:10px;padding:0 14px 14px}
+.kx-row.open .kx-det{display:flex}
+.kx-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kx-kv{min-width:0;background:var(--kx-soft);border-radius:10px;padding:8px 10px}
+.kx-kv small{display:block;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text2);font-weight:700}
+.kx-kv b{font-size:14px}
+.kx-inf{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--text2)}
+.kx-pill{border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700;background:var(--kx-grn-bg);color:var(--kx-grn)}
+.kx-pill.sartli{background:var(--kx-yel-bg);color:var(--kx-yel)}.kx-pill.uygun-degil{background:var(--kx-red-bg);color:var(--kx-red)}.kx-pill.bekliyor{background:var(--kx-gry-bg);color:var(--kx-gry)}
+.kx-note{font-size:12.5px;color:var(--text2)}
+.kx-act{display:flex;gap:8px}.kx-act .sp{flex:1}
+.kx-btn{height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--kx-line);background:var(--surface);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;min-height:0}
+.kx-btn.pri{background:var(--kx-acc);border-color:var(--kx-acc);color:#fff}
+.kx-btn.out{border-color:var(--kx-acc);color:var(--kx-acc)}
+.kx-btn.del{color:var(--kx-red)}
+/* ortada yüzen kartlar (Ekle / Ekipman / Toplu) */
+html #kontrol-modal-bg,html #kontrol-ekipman-bg,html #kontrol-toplu-bg,html #kontrol-cevre-bg{align-items:center !important;justify-content:center;padding:16px;background:rgba(10,22,34,.6);overflow:hidden}
+html #kontrol-modal-bg > .kx-card,html #kontrol-ekipman-modal,html #kontrol-toplu-modal,html #kontrol-cevre-modal{width:100% !important;max-width:440px !important;height:auto !important;max-height:calc(100dvh - 32px) !important;border-radius:18px !important;box-shadow:0 18px 48px rgba(0,0,0,.4);background:var(--surface) !important;padding:0 !important;gap:0 !important;display:flex;flex-direction:column;overflow:hidden !important}
+.kx-hd,html .kem-head,html .ktp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px !important;background:linear-gradient(135deg,#17324A,#21456a) !important;color:#fff !important;flex:none;border:0 !important}
+.kx-hd h3,.kem-head h3,.ktp-head h3{font-size:16px !important;margin:0;color:#fff !important}
+.kx-hd small,.kem-head > div > div,.ktp-head-sub{font-size:11.5px !important;opacity:.78;color:#fff !important;margin:2px 0 0 !important;line-height:1.35}
+.kem-head > div:first-child,.ktp-head > div:first-child{display:none}
+.kx-x,.kem-close,.ktp-close{width:32px !important;height:32px !important;border-radius:50% !important;border:0 !important;background:rgba(255,255,255,.16) !important;color:#fff !important;font-size:19px !important;cursor:pointer;padding:0 !important;flex:none;min-height:0 !important;display:flex;align-items:center;justify-content:center;line-height:1}
+.kx-bd{padding:16px 18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;min-height:0;flex:1 1 auto}
+.kx-bd>*{flex:none}
+.kx-lb{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-bottom:7px;display:block}
+.kx-in,.kx-sel{width:100%;height:44px;border-radius:11px;border:1px solid var(--kx-line);background:var(--kx-soft);color:var(--text);padding:0 12px;font:inherit;font-size:14px;outline:none;box-sizing:border-box}
+.kx-chips{display:flex;flex-wrap:wrap;gap:8px}
+.kx-chp{height:38px;padding:0 14px;border-radius:99px;border:1.5px solid var(--kx-line);background:var(--surface);font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--text);user-select:none;flex:none}
+.kx-chp input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.kx-chp i{width:9px;height:9px;border-radius:50%;background:var(--c,var(--text3));flex:none}
+.kx-chp:has(input:checked){border-color:var(--c,var(--kx-acc));background:var(--kx-soft)}
+.kx-chp:has(input:checked)::after{content:"✓";font-weight:800;color:var(--c,var(--kx-acc))}
+.kx-ft,html .kem-foot,html .ktp-foot{display:flex !important;align-items:center;gap:10px;padding:12px 18px !important;border-top:1px solid var(--kx-line) !important;flex:none;background:var(--surface) !important}
+.kx-ft .cnt,.kem-foot > span:first-child,.ktp-foot > span:first-child{flex:1;font-size:12.5px;color:var(--text2)}
+html .kem-btn-cancel,html .ktp-cancel{height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--kx-line);background:var(--surface);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;min-height:0}
+html .kem-btn-add,html .ktp-save{height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--kx-acc);background:var(--kx-acc);color:#fff;font-weight:700;font-size:13px;cursor:pointer;min-height:0}
+html .kem-btn-add:disabled,html .ktp-save:disabled{opacity:.5;cursor:not-allowed}
+/* Ekipman / Toplu: hedef fabrika çipleri */
+html .katalog-fab-box{padding:14px 18px 0 !important;background:none !important;border:0 !important;flex:none}
+html .katalog-fab-title{font-size:10.5px !important;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2) !important;margin-bottom:7px}
+html .katalog-fab-hint{font-size:12px;color:var(--text2);margin-bottom:8px}
+html .katalog-fab-list{display:flex;flex-wrap:wrap;gap:8px}
+html .katalog-fab-chip{height:38px;padding:0 14px !important;border-radius:99px !important;border:1.5px solid var(--kx-line) !important;background:var(--surface) !important;font-weight:600;font-size:13px;display:inline-flex !important;align-items:center;gap:7px;cursor:pointer;color:var(--text) !important;flex:none}
+html .katalog-fab-chip input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+html .katalog-fab-chip:has(input:checked){border-color:var(--kx-acc) !important;background:var(--kx-soft) !important}
+html .katalog-fab-chip:has(input:checked)::after{content:"✓";font-weight:800;color:var(--kx-acc)}
+html .katalog-fab-chip.locked{opacity:.85}
+html .kem-search{padding:12px 18px 0 !important;border:0 !important;background:none !important;flex:none}
+html .kem-search input{width:100%;height:44px;border-radius:11px;border:1px solid var(--kx-line);background:var(--kx-soft);color:var(--text);padding:0 12px;font-size:14px;box-sizing:border-box;outline:none}
+html #kem-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:12px 18px 14px !important;display:flex;flex-direction:column;gap:8px}
+html #kem-body > *{flex:none}
+html .kem-cat{border:1px solid var(--kx-line) !important;border-radius:13px !important;overflow:hidden;background:var(--surface) !important;margin:0 !important}
+html .kem-cat-head{display:grid !important;grid-template-columns:18px minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px !important;background:var(--kx-soft) !important;cursor:pointer;border:0 !important}
+html .kem-cat-head > span:nth-child(2){display:none}
+html .kem-cat-head strong{font-size:14px;color:var(--text)}
+html .kem-cat-count{font-size:11.5px !important;font-weight:700;background:var(--surface) !important;border-radius:99px;padding:2px 9px !important;color:var(--text) !important;white-space:nowrap}
+.kx-gp{height:3px;background:var(--kx-line)}.kx-gp i{display:block;height:100%;background:var(--kx-grn)}
+html .kem-cat-body{display:flex;flex-direction:column;padding:0 !important;border:0 !important}
+html .kem-item{display:grid !important;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px !important;border:0 !important;border-top:1px solid var(--kx-line) !important;border-radius:0 !important;cursor:pointer;font-size:14px;background:none !important;color:var(--text)}
+html .kem-item > span:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html .kem-item.track{opacity:.55;cursor:default}
+html .kem-status{font-size:10.5px !important;font-weight:700;color:var(--kx-grn) !important;background:none !important;padding:0 !important}
+html .kem-item input[type=checkbox],html .ktp-item input[type=checkbox],html .ktp-cat-selectall input[type=checkbox]{appearance:none;-webkit-appearance:none;width:22px;height:22px;margin:0;border-radius:50%;border:1.5px solid var(--kx-line);background:none;display:grid;place-items:center;cursor:pointer;flex:none;accent-color:initial}
+html .kem-item input[type=checkbox]:checked,html .ktp-item input[type=checkbox]:checked,html .ktp-cat-selectall input[type=checkbox]:checked{background:var(--kx-acc);border-color:var(--kx-acc)}
+html .kem-item input[type=checkbox]:checked::after,html .ktp-item input[type=checkbox]:checked::after,html .ktp-cat-selectall input[type=checkbox]:checked::after{content:"✓";color:#fff;font-size:13px;line-height:1}
+html .kem-item.track input[type=checkbox]:checked{background:var(--kx-grn);border-color:var(--kx-grn)}
+/* Toplu güncelle — adım 1: seçim */
+html .ktp-controls{padding:12px 18px 0 !important;border:0 !important;background:none !important;flex:none}
+html .ktp-selectbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+html .ktp-selectbar button{height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--kx-line);background:var(--surface);color:var(--text);font-weight:600;font-size:12px;cursor:pointer;min-height:0}
+html .ktp-selectbar span{display:none}
+html .ktp-fab-filter{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto;gap:8px;padding-bottom:2px;scrollbar-width:none}
+html .ktp-fab-filter::-webkit-scrollbar{display:none}
+html .ktp-fab-chip{flex:none !important;height:34px;padding:0 14px !important;border-radius:99px !important;border:1px solid var(--kx-line) !important;background:var(--surface) !important;color:var(--text) !important;font-weight:600;font-size:12.5px;cursor:pointer;white-space:nowrap;min-height:0}
+html .ktp-fab-chip.active{background:var(--kx-acc) !important;border-color:var(--kx-acc) !important;color:#fff !important}
+html #ktp-list{flex:1 1 auto;min-height:0;overflow-y:auto;padding:12px 18px 14px !important;display:flex;flex-direction:column;gap:8px}
+html #ktp-list > *{flex:none}
+html .ktp-factory-section{border:0 !important;background:none !important;margin:0 !important;display:flex;flex-direction:column;gap:8px}
+html .ktp-factory-head{display:flex;align-items:center;gap:8px;font-size:12px !important;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--text2) !important;padding:4px 0 0 !important;background:none !important;border:0 !important;cursor:default}
+html .ktp-factory-head > span:nth-child(1),html .ktp-factory-head > span:nth-child(2){display:none}
+html .ktp-factory-head::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--kx-acc);flex:none}
+html .ktp-factory-count{margin-left:auto;font-size:11px;text-transform:none;letter-spacing:0;font-weight:600}
+html .ktp-factory-body{display:flex !important;flex-direction:column;gap:8px;padding:0 !important}
+html .ktp-cat{border:1px solid var(--kx-line) !important;border-radius:13px !important;overflow:hidden;background:var(--surface) !important;margin:0 !important}
+html .ktp-cat-head{display:grid !important;grid-template-columns:24px minmax(0,1fr) auto 18px;gap:10px;align-items:center;padding:12px !important;background:var(--kx-soft) !important;cursor:pointer;border:0 !important}
+html .ktp-cat-head > span:first-child{display:none}
+html .ktp-cat-head > span:nth-child(2){font-size:14px !important;font-weight:700 !important;color:var(--text) !important;order:2}
+html .ktp-cat-selectall{order:1;margin:0;display:flex}
+html .ktp-cat-selectall span{display:none}
+html .ktp-cat-count{order:3;font-size:11.5px !important;font-weight:700;background:var(--surface) !important;border-radius:99px;padding:2px 9px !important;color:var(--text) !important}
+html .ktp-cat-head::after{content:"";order:4;width:18px;height:18px;background:currentColor;color:var(--text2);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .15s}
+html .ktp-cat.open .ktp-cat-head::after{transform:rotate(180deg)}
+html .ktp-cat-body{padding:0 !important;border:0 !important}
+html .ktp-item{display:grid !important;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px !important;border:0 !important;border-top:1px solid var(--kx-line) !important;border-radius:0 !important;background:none !important;cursor:pointer}
+html .ktp-item-name{font-size:14px;font-weight:600;color:var(--text)}
+html .ktp-item-meta{font-size:11.5px;color:var(--text2);display:flex;gap:6px;flex-wrap:wrap}
+html .ktp-item-meta .ktp-fab-badge{display:none}
+html .ktp-item-period{font-size:11px;color:var(--text2);background:var(--kx-soft);border-radius:99px;padding:2px 8px;white-space:nowrap}
+/* Toplu güncelle — adım 2: bilgiler */
+#kontrol-toplu-modal .ktp-steps{display:flex;gap:6px;padding:10px 18px 0;flex:none}
+#kontrol-toplu-modal .ktp-steps span{flex:1;height:4px;border-radius:4px;background:var(--kx-line)}
+#kontrol-toplu-modal .ktp-steps span.on{background:var(--kx-acc)}
+#kontrol-toplu-modal.adim1 .ktp-update-wrap{display:none !important}
+#kontrol-toplu-modal.adim2 .ktp-controls,#kontrol-toplu-modal.adim2 #ktp-list{display:none !important}
+html #kontrol-toplu-modal .ktp-update-wrap{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow-y:auto;border:0 !important;background:none !important;padding:0 !important}
+html #kontrol-toplu-modal .ktp-update-toggle{display:none !important}
+html #kontrol-toplu-modal .ktp-update-content{display:flex !important;flex-direction:column;gap:14px;padding:16px 18px !important;max-height:none !important;border:0 !important}
+html #kontrol-toplu-modal .ktp-update-content > *{flex:none}
+.ktp-sumbox{background:var(--kx-soft);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)}
+.ktp-sumbox b{font-size:18px}.ktp-sumbox .sp{flex:1}
+.ktp-sumbox button{height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--kx-line);background:var(--surface);color:var(--text);font-weight:700;font-size:12.5px;cursor:pointer;min-height:0}
+html #kontrol-toplu-modal .ktp-form{display:flex !important;flex-direction:column;gap:14px;grid-template-columns:none !important}
+html #kontrol-toplu-modal .ktp-field{display:flex;flex-direction:column;gap:0}
+html #kontrol-toplu-modal .ktp-field label{font-size:10.5px !important;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2) !important;margin-bottom:7px}
+html #kontrol-toplu-modal .ktp-field input,html #kontrol-toplu-modal .ktp-field select{height:44px;border-radius:11px;border:1px solid var(--kx-line);background:var(--kx-soft);color:var(--text);padding:0 12px;font-size:14px;width:100%;box-sizing:border-box;outline:none}
+html #kontrol-toplu-modal .ktp-field textarea{border-radius:11px;border:1px solid var(--kx-line);background:var(--kx-soft);color:var(--text);padding:10px 12px;font-size:14px;width:100%;box-sizing:border-box;min-height:70px;outline:none;resize:vertical}
+html #kontrol-toplu-modal .ktp-hint{font-size:12px;color:var(--text2);margin-top:6px}
+html #kontrol-toplu-modal details.ktp-target-box{border:1px dashed var(--kx-line) !important;border-radius:12px !important;padding:10px 12px !important;background:none !important;order:9}
+html #kontrol-toplu-modal details.ktp-target-box summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--text)}
+html #kontrol-toplu-modal .ktp-target-hint{font-size:12px;color:var(--text2);margin:6px 0 10px}
+html #kontrol-toplu-modal .ktp-target-list{display:flex;flex-wrap:wrap;gap:8px}
+html #kontrol-toplu-modal .ktp-target-chip{height:38px;padding:0 14px !important;border-radius:99px !important;border:1.5px solid var(--kx-line) !important;background:var(--surface) !important;display:inline-flex !important;align-items:center;gap:7px;font-weight:600;font-size:13px;cursor:pointer;color:var(--text) !important;flex:none}
+html #kontrol-toplu-modal .ktp-target-chip input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+html #kontrol-toplu-modal .ktp-target-chip:has(input:checked){border-color:var(--kx-acc) !important;background:var(--kx-soft) !important}
+html #kontrol-toplu-modal .ktp-target-chip:has(input:checked)::after{content:"✓";font-weight:800;color:var(--kx-acc)}
+html .kem-item{min-height:0 !important}
+html .ktp-cat-selectall{width:auto !important;height:auto !important;padding:0 !important;border:0 !important;background:none !important;border-radius:0 !important}
+html .ktp-cat-selectall:hover{background:none !important}
+html #kontrol-toplu-modal .ktp-form{padding:0 !important;border:0 !important}
+html #kontrol-toplu-modal .ktp-field{padding:0 !important;border:0 !important}
+html #kontrol-toplu-modal .ktp-note-row{grid-column:auto !important}
+html .kem-foot,html .ktp-foot{flex-wrap:nowrap !important}
+/* Periyodik Kontroller grup başlığı biraz sadeleşsin */
+#kontrol-body .kontrol-ekipman-toolbar{display:none !important}
+</style>
+
 
 
 <script id="settings-ai-mobile-focus-v1">
