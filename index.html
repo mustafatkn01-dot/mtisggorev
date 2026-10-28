@@ -18978,7 +18978,7 @@ function denetimRender() {
       <div class="dng-hd" onclick="dnGrupAcKapa('${d.id}')" role="button" tabindex="0" aria-expanded="${!kapaliMi}">
         <span class="dng-main">
           <span class="dng-ad">${esc(d.ad)}</span>
-          <span class="dng-meta">${[tarihStr, DN_TURLER[d.tur]||'', d.denetci ? esc(d.denetci) : ''].filter(Boolean).join(' · ')}</span>
+          <span class="dng-meta">${[tarihStr, DN_TURLER[d.tur]||'', d.denetci ? esc(dnrKisaAd(d.denetci)) : ''].filter(Boolean).join(' · ')}</span>
           <span class="dng-r3">${dnFabListesi(d).map(f =>
             `<span class="cfab-tag" style="background:${fabColor(f)};color:${contrastText(fabColor(f))}">${esc(f)}</span>`).join('')}</span>
         </span>
@@ -23744,6 +23744,13 @@ html .kem-foot,html .ktp-foot{flex-wrap:nowrap !important}
 
 /* ===== Denetimler: ilerleme çubuklu kart, sıralama, yeni form ===== */
 .dn-scroll > *{flex:none}
+.dng-hd{row-gap:3px !important}
+.dng-main{display:contents !important}
+.dng-ad{grid-column:1;grid-row:1}
+.dng-tools{grid-column:2;grid-row:1}
+.dng-meta{grid-column:1 / -1;grid-row:2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dng-r3{grid-column:1 / -1;grid-row:3}
+
 #dn-stats button.dn-main-stat{font:inherit;color:inherit;cursor:pointer;width:100%}
 #dn-stats .dn-main-stat.on{background:rgba(192,57,43,.12)}
 .dn-sortbar{display:flex;align-items:center;gap:8px;flex:none}
