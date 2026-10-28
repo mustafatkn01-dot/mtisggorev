@@ -7774,91 +7774,72 @@ px}
 
 <div id="settings-bg" onclick="if(event.target===this)closeSettings()">
   <div id="settings-panel">
-    <h2>⚙️ Ayarlar <button onclick="closeSettings()">×</button></h2>
-    <div class="set-body">
-      <div class="set-section">
-        <div class="set-section-title">Durumlar (Sütunlar)</div>
-        <div class="cols-list" id="cols-list"></div>
-        <div class="add-col-row">
-          <input id="new-col-name" placeholder="Durum adı..." onkeydown="if(event.key==='Enter')addCol()"/>
-          <input type="color" id="new-col-color" value="#378ADD"/>
-          <button onclick="openPalette(document.getElementById('new-col-color').value, c=>document.getElementById('new-col-color').value=c)" title="Renk paletinden seç">🎨</button>
-          <button onclick="addCol()">+ Ekle</button>
-        </div>
-      </div>
-      <div class="set-section">
-        <div class="set-section-title">Parametreler</div>
-        <div style="font-size:11px;color:var(--text2);line-height:1.55;background:var(--surface2);padding:8px 10px;border-radius:var(--r);margin-bottom:6px;">
-          Buradan eklediğin/sildiğin kayıtlar <b>tüm bölümlere anında yansır</b> —
-          görev kartları, denetimler, kazalar, kontroller ve personel ekranı dahil.
-        </div>
-        <div id="param-sekmeler" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;"></div>
-        <div class="fab-list" id="param-liste"></div>
-        <div class="add-fab-row">
-          <input id="param-yeni-ad" placeholder="Yeni kayıt adı..." onkeydown="if(event.key==='Enter')paramEkle()"/>
-          <input type="color" id="param-yeni-renk" value="#4A90D9"/>
-          <button onclick="openPalette(document.getElementById('param-yeni-renk').value, c=>document.getElementById('param-yeni-renk').value=c)" title="Renk paletinden seç">🎨</button>
-          <button onclick="paramEkle()">+ Ekle</button>
-        </div>
-        <div id="param-kullanim" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>
-      </div>
-
-      <div class="set-section">
-        <div class="set-section-title">Renk Teması</div>
-        <div class="tema-grid" id="tema-grid"></div>
-      </div>
-
-      <div class="set-section" id="settings-ai-section">
-        <div class="set-section-title">🤖 Yapay Zeka (Gemini)</div>
-        <div style="font-size:11px;color:var(--text2);line-height:1.55;background:var(--surface2);padding:8px 10px;border-radius:var(--r);margin-bottom:8px;">
-          Denetim bulgularında <b>Öneri / Düzeltici Faaliyet</b> ve kaza kayıtlarında
-          <b>Alınan / Alınacak Önlem</b> alanları için yapay zekâ ile otomatik öneri
-          üretmek istersen, Google <b>Gemini API</b> anahtarını buraya gir. Anahtar yalnızca
-          bu cihazda saklanır. Ücretsiz anahtar:
-          <span style="color:#378ADD;">aistudio.google.com/apikey</span>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <input id="ai-key-input" type="password" placeholder="AIza... ile başlayan Gemini anahtarı"
-            style="flex:1;min-width:180px;padding:7px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;"/>
-          <button onclick="aiKeyKaydet()" style="padding:7px 14px;font-size:12px;font-weight:600;border:none;border-radius:var(--r);background:#378ADD;color:#fff;cursor:pointer;">Kaydet</button>
-          <button onclick="aiKeyTest()" style="padding:7px 12px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;">Test Et</button>
-        </div>
-        <div id="ai-key-durum" style="font-size:11px;margin-top:6px;color:var(--text3);"></div>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-          <button type="button" class="dn-secondary" onclick="kazaRaporMotorTest(false)" style="flex:1">🧪 Rapor testi · Hızlı (5 senaryo)</button>
-          <button type="button" class="dn-secondary" onclick="kazaRaporMotorTest(true)" style="flex:1">🔬 Rapor testi · Derin (5 senaryo)</button>
-        </div>
-        <div id="ai-test-sonuc" style="font-size:11px;margin-top:8px;color:var(--text2);line-height:1.5"></div>
-
-        <div id="settings-auth-logout" class="settings-auth-logout">
-          <div class="settings-auth-logout-copy">
-            <b>🔐 Oturum Güvenliği</b>
-            <span>Bu cihazdaki Firebase oturumunu kapatır. Sonraki açılışta e-posta ve parola ile yeniden giriş gerekir.</span>
-          </div>
-          <button type="button" onclick="fbGuvenliCikis()">Çıkış Yap</button>
-        </div>
-
-        <!-- PWA Kurulum Bölümü -->
-        <div id="settings-pwa-section" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-          <div class="set-section-title" style="margin-bottom:8px;">📲 Uygulamayı Kur</div>
-          <div style="font-size:11px;color:var(--text2);line-height:1.55;background:var(--surface2);padding:8px 10px;border-radius:var(--r);margin-bottom:8px;">
-            Bu programı telefonuna veya masaüstüne uygulama olarak kurabilirsin.
-            Kurulumdan sonra tarayıcı açmadan, ana ekrandan doğrudan başlatılabilir.
-          </div>
-          <div id="pwa-install-area">
-            <button id="pwa-install-btn" onclick="pwaCihazaKur()"
-              style="display:none;width:100%;padding:10px 14px;font-size:13px;font-weight:700;
-                     border:none;border-radius:var(--r);background:#378ADD;color:#fff;
-                     cursor:pointer;">
-              📲 Ana Ekrana / Masaüstüne Kur
-            </button>
-            <div id="pwa-install-status" style="font-size:11px;margin-top:6px;color:var(--text3);text-align:center;"></div>
-          </div>
-          <div style="font-size:11px;margin-top:8px;color:var(--text3);text-align:center;">Sürüm <b><script>document.write(window.APP_VERSION||'')</script></b></div>
-        </div>
-
-      </div>
+    <div class="st-hd">
+      <button type="button" class="st-ic" id="st-back" onclick="settingsGit('menu')" style="display:none" aria-label="Geri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="st-t"><b id="st-ttl">Ayarlar</b><small id="st-sub">Program tercihleri</small></div>
+      <button type="button" class="st-ic" onclick="closeSettings()" aria-label="Kapat">×</button>
     </div>
+
+    <div class="st-pg on" id="st-p-menu"><div class="st-bd"><div class="st-menu">
+      <button type="button" class="st-mi" onclick="settingsGit('durum')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg></span><span class="st-mt"><b>Görev durumları</b><span class="st-v" id="st-v-durum"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button type="button" class="st-mi" onclick="settingsGit('param')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l6 3V9l6 3V4h6v17z"/></svg></span><span class="st-mt"><b>Fabrika, departman, personel</b><span class="st-v" id="st-v-param"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button type="button" class="st-mi" onclick="settingsGit('gorunum')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.2"/><circle cx="14" cy="8.5" r="1.2"/><circle cx="16" cy="13" r="1.2"/></svg></span><span class="st-mt"><b>Görünüm</b><span class="st-v" id="st-v-tema"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button type="button" class="st-mi" onclick="settingsGit('ai')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><span class="st-mt"><b>Yapay zeka</b><span class="st-v" id="st-v-ai"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button type="button" class="st-mi" onclick="settingsGit('hesap')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></span><span class="st-mt"><b>Hesap ve uygulama</b><span class="st-v" id="st-v-hesap"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div></div></div>
+
+    <div class="st-pg" id="st-p-durum"><div class="st-bd">
+      <div class="st-scroll cols-list" id="cols-list"></div>
+      <div class="st-add" id="st-col-add" style="display:none">
+        <input class="st-in" id="new-col-name" placeholder="Durum adı…" onkeydown="if(event.key==='Enter')addCol()"/>
+        <input type="color" id="new-col-color" value="#378ADD" hidden/>
+        <button type="button" class="st-btn" onclick="addCol()">Ekle</button>
+      </div>
+      <button type="button" class="st-addbtn" id="st-col-plus" onclick="stColForm(true)">+ Yeni durum</button>
+      <div class="st-info">Renk için noktaya dokunun, sıralamak için ▲▼ kullanın.</div>
+    </div></div>
+
+    <div class="st-pg" id="st-p-param"><div class="st-bd">
+      <div class="st-seg" id="param-sekmeler"></div>
+      <div class="st-scroll fab-list" id="param-liste"></div>
+      <div class="st-add" id="st-par-add" style="display:none">
+        <input class="st-in" id="param-yeni-ad" placeholder="Yeni kayıt adı…" onkeydown="if(event.key==='Enter')paramEkle()"/>
+        <input type="color" id="param-yeni-renk" value="#4A90D9" hidden/>
+        <button type="button" class="st-btn" onclick="paramEkle();stParForm(false)">Ekle</button>
+      </div>
+      <button type="button" class="st-addbtn" id="st-par-plus" onclick="stParForm(true)">+ Yeni kayıt</button>
+      <div class="st-info">Değişiklikler tüm bölümlere anında yansır.</div>
+      <div id="param-kullanim" style="display:none"></div>
+    </div></div>
+
+    <div class="st-pg" id="st-p-gorunum"><div class="st-bd">
+      <div class="st-lb">Renk teması</div>
+      <div class="st-th" id="tema-grid"></div>
+      <button type="button" class="st-btn ghost w" id="st-more" onclick="stTemaDaha()">Daha fazla tema</button>
+    </div></div>
+
+    <div class="st-pg" id="st-p-ai"><div class="st-bd" id="settings-ai-section">
+      <div class="st-stat" id="ai-key-durum"></div>
+      <div><div class="st-lb">Gemini API anahtarı</div>
+        <input id="ai-key-input" class="st-in" type="password" placeholder="AIza... ile başlayan Gemini anahtarı"/>
+        <div class="st-info" style="margin-top:6px">Anahtar yalnızca bu cihazda saklanır. Ücretsiz anahtar: aistudio.google.com/apikey</div></div>
+      <div class="st-two"><button type="button" class="st-btn" onclick="aiKeyKaydet();settingsOzet()">Kaydet</button><button type="button" class="st-btn out" onclick="aiKeyTest()">Test et</button></div>
+      <details class="st-adv"><summary>Gelişmiş: rapor testleri</summary>
+        <div class="st-two"><button type="button" class="st-btn ghost" onclick="kazaRaporMotorTest(false)">Hızlı test</button><button type="button" class="st-btn ghost" onclick="kazaRaporMotorTest(true)">Derin test</button></div>
+        <div id="ai-test-sonuc" style="font-size:11px;margin-top:8px;color:var(--text2);line-height:1.5"></div>
+      </details>
+    </div></div>
+
+    <div class="st-pg" id="st-p-hesap"><div class="st-bd" id="settings-pwa-section">
+      <div class="st-kv">Sürüm <span><script>document.write(window.APP_VERSION||'')</script></span></div>
+      <div id="pwa-install-area">
+        <button id="pwa-install-btn" type="button" class="st-btn out w" onclick="pwaCihazaKur()" style="display:none">Ana ekrana / masaüstüne kur</button>
+        <div id="pwa-install-status" class="st-info"></div>
+      </div>
+      <div class="st-info">Kurulumdan sonra tarayıcı açmadan doğrudan başlatabilirsiniz.</div>
+      <div style="flex:1"></div>
+      <div id="settings-auth-logout"><button type="button" class="st-btn ghost w st-out" onclick="settingsCikisSor()">Oturumu kapat</button></div>
+    </div></div>
   </div>
 </div>
 
@@ -8440,18 +8421,17 @@ function paramRender() {
   if (!sekmeEl || !listeEl) return;
 
   sekmeEl.innerHTML = Object.entries(PARAM_TANIM).map(([id,t]) =>
-    `<span class="dn-chip${paramAktif===id?' active':''}" style="${paramAktif===id?'background:#378ADD;border-color:#378ADD':''}"
-      onclick="paramSekmeSec('${id}')">${t.ad} <b>${t.dizi().length}</b></span>`).join('');
+    `<button type="button" class="${paramAktif===id?'on':''}" onclick="paramSekmeSec('${id}')">${t.ad.replace(/^\S+\s/,'')}<b>${t.dizi().length}</b></button>`).join('');
 
   const tanim = PARAM_TANIM[paramAktif];
   const dizi  = tanim.dizi();
   listeEl.innerHTML = dizi.length === 0
-    ? `<div style="font-size:12px;color:var(--text3);padding:4px 0">Henüz ${tanim.tekil.toLowerCase()} yok</div>`
+    ? `<div class="st-info" style="text-align:center;padding:18px">Henüz ${tanim.tekil.toLowerCase()} yok.</div>`
     : dizi.map((x,i) => `
-      <div class="fab-list-item">
-        <span class="fab-list-color" style="background:${x.color}" title="Rengi değiştir" onclick="paramRenk(${i})"></span>
-        <span class="fab-list-name" style="cursor:text" title="Adı değiştirmek için tıkla" onclick="paramAdDegistir(${i})">${esc(x.name)}</span>
-        <span class="fab-list-del" onclick="paramSil(${i})">×</span>
+      <div class="st-row" style="grid-template-columns:18px minmax(0,1fr) auto">
+        <button type="button" class="st-dot" style="background:${x.color}" title="Rengi değiştir" onclick="paramRenk(${i})"></button>
+        <span class="st-nm" title="Adı değiştirmek için dokunun" onclick="paramAdDegistir(${i})">${esc(x.name)}</span>
+        <button type="button" class="st-x" onclick="paramSil(${i})" aria-label="Sil">×</button>
       </div>`).join('');
 
   document.getElementById('param-yeni-ad').placeholder = `Yeni ${tanim.tekil.toLowerCase()} adı...`;
@@ -8480,11 +8460,12 @@ function paramSil(i) {
   const dizi  = tanim.dizi();
   const x = dizi[i];
   if (!x) return;
-  if (!confirm(`"${x.name}" silinsin mi?\nBu kayıt tüm bölümlerden kaldırılacak.`)) return;
-  dizi.splice(i, 1);
-  tanim.kaydet();
-  paramRender(); renderSettingsPanel();
-  toast(x.name + ' silindi');
+  isgOnay({ baslik:'Kayıt silinsin mi?', mesaj:`"${x.name}" tüm bölümlerden kaldırılacak.`, evet:'Sil' }, () => {
+    dizi.splice(i, 1);
+    tanim.kaydet();
+    paramRender(); renderSettingsPanel();
+    toast(x.name + ' silindi');
+  });
 }
 
 function paramRenk(i) {
@@ -8549,14 +8530,11 @@ function renderColsList() {
   const el = document.getElementById('cols-list');
   if (!el) return;
   el.innerHTML = COLS.map((c,i) => `
-    <div class="col-list-item">
-      <span class="col-list-color" style="background:${c.color}" title="Renk değiştir" onclick="changeColColor(${i})"></span>
-      <span class="col-list-name">${esc(c.label)}</span>
-      <span class="col-list-arrows">
-        <span class="col-arr" onclick="moveColUp(${i})" style="${i===0?'opacity:.25;pointer-events:none':''}">▲</span>
-        <span class="col-arr" onclick="moveColDown(${i})" style="${i===COLS.length-1?'opacity:.25;pointer-events:none':''}">▼</span>
-      </span>
-      <span class="col-list-del" onclick="delCol(${i})">×</span>
+    <div class="st-row">
+      <button type="button" class="st-dot" style="background:${c.color}" title="Rengi değiştir" onclick="changeColColor(${i})"></button>
+      <span class="st-nm">${esc(c.label)}</span>
+      <span class="st-ar"><button type="button" onclick="moveColUp(${i})" ${i===0?'disabled':''} aria-label="Yukarı">▲</button><button type="button" onclick="moveColDown(${i})" ${i===COLS.length-1?'disabled':''} aria-label="Aşağı">▼</button></span>
+      <button type="button" class="st-x" onclick="delCol(${i})" aria-label="Sil">×</button>
     </div>`).join('');
 }
 
@@ -8577,6 +8555,7 @@ function addCol() {
   const id = 'col_' + Date.now();
   COLS.push({ id, label:name, color:colorEl.value });
   saveCols(); nameEl.value = '';
+  stColForm(false); settingsOzet();
   renderColsList(); renderMStatus(); render();
   toast(name + ' eklendi');
 }
@@ -8588,17 +8567,18 @@ function delCol(i) {
   const msg = count > 0
     ? `"${col.label}" durumunda ${count} görev var. Silerseniz bu görevler ilk duruma taşınır. Devam?`
     : `"${col.label}" silinsin mi?`;
-  if (!confirm(msg)) return;
-  if (count > 0) {
-    const fallback = COLS.find((_,j)=>j!==i);
-    tasks.forEach(t => { if(t.status===col.id) { t.status=fallback.id; if(window._fbUpdate) window._fbUpdate(t); } });
-    save();
-  }
-  COLS.splice(i, 1);
-  saveCols();
-  if (curView===col.id) curView='all';
-  renderColsList(); renderMStatus(); render();
-  toast(col.label + ' silindi');
+  isgOnay({ baslik:'Durum silinsin mi?', mesaj:msg.replace(/ Devam\?$/, ''), evet:'Sil' }, () => {
+    if (count > 0) {
+      const fallback = COLS.find((_,j)=>j!==i);
+      tasks.forEach(t => { if(t.status===col.id) { t.status=fallback.id; if(window._fbUpdate) window._fbUpdate(t); } });
+      save();
+    }
+    COLS.splice(i, 1);
+    saveCols();
+    if (curView===col.id) curView='all';
+    renderColsList(); renderMStatus(); render(); settingsOzet();
+    toast(col.label + ' silindi');
+  });
 }
 
 function moveColUp(i) {
@@ -8626,7 +8606,7 @@ function openSettings() {
   const ak = document.getElementById('ai-key-input');
   if (ak) ak.value = aiKeyAl();
   const ad = document.getElementById('ai-key-durum');
-  if (ad) ad.innerHTML = aiKeyAl() ? '<span style="color:#639922">✓ Anahtar kayıtlı — öneri butonları aktif.</span>' : 'Anahtar girilmedi — öneri butonları uyarı verir.';
+  settingsGit('menu');
   document.getElementById('settings-bg').classList.add('on');
 }
 
@@ -9082,6 +9062,36 @@ async function kazaRaporMotorTest(deep) {
 }
 function closeSettings() { document.getElementById('settings-bg').classList.remove('on'); }
 
+let stSayfa = 'menu', stTemaAcik = false;
+const ST_BASLIK = {menu:['Ayarlar','Program tercihleri'],durum:['Görev durumları','Board sütunları'],param:['Fabrika, departman, personel','Tüm bölümlerde ortak liste'],gorunum:['Görünüm','Renk teması'],ai:['Yapay zeka','Gemini ile öneri'],hesap:['Hesap ve uygulama','Oturum ve kurulum']};
+function settingsGit(k) {
+  stSayfa = k;
+  document.querySelectorAll('#settings-panel .st-pg').forEach(p => p.classList.toggle('on', p.id === 'st-p-' + k));
+  const [t, a] = ST_BASLIK[k] || ST_BASLIK.menu;
+  document.getElementById('st-ttl').textContent = t;
+  document.getElementById('st-sub').textContent = a;
+  document.getElementById('st-back').style.display = k === 'menu' ? 'none' : 'grid';
+  stColForm(false); stParForm(false);
+  if (k === 'menu') settingsOzet();
+}
+function stColForm(ac) { const f = document.getElementById('st-col-add'), b = document.getElementById('st-col-plus'); if (f) f.style.display = ac ? 'grid' : 'none'; if (b) b.style.display = ac ? 'none' : 'block'; if (ac) document.getElementById('new-col-name')?.focus(); }
+function stParForm(ac) { const f = document.getElementById('st-par-add'), b = document.getElementById('st-par-plus'); if (f) f.style.display = ac ? 'grid' : 'none'; if (b) b.style.display = ac ? 'none' : 'block'; if (ac) document.getElementById('param-yeni-ad')?.focus(); }
+function stTemaDaha() { stTemaAcik = !stTemaAcik; renderTemaGrid(); }
+function settingsOzet() {
+  const set = (id, v, ok) => { const e = document.getElementById(id); if (e) { e.textContent = v; e.classList.toggle('ok', !!ok); } };
+  set('st-v-durum', COLS.length + ' durum');
+  set('st-v-param', fabrikalar.length + ' fabrika');
+  const t = TEMALAR.find(x => x.id === aktifTema);
+  set('st-v-tema', t ? t.name.replace(/\s*[☀🌙🌈]\uFE0F?/g, '') : '');
+  const anahtar = !!aiKeyAl();
+  set('st-v-ai', anahtar ? 'Bağlı ✓' : 'Anahtar yok', anahtar);
+  set('st-v-hesap', 'Sürüm ' + (window.APP_VERSION || ''));
+  const d = document.getElementById('ai-key-durum');
+  if (d) d.innerHTML = anahtar ? '<span style="color:#2F8F5E;font-weight:700">✓</span><span>Anahtar kayıtlı. Öneri düğmeleri aktif.</span>' : '<span>Anahtar girilmedi. Öneri düğmeleri uyarı verir.</span>';
+}
+function settingsCikisSor() {
+  isgOnay({ baslik:'Oturum kapatılsın mı?', mesaj:'Sonraki açılışta e-posta ve parola ile yeniden giriş gerekir.', evet:'Oturumu kapat' }, () => fbGuvenliCikis());
+}
 function renderSettingsPanel() {
   renderTemaGrid();
   renderColsList();
@@ -9089,6 +9099,7 @@ function renderSettingsPanel() {
   // Parametreler (fabrika / departman / personel) — merkezi liste
   paramRender();
   renderFabDropdown();
+  settingsOzet();
 }
 
 function addFab() {
@@ -10152,34 +10163,27 @@ function applyTema(id, save=true) {
   if (save && window._fbSaveSettings) window._fbSaveSettings();
 }
 
+const ST_ONE_CIKAN = ['varsayilan','gece','okyanus','orman','kontrast-acik','kontrast-koyu','gri'];
 function renderTemaGrid() {
   const grid = document.getElementById('tema-grid');
   if (!grid) return;
-  grid.innerHTML = TEMALAR.map(t => {
-    const isActive = t.id === aktifTema;
-    const GOKKUSAGI = 'linear-gradient(135deg,#FFE4E4,#FFF1DA,#FCFFDA,#DEFBE5,#D9F2FF,#E6E2FF,#FCDCF2)';
-    const isRainbow = t.id === 'gokkusagi';
-    const previewBg = isRainbow ? GOKKUSAGI : t.vars['--surface2'];
-    const previewCard = isRainbow ? 'rgba(255,255,255,0.85)' : t.vars['--surface'];
-    const previewText = t.vars['--text2'];
-    const barColor = isRainbow
-      ? 'linear-gradient(90deg,#FF5E5E,#FF9F45,#FFD93D,#5FD35F,#4D96FF,#9B5DE5)'
-      : t.dots[1];
-    return `<div class="tema-card${isActive?' active':''}" onclick="applyTema('${t.id}');renderTemaGrid()">
-      <div class="tema-hd" style="background:${isRainbow?'#ffffff':t.vars['--surface']};color:${t.vars['--text']}">
-        <span>${t.name}</span>
-        <div class="tema-dots">
-          ${t.dots.map(d=>`<span class="tema-dot" style="background:${d};border:1px solid ${t.vars['--border2']}"></span>`).join('')}
-        </div>
-      </div>
-      <div class="tema-preview" style="background:${previewBg}">
-        <div class="tema-bar" style="background:${barColor};width:65%"></div>
-        <div class="tema-row" style="background:${previewCard};color:${previewText}">Bekliyor <span style="margin-left:auto;font-size:9px;opacity:.7">3</span></div>
-        <div class="tema-row" style="background:${previewCard};color:${previewText}">Onay <span style="margin-left:auto;font-size:9px;opacity:.7">1</span></div>
-      </div>
-      <div class="tema-apply" style="background:${isRainbow?barColor:t.dots[1]};color:${contrastText(t.dots[1])}">${isActive?'✓ Aktif':'Seç'}</div>
-    </div>`;
+  const GOK = 'linear-gradient(135deg,#FFE4E4,#FCFFDA,#D9F2FF,#E6E2FF)';
+  const sirali = [...TEMALAR.filter(t => ST_ONE_CIKAN.includes(t.id)).sort((a,b) => ST_ONE_CIKAN.indexOf(a.id) - ST_ONE_CIKAN.indexOf(b.id)),
+                  ...TEMALAR.filter(t => !ST_ONE_CIKAN.includes(t.id))];
+  const aktifGizli = !ST_ONE_CIKAN.includes(aktifTema);
+  const goster = stTemaAcik || aktifGizli ? sirali : sirali.slice(0, ST_ONE_CIKAN.length);
+  grid.innerHTML = goster.map(t => {
+    const on = t.id === aktifTema;
+    const bg = t.id === 'gokkusagi' ? GOK : (t.vars['--surface'] || '#fff');
+    const ac = t.dots[1] || t.dots[0];
+    return `<button type="button" class="st-sw${on?' on':''}" onclick="applyTema('${t.id}');renderTemaGrid();settingsOzet()"><i style="--b:${bg};--a:${ac}">${on?'<span>✓</span>':''}</i><small>${t.name}</small></button>`;
   }).join('');
+  const more = document.getElementById('st-more');
+  if (more) {
+    const kalan = sirali.length - ST_ONE_CIKAN.length;
+    more.style.display = aktifGizli && !stTemaAcik ? 'none' : 'block';
+    more.textContent = stTemaAcik ? 'Daha az göster' : `Daha fazla tema (${kalan})`;
+  }
 }
 
 
@@ -23785,6 +23789,68 @@ html .kem-foot,html .ktp-foot{flex-wrap:nowrap !important}
 /* Periyodik Kontroller grup başlığı biraz sadeleşsin */
 #kontrol-body .kontrol-ekipman-toolbar{display:none !important}
 </style>
+<style id="st-style">
+/* ===== Ayarlar: menü + alt sayfa ===== */
+#settings-bg{align-items:center !important;justify-content:center !important;padding:16px;background:rgba(10,22,34,.6)}
+#settings-panel{width:100% !important;max-width:440px;height:min(640px,calc(100dvh - 32px)) !important;border:0 !important;border-radius:18px !important;box-shadow:0 18px 48px rgba(0,0,0,.4) !important;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+.st-hd{display:flex;align-items:center;gap:10px;padding:16px 18px;background:linear-gradient(135deg,#17324A,#21456a);color:#fff;flex:none}
+.st-t{flex:1;min-width:0}.st-t b{font-size:16px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-t small{font-size:11.5px;opacity:.75}
+.st-ic{width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;font-size:19px;cursor:pointer;padding:0;flex:none;display:grid;place-items:center;min-height:0}
+.st-ic svg{width:18px;height:18px}
+.st-pg{display:none;flex-direction:column;flex:1;min-height:0}
+.st-pg.on{display:flex}
+.st-bd{padding:14px 18px 18px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;min-height:0}
+.st-bd>*{flex:none}
+.st-menu{display:flex;flex-direction:column;gap:8px}
+.st-mi{display:grid;grid-template-columns:38px minmax(0,1fr) 16px;gap:12px;align-items:center;width:100%;padding:12px;border:1px solid var(--border2);border-radius:14px;background:var(--surface);color:var(--text);text-align:left;cursor:pointer;min-height:0}
+.st-ico{width:38px;height:38px;border-radius:11px;background:var(--surface2);display:grid;place-items:center;color:#4A86D8}
+.st-ico svg{width:20px;height:20px}
+.st-mt{min-width:0}.st-mt b{font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-v{display:block;font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-v.ok{color:#2F8F5E}
+.st-ch{width:16px;height:16px;color:var(--text2)}
+.st-scroll{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto}
+.st-scroll>*{flex:none}
+.st-row{display:grid;grid-template-columns:18px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:0 4px 0 12px;height:48px;border:1px solid var(--border2);border-radius:12px;background:var(--surface)}
+.st-dot{width:14px;height:14px;border-radius:50%;border:0;padding:0;cursor:pointer;min-height:0;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--border2)}
+.st-nm{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text}
+.st-ar{display:flex;gap:2px}
+.st-ar button,.st-x{width:30px;height:34px;border:0;background:none;color:var(--text2);font-size:12px;cursor:pointer;border-radius:9px;min-height:0;padding:0}
+.st-ar button:disabled{opacity:.25;cursor:default}
+.st-x{font-size:18px;width:34px}
+.st-add{display:grid;grid-template-columns:1fr auto;gap:8px}
+.st-in{width:100%;height:44px;border-radius:11px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:0 12px;font:inherit;font-size:14px;outline:none;box-sizing:border-box}
+.st-btn{height:44px;padding:0 16px;border-radius:11px;border:1px solid #4A86D8;background:#4A86D8;color:#fff;font-weight:700;font-size:13px;cursor:pointer;min-height:0}
+.st-btn.ghost{background:var(--surface);color:var(--text);border-color:var(--border2)}
+.st-btn.out{background:var(--surface);color:#4A86D8}
+.st-btn.w{width:100%}
+.st-out{color:#C0392B !important;border-color:#C0392B !important}
+.st-addbtn{height:44px;border-radius:12px;border:1.5px dashed var(--border2);background:none;color:#4A86D8;font-weight:700;font-size:13.5px;cursor:pointer;min-height:0}
+.st-seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface2);border-radius:11px;padding:3px;gap:3px}
+.st-seg button{height:36px;border:0;border-radius:9px;background:none;font-weight:600;font-size:12px;color:var(--text2);cursor:pointer;min-height:0;padding:0 2px;white-space:nowrap}
+.st-seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(23,50,74,.2)}
+.st-seg b{font-size:11px;opacity:.7;margin-left:3px}
+.st-info{font-size:12px;color:var(--text2)}
+.st-lb{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-bottom:7px}
+.st-th{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.st-sw{border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:0}
+.st-sw i{width:100%;aspect-ratio:1;border-radius:14px;border:2px solid var(--border2);position:relative;overflow:hidden;background:var(--b)}
+.st-sw i::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:var(--a)}
+.st-sw i::before{content:"";position:absolute;left:18%;right:18%;top:22%;height:14%;border-radius:4px;background:var(--a);opacity:.55}
+.st-sw.on i{border-color:#4A86D8;box-shadow:0 0 0 2px #4A86D8}
+.st-sw i span{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;z-index:2}
+.st-sw.on i span{background:#4A86D8}
+.st-sw small{font-size:11px;font-weight:600;color:var(--text2);text-align:center;line-height:1.15}
+.st-sw.on small{color:var(--text)}
+.st-stat{display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--text)}
+.st-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.st-adv{border:1px dashed var(--border2);border-radius:12px;padding:10px 12px}
+.st-adv summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--text)}
+.st-adv .st-two{margin-top:10px}
+.st-kv{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--border2);border-radius:12px;font-size:14px;color:var(--text)}
+.st-kv span{color:var(--text2);font-size:13px}
+</style>
+
 
 
 
