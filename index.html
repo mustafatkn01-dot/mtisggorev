@@ -6939,42 +6939,54 @@ px}
       </div>
     </div>
     <div id="dn-stats" class="dn-stats-modern"></div>
+    <div class="dn-sortbar">
+      <div class="dn-sort" id="dn-sort">
+        <button type="button" data-s="yeni" onclick="dnSirala('yeni')">En yeni</button>
+        <button type="button" data-s="acik" onclick="dnSirala('acik')">En çok açık</button>
+        <button type="button" data-s="kap" onclick="dnSirala('kap')">En düşük kapanma</button>
+      </div>
+      <button type="button" class="dn-fclr" id="dn-fclr" onclick="dnAcikFiltre()" style="display:none">Açıklar ✕</button>
+    </div>
     <div id="dn-body" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
 </div>
 
 <!-- Denetim Ekle / Düzenle -->
-<div id="denetim-modal-bg" class="audit-modal-bg" onclick="if(event.target===this)denetimCloseAdd()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center;">
-  <div class="audit-modal-box" style="background:var(--surface);border-radius:12px;padding:20px;width:460px;max-width:96vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;">
-    <div class="audit-modal-head" style="display:flex;align-items:center;justify-content:space-between;">
-      <h3 id="dn-modal-h" style="font-size:14px;font-weight:700;color:var(--text);">Yeni Denetim</h3>
-      <button onclick="denetimCloseAdd()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
+<div id="denetim-modal-bg" onclick="if(event.target===this)denetimCloseAdd()" style="display:none;position:fixed;inset:0;z-index:60;">
+  <div class="kx-card">
+    <div class="kx-hd">
+      <div><h3 id="dn-modal-h">Yeni Denetim</h3><small>Denetim kaydı</small></div>
+      <button type="button" class="kx-x" onclick="denetimCloseAdd()" title="Kapat">×</button>
     </div>
-    <div class="mfield"><label>Denetim Adı *</label><input id="dn-m-ad" placeholder="örn: 2026 1. Dönem İç Denetim"/></div>
-    <div class="mrow2">
-      <div class="mfield"><label>Tarih *</label><input type="date" id="dn-m-tarih"/></div>
-      <div class="mfield"><label>Denetim Türü</label>
-        <select id="dn-m-tur">
-          <option value="ic">İç Denetim</option>
-          <option value="dis">Dış Denetim</option>
-          <option value="saha">Saha Turu</option>
-          <option value="resmi">Resmi Denetim</option>
-          <option value="musteri">Müşteri Denetimi</option>
-        </select>
+    <div class="kx-bd">
+      <div><label class="kx-lb">Denetim adı *</label><input id="dn-m-ad" class="kx-in" placeholder="örn: 2026 1. Dönem İç Denetim"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label class="kx-lb">Tarih *</label><input type="date" id="dn-m-tarih" class="kx-in"/></div>
+        <div><label class="kx-lb">Denetim türü</label>
+          <select id="dn-m-tur" class="kx-sel">
+            <option value="ic">İç Denetim</option>
+            <option value="dis">Dış Denetim</option>
+            <option value="saha">Saha Turu</option>
+            <option value="resmi">Resmi Denetim</option>
+            <option value="musteri">Müşteri Denetimi</option>
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="mfield">
-      <label>Fabrika(lar) <span style="color:var(--text3);font-weight:400">— birden fazla seçebilirsin</span></label>
-      <div class="dn-fab-wrap">
-        <label class="dn-chip dn-chip-all" id="dn-chip-all"><input type="checkbox" id="dn-m-fab-all" onchange="dnFabTumu(this.checked)"><span>Tümünü seç</span></label>
-        <div id="dn-m-fab-list"></div>
+      <div>
+        <label class="kx-lb">Fabrika(lar)</label>
+        <div class="dn-fabrow">
+          <label class="kx-chp" id="dn-chip-all"><input type="checkbox" id="dn-m-fab-all" onchange="dnFabTumu(this.checked)"> Tümünü seç</label>
+          <span id="dn-m-fab-list" style="display:contents"></span>
+        </div>
+        <div id="dn-fab-hint" style="font-size:12px;color:var(--text2);margin-top:6px">Birden fazla seçebilirsiniz.</div>
       </div>
+      <div><label class="kx-lb">Denetçi</label><input id="dn-m-denetci" class="kx-in" placeholder="örn: Ahmet Y."/></div>
+      <div><label class="kx-lb">Not</label><textarea id="dn-m-not" class="kx-in" placeholder="Kapsam, katılımcılar..." style="height:64px;padding:10px 12px;resize:none"></textarea></div>
     </div>
-    <div class="mfield"><label>Denetçi</label><input id="dn-m-denetci" placeholder="örn: Ahmet Y."/></div>
-    <div class="mfield"><label>Not</label><textarea id="dn-m-not" placeholder="Kapsam, katılımcılar..." style="min-height:50px"></textarea></div>
-    <div class="audit-modal-footer">
-      <button class="mbtn-cancel" onclick="denetimCloseAdd()">İptal</button>
-      <button class="audit-save-btn" onclick="denetimSubmit()">Kaydet</button>
+    <div class="kx-ft">
+      <span class="cnt"></span>
+      <button type="button" class="kx-btn" onclick="denetimCloseAdd()">İptal</button>
+      <button type="button" class="kx-btn pri" onclick="denetimSubmit()">Kaydet</button>
     </div>
   </div>
 </div>
@@ -18735,6 +18747,9 @@ let bulgular   = [];    // { id, denetimId, metin, oneri, tur, onem, durum, bolu
 window._denetimReady = window._denetimReady || false;
 let dnEditId = null, bgEditId = null;
 let dnFDurum = null, dnFOnem = null;
+let dnSiralama = 'yeni', dnSadeceAcik = false;
+function dnSirala(k) { dnSiralama = k; denetimRender(); }
+function dnAcikFiltre() { dnSadeceAcik = !dnSadeceAcik; denetimRender(); }
 let dnKapali = {};      // hangi denetim grubu kapalı (akordeon)
 let dnBAcik = {};       // hangi bulgu satırı açık (varsayılan kapalı; sekmeden çıkınca sıfırlanır)
 let dnBSilId = null;    // silme onayı bekleyen bulgu
@@ -18847,7 +18862,13 @@ function denetimRender() {
     try { denetimSave(); } catch (e) {}   // temizlenmiş hali kalıcılaştır + buluta yaz
   }
 
-  const liste  = dnFiltreliBulgular();
+  let liste  = dnFiltreliBulgular();
+  let dnSayisi = denetimler.length;
+  if (dnSadeceAcik) {
+    const acikDn = new Set(liste.filter(b => b.durum !== 'kapali').map(b => b.denetimId));
+    liste = liste.filter(b => acikDn.has(b.denetimId));
+    dnSayisi = acikDn.size;
+  }
   const bugun  = new Date(); bugun.setHours(0,0,0,0);
   const acikSaf = liste.filter(b => b.durum === 'acik').length;
   const devam   = liste.filter(b => b.durum === 'devam').length;
@@ -18859,10 +18880,14 @@ function denetimRender() {
   const oran   = liste.length ? Math.round(kapali / liste.length * 100) : 0;
 
   stats.innerHTML = `
-    <div class="dn-main-stat"><b>${denetimler.length}</b><span>Denetim</span></div>
+    <div class="dn-main-stat"><b>${dnSayisi}</b><span>Denetim</span></div>
     <div class="dn-main-stat"><b>${liste.length}</b><span>Bulgu</span></div>
-    <div class="dn-main-stat warn"><b>${acik}</b><span>Açık</span></div>
+    <button type="button" class="dn-main-stat warn${dnSadeceAcik?' on':''}" onclick="dnAcikFiltre()" title="Yalnız açık bulgusu olan denetimleri göster"><b>${acik}</b><span>Açık</span></button>
     <div class="dn-main-stat good"><b>%${oran}</b><span>Kapanan</span></div>`;
+
+  document.querySelectorAll('#dn-sort button').forEach(b => b.classList.toggle('on', b.dataset.s === dnSiralama));
+  const fclr = document.getElementById('dn-fclr');
+  if (fclr) fclr.style.display = dnSadeceAcik ? 'block' : 'none';
 
   if (!denetimler.length) {
     body.innerHTML = `<div style="text-align:center;padding:48px;font-size:13px;color:var(--text3);">
@@ -18874,12 +18899,19 @@ function denetimRender() {
   const grup = {};
   liste.forEach(b => { (grup[b.denetimId] = grup[b.denetimId] || []).push(b); });
 
-  const sirali = [...denetimler].sort((a,b) => (b.tarih||'').localeCompare(a.tarih||''));
+  const acikSay = d => (grup[d.id] || []).filter(b => b.durum !== 'kapali').length;
+  const kapOran = d => { const l = grup[d.id] || []; return l.length ? l.filter(b => b.durum === 'kapali').length / l.length : 1; };
+  const sirali = [...denetimler].sort((a,b) => {
+    if (dnSiralama === 'acik') return acikSay(b) - acikSay(a) || (b.tarih||'').localeCompare(a.tarih||'');
+    if (dnSiralama === 'kap')  return kapOran(a) - kapOran(b) || (b.tarih||'').localeCompare(a.tarih||'');
+    return (b.tarih||'').localeCompare(a.tarih||'');
+  });
   const govde = sirali.map(d => {
     const bl = grup[d.id] || [];
     if (!bl.length && (dnFDurum || dnFOnem || document.getElementById('dn-f-ara')?.value ||
         document.getElementById('dn-f-denetim')?.value || document.getElementById('dn-f-fab')?.value)) return '';
     const dAcik = bl.filter(b => b.durum !== 'kapali').length;
+    if (dnSadeceAcik && !dAcik) return '';
     const tarihStr = d.tarih ? new Date(d.tarih+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '-';
     if (!(d.id in dnKapali)) dnKapali[d.id] = true;
     const kapaliMi = dnKapali[d.id];
@@ -18934,6 +18966,7 @@ function denetimRender() {
       : `linear-gradient(180deg,${dFabs.map(f=>fabColor(f)).join(',')})`;
     const kapSay = bl.filter(b => b.durum === 'kapali').length;
     const ilerleme = bl.length ? Math.round(kapSay / bl.length * 100) : 0;
+    const yuksek = bl.filter(b => b.durum !== 'kapali' && b.onem === 'yuksek').length;
     const SVG_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
     const SVG_DUZ = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
     const SVG_SIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
@@ -18943,14 +18976,19 @@ function denetimRender() {
           <span class="dng-ad">${esc(d.ad)}</span>
           <span class="dng-meta">${[tarihStr, DN_TURLER[d.tur]||'', d.denetci ? esc(d.denetci) : ''].filter(Boolean).join(' · ')}</span>
           <span class="dng-r3">${dnFabListesi(d).map(f =>
-            `<span class="cfab-tag" style="background:${fabColor(f)};color:${contrastText(fabColor(f))}">${esc(f)}</span>`).join('')}<span class="dng-cnt">${bl.length} bulgu${dAcik?` · <em>${dAcik} açık</em>`:''}</span></span>
+            `<span class="cfab-tag" style="background:${fabColor(f)};color:${contrastText(fabColor(f))}">${esc(f)}</span>`).join('')}</span>
         </span>
         <span class="dng-tools">
           <button class="dng-plus" onclick="event.stopPropagation();bulguOpen(null,'${d.id}')" aria-label="Bulgu ekle" title="Bulgu ekle">${SVG_PLUS}</button>
           <svg class="dng-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
         </span>
       </div>
-      <div class="dng-prog" title="Kapanan bulgu oranı: %${ilerleme}"><i style="width:${ilerleme}%"></i></div>
+      <div class="dng-sub" onclick="dnGrupAcKapa('${d.id}')">
+        <div class="dng-bar${bl.length?'':' bos'}" title="Kapanan bulgu oranı: %${ilerleme}"><i style="width:${bl.length?100-ilerleme:0}%"></i></div>
+        <div class="dng-st">${bl.length
+          ? `<span><b>${bl.length}</b> bulgu</span><span>·</span><span class="ac">${dAcik} açık</span><span>·</span><span>${kapSay} kapalı</span>${yuksek?`<span class="hi">${yuksek} yüksek</span>`:''}<span class="pc">%${ilerleme}</span>`
+          : '<span>Henüz bulgu yok</span>'}</div>
+      </div>
       ${kapaliMi ? '' : `<div class="dn-grup-body">
         <div class="dng-act"><button class="dng-ib add" onclick="bulguOpen(null,'${d.id}')">${SVG_PLUS}Bulgu</button><span class="dng-sp"></span>
           <button class="dng-ib" onclick="denetimOpenAdd('${d.id}')">${SVG_DUZ}Düzenle</button>
@@ -18987,11 +19025,9 @@ function denetimOpenAdd(editId) {
   // Fabrika kutucukları — çoklu seçim
   const secili = dnFabListesi(d);
   document.getElementById('dn-m-fab-list').innerHTML = fabrikalar.map(f => `
-    <label class="dn-chip">
+    <label class="kx-chp" style="--c:${f.color}">
       <input type="checkbox" class="dn-fab-chk" value="${esc(f.name)}" ${secili.includes(f.name)?'checked':''}
-             onchange="dnFabSenkron()">
-      <span class="dn-dot" style="background:${f.color}"></span>
-      <span>${esc(f.name)}</span>
+             onchange="dnFabSenkron()"><i></i>${esc(f.name)}
     </label>`).join('');
   dnFabSenkron();
   document.getElementById('denetim-modal-bg').style.display = 'flex';
@@ -19011,9 +19047,9 @@ function dnFabSenkron() {
   const hepsi = Array.from(document.querySelectorAll('.dn-fab-chk'));
   const all = document.getElementById('dn-m-fab-all');
   if (all) all.checked = hepsi.length > 0 && hepsi.every(c => c.checked);
-  hepsi.forEach(c => c.closest('.dn-chip').classList.toggle('on', c.checked));
-  const allChip = document.getElementById('dn-chip-all');
-  if (allChip) allChip.classList.toggle('on', !!(all && all.checked));
+  const n = hepsi.filter(c => c.checked).length;
+  const h = document.getElementById('dn-fab-hint');
+  if (h) h.textContent = n ? n + ' fabrika seçildi' : 'Birden fazla seçebilirsiniz.';
 }
 function denetimCloseAdd() { document.getElementById('denetim-modal-bg').style.display = 'none'; dnEditId = null; }
 function denetimSubmit() {
@@ -23572,8 +23608,8 @@ function kazaRaporRender(draft,inc){
 .kx-btn.out{border-color:var(--kx-acc);color:var(--kx-acc)}
 .kx-btn.del{color:var(--kx-red)}
 /* ortada yüzen kartlar (Ekle / Ekipman / Toplu) */
-html #kontrol-modal-bg,html #kontrol-ekipman-bg,html #kontrol-toplu-bg,html #kontrol-cevre-bg{align-items:center !important;justify-content:center;padding:16px;background:rgba(10,22,34,.6);overflow:hidden}
-html #kontrol-modal-bg > .kx-card,html #kontrol-ekipman-modal,html #kontrol-toplu-modal,html #kontrol-cevre-modal{width:100% !important;max-width:440px !important;height:auto !important;max-height:calc(100dvh - 32px) !important;border-radius:18px !important;box-shadow:0 18px 48px rgba(0,0,0,.4);background:var(--surface) !important;padding:0 !important;gap:0 !important;display:flex;flex-direction:column;overflow:hidden !important}
+html #denetim-modal-bg,html #kontrol-modal-bg,html #kontrol-ekipman-bg,html #kontrol-toplu-bg,html #kontrol-cevre-bg{align-items:center !important;justify-content:center;padding:16px;background:rgba(10,22,34,.6);overflow:hidden}
+html #denetim-modal-bg > .kx-card,html #kontrol-modal-bg > .kx-card,html #kontrol-ekipman-modal,html #kontrol-toplu-modal,html #kontrol-cevre-modal{width:100% !important;max-width:440px !important;height:auto !important;max-height:calc(100dvh - 32px) !important;border-radius:18px !important;box-shadow:0 18px 48px rgba(0,0,0,.4);background:var(--surface) !important;padding:0 !important;gap:0 !important;display:flex;flex-direction:column;overflow:hidden !important}
 .kx-hd,html .kem-head,html .ktp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px !important;background:linear-gradient(135deg,#17324A,#21456a) !important;color:#fff !important;flex:none;border:0 !important}
 .kx-hd h3,.kem-head h3,.ktp-head h3{font-size:16px !important;margin:0;color:#fff !important}
 .kx-hd small,.kem-head > div > div,.ktp-head-sub{font-size:11.5px !important;opacity:.78;color:#fff !important;margin:2px 0 0 !important;line-height:1.35}
@@ -23689,6 +23725,29 @@ html #kontrol-toplu-modal .ktp-form{padding:0 !important;border:0 !important}
 html #kontrol-toplu-modal .ktp-field{padding:0 !important;border:0 !important}
 html #kontrol-toplu-modal .ktp-note-row{grid-column:auto !important}
 html .kem-foot,html .ktp-foot{flex-wrap:nowrap !important}
+
+/* ===== Denetimler: ilerleme çubuklu kart, sıralama, yeni form ===== */
+.dn-scroll > *{flex:none}
+#dn-stats button.dn-main-stat{font:inherit;color:inherit;cursor:pointer;width:100%}
+#dn-stats .dn-main-stat.on{background:rgba(192,57,43,.12)}
+.dn-sortbar{display:flex;align-items:center;gap:8px;flex:none}
+.dn-sort{flex:1;display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface2);border-radius:11px;padding:3px;gap:3px}
+.dn-sort button{height:34px;border:0;border-radius:9px;background:none;font-weight:600;font-size:11.5px;color:var(--text2);cursor:pointer;min-height:0;padding:0 2px;white-space:nowrap}
+.dn-sort button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(23,50,74,.2)}
+.dn-fclr{flex:none;height:40px;padding:0 12px;border-radius:11px;border:1px solid #C0392B;background:var(--surface);color:#C0392B;font-weight:700;font-size:12px;cursor:pointer;min-height:0}
+.dng-sub{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px;cursor:pointer}
+.dng-bar{height:8px;border-radius:99px;background:#2F9E6E;overflow:hidden;display:flex;justify-content:flex-end}
+.dng-bar.bos{background:var(--surface2)}
+.dng-bar i{display:block;height:100%;background:#C0392B}
+.dng-st{display:flex;align-items:center;gap:6px 8px;font-size:12.5px;color:var(--text2);flex-wrap:wrap}
+.dng-st b{color:var(--text)}
+.dng-st .ac{color:#C0392B;font-weight:700}
+.dng-st .hi{font-size:11px;font-weight:700;background:rgba(192,57,43,.12);color:#C0392B;border-radius:99px;padding:2px 8px;white-space:nowrap}
+.dng-st .pc{margin-left:auto;font-weight:800;color:var(--text)}
+.dng-hd{padding-bottom:10px !important}
+.dn-fabrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.dn-fabrow::-webkit-scrollbar{display:none}
+.dn-fabrow .kx-chp{--c:var(--kx-acc)}
 /* Periyodik Kontroller grup başlığı biraz sadeleşsin */
 #kontrol-body .kontrol-ekipman-toolbar{display:none !important}
 </style>
