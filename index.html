@@ -25257,12 +25257,77 @@ function bmSonraki(iso, per) {
   const [y, a, g] = iso.split('-'); return `${g}.${a}.${+y + +p.val}`;
 }
 const BM_STOP = new Set(['kontrol', 'kontrolu', 'ekipman', 'ekipmani', 'tesisat', 'tesisati', 'sistemi', 'sistem', 'periyodik', 'takibi', 'olcumu', 'analizi', 'ekipmanlari', 'tesisatlari']);
+const BM_MAKINE_ES = {
+  'yangin-algilama': ['yangin alarm', 'yangin alarm sistemi', 'yangin alarm ve uyari', 'yangin ihbar', 'yangin uyari', 'yangin algilama', 'yangin dedeksiyon'],
+  'yangin-mekanik': ['yangin tesisati', 'yangin mekanik', 'yangin sondurme tesisati'],
+  'yangin-pompa': ['yangin pompasi', 'yangin pompa grubu', 'yangin pompa'],
+  'yangin-dolabi': ['yangin dolabi', 'yangin dolaplari', 'yangin hortumu'],
+  'sprinkler': ['sprinkler', 'yagmurlama', 'otomatik yagmurlama'],
+  'hidrant': ['hidrant', 'yangin hidranti'],
+  'gazli-sondurme': ['gazli sondurme', 'fm200', 'fm 200', 'novec', 'inergen', 'co2 sondurme'],
+  'elektrik-tesisati': ['elektrik tesisati', 'elektrik ic tesisat', 'ic tesisat', 'kuvvet tesisati', '~pano', '~aydinlatma'],
+  'topraklama': ['topraklama', 'topraklama direnci', 'toprak direnci'],
+  'yildirimdan-korunma': ['paratoner', 'yildirimdan korunma', 'yildirim'],
+  'jenerator': ['jenerator', 'dizel jenerator', 'elektrik uretim grubu'],
+  'transformator': ['transformator', 'trafo'],
+  'akumulator': ['akumulator', 'aku odasi'],
+  'klima': ['klima', 'iklimlendirme', 'chiller'],
+  'havalandirma': ['havalandirma', 'havalandirma sistemi'],
+  'forklift': ['forklift', 'fork lift', 'akulu forklift', 'dizel forklift', 'lpg forklift', 'istif araci'],
+  'transpalet': ['transpalet', 'palet transpaleti'],
+  'istif-makinesi': ['istif makinesi', 'reach truck'],
+  'koprulu-kren': ['kopru kren', 'koprulu kren', 'gezer kren', 'tavan krani'],
+  'portal-kren': ['portal kren'],
+  'mobil-kren': ['mobil kren', 'mobil vinc', 'teleskopik vinc', 'hidrolik vinc'],
+  'kule-kren': ['kule kren'],
+  'yukleyici-kren': ['yukleyici kren', 'kamyon ustu vinc'],
+  'monoray-kren': ['monoray'],
+  'caraskal': ['caraskal', 'palanga', 'zincirli palanga', 'elektrikli palanga'],
+  'ysip': ['sepetli platform', 'makasli platform', 'yukseltilebilen', 'man lift', 'sepetli vinc', 'akulu platform'],
+  'servis-asansoru': ['asansor', 'servis asansoru', 'yuk asansoru', 'insan tasiyan asansor'],
+  'insaat-asansoru': ['insaat asansoru'],
+  'tasit-kaldirma': ['tasit kaldirma', 'arac kaldirma', 'dort kolonlu'],
+  'kriko': ['kriko'],
+  'hareketli-yukleme-rampasi': ['yukleme rampasi', 'hareketli rampa'],
+  'kuyruktan-kaldirici': ['kuyruktan kaldirici', 'hidrolik kuyruk'],
+  'yuruyen-merdiven': ['yuruyen merdiven', 'yuruyen yol'],
+  'yuruyen-bant': ['yuruyen bant'],
+  'kaldirma-aksesuarlari': ['kaldirma aksesuari', 'zincir sapan', 'halat sapan', 'sapan', 'travers', 'mapa'],
+  'yapi-iskelesi': ['yapi iskelesi', 'iskele'],
+  'buhar-kazani': ['buhar kazani'],
+  'kalorifer-sicak-su-kazani': ['kalorifer kazani', 'sicak su kazani'],
+  'kizgin-yag-kazani': ['kizgin yag'],
+  'basincli-hava-tanki': ['hava tanki', 'basincli hava tanki', 'hava deposu'],
+  'kompresor-hava-tanki': ['kompresor', 'hava kompresoru'],
+  'lpg-tanki': ['lpg tanki', 'lpg', 'sivilastirilmis petrol gazi'],
+  'kriyojenik-tank': ['kriyojenik', 'sivi azot', 'azot tanki', 'oksijen tanki', 'argon tanki'],
+  'hidrofor-genlesme': ['hidrofor', 'genlesme tanki'],
+  'mekanik-pres': ['mekanik pres', 'eksantrik pres'],
+  'hidrolik-pres': ['hidrolik pres'],
+  'pnomatik-pres': ['pnomatik pres', 'pnematik pres'],
+  'abkant-pres': ['abkant', 'sac bukme'],
+  'giyotin-makas': ['giyotin', 'sac kesme makasi'],
+  'torna': ['torna', 'cnc torna'],
+  'freze': ['freze', 'cnc freze'],
+  'delme-makinesi': ['matkap', 'kolon matkap', 'delme makinesi'],
+  'serit-testere': ['serit testere'],
+  'sabit-taslama': ['taslama makinesi', 'tas motoru', 'sabit taslama'],
+  'endustriyel-raf': ['raf sistemi', 'depo rafi', 'palet rafi', 'endustriyel raf'],
+  'endustriyel-kapi': ['endustriyel kapi', 'rulo kapi', 'hizli kapi'],
+  'seksiyonel-kapi': ['seksiyonel kapi', 'seksiyonel'],
+  'ekskavator': ['ekskavator', 'hidrolik kazici'],
+  'yukleyici': ['yukleyici', 'loder', 'lodder'],
+  'kazici-yukleyici': ['kazici yukleyici', 'bekoloder', 'beko loder'],
+  'damperli-kamyon': ['damperli kamyon'],
+  'beton-pompasi': ['beton pompasi']
+};
 function bmMakineKat() {
   const L = [];
   (typeof KONTROL_EKIPMAN_KATALOG !== 'undefined' ? KONTROL_EKIPMAN_KATALOG : []).forEach(k => k.items.forEach(([key, ad]) => {
     const t = BME.tok(ad), a = [[t.join(' '), 14]], gor = new Set();
     for (let i = 0; i + 1 < t.length; i++) { const f = t[i] + ' ' + t[i + 1]; if (!gor.has(f)) { gor.add(f); a.push([f, 6]); } }
     t.forEach(w => { if (w.length >= 5 && !gor.has(w)) { gor.add(w); a.push([w, BM_STOP.has(w) ? 1 : 4]); } });
+    (BM_MAKINE_ES[key] || []).forEach(f => { const z = f[0] === '~'; a.push([z ? f.slice(1) : f, z ? 4 : 12]); });
     L.push({ id: key, ad, not: '', kisa: ad, tip: 'periyodik', tarih: 'rapor', periyot: '1 Yıl', a, n: [], genel: [], katAd: k.ad });
   }));
   return L;
@@ -25879,6 +25944,27 @@ function bmEkrSik() {
 function bmSikSec(k) { BM.sik = k; try { localStorage.setItem(BM_LS_SIK, k); } catch (e) {} bmCiz(); }
 
 /* ===== 7. Onay ve kayıt ===== */
+// Yeni belgelerin gideceği satır/alt kayıttaki eski belgeler (yeni belgeden önceki tarihliler)
+function bmEskiOnizle(L) {
+  const kap = new Map();
+  L.forEach(b => {
+    const k = bmKat(b.kat); if (!k || !b.fab) return;
+    const it = bmSatirBul(BM.grup, k, b.fab); if (!it) return;
+    let c = it;
+    if (b.alt) { if (b.alt.t === 'var') c = (it.altlar || []).find(x => x.id === b.alt.id) || null; else c = null; }
+    if (!c) return;
+    const t = bmBolumTarih(b), o = kap.get(c) || { c, min: '', yok: false };
+    if (!t) o.yok = true; else if (!o.min || t < o.min) o.min = t;
+    kap.set(c, o);
+  });
+  const liste = []; let n = 0;
+  kap.forEach(o => {
+    if (o.yok || !o.min) return;
+    const docs = (o.c.belgeler || []).filter(x => !x.tarih || x.tarih < o.min);
+    if (docs.length) { liste.push({ c: o.c, docs }); n += docs.length; }
+  });
+  return { n, liste };
+}
 function bmEkrOnay() {
   const L = bmHazirlar(), atla = BM.bol.length - L.length;
   const bos = BM.bol.filter(b => !bmHazirMi(b)).reduce((s, b) => s + b.sayfalar.length, 0);
@@ -25887,10 +25973,16 @@ function bmEkrOnay() {
   ${L.map(b => { const k = bmKat(b.kat); const alt = bmAltAd(b); return `<div class="kv"><span>${esc((k.kisa || k.ad).replace(' Takibi', '').replace(' Kontrolü', ''))}${alt ? ' › ' + esc(alt) : ''}</span><b>${bmFmt(bmBolumTarih(b))}</b></div>`; }).join('')}</div>
   ${atla ? `<div class="warn">${bos} sayfa (${atla} belge) için kategori seçilmedi, kayda işlenmeyecek.</div>` : ''}
   <div class="eff">Her belge ilgili satıra eklenir, tarihler kayıt tipine göre güncellenir. Sonuç alanına dokunulmaz.</div>
+  <label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.eskiSil ? 'checked' : ''} onchange="BM.eskiSil=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">Aynı satırdaki eski belgeleri sil</b><small style="color:var(--text2);font-size:11.5px">${BM.eskiSil ? (bmEskiOnizle(L).n ? bmEskiOnizle(L).n + ' eski belge kalıcı silinecek' : 'Silinecek eski belge yok') : 'Yeni belgeden önceki tarihli PDF\'ler silinir'}</small></span></label>
   ${sb ? `<div class="card"><div class="kv"><span>Dosya boyutu (tahmini)</span><b>${bmMB(sb.once)} → ${bmMB(sb.sonra)} MB</b></div></div>` : ''}</div>` + bmBtn(['Geri', "bmGeri('onay')"], 'bmOnayAc()', 'Kayda işle', !L.length);
 }
 function bmOnayAc() {
-  const n = bmHazirlar().length;
+  const n = bmHazirlar().length, es = BM.eskiSil ? bmEskiOnizle(bmHazirlar()) : null;
+  if (es && es.n) {
+    const adlar = es.liste.reduce((a, o) => a.concat(o.docs.map(x => x.ad)), []);
+    isgOnay({ baslik: `${n} belge işlensin, ${es.n} eski belge silinsin mi?`, mesaj: 'Silinecek PDF\'ler kalıcı silinir, geri alınamaz:\n' + adlar.slice(0, 6).join('\n') + (adlar.length > 6 ? '\n… +' + (adlar.length - 6) + ' belge' : ''), evet: 'Kayda işle ve sil', iptal: 'Vazgeç' }, bmIsle);
+    return;
+  }
   isgOnay({ baslik: `${n} belge kayda işlensin mi?`, mesaj: 'Belgeler satırlara eklenir ve tarihler güncellenir. Sonradan her belgeyi satırdan silebilirsin.', evet: 'Kayda işle', iptal: 'Vazgeç', tehlike: false }, bmIsle);
 }
 function bmEkrIlerle() {
@@ -25922,6 +26014,7 @@ function bmOgrenEkle(b) {
 async function bmIsle() {
   const L = bmHazirlar(); if (!L.length) return;
   if (!window._fbBelge || navigator.onLine === false) { toast('Belgeler buluta kaydedilir, internet bağlantısı gerekir'); return; }
+  const silPlan = BM.eskiSil ? bmEskiOnizle(L) : null, silKimlik = silPlan ? silPlan.liste.map(o => ({ c: o.c, ids: o.docs.map(x => x.id) })) : [];
   BM.calisiyor = true; BM.durdur = false; BM.isle = { n: L.length, i: 0, ad: '', adim: '' };
   const sv = BM.ornek ? BM.sik : '';
   BM.ekr = 'ilerle'; bmCiz();
@@ -25936,19 +26029,23 @@ async function bmIsle() {
       BM.isle.adim = 'Buluta kaydediliyor'; bmCiz();
       const id = bmUid(); await bmBlobYaz(id, pdf.u8);
       once += pdf.ham; sonra += pdf.u8.length;
-      const doc = { id, ad: bmAd(b), tarih: bmBolumTarih(b), sayfa: b.sayfalar.length, boyut: pdf.u8.length, th: d.sayfalar[b.sayfalar[0]].th, ts: Date.now(), kurum: b.kurum || '', belgeNo: b.belgeNo || '', kaynak: d.ad };
+      const doc = { id, ad: bmAd(b), tarih: bmBolumTarih(b), sayfa: b.sayfalar.length, boyut: pdf.u8.length, th: d.sayfalar[b.sayfalar[0]].th, ts: Date.now(), kurum: b.kurum || '', belgeNo: b.belgeNo || '', kaynak: d.ad, duz: b.duz || '', gec: b.gec || '' };
       bmKayda(b, k, doc);
       bmOgrenEkle(b);
       kontrolSave(); eklenen++;
     }
     BM.isle.i = L.length;
   } catch (e) { if (e.message !== 'durdu') { console.error(e); hata = e.message || 'Bilinmeyen hata'; } else hata = 'İşlem durduruldu'; }
+  let silN = 0;
+  if (!hata) { for (const o of silKimlik) { for (const id of o.ids) { try { await bmBlobSil(id); silN++; } catch (e) { console.error(e); } } o.c.belgeler = (o.c.belgeler || []).filter(x => !o.ids.includes(x.id)); } if (silN) kontrolSave(); }
+  BM.eskiSil = false;
   await bmOcrKapat();
   try { localStorage.setItem('bm_ogren_v1', JSON.stringify(window.bmOgren)); if (window._fbSaveKontrol) window._fbSaveKontrol(); } catch (e) {}
   kontrolGrupAcik[grupAcik] = true; kontrolRender(); if (typeof dashRender === 'function') dashRender();
   BM.calisiyor = false;
   const fark = once && sonra < once ? ' (' + bmMB(once) + ' → ' + bmMB(sonra) + ' MB)' : '';
   BM.sonuc = { baslik: hata ? 'Kısmen tamamlandı' : 'Kayda işlendi', alt: eklenen + ' / ' + L.length + ' belge eklendi', satirlar: [['Eklenen belge', String(eklenen)], ['Dosya boyutu', sonra ? bmMB(sonra) + ' MB' + fark : '—']], not: hata ? 'Hata: ' + hata + '. Eklenemeyen belgeler için işlemi yeniden başlatabilirsin.' : '' };
+  if (silN) BM.sonuc.satirlar.push(['Silinen eski belge', String(silN)]);
   bmGit('bitti');
 }
 // Aynı kayıt içinde aynı ad varsa sona -1, -2 … eklenir (ilk belge de -1 olur)
@@ -26083,7 +26180,7 @@ async function bmGoruntule(itemId, docId) {
   const L = bmTumBelgeler(it), doc = L.find(x => x.id === docId); if (!doc) return;
   Object.assign(BV, { it, doc, pdf: null, p: 1, z: 1, x: 0, y: 0, u8: null });
   const vw = bmEl('bm-vw'); vw.classList.add('on'); document.body.style.overflow = 'hidden';
-  vw.innerHTML = `<div class="h"><button onclick="bmVKapat()">✕</button><div style="flex:1;min-width:0"><b>${esc(doc.ad)}.pdf</b><small>Sayfa <span id="bv-pn">1</span> / <span id="bv-nn">${doc.sayfa || 1}</span></small></div><button title="İndir" onclick="bmVIndir()">⬇</button><button title="Sil" onclick="bmVSil()">🗑</button></div><div class="st" id="bv-st"><div class="ms">Belge açılıyor…</div></div><div class="f"><button onclick="bmVSayfa(-1)">‹</button><button onclick="bmVZoom(-.25)">−</button><span id="bv-zl">100%</span><button onclick="bmVZoom(.25)">＋</button><button onclick="bmVSayfa(1)">›</button></div>`;
+  vw.innerHTML = `<div class="h"><button onclick="bmVKapat()">✕</button><div style="flex:1;min-width:0"><b>${esc(doc.ad)}.pdf</b><small>Sayfa <span id="bv-pn">1</span> / <span id="bv-nn">${doc.sayfa || 1}</span></small></div><button title="İndir" onclick="bmVIndir()">⬇</button><button title="Başka kategoriye taşı" onclick="bmTasiAc()">⇄</button><button title="Sil" onclick="bmVSil()">🗑</button></div><div class="st" id="bv-st"><div class="ms">Belge açılıyor…</div></div><div class="f"><button onclick="bmVSayfa(-1)">‹</button><button onclick="bmVZoom(-.25)">−</button><span id="bv-zl">100%</span><button onclick="bmVZoom(.25)">＋</button><button onclick="bmVSayfa(1)">›</button></div>`;
   try {
     const js = await bmPdfJs(); BV.u8 = await bmBlobOkuBulut(doc.id);
     BV.pdf = await js.getDocument({ data: BV.u8.slice(0) }).promise; BV.n = BV.pdf.numPages;
@@ -26116,6 +26213,66 @@ function bmVOlay() {
 }
 function bmVKapat() { const vw = bmEl('bm-vw'); vw.classList.remove('on'); vw.innerHTML = ''; try { BV.pdf && BV.pdf.destroy(); } catch (e) {} BV.pdf = null; if (!(bmEl('bm-bg') && bmEl('bm-bg').classList.contains('on'))) document.body.style.overflow = ''; }
 function bmVIndir() { if (!BV.u8) return; afIndir(new Blob([BV.u8], { type: 'application/pdf' }), (BV.doc.ad || 'belge').replace(/[\\/:*?"<>|]/g, '-') + '.pdf'); }
+// Yanlış kategoriye düşen belgeyi doğru satıra / alt kayda taşı
+function bmTasiHedefSatir(grup, kid, fab) { const kat = bmKatListe(grup).find(x => x.id === kid); return kat ? bmSatirBul(grup, kat, fab) : null; }
+function bmTasiAc() {
+  const { it, doc } = BV; if (!doc) return;
+  const grup = kontrolGrupId(it), L = bmKatListe(grup), simdi = bmSatirAnahtar(it);
+  const sec = [], gruplu = new Map();
+  L.forEach(k => { const o = `<option value="${esc(k.id)}"${k.id === simdi ? ' selected' : ''}>${esc(k.ad)}${k.id === simdi ? ' (şimdiki)' : ''}</option>`; if (k.katAd) { if (!gruplu.has(k.katAd)) gruplu.set(k.katAd, []); gruplu.get(k.katAd).push(o); } else sec.push(o); });
+  gruplu.forEach((v, ad) => sec.push(`<optgroup label="${esc(ad)}">${v.join('')}</optgroup>`));
+  const eski = bmEl('bm-mini'); if (eski) eski.remove();
+  const bg = document.createElement('div'); bg.id = 'bm-mini'; bg.className = 'isg-onay-bg'; bg.style.zIndex = 100001;
+  bg.innerHTML = `<div class="isg-onay-card" role="dialog" aria-modal="true"><div class="isg-onay-b">Belgeyi taşı</div><div class="isg-onay-m">${esc(doc.ad)}.pdf için doğru kategoriyi seç. Ad ve tarihler yeni kategoriye göre güncellenir.</div><div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px"><select class="kx-in" id="bm-tk" onchange="bmTasiKat()">${sec.join('')}</select><select class="kx-in" id="bm-ta"></select></div><div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">Vazgeç</button><button class="isg-onay-btn ok" data-k="evet">Taşı</button></div></div>`;
+  bg.addEventListener('click', e => {
+    if (e.target === bg) { bg.remove(); return; }
+    const k = e.target.closest('[data-k]'); if (!k) return;
+    if (k.dataset.k === 'evet') { if (!bmTasiYap(bmEl('bm-tk').value, bmEl('bm-ta').value)) return; }
+    bg.remove();
+  });
+  document.body.appendChild(bg); bmTasiKat();
+}
+function bmTasiKat() {
+  const { it } = BV, grup = kontrolGrupId(it), fab = kontrolKayitFabrikalari(it)[0] || it.fab;
+  const h = bmTasiHedefSatir(grup, bmEl('bm-tk').value, fab), a = h ? (h.altlar || []) : [];
+  const ta = bmEl('bm-ta'); ta.innerHTML = '<option value="">Ana satır</option>' + a.map(x => `<option value="${esc(x.id)}">${esc(x.ad)}${x.no ? ' · ' + esc(x.no) : ''}</option>`).join('');
+  ta.style.display = a.length ? '' : 'none';
+}
+function bmTasiYap(kid, altId) {
+  const { it, doc } = BV, grup = kontrolGrupId(it), L = bmKatListe(grup), kat = L.find(x => x.id === kid); if (!kat || !doc) return false;
+  const fab = kontrolKayitFabrikalari(it)[0] || it.fab;
+  let kaynak = (it.belgeler || []).some(x => x.id === doc.id) ? it : (it.altlar || []).find(a => (a.belgeler || []).some(x => x.id === doc.id));
+  if (!kaynak) return false;
+  let hed = bmSatirBul(grup, kat, fab), yeniSatir = false;
+  if (!hed) { hed = bmSatirYap(grup, kat, fab); yeniSatir = true; }
+  let kon = hed, altAd = '';
+  if (altId) { const a = (hed.altlar || []).find(x => x.id === altId); if (a) { kon = a; altAd = a.ad; } }
+  if (kon === kaynak) { toast('Belge zaten bu kayıtta'); return false; }
+  if (yeniSatir) kontrolItems.push(hed);
+  const kk = L.find(x => x.id === bmSatirAnahtar(it)), dz = (d, tip) => d.duz || (tip === 'sureli' ? '' : (d.tarih || ''));
+  const eskiTarih = dz(doc, kk && kk.tip);
+  kaynak.belgeler = kaynak.belgeler.filter(x => x.id !== doc.id);
+  if (eskiTarih && kaynak.lastDate === eskiTarih) {
+    const kalan = kaynak.belgeler.map(d => dz(d, kk && kk.tip)).filter(Boolean).sort();
+    if (kalan.length) kaynak.lastDate = kalan[kalan.length - 1];
+    else if (!kaynak.belgeler.length) { kaynak.lastDate = ''; if (kaynak === it) it.bitis = ''; }
+  }
+  const ad = `${kat.kisa || kat.ad}${altAd ? ' – ' + altAd : ''}${doc.tarih ? ' - ' + bmFmt(doc.tarih) : ''}${fab ? ' (' + bmFabKisaAd(fab) + ')' : ''}`;
+  if (!Array.isArray(kon.belgeler)) kon.belgeler = [];
+  doc.ad = bmAdBenzersiz(kon.belgeler, ad); kon.belgeler.push(doc);
+  const nd = dz(doc, kat.tip);
+  if (nd && (!kon.lastDate || nd >= kon.lastDate)) {
+    kon.lastDate = nd;
+    if (kon === hed) {
+      if (kat.tip === 'sureli') hed.bitis = doc.gec || doc.tarih || '';
+      if (kat.tip === 'olay' || kat.tip === 'tekil') hed.takip = kat.tip;
+      if (doc.kurum && !hed.firm) hed.firm = doc.kurum;
+      if (doc.belgeNo && !hed.belgeNo) hed.belgeNo = doc.belgeNo;
+    }
+  }
+  kontrolSatirAcik.add(hed.id); kontrolSave(); bmVKapat(); kontrolRender(); toast('Belge taşındı: ' + (kat.kisa || kat.ad));
+  return true;
+}
 function bmVSil() {
   const { it, doc } = BV; if (!doc) return;
   isgOnay({ baslik: 'Belge silinsin mi?', mesaj: `${doc.ad}.pdf kalıcı silinir. Bu işlem geri alınamaz.`, evet: 'Sil', iptal: 'Vazgeç' }, async () => {
