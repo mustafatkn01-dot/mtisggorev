@@ -25615,7 +25615,7 @@ async function bmBlobOkuBulut(id) {
   bmOnbellek.set(id, u8);
   return u8;
 }
-async function bmBlobSil(id) { bmOnbellek.delete(id); if (window._fbBelge) { try { await window._fbBelge.sil(id); } catch (e) { console.error(e); } } }
+async function bmBlobSil(id) { bmOnbellek.delete(id); try { const u = bmSurUrl.get(id); if (u) URL.revokeObjectURL(u); bmSurUrl.delete(id); } catch (e) {} if (window._fbBelge) { try { await window._fbBelge.sil(id); } catch (e) { console.error(e); } } }
 function bmTumBelgeler(it) {
   const L = (it && it.belgeler || []).slice();
   (it && it.altlar || []).forEach(a => (a.belgeler || []).forEach(x => L.push(x)));
@@ -26024,7 +26024,24 @@ function bmEkrOnay() {
   ${atla ? `<div class="warn">${bos} sayfa (${atla} belge) için kategori seçilmedi, kayda işlenmeyecek.</div>` : ''}
   <div class="eff">Her belge ilgili satıra eklenir, tarihler kayıt tipine göre güncellenir. Sonuç alanına dokunulmaz.</div>
   <label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.eskiSil ? 'checked' : ''} onchange="BM.eskiSil=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">Aynı satırdaki eski belgeleri sil</b><small style="color:var(--text2);font-size:11.5px">${BM.eskiSil ? (bmEskiOnizle(L).n ? bmEskiOnizle(L).n + ' eski belge kalıcı silinecek' : 'Silinecek eski belge yok') : 'Yeni belgeden önceki tarihli PDF\'ler silinir'}</small></span></label>
+  ${bmBirlesAday(L).length ? `<label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.birles ? 'checked' : ''} onchange="BM.birles=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">Aynı ekipmanın belgelerini tek PDF’te birleştir</b><small style="color:var(--text2);font-size:11.5px">${bmBirlesAday(L).map(g => esc(bmKat(g[0].kat).kisa || bmKat(g[0].kat).ad) + ' · ' + g.length + ' belge').slice(0, 3).join(' | ')}${bmBirlesAday(L).length > 3 ? ' …' : ''}</small></span></label>` : ''}
   ${sb ? `<div class="card"><div class="kv"><span>Dosya boyutu (tahmini)</span><b>${bmMB(sb.once)} → ${bmMB(sb.sonra)} MB</b></div></div>` : ''}</div>` + bmBtn(['Geri', "bmGeri('onay')"], 'bmOnayAc()', 'Kayda işle', !L.length);
+}
+function bmGruplar(L, birles) {
+  if (!birles) return L.map(b => [b]);
+  const m = new Map();
+  L.forEach(b => { const k = b.kat + '|' + (b.fab || '') + '|' + JSON.stringify(b.alt || null); if (!m.has(k)) m.set(k, []); m.get(k).push(b); });
+  return Array.from(m.values());
+}
+function bmBirlesAday(L) { return bmGruplar(L, true).filter(g => g.length > 1); }
+async function bmBirlesPdf(G, sv) {
+  const PL = await bmPdfLib(), out = await PL.PDFDocument.create(); let ham = 0;
+  for (const b of G) {
+    const p = await bmBolumPdf(BM.dosyalar[b.di], b.sayfalar, sv); ham += p.ham;
+    const src = await PL.PDFDocument.load(p.u8, { ignoreEncryption: true });
+    (await out.copyPages(src, src.getPageIndices())).forEach(x => out.addPage(x));
+  }
+  return { u8: await out.save(), ham };
 }
 function bmOnayAc() {
   const n = bmHazirlar().length, es = BM.eskiSil ? bmEskiOnizle(bmHazirlar()) : null;
@@ -26063,38 +26080,40 @@ function bmOgrenEkle(b) {
 }
 async function bmIsle() {
   const L = bmHazirlar(); if (!L.length) return;
+  const GR = bmGruplar(L, BM.birles);
   if (!window._fbBelge || navigator.onLine === false) { toast('Belgeler buluta kaydedilir, internet bağlantısı gerekir'); return; }
   const silPlan = BM.eskiSil ? bmEskiOnizle(L) : null, silKimlik = silPlan ? silPlan.liste.map(o => ({ c: o.c, ids: o.docs.map(x => x.id) })) : [];
-  BM.calisiyor = true; BM.durdur = false; BM.isle = { n: L.length, i: 0, ad: '', adim: '' };
+  BM.calisiyor = true; BM.durdur = false; BM.isle = { n: GR.length, i: 0, ad: '', adim: '' };
   const sv = BM.ornek ? BM.sik : '';
   BM.ekr = 'ilerle'; bmCiz();
   let eklenen = 0, once = 0, sonra = 0, hata = '';
   const grupAcik = BM.grup;
   try {
-    for (let n = 0; n < L.length; n++) {
+    for (let n = 0; n < GR.length; n++) {
       if (BM.durdur) throw new Error('durdu');
-      const b = L[n], d = BM.dosyalar[b.di], k = bmKat(b.kat);
+      const G = GR[n], b = G.length > 1 ? G.slice().sort((x, y) => String(bmBolumTarih(y)).localeCompare(String(bmBolumTarih(x))))[0] : G[0], d = BM.dosyalar[b.di], k = bmKat(b.kat);
       BM.isle.i = n; BM.isle.ad = bmAd(b); BM.isle.adim = 'PDF hazırlanıyor'; bmCiz();
-      const pdf = await bmBolumPdf(d, b.sayfalar, sv);
+      const pdf = G.length > 1 ? await bmBirlesPdf(G, sv) : await bmBolumPdf(d, b.sayfalar, sv);
       BM.isle.adim = 'Buluta kaydediliyor'; bmCiz();
       const id = bmUid(); await bmBlobYaz(id, pdf.u8);
       once += pdf.ham; sonra += pdf.u8.length;
-      const doc = { id, ad: bmAd(b), tarih: bmBolumTarih(b), sayfa: b.sayfalar.length, boyut: pdf.u8.length, th: d.sayfalar[b.sayfalar[0]].th, ts: Date.now(), kurum: b.kurum || '', belgeNo: b.belgeNo || '', kaynak: d.ad, duz: b.duz || '', gec: b.gec || '' };
+      const doc = { id, ad: bmAd(b), tarih: bmBolumTarih(b), sayfa: G.reduce((t, x) => t + x.sayfalar.length, 0), boyut: pdf.u8.length, th: d.sayfalar[b.sayfalar[0]].th, ts: Date.now(), kurum: b.kurum || '', belgeNo: b.belgeNo || '', kaynak: d.ad, duz: b.duz || '', gec: b.gec || '' };
+      if (G.length > 1) doc.birles = G.length;
       bmKayda(b, k, doc);
-      bmOgrenEkle(b);
+      G.forEach(x => bmOgrenEkle(x));
       kontrolSave(); eklenen++;
     }
     BM.isle.i = L.length;
   } catch (e) { if (e.message !== 'durdu') { console.error(e); hata = e.message || 'Bilinmeyen hata'; } else hata = 'İşlem durduruldu'; }
   let silN = 0;
   if (!hata) { for (const o of silKimlik) { for (const id of o.ids) { try { await bmBlobSil(id); silN++; } catch (e) { console.error(e); } } o.c.belgeler = (o.c.belgeler || []).filter(x => !o.ids.includes(x.id)); } if (silN) kontrolSave(); }
-  BM.eskiSil = false;
+  BM.eskiSil = false; BM.birles = false;
   await bmOcrKapat();
   try { localStorage.setItem('bm_ogren_v1', JSON.stringify(window.bmOgren)); if (window._fbSaveKontrol) window._fbSaveKontrol(); } catch (e) {}
   kontrolGrupSadeceAc(grupAcik); kontrolRender(); if (typeof dashRender === 'function') dashRender();
   BM.calisiyor = false;
   const fark = once && sonra < once ? ' (' + bmMB(once) + ' → ' + bmMB(sonra) + ' MB)' : '';
-  BM.sonuc = { baslik: hata ? 'Kısmen tamamlandı' : 'Kayda işlendi', alt: eklenen + ' / ' + L.length + ' belge eklendi', satirlar: [['Eklenen belge', String(eklenen)], ['Dosya boyutu', sonra ? bmMB(sonra) + ' MB' + fark : '—']], not: hata ? 'Hata: ' + hata + '. Eklenemeyen belgeler için işlemi yeniden başlatabilirsin.' : '' };
+  BM.sonuc = { baslik: hata ? 'Kısmen tamamlandı' : 'Kayda işlendi', alt: eklenen + ' / ' + GR.length + ' belge eklendi', satirlar: [['Eklenen belge', String(eklenen)], ['Dosya boyutu', sonra ? bmMB(sonra) + ' MB' + fark : '—']], not: hata ? 'Hata: ' + hata + '. Eklenemeyen belgeler için işlemi yeniden başlatabilirsin.' : '' };
   if (silN) BM.sonuc.satirlar.push(['Silinen eski belge', String(silN)]);
   bmGit('bitti');
 }
@@ -26137,7 +26156,7 @@ function bmKayda(b, k, doc) {
 /* ===== Kontrol satırı: belgeler, alt kayıtlar, sürükle-bırak ===== */
 function bmSatirBelgeHtml(it, idJs) {
   const L = it.belgeler || [], A = it.altlar || [];
-  const th = (x, aid) => `<button type="button" class="bm-t" onclick="bmGoruntule('${idJs}','${x.id}')" title="${esc(x.ad)}">${x.th ? `<img src="${x.th}" alt="">` : '<span class="nb">PDF</span>'}<span>${x.tarih ? esc(bmFmt(x.tarih).slice(0, 6) + bmFmt(x.tarih).slice(8)) : 'PDF'}</span></button>`;
+  const th = (x, aid) => `<button type="button" class="bm-t" data-bd="${esc(x.id)}" onclick="bmGoruntule('${idJs}','${x.id}')" title="${esc(x.ad)} · PC'de klasöre sürükleyip indirebilirsin">${x.th ? `<img src="${x.th}" alt="" draggable="false">` : '<span class="nb">PDF</span>'}<span>${x.tarih ? esc(bmFmt(x.tarih).slice(0, 6) + bmFmt(x.tarih).slice(8)) : 'PDF'}</span></button>`;
   return `<div class="bm-dc">
     ${L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : ''}
     ${A.map(a => `<div class="bm-alt"><div class="kv"><span>▸ ${esc(a.ad)}${a.no ? ' · ' + esc(a.no) : ''}</span><b>${a.lastDate ? esc(bmFmt(a.lastDate)) : '—'}</b></div>${(a.belgeler || []).length ? `<div class="bm-th">${a.belgeler.map(x => th(x)).join('')}</div>` : ''}<div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}','${bmJ(a.id)}')">＋ Belge</button><button type="button" class="bm-ch" onclick="bmAltSil('${idJs}','${bmJ(a.id)}')">Alt kaydı sil</button></div></div>`).join('')}
@@ -26230,7 +26249,7 @@ async function bmGoruntule(itemId, docId) {
   const L = bmTumBelgeler(it), doc = L.find(x => x.id === docId); if (!doc) return;
   Object.assign(BV, { it, doc, pdf: null, p: 1, z: 1, x: 0, y: 0, u8: null });
   const vw = bmEl('bm-vw'); vw.classList.add('on'); document.body.style.overflow = 'hidden';
-  vw.innerHTML = `<div class="h"><button onclick="bmVKapat()">✕</button><div style="flex:1;min-width:0"><b>${esc(doc.ad)}.pdf</b><small>Sayfa <span id="bv-pn">1</span> / <span id="bv-nn">${doc.sayfa || 1}</span></small></div><button title="İndir" onclick="bmVIndir()">⬇</button><button title="Başka kategoriye taşı" onclick="bmTasiAc()">⇄</button><button title="Sil" onclick="bmVSil()">🗑</button></div><div class="st" id="bv-st"><div class="ms">Belge açılıyor…</div></div><div class="f"><button onclick="bmVSayfa(-1)">‹</button><button onclick="bmVZoom(-.25)">−</button><span id="bv-zl">100%</span><button onclick="bmVZoom(.25)">＋</button><button onclick="bmVSayfa(1)">›</button></div>`;
+  vw.innerHTML = `<div class="h"><button onclick="bmVKapat()">✕</button><div style="flex:1;min-width:0"><b>${esc(doc.ad)}.pdf</b><small>Sayfa <span id="bv-pn">1</span> / <span id="bv-nn">${doc.sayfa || 1}</span>${doc.birles > 1 ? ' · ' + doc.birles + ' belge birleşik' : ''}</small></div><button title="Paylaş" aria-label="Paylaş" id="bv-pl" onclick="bmVPaylas()"${navigator.share ? '' : ' style="display:none"'}><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg></button><button title="İndir" aria-label="İndir" onclick="bmVIndir()"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></button><button title="Başka kategoriye taşı" onclick="bmTasiAc()">⇄</button><button title="Sil" onclick="bmVSil()">🗑</button></div><div class="st" id="bv-st"><div class="ms">Belge açılıyor…</div></div><div class="f"><button onclick="bmVSayfa(-1)">‹</button><button onclick="bmVZoom(-.25)">−</button><span id="bv-zl">100%</span><button onclick="bmVZoom(.25)">＋</button><button onclick="bmVSayfa(1)">›</button></div>`;
   try {
     const js = await bmPdfJs(); BV.u8 = await bmBlobOkuBulut(doc.id);
     BV.pdf = await js.getDocument({ data: BV.u8.slice(0) }).promise; BV.n = BV.pdf.numPages;
@@ -26263,6 +26282,39 @@ function bmVOlay() {
 }
 function bmVKapat() { const vw = bmEl('bm-vw'); vw.classList.remove('on'); vw.innerHTML = ''; try { BV.pdf && BV.pdf.destroy(); } catch (e) {} BV.pdf = null; if (!(bmEl('bm-bg') && bmEl('bm-bg').classList.contains('on'))) document.body.style.overflow = ''; }
 function bmVIndir() { if (!BV.u8) return; afIndir(new Blob([BV.u8], { type: 'application/pdf' }), (BV.doc.ad || 'belge').replace(/[\\/:*?"<>|]/g, '-') + '.pdf'); }
+async function bmVPaylas() {
+  if (!BV.u8) return;
+  const ad = (BV.doc.ad || 'belge').replace(/[\\/:*?"<>|]/g, '-') + '.pdf', f = new File([BV.u8], ad, { type: 'application/pdf' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: ad });
+    else toast('Bu cihazda dosya paylaşımı desteklenmiyor, İndir’i kullan');
+  } catch (e) { if (e && e.name !== 'AbortError') toast('Paylaşılamadı, İndir’i dene'); }
+}
+// PC: küçük resmi klasöre / masaüstüne sürükleyip PDF olarak bırak
+const bmSurUrl = new Map();
+async function bmSurukleHazirla(id) {
+  if (bmSurUrl.has(id)) return;
+  bmSurUrl.set(id, null);
+  try {
+    const u8 = await bmBlobOkuBulut(id);
+    bmSurUrl.set(id, URL.createObjectURL(new Blob([u8], { type: 'application/pdf' })));
+    if (bmSurUrl.size > 6) { const k = bmSurUrl.keys().next().value, u = bmSurUrl.get(k); bmSurUrl.delete(k); if (u) URL.revokeObjectURL(u); }
+  } catch (e) { bmSurUrl.delete(id); }
+}
+function bmBelgeAdiBul(id) { for (const it of kontrolItems) { const d = bmTumBelgeler(it).find(x => x.id === id); if (d) return d.ad; } return 'belge'; }
+document.addEventListener('pointerover', e => {
+  if (e.pointerType !== 'mouse') return;
+  const t = e.target.closest && e.target.closest('.bm-t[data-bd]'); if (!t) return;
+  t.draggable = true; bmSurukleHazirla(t.dataset.bd);
+});
+document.addEventListener('dragstart', e => {
+  const t = e.target.closest && e.target.closest('.bm-t[data-bd]'); if (!t) return;
+  const id = t.dataset.bd, url = bmSurUrl.get(id);
+  if (!url) { e.preventDefault(); bmSurukleHazirla(id); toast('Belge hazırlanıyor, birkaç saniye sonra tekrar sürükle'); return; }
+  const ad = bmBelgeAdiBul(id).replace(/[\\/:*?"<>|]/g, '-') + '.pdf';
+  e.dataTransfer.effectAllowed = 'copy';
+  e.dataTransfer.setData('DownloadURL', 'application/pdf:' + ad + ':' + url);
+});
 // Yanlış kategoriye düşen belgeyi doğru satıra / alt kayda taşı
 function bmTasiHedefSatir(grup, kid, fab) { const kat = bmKatListe(grup).find(x => x.id === kid); return kat ? bmSatirBul(grup, kat, fab) : null; }
 function bmTasiAc() {
