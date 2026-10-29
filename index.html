@@ -9151,11 +9151,8 @@ const RENK_PALETI = [
 
 function renderFabTags(t) {
   const list = t.fabs && t.fabs.length > 0 ? t.fabs : (t.fab ? t.fab.split(', ').map(s=>s.trim()).filter(Boolean) : []);
-  if (!list.length) return '<span class="cfab-tag" style="background:var(--text3);color:#fff">Tüm fabrikalar</span>';
-  return list.map(f => {
-    const bg = fabColor(f);
-    return `<span class="cfab-tag" style="background:${bg};color:${contrastText(bg)}">${esc(f)}</span>`;
-  }).join('');
+  if (!list.length) return '<span class="kx-fb fab-nk" style="--c:var(--text3)"><i></i>Tüm fabrikalar</span>';
+  return list.map(f => `<span class="kx-fb fab-nk" style="--c:${fabColor(f)}"><i></i>${esc(f)}</span>`).join('');
 }
 
 // ── RENK SEÇİCİ (palet + özel renk) ─────────────────────────────
@@ -23717,6 +23714,7 @@ function kazaRaporRender(draft,inc){
 .kx-bar{align-self:stretch;border-radius:0 3px 3px 0}
 .kx-nm{font-weight:700;font-size:14.5px;line-height:1.3}
 .dng-r3 .kx-fb,.kaza-card .kx-fb{font-size:12px;color:var(--text2)}
+.fab-nk{font-size:11.5px;color:var(--text2);white-space:nowrap}
 .kx-mt{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:5px;font-size:12px;color:var(--text2)}
 .kx-fb{display:inline-flex;align-items:center;gap:5px;font-weight:600}
 .kx-more{font-size:11px;font-weight:700;background:var(--kx-soft);border-radius:99px;padding:1px 7px}
