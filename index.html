@@ -10192,7 +10192,7 @@ let curMainTab = 'dash';
 function switchTab(tab) {
   curMainTab = tab;
   if (tab !== 'denetim') { dnBAcik = {}; dnBSilId = null; }
-  if (tab !== 'kontrol' && typeof kontrolSatirAcik !== 'undefined') kontrolSatirAcik.clear();
+  if (tab !== 'kontrol' && typeof kontrolSatirAcik !== 'undefined') { kontrolSatirAcik.clear(); if (typeof kontrolGrupAcik !== 'undefined') Object.keys(kontrolGrupAcik).forEach(g => { kontrolGrupAcik[g] = false; }); }
   ['dash','board','cal','per','kontrol','denetim','kaza'].forEach(t => {
     const b  = document.getElementById('tab-'+t);
     const mb = document.getElementById('mob-tab-'+t);
@@ -12321,7 +12321,7 @@ function kontrolEkipmanAddSelected() {
   });
 
   if (eklendi) {
-    kontrolGrupAcik.makine = true;
+    kontrolGrupSadeceAc('makine');
     kontrolSave();
     kontrolRender();
     if (typeof dashRender === 'function') dashRender();
@@ -12975,7 +12975,7 @@ function kontrolCevreAddSelected() {
   });
 
   if (eklendi) {
-    kontrolGrupAcik.cevre = true;
+    kontrolGrupSadeceAc('cevre');
     kontrolSave();
     kontrolRender();
     if (typeof dashRender === 'function') dashRender();
@@ -13023,9 +13023,14 @@ function kontrolInit() {
 function kontrolGrupId(it) {
   return it && KONTROL_GRUPLAR[it.grup] ? it.grup : 'makine';
 }
+// Akordeon: aynı anda yalnızca bir ana kart açık; başka karta geçince satır açıklıkları da kapanır
+function kontrolGrupSadeceAc(id) {
+  Object.keys(KONTROL_GRUPLAR).forEach(g => { kontrolGrupAcik[g] = (g === id); });
+}
 function kontrolToggleGrup(id) {
   if (!KONTROL_GRUPLAR[id]) return;
-  kontrolGrupAcik[id] = !kontrolGrupAcik[id];
+  if (kontrolGrupAcik[id]) { kontrolGrupAcik[id] = false; kontrolSatirAcik.clear(); }
+  else { kontrolSatirAcik.clear(); kontrolGrupSadeceAc(id); }
   kontrolRender();
 }
 
@@ -13125,10 +13130,20 @@ function kontrolFabrikaAtanmamisMi(it) {
 
 let kontrolSatirAcik = new Set();
 function kontrolSatirToggle(id, btn) {
-  if (kontrolSatirAcik.has(id)) kontrolSatirAcik.delete(id); else kontrolSatirAcik.add(id);
-  const row = btn && btn.closest('.kx-row');
-  if (row) row.classList.toggle('open', kontrolSatirAcik.has(id));
-  if (btn) btn.setAttribute('aria-expanded', kontrolSatirAcik.has(id) ? 'true' : 'false');
+  const row = btn && btn.closest('.kx-row'), ac = !kontrolSatirAcik.has(id);
+  if (!ac) kontrolSatirAcik.delete(id);
+  else {
+    // Akordeon: kardeş satırlar kapanır. İç içe kartta yalnızca aynı kart içindekiler, üst düzeyde diğer tüm satırlar.
+    const kap = row && row.parentElement && row.parentElement.classList.contains('ekp-kids') ? row.parentElement : null;
+    if (kap) kap.querySelectorAll(':scope > .kx-row[data-id]').forEach(r => kontrolSatirAcik.delete(r.dataset.id));
+    else kontrolSatirAcik.clear();
+    kontrolSatirAcik.add(id);
+  }
+  document.querySelectorAll('#kontrol-body .kx-row').forEach(r => {
+    const k = r.dataset.id || (r.dataset.ekp ? 'ekp:' + r.dataset.ekp : ''); if (!k) return;
+    const o = kontrolSatirAcik.has(k); r.classList.toggle('open', o);
+    const b = r.querySelector(':scope > .kx-sum'); if (b) b.setAttribute('aria-expanded', o ? 'true' : 'false');
+  });
 }
 function kontrolKartHtml(it) {
   const dl = it.daysLeft;
@@ -13355,7 +13370,7 @@ function kontrolSubmit() {
       firm, result, note
     });
   }
-  kontrolGrupAcik[grup] = true;
+  kontrolGrupSadeceAc(grup);
   kontrolSave();
   kontrolCloseAdd();
   kontrolRender();
@@ -26048,7 +26063,7 @@ async function bmIsle() {
   BM.eskiSil = false;
   await bmOcrKapat();
   try { localStorage.setItem('bm_ogren_v1', JSON.stringify(window.bmOgren)); if (window._fbSaveKontrol) window._fbSaveKontrol(); } catch (e) {}
-  kontrolGrupAcik[grupAcik] = true; kontrolRender(); if (typeof dashRender === 'function') dashRender();
+  kontrolGrupSadeceAc(grupAcik); kontrolRender(); if (typeof dashRender === 'function') dashRender();
   BM.calisiyor = false;
   const fark = once && sonra < once ? ' (' + bmMB(once) + ' → ' + bmMB(sonra) + ' MB)' : '';
   BM.sonuc = { baslik: hata ? 'Kısmen tamamlandı' : 'Kayda işlendi', alt: eklenen + ' / ' + L.length + ' belge eklendi', satirlar: [['Eklenen belge', String(eklenen)], ['Dosya boyutu', sonra ? bmMB(sonra) + ' MB' + fark : '—']], not: hata ? 'Hata: ' + hata + '. Eklenemeyen belgeler için işlemi yeniden başlatabilirsin.' : '' };
@@ -26455,7 +26470,7 @@ function ekipOzelEkle() {
   const fs = document.getElementById('ekp-fab').value, hedef = fs === '*' ? (kontrolFabs.length ? kontrolFabs : fabrikalar.map(f => f.name)) : [fs];
   const e = kontrolEkipmanBul(o.key);
   hedef.forEach(f => { ekipSatirUret(e, f).forEach(r => kontrolItems.push(r)); if (tip === 'lpg') kontrolSatirAcik.add('ekp:' + o.key + '|' + f); });
-  kontrolGrupAcik.makine = true; kontrolSave(); kontrolRender(); if (typeof dashRender === 'function') dashRender();
+  kontrolGrupSadeceAc('makine'); kontrolSave(); kontrolRender(); if (typeof dashRender === 'function') dashRender();
   toast(ad + ' eklendi · katalogda ' + (kontrolEkipmanBul(after) ? kontrolEkipmanBul(after).ad.split(' (')[0] : 'listede') + ' altına yerleşti');
   return true;
 }
