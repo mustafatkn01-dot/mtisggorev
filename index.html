@@ -12759,9 +12759,9 @@ const KONTROL_CEVRE_KATALOG = [
       ['sifir-atik','Sıfır Atık Belgesi Takibi'],
       ['kapasite-raporu','Kapasite Raporu Takibi'],
       ['atik-yonetim-plani','Atık Yönetim Planı Takibi'],
-      ['resmi-yazi-taahhut','Çevre Resmî Yazı / Taahhüt Takibi'],
       ['cevre-gorevlisi','Çevre Görevlisi / Danışmanlık Takibi'],
-      ['acil-durum-plani','Çevresel Acil Durum Planı Takibi']
+      ['acil-durum-plani','Çevresel Acil Durum Planı Takibi'],
+      ['resmi-yazi-taahhut','Çevre Resmî Yazı / Taahhüt Takibi']
     ]
   },
   {
@@ -12770,9 +12770,9 @@ const KONTROL_CEVRE_KATALOG = [
       ['atik-beyani','Atık Beyanı Takibi'],
       ['tehlikeli-atik-gonderim','Tehlikeli Atık Gönderim Takibi'],
       ['atik-yag','Atık Yağ Beyanı / Teslim Takibi'],
+      ['atik-tasima-kayit','Atık Taşıma / Teslim Formları Takibi'],
       ['ambalaj-atigi','Ambalaj Atığı Takibi'],
-      ['gecici-atik-depo','Geçici Atık Depolama Alanı Kontrolü'],
-      ['atik-tasima-kayit','Atık Taşıma / Teslim Formları Takibi']
+      ['gecici-atik-depo','Geçici Atık Depolama Alanı Kontrolü']
     ]
   },
   {
@@ -12809,11 +12809,11 @@ const KONTROL_CEVRE_KATALOG = [
     id:'beyan-rapor', ad:'Beyan ve Periyodik Raporlama', ikon:'🗂️',
     items:[
       ['yillik-cevre-beyan','Yıllık Çevre Beyanları Takibi'],
+      ['gekap-beyan','Ambalaj / GEKAP Yıllık Beyan Takibi'],
       ['atik-raporlama','Atık Raporlama / Kayıt Kontrolü'],
       ['emisyon-raporlama','Emisyon Raporlama Takibi'],
       ['cevre-performans','Çevre Performans Raporu Takibi'],
-      ['resmi-bildirim','Resmî Çevre Bildirim / Beyan Takibi'],
-      ['gekap-beyan','Ambalaj / GEKAP Yıllık Beyan Takibi']
+      ['resmi-bildirim','Resmî Çevre Bildirim / Beyan Takibi']
     ]
   }
 ];
@@ -24696,7 +24696,7 @@ function stGeri() {
 // Canlı modüller değişmez; arşivdeki fabrika hiçbir listede görünmez.
 const AF_FORMAT = 'isg-fab-arsiv';
 let afS = 'ana', afMeta = {}, afMetaOk = false, afDur = false, afBusy = false;
-const AF = { fab: '', id: '', pk: true, sec: 'b', not: '', ilerle: null, yuk: null, cak: 'ayri', ad: '' };
+const AF = { pdf: true, fab: '', id: '', pk: true, sec: 'b', not: '', ilerle: null, yuk: null, cak: 'ayri', ad: '' };
 const AF_MOD = [['den', 'Denetim'], ['bul', 'Bulgu'], ['kaza', 'Kaza'], ['rapor', 'Kaza raporu'], ['gor', 'Görev'], ['arsiv', 'Arşivli görev'], ['kontrol', 'Periyodik kontrol']];
 
 // ── ZIP (bağımlılıksız: CompressionStream + elle yazılan ZIP yapısı) ──
@@ -24741,11 +24741,11 @@ async function afZipOku(dosya) {
     if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('ZIP dizini bozuk');
     const yon = dv.getUint16(p + 10, true), crc = dv.getUint32(p + 16, true), cs = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
     const ad = dec.decode(buf.subarray(p + 46, p + 46 + nl));
-    liste[ad] = async () => {
+    liste[ad] = async (ikili) => {
       const ln = dv.getUint16(lo + 26, true), le = dv.getUint16(lo + 28, true), bas = lo + 30 + ln + le, ham = buf.subarray(bas, bas + cs);
       const u = yon === 8 ? await afInflate(ham) : ham.slice();
       if (afCrc(u) !== crc) throw new Error(ad + ' doğrulanamadı');
-      return dec.decode(u);
+      return ikili ? u : dec.decode(u);
     };
     p += 46 + nl + el + cl;
   }
@@ -24771,13 +24771,18 @@ function afTopla(ad) {
     gor: tasks.filter(t => afTek(t, ad)), arsiv: archived.filter(t => afTek(t, ad)), kontrol: kontrolItems.filter(t => afTek(t, ad))
   };
 }
-function afSay(v) { const s = {}; AF_MOD.forEach(m => { s[m[0]] = (v[m[0]] || []).length; }); s.foto = 0; AF_MOD.forEach(m => (v[m[0]] || []).forEach(r => { s.foto += depFotoRefs(r).length; })); return s; }
+function afBelgeler(v) {
+  const L = [], gor = new Set();
+  (v.kontrol || []).forEach(r => { (function yuru(o) { if (!o || typeof o !== 'object') return; if (Array.isArray(o.belgeler)) o.belgeler.forEach(x => { if (x && x.id && !gor.has(x.id)) { gor.add(x.id); L.push(x); } }); Object.values(o).forEach(yuru); })(r); });
+  return L;
+}
+function afSay(v) { const s = {}; AF_MOD.forEach(m => { s[m[0]] = (v[m[0]] || []).length; }); s.foto = 0; AF_MOD.forEach(m => (v[m[0]] || []).forEach(r => { s.foto += depFotoRefs(r).length; })); s.pdf = afBelgeler(v).length; return s; }
 function afBoyut(v) {
   let kayit = 0, foto = 0;
   AF_MOD.forEach(m => (v[m[0]] || []).forEach(r => { kayit += JSON.stringify(r).length; depFotoRefs(r).forEach(f => { foto += f.p[f.k].length; }); }));
-  return { kayit: kayit - foto, foto: foto * 0.75 };
+  return { kayit: kayit - foto, foto: foto * 0.75, pdf: afBelgeler(v).reduce((t, x) => t + (x.boyut || 0), 0) };
 }
-function afTahmin(b, sec) { const k = Math.max(1e4, b.kayit * 0.18); return sec === 'a' ? k + b.foto * 0.98 : sec === 'b' ? k + b.foto * 0.2 : k; }
+function afTahmin(b, sec) { const k = Math.max(1e4, b.kayit * 0.18) + (AF.pdf ? (b.pdf || 0) : 0); return sec === 'a' ? k + b.foto * 0.98 : sec === 'b' ? k + b.foto * 0.2 : k; }
 function afYillar(v) {
   const y = {}, ek = (iso, t) => { const yl = String(iso || '').slice(0, 4); if (!/^\d{4}$/.test(yl)) return; (y[yl] = y[yl] || { den: 0, kaza: 0 })[t]++; };
   (v.den || []).forEach(d => ek(depIso(d.tarih), 'den')); (v.kaza || []).forEach(k => ek(depIso(k.tarih) || depTs(k.createdAt), 'kaza'));
@@ -24829,9 +24834,10 @@ function afSecenek(k, t, sm, b) { return `<button type="button" class="af-opt${A
 function afCizArsivle() {
   const v = afTopla(AF.fab), s = afSay(v), b = afBoyut(v), ortak = afOrtak(AF.fab), parca = Math.max(1, Math.ceil(afTahmin(b, AF.sec) / 150e6));
   afEl().innerHTML = `<div class="dp-eff">Arşivlenince listelerde, filtrelerde, formlarda ve özetlerde görünmez. Veriler silinmez ve istediğin zaman geri alınır.</div>
-    <div class="dp-card"><div class="dp-kv"><span>Denetim · bulgu</span><b>${s.den} · ${s.bul}</b></div><div class="dp-kv"><span>Kaza · rapor</span><b>${s.kaza} · ${s.rapor}</b></div><div class="dp-kv"><span>Görev · periyodik kontrol</span><b>${s.gor + s.arsiv} · ${s.kontrol}</b></div><div class="dp-kv"><span>Fotoğraf</span><b>${s.foto} adet · ${depGB(b.foto)}</b></div>${ortak ? `<div class="dp-kv"><span>Birden çok fabrikaya bağlı kayıt</span><b>${ortak} · yerinde kalır</b></div>` : ''}</div>
+    <div class="dp-card"><div class="dp-kv"><span>Denetim · bulgu</span><b>${s.den} · ${s.bul}</b></div><div class="dp-kv"><span>Kaza · rapor</span><b>${s.kaza} · ${s.rapor}</b></div><div class="dp-kv"><span>Görev · periyodik kontrol</span><b>${s.gor + s.arsiv} · ${s.kontrol}</b></div><div class="dp-kv"><span>Fotoğraf</span><b>${s.foto} adet · ${depGB(b.foto)}</b></div>${s.pdf ? `<div class="dp-kv"><span>Belge PDF</span><b>${s.pdf} adet · ${depGB(b.pdf)}</b></div>` : ''}${ortak ? `<div class="dp-kv"><span>Birden çok fabrikaya bağlı kayıt</span><b>${ortak} · yerinde kalır</b></div>` : ''}</div>
     <button type="button" class="af-tgl" onclick="AF.pk=!AF.pk;afCiz()"><div><b>Arşiv paketi indir</b><small>Kayıtlar ZIP içinde sıkıştırılır</small></div><span class="af-sw${AF.pk ? ' on' : ''}"></span></button>
     ${AF.pk ? `<div class="dp-lb">FOTOĞRAFLAR</div>${afSecenek('a', 'Orijinal', 'Fotoğraflar aynen, kayıtlar sıkıştırılır', b)}${afSecenek('b', '1000 px küçült', 'Yaklaşık %80 küçülme · kalite düşer', b)}${afSecenek('c', 'Fotoğrafsız', 'Fotoğraflar pakete konmaz · en küçük', b)}
+    <div class="dp-lb">BELGE PDF'LERİ</div><button type="button" class="af-tgl" onclick="AF.pdf=!AF.pdf;afCiz()"><div><b>Belge PDF'leri pakete eklensin</b><small>${s.pdf} belge · ${depGB(b.pdf || 0)}</small></div><span class="af-sw${AF.pdf ? ' on' : ''}"></span></button>
     <div class="dp-eff">Paket ≈ ${depGB(afTahmin(b, AF.sec))} olacak${parca > 1 ? ' · ' + parca + ' parça (150 MB)' : ''}. Bulut verisi arşivde olduğu gibi kalır, paket ek bir kopyadır.</div>` : ''}
     <div class="dp-lb">NOT (İSTEĞE BAĞLI)</div><input class="af-in" id="af-not" maxlength="200" placeholder="Ayrılış nedeni / tarih" value="${esc(AF.not)}" oninput="AF.not=this.value">
     <div class="dp-btns"><button class="s" onclick="afGit('ana')">Vazgeç</button><button class="p" onclick="afArsivleSor()">${AF.pk ? 'Paketi indir ve arşivle' : 'Arşivle'}</button></div>`;
@@ -24857,8 +24863,10 @@ function afCizDetay() {
     <button type="button" class="af-opt d" onclick="afSilSor()"><i>🗑️</i><div><b>Kalıcı sil</b><small>Önce paket indirmeniz önerilir</small></div><span style="color:var(--text3)">›</span></button>`;
 }
 function afCizPaket() {
-  const m = afMeta[AF.id] || {}, b = { kayit: m.kayitByte || 0, foto: m.fotoByte || 0 };
+  const m = afMeta[AF.id] || {}, b = { kayit: m.kayitByte || 0, foto: m.fotoByte || 0, pdf: m.pdfByte || 0 };
+  m.say = m.say || {};
   afEl().innerHTML = `<div class="dp-lb">FOTOĞRAFLAR</div>${afSecenek('a', 'Orijinal', 'Fotoğraflar aynen, kayıtlar sıkıştırılır', b)}${afSecenek('b', '1000 px küçült', 'Yaklaşık %80 küçülme · kalite düşer', b)}${afSecenek('c', 'Fotoğrafsız', 'Fotoğraflar pakete konmaz · en küçük', b)}
+    <div class="dp-lb">BELGE PDF'LERİ</div><button type="button" class="af-tgl" onclick="AF.pdf=!AF.pdf;afCiz()"><div><b>Belge PDF'leri pakete eklensin</b><small>${m.say.pdf || 0} belge · ${depGB(b.pdf)}</small></div><span class="af-sw${AF.pdf ? ' on' : ''}"></span></button>
     <div class="dp-eff">Veriler buluttan okunup paket hazırlanır. Arşiv olduğu gibi kalır.</div>
     <div class="dp-btns"><button class="s" onclick="afGit('detay')">Vazgeç</button><button class="p" onclick="afPaketIndirBaslat()">Paketi indir</button></div>`;
 }
@@ -24915,13 +24923,22 @@ async function afPaketHazirla(id, meta, veri, sec, st) {
   const enc = {}; for (const m of AF_MOD) enc[m[0]] = await afFotoIsle(veri[m[0]] || [], sec, st);
   const dosyalar = [];
   AF_MOD.forEach(m => afParcala(enc[m[0]], 20e6).forEach((c, k) => dosyalar.push({ ad: m[0] + '-' + (k + 1) + '.json', modul: m[0], adet: c.length, str: JSON.stringify(c) })));
+  const pdfler = AF.pdf ? afBelgeler(veri) : [];
   const gruplar = []; let cur = [], boy = 0;
-  dosyalar.forEach(d => { if (cur.length && boy + d.str.length > 150e6) { gruplar.push(cur); cur = []; boy = 0; } cur.push(d); boy += d.str.length; });
+  const ekle = d => { const bo = d.str ? d.str.length : d.u8.length; if (cur.length && boy + bo > 150e6) { gruplar.push(cur); cur = []; boy = 0; } cur.push(d); boy += bo; };
+  dosyalar.forEach(ekle);
+  let pdfEksik = 0;
+  for (const x of pdfler) {
+    if (afDur) break;
+    try { const u8 = await bmBlobOkuBulut(x.id); ekle({ ad: 'belgeler/' + x.id + '.pdf', pdf: x.id, u8 }); } catch (e) { console.error(e); pdfEksik++; }
+    st.n++; if (st.n % 3 === 0) afCizIlerle();
+  }
+  AF.pdfEksik = pdfEksik;
   if (cur.length || !gruplar.length) gruplar.push(cur);
   const n = gruplar.length, say = meta.say;
   for (let i = 0; i < n; i++) {
-    const mf = { format: AF_FORMAT, v: 1, app: window.APP_VERSION || '', id, fab: { ad: meta.ad, renk: meta.renk, owner: meta.owner || '' }, tarih: meta.tarih, not: meta.not || '', foto: sec, say, yillar: meta.yillar, parca: n, parcaNo: i + 1, dosyalar: gruplar[i].map(d => ({ ad: d.ad, modul: d.modul, adet: d.adet })) };
-    const zip = await afZipYaz([{ ad: 'manifest.json', veri: JSON.stringify(mf) }, ...gruplar[i].map(d => ({ ad: d.ad, veri: d.str }))]);
+    const mf = { format: AF_FORMAT, v: 1, app: window.APP_VERSION || '', id, fab: { ad: meta.ad, renk: meta.renk, owner: meta.owner || '' }, tarih: meta.tarih, not: meta.not || '', foto: sec, say, yillar: meta.yillar, parca: n, parcaNo: i + 1, dosyalar: gruplar[i].filter(d => !d.pdf).map(d => ({ ad: d.ad, modul: d.modul, adet: d.adet })), pdfler: gruplar[i].filter(d => d.pdf).map(d => ({ ad: d.ad, id: d.pdf })) };
+    const zip = await afZipYaz([{ ad: 'manifest.json', veri: JSON.stringify(mf) }, ...gruplar[i].map(d => ({ ad: d.ad, veri: d.str || d.u8 }))]);
     afIndir(zip, `isg-arsiv-${afSlug(meta.ad)}-${i + 1}-${n}.zip`);
     await new Promise(r => setTimeout(r, 800));
   }
@@ -24936,13 +24953,13 @@ async function afBulutaYaz(id, meta, veri, st) {
 }
 function afMetaOlustur(id, ad, renk, owner, not, veri) {
   const b = afBoyut(veri), say = afSay(veri);
-  return { ad, renk, owner: owner || '', tarih: new Date().toISOString().slice(0, 10), not: not || '', say, yillar: afYillar(veri), bytes: Math.round(b.kayit * 1 + b.foto / 0.75), kayitByte: Math.round(b.kayit), fotoByte: Math.round(b.foto), v: 1 };
+  return { ad, renk, owner: owner || '', tarih: new Date().toISOString().slice(0, 10), not: not || '', say, yillar: afYillar(veri), bytes: Math.round(b.kayit * 1 + b.foto / 0.75), kayitByte: Math.round(b.kayit), fotoByte: Math.round(b.foto), pdfByte: Math.round(b.pdf || 0), v: 1 };
 }
 async function afArsivleBasla() {
   afBusy = true; afDur = false;
   const ad = AF.fab, f = fabrikalar.find(x => x.name === ad); if (!f) { afBusy = false; return; }
   const veri = afTopla(ad), sec = AF.sec, id = afYeniId(), toplam = AF_MOD.reduce((s, m) => s + veri[m[0]].length, 0), foto = afSay(veri).foto;
-  const st = AF.ilerle = { baslik: 'Arşiv hazırlanıyor', ad: ad + (AF.pk ? ' · paket hazırlanıyor' : ' · buluta yazılıyor'), n: 0, N: (AF.pk && sec === 'b' ? foto : 0) + toplam, ek: '', ekAd: '' };
+  const st = AF.ilerle = { baslik: 'Arşiv hazırlanıyor', ad: ad + (AF.pk ? ' · paket hazırlanıyor' : ' · buluta yazılıyor'), n: 0, N: (AF.pk && sec === 'b' ? foto : 0) + (AF.pk && AF.pdf ? afSay(veri).pdf : 0) + toplam, ek: '', ekAd: '' };
   afS = 'ilerle'; afCiz();
   const kilit = await depBeklet();
   try {
@@ -24963,7 +24980,7 @@ async function afArsivleBasla() {
     saveFabrikalar(); parametreSenkron(); save(); saveArchive(); kontrolSave(); denetimSave(); kazaSave();
     try { renderSettingsPanel(); } catch (e) {}
     afMeta[id] = meta; try { localStorage.removeItem(DEPO_LS); } catch (e) {}
-    AF.ilerle = { baslik: 'Arşivlendi', alt: ad, id, satirlar: [['Denetim · bulgu', meta.say.den + ' · ' + meta.say.bul + ' ✓'], ['Kaza · rapor', meta.say.kaza + ' · ' + meta.say.rapor + ' ✓'], ['Görev · periyodik kontrol', meta.say.gor + meta.say.arsiv + ' · ' + meta.say.kontrol + ' ✓'], ['Fotoğraf', meta.say.foto + ' ✓']], not: parca ? 'Paket ' + parca + ' dosya olarak indirildi.' : '' };
+    AF.ilerle = { baslik: 'Arşivlendi', alt: ad, id, satirlar: [['Denetim · bulgu', meta.say.den + ' · ' + meta.say.bul + ' ✓'], ['Kaza · rapor', meta.say.kaza + ' · ' + meta.say.rapor + ' ✓'], ['Görev · periyodik kontrol', meta.say.gor + meta.say.arsiv + ' · ' + meta.say.kontrol + ' ✓'], ['Fotoğraf', meta.say.foto + ' ✓']].concat(meta.say.pdf ? [['Belge PDF', meta.say.pdf + (AF.pk && AF.pdf ? ' ✓' : ' · bulutta')]] : []), not: parca ? 'Paket ' + parca + ' dosya olarak indirildi.' + (AF.pdfEksik ? ' ' + AF.pdfEksik + ' belge okunamadığı için pakete konmadı.' : '') : '' };
     afS = 'bitti';
   } catch (e) {
     console.error(e); AF.ilerle = { baslik: e.message === 'durdu' ? 'Durduruldu' : 'Arşivlenemedi', alt: ad, satirlar: [], not: e.message === 'durdu' ? 'Hiçbir veri silinmedi; fabrika aktif.' : 'Hata: ' + (e.message || e) + '. Hiçbir veri silinmedi.' }; afS = 'bitti';
@@ -24983,7 +25000,7 @@ async function afVeriOku(id, modul) {
 async function afPaketIndirBaslat() {
   if (afBusy) return; if (!afOkunur()) { toast('Çevrimdışı: internet gerekir'); return; }
   afBusy = true; afDur = false; const m = afMeta[AF.id], id = AF.id, sec = AF.sec;
-  const st = AF.ilerle = { baslik: 'Paket hazırlanıyor', ad: m.ad + ' · veriler okunuyor', n: 0, N: sec === 'b' ? (m.say.foto || 0) : 0 };
+  const st = AF.ilerle = { baslik: 'Paket hazırlanıyor', ad: m.ad + ' · veriler okunuyor', n: 0, N: (sec === 'b' ? (m.say.foto || 0) : 0) + (AF.pdf ? (m.say.pdf || 0) : 0) };
   afS = 'ilerle'; afCiz();
   try {
     const veri = await afVeriOku(id); st.ad = m.ad + ' · paket hazırlanıyor'; afCizIlerle();
@@ -25054,9 +25071,10 @@ async function afDosyaSec(files) {
     }
     const eksik = []; for (let i = 1; i <= ref.parca; i++) if (!parcalar[i]) eksik.push(i);
     if (eksik.length) throw new Error('Eksik parça: ' + eksik.join(', ') + ' / ' + ref.parca);
-    const veri = {}; AF_MOD.forEach(m => { veri[m[0]] = []; });
+    const veri = {}; AF_MOD.forEach(m => { veri[m[0]] = []; }); const pdfler = [];
+    for (const no of Object.keys(parcalar)) { const { mf, z } = parcalar[no]; (mf.pdfler || []).forEach(x => { if (z[x.ad]) pdfler.push({ id: x.id, oku: () => z[x.ad](true) }); }); }
     for (const no of Object.keys(parcalar)) { const { mf, z } = parcalar[no]; for (const d of mf.dosyalar) { if (!z[d.ad]) throw new Error(d.ad + ' pakette yok'); const arr = JSON.parse(await z[d.ad]()); if (arr.length !== d.adet) throw new Error(d.ad + ' kayıt sayısı tutmuyor'); arr.forEach(r => veri[d.modul].push(r)); } }
-    AF.yuk = { mf: ref, parca: ref.parca, veri, ad: ref.fab.ad }; AF.cak = 'ayri'; afGit('onizle');
+    AF.yuk = { mf: ref, parca: ref.parca, veri, pdfler, ad: ref.fab.ad }; AF.cak = 'ayri'; afGit('onizle');
   } catch (e) { console.error(e); say(e.message || 'Paket okunamadı'); }
 }
 function afYukleBasla() {
@@ -25070,7 +25088,7 @@ async function afYukle() {
   const cakisma = fabrikalar.some(f => f.name === ad) || afArsivListe().some(x => x.ad === ad);
   if (cakisma && AF.cak === 'birles') { const e = afArsivListe().find(x => x.ad === ad); if (e) { id = e.id; birlesik = e; } }
   else if (cakisma) { let k = 1, yeni = ad + ' (arşiv)'; while (fabrikalar.some(f => f.name === yeni) || afArsivListe().some(x => x.ad === yeni)) yeni = ad + ' (arşiv ' + (++k) + ')'; ad = yeni; }
-  const st = AF.ilerle = { baslik: 'Paket yükleniyor', ad: ad + ' · buluta yazılıyor', n: 0, N: AF_MOD.reduce((s, m) => s + veri[m[0]].length, 0) }; afS = 'ilerle'; afCiz();
+  const st = AF.ilerle = { baslik: 'Paket yükleniyor', ad: ad + ' · buluta yazılıyor', n: 0, N: AF_MOD.reduce((s, m) => s + veri[m[0]].length, 0) + (y.pdfler || []).length }; afS = 'ilerle'; afCiz();
   try {
     let son = veri, atla = 0;
     if (birlesik) {
@@ -25081,6 +25099,7 @@ async function afYukle() {
     const meta = afMetaOlustur(id, ad, mf.fab.renk, mf.fab.owner, birlesik ? (birlesik.not || mf.not) : mf.not, son);
     meta.tarih = birlesik ? birlesik.tarih : (mf.tarih || meta.tarih); if (!birlesik) meta.not = mf.not || '';
     await afBulutaYaz(id, meta, son, st);
+    let pdfYaz = 0; for (const x of (y.pdfler || [])) { if (afDur) throw new Error('durdu'); try { await bmBlobYaz(x.id, await x.oku()); pdfYaz++; } catch (e) { console.error(e); } st.n++; afCizIlerle(); }
     afMeta[id] = meta; try { localStorage.removeItem(DEPO_LS); } catch (e) {}
     AF.ilerle = { baslik: 'Yüklendi', alt: ad + ' arşivlendi', id, satirlar: [['Denetim · bulgu', meta.say.den + ' · ' + meta.say.bul + ' ✓'], ['Kaza · rapor', meta.say.kaza + ' · ' + meta.say.rapor + ' ✓'], ['Görev · periyodik kontrol', meta.say.gor + meta.say.arsiv + ' · ' + meta.say.kontrol + ' ✓'], ['Fotoğraf', meta.say.foto + ' ✓']], not: atla ? atla + ' kayıt zaten arşivde vardı, atlandı.' : '' };
   } catch (e) { console.error(e); AF.ilerle = { baslik: e.message === 'durdu' ? 'Durduruldu' : 'Yüklenemedi', alt: ad, satirlar: [], not: e.message === 'durdu' ? 'Yükleme yarıda kaldı; Arşivlenmiş listesini kontrol et.' : 'Hata: ' + (e.message || e) }; }
@@ -25932,6 +25951,15 @@ async function bmIsle() {
   BM.sonuc = { baslik: hata ? 'Kısmen tamamlandı' : 'Kayda işlendi', alt: eklenen + ' / ' + L.length + ' belge eklendi', satirlar: [['Eklenen belge', String(eklenen)], ['Dosya boyutu', sonra ? bmMB(sonra) + ' MB' + fark : '—']], not: hata ? 'Hata: ' + hata + '. Eklenemeyen belgeler için işlemi yeniden başlatabilirsin.' : '' };
   bmGit('bitti');
 }
+// Aynı kayıt içinde aynı ad varsa sona -1, -2 … eklenir (ilk belge de -1 olur)
+function bmAdBenzersiz(liste, ad) {
+  const taban = x => String(x || '').replace(/-\d+$/, '');
+  const t = taban(ad), ayni = (liste || []).filter(x => taban(x.ad) === t);
+  if (!ayni.length) return ad;
+  let en = 0;
+  ayni.forEach(x => { const m = String(x.ad).match(/-(\d+)$/); if (m) en = Math.max(en, +m[1]); else { x.ad = t + '-1'; en = Math.max(en, 1); } });
+  return t + '-' + (en + 1);
+}
 function bmKayda(b, k, doc) {
   let it = bmSatirBul(BM.grup, k, b.fab);
   if (!it) { it = bmSatirYap(BM.grup, k, b.fab); kontrolItems.push(it); }
@@ -25944,6 +25972,7 @@ function bmKayda(b, k, doc) {
     else hedef = it.altlar.find(x => x.id === b.alt.id) || it;
   }
   if (!Array.isArray(hedef.belgeler)) hedef.belgeler = [];
+  doc.ad = bmAdBenzersiz(hedef.belgeler, doc.ad);
   hedef.belgeler.push(doc);
   if (hedef !== it) {
     if (b.duz && (!hedef.lastDate || b.duz >= hedef.lastDate)) hedef.lastDate = b.duz;
