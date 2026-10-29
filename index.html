@@ -12722,7 +12722,8 @@ function kontrolTopluKaydet(){
       hedefFabs.forEach(fab=>{
         let target=kontrolHedefKayitBul(source,fab);
         if(!target){
-          target={...source,id:Date.now()+'-'+Math.random().toString(36).slice(2,9),fabs:[fab],fab:fab};
+          target={...source,id:Date.now()+'-'+Math.random().toString(36).slice(2,9),fabs:[fab],fab:fab,belgeler:[],bitis:'',belgeNo:''};
+          if (source.altlar) target.altlar=source.altlar.map(a=>({...a,id:Date.now()+'-'+Math.random().toString(36).slice(2,6),lastDate:'',belgeler:[]}));
           kontrolItems.push(target); yeni++;
         } else guncel++;
 
@@ -12758,7 +12759,9 @@ const KONTROL_CEVRE_KATALOG = [
       ['sifir-atik','Sıfır Atık Belgesi Takibi'],
       ['kapasite-raporu','Kapasite Raporu Takibi'],
       ['atik-yonetim-plani','Atık Yönetim Planı Takibi'],
-      ['resmi-yazi-taahhut','Çevre Resmî Yazı / Taahhüt Takibi']
+      ['resmi-yazi-taahhut','Çevre Resmî Yazı / Taahhüt Takibi'],
+      ['cevre-gorevlisi','Çevre Görevlisi / Danışmanlık Takibi'],
+      ['acil-durum-plani','Çevresel Acil Durum Planı Takibi']
     ]
   },
   {
@@ -12766,10 +12769,10 @@ const KONTROL_CEVRE_KATALOG = [
     items:[
       ['atik-beyani','Atık Beyanı Takibi'],
       ['tehlikeli-atik-gonderim','Tehlikeli Atık Gönderim Takibi'],
-      ['atik-yag','Atık Yağ Gönderim Takibi'],
+      ['atik-yag','Atık Yağ Beyanı / Teslim Takibi'],
       ['ambalaj-atigi','Ambalaj Atığı Takibi'],
       ['gecici-atik-depo','Geçici Atık Depolama Alanı Kontrolü'],
-      ['atik-tasima-kayit','Atık Taşıma / Teslim Kayıt Takibi']
+      ['atik-tasima-kayit','Atık Taşıma / Teslim Formları Takibi']
     ]
   },
   {
@@ -12778,7 +12781,7 @@ const KONTROL_CEVRE_KATALOG = [
       ['atiksu-analizi','Atıksu Analizi Takibi'],
       ['atiksu-drenaj','Atıksu Drenaj Hattı Kontrolü'],
       ['yagmursuyu-drenaj','Yağmur Suyu Drenaj Kontrolü'],
-      ['desarj-baglanti','Deşarj / Kanal Bağlantı Süreç Takibi'],
+      ['desarj-baglanti','Atıksu Deşarj / Kanal Bağlantı İzni Takibi'],
       ['aritma-isletme','Atıksu Arıtma Tesisi İşletme Kontrolü'],
       ['yag-tutucu','Yağ Tutucu / Separatör Kontrolü']
     ]
@@ -12809,7 +12812,8 @@ const KONTROL_CEVRE_KATALOG = [
       ['atik-raporlama','Atık Raporlama / Kayıt Kontrolü'],
       ['emisyon-raporlama','Emisyon Raporlama Takibi'],
       ['cevre-performans','Çevre Performans Raporu Takibi'],
-      ['resmi-bildirim','Resmî Çevre Bildirim / Beyan Takibi']
+      ['resmi-bildirim','Resmî Çevre Bildirim / Beyan Takibi'],
+      ['gekap-beyan','Ambalaj / GEKAP Yıllık Beyan Takibi']
     ]
   }
 ];
@@ -12976,7 +12980,8 @@ function kontrolCevreAddSelected() {
         periodUnit:'year',
         firm:'',
         result:'bekliyor',
-        note:''
+        note:'',
+        ...(typeof bmCevreTakip === 'function' ? bmCevreTakip(e.key) : {})
       });
       eklendi++;
     });
@@ -13049,6 +13054,22 @@ function kontrolNextDate(lastDate, periodVal, periodUnit) {
   return d;
 }
 
+// Sonraki tarih: bitiş tarihi (süreli belge), alt kayıtlar ve takipsiz kayıt türlerini dikkate alır
+function kontrolSonraki(it) {
+  if (!it || it.takip) return null;
+  const alt = (it.altlar || []).filter(a => a.lastDate);
+  if (alt.length) {
+    let min = null;
+    alt.forEach(a => { const d = kontrolNextDate(a.lastDate, it.periodVal, it.periodUnit); if (d && (!min || d < min)) min = d; });
+    return min;
+  }
+  if (it.bitis) { const d = new Date(it.bitis + 'T00:00:00'); if (!Number.isNaN(d.getTime())) return d; }
+  return kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
+}
+function kontrolSonSonTarih(it) {
+  const alt = (it.altlar || []).map(a => a.lastDate).filter(Boolean).sort();
+  return alt.length ? alt[0] : it.lastDate;
+}
 function kontrolDaysLeft(nextDate) {
   if (!nextDate || Number.isNaN(nextDate.getTime())) return null;
   const today = new Date(); today.setHours(0,0,0,0);
@@ -13128,6 +13149,7 @@ function kontrolKartHtml(it) {
   const periodStr = `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
   const sonuc = kontrolSonucBilgi(it.result || 'bekliyor');
   const firma = (it.firm || '').trim();
+  const takipsiz = !!it.takip;
   const tarihli = !(dl === null || !it.lastDate || !it.nextDate);
   const idJs = String(it.id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 
@@ -13139,18 +13161,22 @@ function kontrolKartHtml(it) {
     else { dgB = dl; dgS = 'gün kaldı'; }
   }
   const fmt = d => d.toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
-  const nextStr = tarihli ? fmt(it.nextDate) : '—';
-  const lastStr = tarihli ? fmt(new Date(it.lastDate+'T00:00:00')) : 'Tarih girilmedi';
+  const nextStr = tarihli ? fmt(it.nextDate) : (takipsiz ? (it.takip === 'olay' ? 'Her teslimde' : 'Takip gerekmez') : '—');
+  const lastStr = (tarihli || (takipsiz && it.lastDate)) ? fmt(new Date(it.lastDate+'T00:00:00')) : 'Tarih girilmedi';
+  if (takipsiz) { dgB = '—'; dgS = 'takipsiz'; }
   const acik = kontrolSatirAcik.has(it.id);
   const fabHtml = fabs.length
     ? `<span class="kx-fb" style="--c:${kxFabRenk(fabs[0])}"><i></i>${esc(fabs[0])}</span>${fabs.length>1?`<span class="kx-more">+${fabs.length-1}</span>`:''}`
     : (kontrolFabrikaAtanmamisMi(it) ? '<span class="kx-fb" style="color:var(--kx-org)">⚠ Fabrika atanmamış</span>' : '');
 
-  return `<div class="kx-row kx-${ton}${acik?' open':''}${tarihli?'':' kontrol-nodate'}">
+  const bmNot = typeof bmSatirNot === 'function' ? bmSatirNot(it) : '';
+  const bmEt = typeof bmEtiket === 'function' ? bmEtiket(it) : ['Son kontrol','Sonraki kontrol'];
+  return `<div class="kx-row kx-${ton}${acik?' open':''}${tarihli?'':' kontrol-nodate'}" data-id="${esc(String(it.id))}">
     <button type="button" class="kx-sum" aria-expanded="${acik?'true':'false'}" onclick="kontrolSatirToggle('${idJs}',this)">
       <span class="kx-bar"></span>
       <span style="min-width:0;">
         <div class="kx-nm">${esc(it.name||'')}</div>
+        ${bmNot ? `<div class="kx-nt">${esc(bmNot)}</div>` : ''}
         <div class="kx-mt">${fabHtml}<span style="white-space:nowrap">${esc(periodStr)}${tarihli?` · Sonraki: ${esc(nextStr)}`:''}</span></div>
       </span>
       <span class="kx-dg"><b>${dgB}</b><span>${dgS}</span></span>
@@ -13158,16 +13184,18 @@ function kontrolKartHtml(it) {
     </button>
     <div class="kx-det">
       <div class="kx-two">
-        <div class="kx-kv"><small>Son kontrol</small><b>${esc(lastStr)}</b></div>
-        <div class="kx-kv"><small>Sonraki kontrol</small><b>${esc(nextStr)}</b></div>
+        <div class="kx-kv"><small>${esc(bmEt[0])}</small><b>${esc(lastStr)}</b></div>
+        <div class="kx-kv"><small>${esc(bmEt[1])}</small><b>${esc(nextStr)}</b></div>
       </div>
       ${fabs.length>1?`<div class="kx-inf">${fabs.map(f=>`<span class="kx-fb" style="--c:${kxFabRenk(f)}"><i></i>${esc(f)}</span>`).join('')}</div>`:''}
       <div class="kx-inf">
         <span>🏢 ${firma?esc(firma):'Firma girilmedi'}</span>
+        ${it.belgeNo?`<span>№ ${esc(it.belgeNo)}</span>`:''}
         <span class="kx-pill ${sonuc.cls}">${sonuc.ikon} ${sonuc.ad}</span>
         ${(it.equipmentKey||it.environmentKey)?'<span class="kx-pill" style="background:var(--kx-soft);color:var(--text2)">Katalog</span>':''}
       </div>
       ${it.note?`<div class="kx-note">📝 ${esc(it.note)}</div>`:''}
+      ${typeof bmSatirBelgeHtml === 'function' ? bmSatirBelgeHtml(it, idJs) : ''}
       <div class="kx-act">
         <button type="button" class="kx-btn out" onclick="kontrolEdit('${idJs}')">Tarih güncelle</button>
         <span class="sp"></span>
@@ -13179,9 +13207,16 @@ function kontrolKartHtml(it) {
 }
 
 // ── Ana render: 3 ana grup / akordeon ─────────────────────
+const BM_ESKI_AD = { 'atik-yag':['Atık Yağ Gönderim Takibi','Atık Yağ Beyanı / Teslim Takibi'], 'atik-tasima-kayit':['Atık Taşıma / Teslim Kayıt Takibi','Atık Taşıma / Teslim Formları Takibi'], 'desarj-baglanti':['Deşarj / Kanal Bağlantı Süreç Takibi','Atıksu Deşarj / Kanal Bağlantı İzni Takibi'] };
 function kontrolRender() {
   const body = document.getElementById('kontrol-body');
   if (!body) return;
+  let adDegisti = false;
+  kontrolItems.forEach(it => {
+    const e = BM_ESKI_AD[it.environmentKey]; if (e && it.name === e[0]) { it.name = e[1]; adDegisti = true; }
+    if (it.environmentKey && !it.takip && typeof bmCevreTakip === 'function') { const t = bmCevreTakip(it.environmentKey); if (t.takip) { it.takip = t.takip; adDegisti = true; } }
+  });
+  if (adDegisti) kontrolSave();
 
   let items = kontrolFabFilter
     ? kontrolItems.filter(it => (Array.isArray(it.fabs) ? it.fabs : [it.fab]).filter(Boolean).includes(kontrolFabFilter))
@@ -13189,9 +13224,9 @@ function kontrolRender() {
 
   // Sonraki tarih hesapla + sırala (en yakın önce)
   items = items.map(it => {
-    const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
+    const nextDate = kontrolSonraki(it);
     const daysLeft = kontrolDaysLeft(nextDate);
-    return { ...it, nextDate, daysLeft, grup:kontrolGrupId(it) };
+    return { ...it, lastDate:kontrolSonSonTarih(it), nextDate, daysLeft, grup:kontrolGrupId(it) };
   }).sort((a,b) => {
     if (a.daysLeft === null && b.daysLeft === null) return (a.name||'').localeCompare(b.name||'','tr');
     if (a.daysLeft === null) return 1;
@@ -13217,7 +13252,7 @@ function kontrolRender() {
     const gYak = grupItems.filter(it => it.daysLeft !== null && it.daysLeft >= 0 && it.daysLeft <= 90).length;
     const gGun = grupItems.filter(it => it.daysLeft !== null && it.daysLeft > 90).length;
     const acik = kontrolGrupAcik[id] !== false;
-    return `<section class="kontrol-grup${acik?' acik':''}">
+    return `<section class="kontrol-grup${acik?' acik':''}" data-grup="${id}">
       <div class="kontrol-grup-hd" onclick="kontrolToggleGrup('${id}')" role="button" aria-expanded="${acik?'true':'false'}">
         <span class="kontrol-grup-ok">${acik?'▾':'▸'}</span>
         <span class="kontrol-grup-icon">${g.ikon}</span>
@@ -13238,8 +13273,17 @@ function kontrolRender() {
           <button class="kbulk-btn" onclick="event.stopPropagation();kontrolTopluOpen()">↻ Toplu Güncelle</button>
           <span>Seçili ekipmanları tek seferde tarih, firma ve sonuç bilgisiyle güncelleyebilirsiniz.</span>
         </div>` : ''}
+        ${id==='su' ? `<div class="kontrol-cevre-toolbar">
+          <button onclick="event.stopPropagation();bmGrupYukle('su')">📄 Toplu belge yükle</button>
+          <span>Su analiz raporlarını PDF olarak yükleyin; program okuyup ilgili satıra yerleştirir.</span>
+        </div>` : ''}
+        ${id==='makine' ? `<div class="kontrol-cevre-toolbar">
+          <button onclick="event.stopPropagation();bmGrupYukle('makine')">📄 Toplu belge yükle</button>
+          <span>Periyodik kontrol raporlarını PDF olarak yükleyin; program okuyup ilgili ekipman satırına yerleştirir.</span>
+        </div>` : ''}
         ${id==='cevre' ? `<div class="kontrol-cevre-toolbar">
           <button onclick="event.stopPropagation();kontrolCevreOpen()">☑ Çevre Süreçlerini Yönet</button>
+          <button onclick="event.stopPropagation();bmGrupYukle('cevre')">📄 Toplu belge yükle</button>
           <span>Hazır listeden çevre izin, belge, atık, atıksu, emisyon ve raporlama süreçlerini takip listesine ekleyebilirsiniz.</span>
         </div>` : ''}
         ${grupItems.length ? grupItems.map(kontrolKartHtml).join('') : '<div style="text-align:center;padding:18px 8px;font-size:12px;color:var(--text3);">Bu grupta kayıt yok.</div>'}
@@ -13310,6 +13354,7 @@ function kontrolSubmit() {
     const it = kontrolItems.find(x=>x.id===kontrolEditId);
     if (it) {
       it.grup=grup; it.name=name; it.fabs=fabs; it.fab=fabs[0];
+      if (it.lastDate !== lastDate) { it.bitis = ''; }
       it.lastDate=lastDate; it.periodVal=pVal; it.periodUnit=pUnit;
       it.firm=firm; it.result=result; it.note=note;
     }
@@ -13328,6 +13373,8 @@ function kontrolSubmit() {
 function kontrolEdit(id) { kontrolOpenAdd(id); }
 function kontrolDel(id) {
   if (!confirm('Kaydı sil?')) return;
+  const bmIt = kontrolItems.find(x=>x.id===id);
+  if (bmIt && typeof bmSatirBlobSil === 'function') bmSatirBlobSil(bmIt);
   kontrolItems = kontrolItems.filter(x=>x.id!==id);
   kontrolSave();
   kontrolRender();
@@ -13353,7 +13400,7 @@ function kontrolRenderFabList() {
   el.innerHTML = kontrolFabs.map((f,i)=>`
     <div class="kfa-row">
       <button type="button" class="kfa-dot" style="--c:${kontrolFabRengi(f)}" onclick="kontrolFabRenkSec(${i})" aria-label="Rengi değiştir"></button>
-      <span class="kfa-nm">${esc(f)}</span>
+      <span class="kfa-nm">${esc(f)}<small class="bm-ks" data-ks="${i}" onclick="bmKisaDuzenle(${i})">Kısa ad: ${esc(typeof bmFabKisaAd==='function'?bmFabKisaAd(f):f)} ✎</small></span>
       <span class="kfa-cnt">${kontrolFabSayi(f)} kontrol</span>
       <button type="button" class="kfa-del" onclick="kontrolDelFab(${i})" aria-label="Sil">🗑</button>
     </div>`).join('') || '<div class="kfa-empty">Henüz fabrika yok</div>';
@@ -13425,7 +13472,7 @@ function kontrolRaporFiltreliItems() {
     : [...kontrolItems];
 
   return items.map(it => {
-    const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
+    const nextDate = kontrolSonraki(it);
     return {
       ...it,
       grup:kontrolGrupId(it),
@@ -13723,7 +13770,7 @@ function dashRender() {
     try {
       const saved = JSON.parse(localStorage.getItem('yeni_isg_kontrol_items_v1') || '[]');
       kItems = saved.map(it => {
-        const nextDate = kontrolNextDate(it.lastDate, it.periodVal, it.periodUnit);
+        const nextDate = kontrolSonraki(it);
         if (!nextDate) return null;
         const diff = Math.round((nextDate - today) / 86400000);
         return { ...it, nextDate, diff };
@@ -17761,7 +17808,7 @@ function ksRenderISO45004(liste) {
   const kontrolKnown = (typeof kontrolItems!=='undefined' && Array.isArray(kontrolItems) ? kontrolItems : [])
     .filter(it => selectedFab==='tumu' || (Array.isArray(it.fabs)?it.fabs:[it.fab]).filter(Boolean).includes(selectedFab))
     .map(it => {
-      const nd = typeof kontrolNextDate==='function' ? kontrolNextDate(it.lastDate,it.periodVal,it.periodUnit) : null;
+      const nd = typeof kontrolSonraki==='function' ? kontrolSonraki(it) : null;
       return nd ? {it,days:kontrolDaysLeft(nd)} : null;
     }).filter(Boolean);
   const kontrolOnTimePct = ksPct(kontrolKnown.filter(x=>x.days>=0).length, kontrolKnown.length);
@@ -18369,7 +18416,7 @@ function ksPrintHSE(mode='management',share){
   const reportFabValue=document.getElementById('ks-f-fab')?.value||'tumu';
   const kontrolKnown=(typeof kontrolItems!=='undefined'&&Array.isArray(kontrolItems)?kontrolItems:[])
     .filter(it=>reportFabValue==='tumu'||(Array.isArray(it.fabs)?it.fabs:[it.fab]).filter(Boolean).includes(reportFabValue))
-    .map(it=>{const nd=typeof kontrolNextDate==='function'?kontrolNextDate(it.lastDate,it.periodVal,it.periodUnit):null;return nd?{days:kontrolDaysLeft(nd)}:null;}).filter(Boolean);
+    .map(it=>{const nd=typeof kontrolSonraki==='function'?kontrolSonraki(it):null;return nd?{days:kontrolDaysLeft(nd)}:null;}).filter(Boolean);
   const kontrolOnTimePct=ksPct(kontrolKnown.filter(x=>x.days>=0).length,kontrolKnown.length);
   const reportOran=typeof kazaOranMetrikleri==='function'
     ? kazaOranMetrikleri(liste,periodValue)
@@ -20465,7 +20512,7 @@ window.addEventListener('resize', calMobInit);
   window._fbSaveArchive = () => yaz('archive', () => archived);
   window._fbSaveTakvim  = () => yaz('takvim',  () => calReminders);
   window._fbSavePer     = () => yaz('per',     () => ({ tasks: perTasks, persons: perPersons, fabs: perFabs }));
-  window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs }));
+  window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs, ogren: window.bmOgren || [] }));
   window._fbSaveKaza    = () => yaz('kaza',    () => { try { kazaGecmisKodla(); } catch (e) {} return { items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }; });
 
   // ── Kaza / Olay raporları — cihazlar arası bulut deposu ─────
@@ -20585,6 +20632,13 @@ window.addEventListener('resize', calMobInit);
     sil: id => Promise.all([ROOT.child('fabArsivMeta').child(id).remove(), ROOT.child('fabArsivVeri').child(id).remove()])
   };
 
+  // Belge motoru: PDF parçaları ayrı düğümde (belgeVeri), kontrol kaydında yalnızca özet tutulur
+  window._fbBelge = {
+    yaz: (id, k, s) => ROOT.child('belgeVeri').child(id).child(String(k)).set(s),
+    oku: id => ROOT.child('belgeVeri').child(id).once('value').then(sn => sn.val()),
+    sil: id => ROOT.child('belgeVeri').child(id).remove()
+  };
+
   window._fbReady = true;
 
   // ── Diziyi yerinde değiştir (referanslar bozulmasın diye) ──
@@ -20622,6 +20676,7 @@ window.addEventListener('resize', calMobInit);
     if (!yazimBekliyor['kontrol'] && d.kontrol) {
       doldur(kontrolItems, d.kontrol.items);
       doldur(kontrolFabs,  d.kontrol.fabs);
+      if (Array.isArray(d.kontrol.ogren)) window.bmOgren = d.kontrol.ogren;
       window._kontrolReady = true;  // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
     // Rapor deposu ana kaza kaydından bağımsızdır; başka cihazda oluşturulan
@@ -21139,6 +21194,109 @@ window.addEventListener('resize', calMobInit);
 .dp-btns .s{background:var(--surface2);color:var(--text)}.dp-btns .p{background:var(--acc);color:var(--acc-fg)}.dp-btns .d{background:var(--bad-bg);color:#fff}
 .dp-btns button:disabled{opacity:.5;cursor:default}
 .dp-mut{font-size:12px;color:var(--text2)}.dp-lnk{border:0;background:none;color:var(--acc-tx);font-weight:800;font-size:12.5px;cursor:pointer;padding:6px 0;min-height:0}
+</style>
+<style id="belge-style">
+/* ===== Belge motoru (PDF okuma, bölme, eşleştirme) ===== */
+#bm-bg{position:fixed;inset:0;z-index:3000;background:rgba(10,22,34,.55);display:none;align-items:center;justify-content:center;font-family:inherit}
+#bm-bg.on{display:flex}
+#bm-sh{color:var(--text);width:min(520px,100%);height:min(900px,100dvh);position:relative;overflow:hidden;border-radius:18px;background:var(--bg);display:flex;flex-direction:column}
+@media(max-width:600px){#bm-sh{border-radius:0;height:100dvh}}
+#bm-sh *{box-sizing:border-box}
+#bm-sh .top{background:linear-gradient(135deg,var(--hd1),var(--hd2));color:#fff;padding:14px;font-weight:800;font-size:15px;flex:none}
+#bm-sh .scr{flex:1;overflow:auto;display:flex;flex-direction:column;min-height:0}
+#bm-sh .hd{display:flex;align-items:center;gap:10px;padding:12px 14px 8px;flex:none}
+#bm-sh .hd b{font-size:16px;display:block}
+#bm-sh .hd small{color:var(--text2);font-size:11.5px}
+#bm-sh .bk{width:34px;height:34px;border-radius:50%;border:0;background:var(--surface2);color:var(--text);cursor:pointer;flex:none;font-size:15px;min-height:0;padding:0}
+#bm-sh .bd{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+#bm-sh .bd>*{flex:none}
+#bm-sh .card{border:1px solid var(--line);border-radius:16px;padding:12px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+#bm-sh .lb{font-size:11px;font-weight:800;color:var(--text2);letter-spacing:.04em}
+#bm-sh .eff{padding:10px 12px;border-radius:12px;background:var(--surface2);font-size:12.5px;line-height:1.45;font-weight:600;color:var(--text)}
+#bm-sh .warn{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--warn) 16%,var(--surface));color:var(--warn-tx);font-weight:700;font-size:12.5px;line-height:1.4}
+#bm-sh .btns{display:flex;gap:8px;padding:0 14px 14px;flex:none}
+#bm-sh .btns button{flex:1;min-height:46px;border-radius:14px;border:0;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+#bm-sh .btns .s{background:var(--surface2);color:var(--text)}
+#bm-sh .btns .p{background:var(--acc);color:var(--acc-fg)}
+#bm-sh .btns button:disabled{opacity:.45;cursor:default}
+#bm-sh .kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:2px 0;color:var(--text)}
+#bm-sh .kv span{color:var(--text2)}
+#bm-sh .pb{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+#bm-sh .pb i{display:block;height:100%;border-radius:99px;background:var(--acc);transition:width .2s}
+#bm-sh .pill{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:99px;white-space:nowrap}
+#bm-sh .p-y{background:color-mix(in srgb,var(--good) 18%,var(--surface));color:var(--good-tx)}
+#bm-sh .p-o{background:color-mix(in srgb,var(--warn) 20%,var(--surface));color:var(--warn-tx)}
+#bm-sh .p-d{background:color-mix(in srgb,var(--bad) 16%,var(--surface));color:var(--bad-tx,var(--bad))}
+#bm-sh .p-n{background:var(--surface2);color:var(--text2)}
+#bm-sh .drop{border:1.5px dashed var(--border2);border-radius:16px;padding:22px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;background:var(--surface);cursor:pointer}
+#bm-sh .drop.ov{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface))}
+#bm-sh .fl{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center}
+#bm-sh .fl .ic{width:34px;height:42px;border-radius:6px;background:var(--surface2);display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--text2)}
+#bm-sh .fl b{font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#bm-sh .fl small{color:var(--text2);font-size:11.5px}
+#bm-sh .fl .x{width:30px;height:30px;border-radius:50%;border:0;background:var(--surface2);color:var(--text2);cursor:pointer;min-height:0;padding:0}
+#bm-sh .seg{display:flex;gap:8px}
+#bm-sh .seg button{flex:1;min-height:56px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;line-height:1.25;font-family:inherit;padding:4px 6px}
+#bm-sh .seg button small{display:block;color:var(--text2);font-weight:600;font-size:11px}
+#bm-sh .seg button.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,var(--surface))}
+#bm-sh .th{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+#bm-sh .th img{height:58px;width:auto;border-radius:4px;border:1px solid var(--line);flex:none}
+#bm-sh .sel{display:flex;align-items:center;gap:8px;min-height:42px;padding:0 12px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);font-weight:700;color:var(--text);cursor:pointer;font-size:13px;width:100%;font-family:inherit;text-align:left}
+#bm-sh .sel span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#bm-sh .sel.wr span,#bm-sh .sel.wr input{white-space:normal;line-height:1.3}
+#bm-sh .sel textarea{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:inherit;font-weight:700;outline:none;resize:none;padding:8px 0;line-height:1.3;overflow:hidden;display:block}
+#bm-sh .sel input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:inherit;font-weight:700;outline:none;padding:8px 0}
+#bm-sh .one{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bm-sh .nt{font-size:11.5px;color:var(--text2);font-style:italic}
+#bm-sh .chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:10px;background:var(--surface2);color:var(--text);cursor:pointer;border:0;font-family:inherit;min-height:0}
+#bm-sh .chips{display:flex;gap:6px;flex-wrap:wrap}
+#bm-sh .abx{background:var(--surface2);border-radius:10px;padding:8px 10px;min-width:0}
+#bm-sh .abx input{width:100%;border:0;background:transparent;color:var(--text);font:inherit;font-weight:700;font-size:13px;outline:none;padding:0;min-width:0}
+#bm-sh .abx .mk{font-size:10.5px;font-weight:700}
+#bm-sh .grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#bm-sh .gp{display:flex;gap:8px}
+#bm-sh .gp button{flex:1;min-height:42px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit}
+#bm-sh .gp button.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,var(--surface))}
+#bm-sh .onay{position:absolute;inset:0;background:rgba(10,22,34,.55);display:none;align-items:flex-end;z-index:6}
+#bm-sh .onay.on{display:flex}
+#bm-sh .onay>div{background:var(--surface);border-radius:18px 18px 0 0;padding:14px;width:100%;max-height:78%;display:flex;flex-direction:column;gap:8px}
+#bm-sh .onay .ls{overflow:auto;display:flex;flex-direction:column;gap:6px}
+#bm-sh .onay .op{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 10px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;width:100%}
+#bm-sh .onay .op small{display:block;color:var(--text2);font-weight:500;font-size:11px;font-style:italic}
+#bm-sh .onay .op.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,var(--surface))}
+#bm-sh .onay .op span{flex:1;min-width:0}
+#bm-sh .onay input.q{min-height:40px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:0 12px;font:inherit;font-size:13px;outline:none}
+/* Görüntüleyici */
+#bm-vw{position:fixed;inset:0;z-index:3100;background:#0b0f14;display:none;flex-direction:column}
+#bm-vw.on{display:flex}
+#bm-vw .h{display:flex;align-items:center;gap:10px;padding:10px 12px;color:#fff}
+#bm-vw .h b{display:block;font-size:13.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#bm-vw .h small{color:#9fb0c3;display:block;font-size:11px;font-weight:500}
+#bm-vw .h button,#bm-vw .f button{min-width:38px;height:38px;border-radius:50%;border:0;background:#222c38;color:#fff;font-size:15px;cursor:pointer;font-family:inherit;min-height:0;padding:0}
+#bm-vw .st{flex:1;overflow:hidden;position:relative;touch-action:none;cursor:grab}
+#bm-vw .st canvas{position:absolute;left:50%;top:0;transform-origin:0 0;user-select:none;max-width:none;background:#fff}
+#bm-vw .st .ms{position:absolute;inset:0;display:grid;place-items:center;color:#9fb0c3;font-size:13px}
+#bm-vw .f{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;color:#cdd8e4}
+#bm-vw .f span{min-width:70px;text-align:center;font-size:12px;font-weight:700}
+/* Kontrol satırı içi */
+.kx-nt{font-size:11.5px;color:var(--text2);font-style:italic;line-height:1.35;margin-top:2px;white-space:normal}
+.bm-dc{display:flex;flex-direction:column;gap:6px}
+.bm-dc .lb{font-size:11px;font-weight:800;color:var(--text2);letter-spacing:.04em}
+.bm-th{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.bm-t{flex:none;display:flex;flex-direction:column;gap:3px;align-items:center;border:0;background:transparent;padding:0;cursor:pointer;color:var(--text2);font-size:10.5px;min-height:0;font-family:inherit}
+.bm-t img{height:74px;width:auto;border-radius:5px;border:1px solid var(--line);display:block}
+.bm-t.nb{width:54px;height:74px;border-radius:5px;border:1px solid var(--line);background:var(--surface2);display:grid;place-items:center;font-weight:800}
+.bm-alt{margin-left:4px;padding-left:10px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.bm-alt .kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--text)}
+.bm-alt .kv span{color:var(--text2)}
+.bm-ch{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 10px;border-radius:10px;background:var(--kx-soft);color:var(--text);cursor:pointer;border:0;font-family:inherit;min-height:0}
+.bm-chs{display:flex;gap:6px;flex-wrap:wrap}
+.bm-ai{display:flex;gap:6px;align-items:center}
+.bm-ai input{height:38px;border-radius:10px;border:1px solid var(--kx-line);background:var(--kx-soft);color:var(--text);padding:0 10px;font:inherit;font-size:13px;outline:none;min-width:0;flex:1}
+.kx-row.bm-dz,.kontrol-grup.bm-dz{outline:2px dashed var(--acc);outline-offset:-2px}
+#bm-dh{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2900;background:var(--acc);color:var(--acc-fg);font-weight:800;font-size:13px;padding:10px 16px;border-radius:99px;display:none;box-shadow:0 6px 24px rgba(0,0,0,.28);pointer-events:none;max-width:90vw;text-align:center}
+#bm-dh.on{display:block}
+.bm-ks{display:block;font-size:10.5px;font-weight:600;color:var(--text2);margin-top:2px;cursor:pointer}
 </style>
 <style id="arsiv-style">
 .af-opt{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;cursor:pointer;background:var(--surface);color:var(--text);width:100%;text-align:left;font:inherit;min-height:0}
@@ -24842,7 +25000,7 @@ async function afSablonYap() {
   try {
     const v = await afVeriOku(AF.id, 'kontrol'), zaman = Date.now();
     fabrikalar.push({ name: ad, color: m.renk || '#378ADD' });
-    const yeni = v.kontrol.map((o, i) => { const c = afKopya(o); depFotoSilO(c); c.id = 'kx' + (zaman + i) + Math.random().toString(36).slice(2, 5); c.fab = ad; c.fabs = [ad]; c.lastDate = ''; c.result = 'bekliyor'; c.note = ''; return c; });
+    const yeni = v.kontrol.map((o, i) => { const c = afKopya(o); depFotoSilO(c); c.id = 'kx' + (zaman + i) + Math.random().toString(36).slice(2, 5); c.fab = ad; c.fabs = [ad]; c.lastDate = ''; c.result = 'bekliyor'; c.note = ''; c.belgeler = []; c.bitis = ''; c.belgeNo = ''; if (c.altlar) c.altlar = c.altlar.map(a => ({ ...a, lastDate: '', belgeler: [] })); return c; });
     yeni.forEach(c => kontrolItems.push(c));
     saveFabrikalar(); parametreSenkron(); kontrolSave();
     toast(yeni.length + ' kontrol tanımı kopyalandı'); AF.ilerle = { baslik: 'Kopyalandı', alt: ad, satirlar: [['Yeni fabrika', esc(ad)], ['Periyodik kontrol tanımı', yeni.length]], not: '' }; afS = 'bitti'; afCiz();
@@ -24876,7 +25034,8 @@ async function afCikar() {
 function afSilSor() {
   const m = afMeta[AF.id]; if (!m) return;
   isgOnay({ baslik: m.ad + ' kalıcı silinsin mi?', mesaj: 'Arşivdeki tüm kayıtlar ve fotoğraflar buluttan silinir. Bu işlem geri alınamaz.', evet: 'Kalıcı sil' }, async () => {
-    try { await window._fbArsiv.sil(AF.id); delete afMeta[AF.id]; try { localStorage.removeItem(DEPO_LS); } catch (e) {} toast('Arşiv silindi'); afGit('arsivli'); } catch (e) { toast('Silinemedi'); }
+    try { try { const kv = await window._fbArsiv.veriOku(AF.id, 'kontrol'); const idler = []; (function yuru(o) { if (!o || typeof o !== 'object') return; if (Array.isArray(o.belgeler)) o.belgeler.forEach(x => x && x.id && idler.push(x.id)); Object.values(o).forEach(yuru); })(kv); for (const b of idler) await bmBlobSil(b); } catch (e) { console.error(e); }
+      await window._fbArsiv.sil(AF.id); delete afMeta[AF.id]; try { localStorage.removeItem(DEPO_LS); } catch (e) {} toast('Arşiv silindi'); afGit('arsivli'); } catch (e) { toast('Silinemedi'); }
   });
 }
 
@@ -24927,6 +25086,1030 @@ async function afYukle() {
   } catch (e) { console.error(e); AF.ilerle = { baslik: e.message === 'durdu' ? 'Durduruldu' : 'Yüklenemedi', alt: ad, satirlar: [], not: e.message === 'durdu' ? 'Yükleme yarıda kaldı; Arşivlenmiş listesini kontrol et.' : 'Hata: ' + (e.message || e) }; }
   AF.yuk = null; afS = 'bitti'; afBusy = false; afCiz();
 }
+</script>
+<script id="belge-js">
+/* ===== Belge motoru: okuma ve sınıflandırma ===== */
+const BME=(function(){
+const AYLAR={ocak:1,subat:2,mart:3,nisan:4,mayis:5,haziran:6,temmuz:7,agustos:8,eylul:9,ekim:10,kasim:11,aralik:12};
+function fold(s){
+  return String(s||'').replace(/İ/g,'i').replace(/I/g,'i').toLowerCase()
+   .replace(/[ıİ]/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g').replace(/ç/g,'c').replace(/ö/g,'o').replace(/ü/g,'u')
+   .replace(/[âä]/g,'a').replace(/[îï]/g,'i').replace(/[ûù]/g,'u').replace(/[§]/g,'s').replace(/[|!]/g,'i')
+   .normalize('NFD').replace(/[̀-ͯ]/g,'');
+}
+const plain=s=>fold(s).replace(/[^a-z0-9()\/\-\.:, ]/g,' ').replace(/\s+/g,' ').trim();
+const tok=s=>fold(s).replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean);
+function lev(a,b,max){
+  if(Math.abs(a.length-b.length)>max)return max+1;
+  let p=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){const c=[i];let mn=i;for(let j=1;j<=b.length;j++){const v=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));c.push(v);if(v<mn)mn=v}p=c;if(mn>max)return max+1}
+  return p[b.length];
+}
+// ifade, sayfa belirteç listesinde (OCR hatasına 1 harf tolerans) aranır
+function bul(ifTok,pTok){
+  const n=ifTok.length;
+  for(let i=0;i<=pTok.length-n;i++){
+    let ok=true;
+    for(let k=0;k<n;k++){
+      const a=ifTok[k],b=pTok[i+k];
+      if(a===b)continue;
+      const tol=a.length>=7?1:0;
+      if(tol&&lev(a,b,tol)<=tol)continue;
+      ok=false;break;
+    }
+    if(ok)return true;
+  }
+  return false;
+}
+function hazirla(KAT){return KAT.map(k=>({...k,aT:k.a.map(([f,w])=>[tok(f),w]),nT:(k.n||[]).map(f=>tok(f))}))}
+// Bir sayfa metnini sınıflandır. Başlık bölgesi (ilk 8 satır) 1.6 kat ağırlıklı.
+function sinifla(H,metin){
+  const satir=String(metin||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  const ust=tok(satir.slice(0,8).join(' ')),tum=tok(satir.join(' '));
+  const sk=H.map(k=>{
+    let p=0,ipucu=[];
+    k.aT.forEach(([t,w])=>{
+      const u=bul(t,ust),a=u||bul(t,tum);
+      if(a){p+=w*(u?1.6:1);ipucu.push(t.join(' '))}
+    });
+    k.nT.forEach(t=>{if(bul(t,tum))p-=6});
+    return {id:k.id,ad:k.ad,puan:Math.max(0,p),ipucu};
+  });
+  // Genel başlıklar (örn. Emisyon Ölçümü) daha özel kardeşi güçlü eşleşiyorsa geri çekilir
+  sk.forEach(x=>{const k=H.find(h=>h.id===x.id);if(k.genel){const m=Math.max(0,...sk.filter(y=>k.genel.includes(y.id)).map(y=>y.puan));if(m>=10)x.puan=Math.max(0,x.puan-m*0.9)}});
+  sk.sort((x,y)=>y.puan-x.puan);
+  const [a,b]=sk;
+  const fark=a.puan-(b?b.puan:0);
+  let guven='dusuk';
+  if(a.puan>=14&&fark>=7)guven='yuksek';else if(a.puan>=8&&fark>=3)guven='orta';
+  return {en:a.puan>0?a:null,ikinci:b&&b.puan>0?b:null,guven,adaylar:sk.slice(0,3).filter(x=>x.puan>0),
+    baslik:satir.slice(0,3).join(' · '),sayfaNo:sayfaNo(metin)};
+}
+function sayfaNo(m){
+  const x=String(m||'');const r=x.match(/(?:sayfa|page)\s*:?\s*(\d+)\s*[\/\-]\s*(\d+)/i)||x.match(/\b(\d+)\s*\/\s*(\d+)\s*$/m);
+  return r?{k:+r[1],n:+r[2]}:null;
+}
+// Tarih çıkarımı
+function tarihler(m){
+  const out=[],t=String(m||'');
+  const re=/(\d{1,2})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{4})|(\d{1,2})\s+(Ocak|Şubat|Subat|Mart|Nisan|Mayıs|Mayis|Haziran|Temmuz|Ağustos|Agustos|Eylül|Eylul|Ekim|Kasım|Kasim|Aralık|Aralik)\s+(\d{4})/gi;
+  let r;
+  while((r=re.exec(t))){
+    let g,a,y;
+    if(r[1]){g=+r[1];a=+r[2];y=+r[3]}else{g=+r[4];a=AYLAR[fold(r[5])];y=+r[6]}
+    if(a<1||a>12||g<1||g>31||y<2000||y>2100)continue;
+    const ctx=fold(t.slice(Math.max(0,r.index-45),r.index));
+    out.push({iso:`${y}-${String(a).padStart(2,'0')}-${String(g).padStart(2,'0')}`,ctx});
+  }
+  return out;
+}
+function tarihSec(m,tur){
+  const L=tarihler(m);if(!L.length)return {};
+  const bak=(re)=>L.find(d=>re.test(d.ctx));
+  const gec=bak(/gecerlilik|gecerli|bitis|son kullanma|sona er/);
+  const dz=bak(/duzenleme|tanzim|rapor tarih|olcum tarih|muayene tarih|kontrol tarih|verilis|veris|onay|teslim tarih|bildirim tarih|beyan tarih|tarih/);
+  const ilk=L.slice().sort((x,y)=>x.iso<y.iso?-1:1);
+  const son=(dz&&dz.iso)||ilk[0].iso;
+  return {tarih:tur==='gecerlilik'&&gec?gec.iso:son,gecerlilik:gec?gec.iso:null,duzenleme:(dz&&dz.iso)||null,tumu:L.map(d=>d.iso)};
+}
+// Alan çıkarımı (alt kayıt ipuçları)
+function alanlar(m){
+  const f={},satirlar=String(m||'').split(/\n+/);
+  const al=[['ekipman',/ekipman(?: adi| adı)?|cihaz|tank adi|tank adı|olcum noktasi|ölçüm noktası|baca adi|baca adı|kaynak adi|kaynak adı/i],['seri',/seri\s*no|tank\s*no|baca\s*no|envanter\s*no/i],['firma',/firma|isletme|işletme|unvan/i],['belgeNo',/belge\s*no|rapor\s*no|form\s*no|izin\s*no|karar\s*no|basvuru\s*no|başvuru\s*no/i]];
+  satirlar.forEach(s=>{const k=s.split(/[:：]/);if(k.length<2)return;const bas=k[0].trim(),deg=k.slice(1).join(':').trim();if(!deg||deg.length>70)return;al.forEach(([ad,re])=>{if(!f[ad]&&re.test(fold(bas)||''))f[ad]=deg;else if(!f[ad]&&re.test(bas))f[ad]=deg})});
+  return f;
+}
+// Sayfaları bölümlere ayır
+function bol(H,sayfalar){
+  const res=sayfalar.map((m,i)=>({i,s:sinifla(H,m),metin:m}));
+  const bolumler=[];let cur=null;
+  res.forEach(p=>{
+    const g=p.s,sn=g.sayfaNo;
+    const guclu=g.en&&(g.guven==='yuksek'||g.guven==='orta');
+    const devam=cur&&((sn&&sn.k>1)||(!guclu));
+    const ayniYeniBelge=cur&&guclu&&g.en.id===cur.kat.id&&sn&&sn.k===1;
+    if(!cur||(!devam)||ayniYeniBelge){
+      if(devam&&!ayniYeniBelge){}
+      cur={kat:g.en?{id:g.en.id,ad:g.en.ad}:null,guven:g.guven,sayfalar:[p.i],ikinci:g.ikinci,devamdan:false,ipucu:g.en?g.en.ipucu:[]};
+      if(!g.en)cur.kat=null;
+      bolumler.push(cur);
+    }else{
+      cur.sayfalar.push(p.i);
+    }
+  });
+  bolumler.forEach(b=>{
+    const m=b.sayfalar.map(i=>sayfalar[i]).join('\n');
+    b.metin=m;b.tarih=tarihSec(m,(H.find(k=>b.kat&&k.id===b.kat.id)||{}).tarih);b.alan=alanlar(m);
+  });
+  return {sayfalar:res.map(r=>({i:r.i,kat:r.s.en&&r.s.en.id,guven:r.s.guven,sayfaNo:r.s.sayfaNo})),bolumler};
+}
+
+// Fabrika kısa adı: ilk kelime tam, diğerleri en çok 4 harf + nokta (Adana Servis Merkezi -> Adana Serv. Merk.)
+function fabKisa(ad){const w=String(ad||'').trim().split(/\s+/).filter(Boolean);if(w.length<2)return w.join('');return w.map((x,i)=>i===0||x.length<=4?x:x.slice(0,4)+'.').join(' ')}
+const fmtTr=iso=>iso?iso.split('-').reverse().join('.'):'';
+// Belge adı: "<Kısa ad> - <Tarih> (<Fabrika kısa>)"; geçerlilik tarihi varsa o, yoksa belge/veriliş tarihi
+function belgeAdi(kat,t,fab,alt){const d=(t&&(t.gecerlilik||t.duzenleme||t.tarih))||'';return `${kat.kisa||kat.ad}${alt?' – '+alt:''}${d?' - '+fmtTr(d):''}${fab?' ('+fabKisa(fab)+')':''}`}
+// Belgeyi düzenleyen kurum / firma (başlık bölgesi)
+function kurumBul(m){const s=String(m||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,7);const re=/laboratuvar|muayene kurulus|mudurlug|bakanlig|idaresi|danismanlik|tasiyici|odasi|belediye|kurulus|lisansli|ltd|a\.s\./i;for(const x of s){if(re.test(fold(x)))return x.replace(/\s{2,}.*$/,'').replace(/\s+TS EN.*$/i,'').trim()}return null}
+
+const API={fabKisa,belgeAdi,kurumBul,fold,tok,hazirla,sinifla,tarihSec,tarihler,alanlar,bol,sayfaNo,bul};
+return API;})();
+const BM_KAT_CEVRE=[{"id":"atik-beyani","ad":"Atık Beyanı Takibi","not":"Atık üreticisinin yıllık tehlikeli / tehlikesiz atık bildirimi.","kisa":"Atık Beyanı","tip":"beyan","tarih":"duzenleme","periyot":"1 Yıl","a":[["atik beyan formu",12],["yillik atik beyan",12],["tehlikeli atik beyan",11],["atik uretici",4],["atik kodu",3],["ek-ii",2],["atik miktari",3],["atik beyan",9]],"n":["atik yag","yonetim plani","atik tasima","tasima formu","ambalaj","gekap"],"genel":[]},{"id":"atik-yonetim-plani","ad":"Atık Yönetim Planı Takibi","not":"Atık türü, miktar, azaltma ve bertaraf planı.","kisa":"Atık Yönetim Planı","tip":"sureli","tarih":"duzenleme","periyot":"3 Yıl","a":[["atik yonetim plani",14],["atik yonetim plan",12],["atik azaltma",5],["bertaraf yontemi",3],["geri kazanim",2],["plan donemi",3],["onay tarihi",2]],"n":["beyan formu"],"genel":[]},{"id":"atiksu-drenaj","ad":"Atıksu Drenaj Hattı Kontrolü","not":"Drenaj hattının saha kontrolü, temizlik ve tıkanıklık kaydı.","kisa":"Drenaj Hattı Kontrolü","tip":"periyodik","tarih":"rapor","periyot":"1 Yıl","a":[["drenaj hatti kontrol",14],["drenaj hatti",8],["drenaj kontrol",8],["atiksu drenaj",9],["hat temizlik",4],["tikaniklik",4],["rogar",3],["kontrol formu",2]],"n":["desarj izni","kanal baglanti izni","izin belgesi"],"genel":[]},{"id":"baca-gazi","ad":"Baca Gazı Ölçümü Takibi","not":"Bacadaki CO, NOx, SO₂ ve O₂ ölçüm raporu.","kisa":"Baca Gazı Ölçümü","tip":"periyodik","tarih":"rapor","periyot":"1 Yıl","a":[["baca gazi olcum",14],["baca gazi",8],["baca gazi emisyon",10],["nox",4],["so2",3],["o2 orani",3],["yakma sistemi",3],["kazan baca",3]],"n":["toz emisyon","pm10","voc","ucucu organik"],"genel":[]},{"id":"ced-sureci","ad":"ÇED / ÇED Gerekli Değildir Süreç Takibi","not":"ÇED kararı veya ÇED Gerekli Değildir belgesi ve süreci.","kisa":"ÇED Kararı","tip":"tekil","tarih":"duzenleme","periyot":"—","a":[["ced gerekli degildir",16],["cevre etki degerlendirmesi",14],["ced olumlu",12],["ced karari",10],["ced raporu",9],["ced yonetmeligi",6],["ced",3]],"n":[],"genel":[]},{"id":"cevre-izin","ad":"Çevre İzin / Lisans Belgesi Takibi","not":"Çevre izin ve lisans belgesi, geçerlilik süresi.","kisa":"Çevre İzin Belgesi","tip":"sureli","tarih":"gecerlilik","periyot":"5 Yıl","a":[["cevre izin ve lisans belgesi",16],["cevre izin belgesi",15],["cevre izin",10],["lisans belgesi",6],["emisyon izin belgesi",9],["izin belge no",3],["gecerlilik suresi",3],["5 yil",1]],"n":["ced","desarj","kanal baglanti"],"genel":[]},{"id":"cevre-gurultu","ad":"Çevresel Gürültü Ölçümü","not":"Tesis sınırında dB(A) gürültü ölçüm raporu.","kisa":"Gürültü Ölçümü","tip":"periyodik","tarih":"rapor","periyot":"1 Yıl","a":[["cevresel gurultu",14],["gurultu olcum",13],["gurultu seviyesi",8],["db(a)",4],["dba",4],["leq",3],["gece",1],["gurultu",5]],"n":[],"genel":[]},{"id":"emisyon-olcumu","ad":"Emisyon Ölçümü Takibi","not":"Genel emisyon ölçüm raporu (baca gazı, toz ve VOC dışı).","kisa":"Emisyon Ölçümü","tip":"periyodik","tarih":"rapor","periyot":"1 Yıl","a":[["emisyon olcum raporu",13],["emisyon olcum",10],["emisyon",4],["olcum raporu",3],["surekli olcum",3],["kaynak emisyon",5]],"n":["raporlama","yillik emisyon bildirim"],"genel":["baca-gazi","toz-emisyon","voc-olcumu","filtre-baca-kontrol","emisyon-raporlama"]},{"id":"emisyon-raporlama","ad":"Emisyon Raporlama Takibi","not":"Emisyon verisinin kuruma yıllık bildirimi.","kisa":"Emisyon Bildirimi","tip":"beyan","tarih":"duzenleme","periyot":"1 Yıl","a":[["emisyon raporlama",14],["emisyon bildirim",11],["yillik emisyon bildirim",13],["emisyon beyan",9],["bildirim formu",3],["raporlama donemi",4]],"n":["olcum raporu"],"genel":[]},{"id":"filtre-baca-kontrol","ad":"Filtre / Baca Sistem Kontrolü","not":"Filtre, arıtma ve baca sisteminin bakım / kontrol kaydı.","kisa":"Filtre Kontrolü","tip":"periyodik","tarih":"rapor","periyot":"1 Yıl","a":[["filtre kontrol",12],["baca sistem",9],["filtre bakim",10],["filtre degisim",8],["torba filtre",6],["siklon",4],["aritma sistemi bakim",6],["filtre",4]],"n":["olcum raporu","nox"],"genel":[]},{"id":"gecici-atik-depo","ad":"Geçici Atık Depolama Alanı Kontrolü","not":"Depolama alanı uygunluk, etiketleme ve süre kontrolü.","kisa":"Atık Depo Kontrolü","tip":"periyodik","tarih":"rapor","periyot":"1 Yıl","a":[["gecici atik depolama",15],["gecici depolama alani",13],["depolama alani kontrol",10],["atik etiket",4],["depolama suresi",4],["sizdirmaz",3],["tahliye",1]],"n":[],"genel":[]},{"id":"kapasite-raporu","ad":"Kapasite Raporu Takibi","not":"Tesis kapasite raporu ve geçerlilik süresi.","kisa":"Kapasite Raporu","tip":"sureli","tarih":"gecerlilik","periyot":"3 Yıl","a":[["kapasite raporu",15],["kapasite rapor",12],["yillik uretim kapasitesi",6],["kapasite",4],["oda kayit",2],["gecerlilik",2]],"n":[],"genel":[]},{"id":"resmi-bildirim","ad":"Resmî Çevre Bildirim / Beyan Takibi","not":"Kuruma yapılan çevre bildirim ve beyan evrakı.","kisa":"Çevre Bildirimi","tip":"beyan","tarih":"duzenleme","periyot":"—","a":[["cevre bildirim",9],["resmi bildirim",8],["bakanlik bildirim",8],["il mudurlugu",3],["cevre sehircilik",3],["bildirim tarihi",3],["basvuru no",2],["beyan",3],["bildirim",3]],"n":["atik beyan formu","ambalaj","yillik cevre beyan"],"genel":["atik-beyani","emisyon-raporlama","yillik-cevre-beyan","gekap-beyan","cevre-gorevlisi","atik-yag"]},{"id":"sifir-atik","ad":"Sıfır Atık Belgesi Takibi","not":"Sıfır Atık Belgesi ve yenileme süresi.","kisa":"Sıfır Atık Belgesi","tip":"sureli","tarih":"gecerlilik","periyot":"3 Yıl","a":[["sifir atik belgesi",16],["sifir atik belge",14],["sifir atik yonetim sistemi",10],["sifir atik",8],["belge no",2],["yenileme",1]],"n":[],"genel":[]},{"id":"toz-emisyon","ad":"Toz Emisyonu Ölçüm Takibi","not":"PM10 ve partikül toz emisyonu ölçüm raporu.","kisa":"Toz Emisyonu Ölçümü","tip":"periyodik","tarih":"rapor","periyot":"1 Yıl","a":[["toz emisyon",14],["toz olcum",12],["partikul madde",9],["pm10",8],["pm 10",8],["partikul",6],["toplam toz",6],["mg/nm3",2]],"n":["voc","ucucu organik"],"genel":[]},{"id":"voc-olcumu","ad":"VOC Ölçümü Takibi","not":"Uçucu organik bileşik (VOC) ölçüm raporu.","kisa":"VOC Ölçümü","tip":"periyodik","tarih":"rapor","periyot":"1 Yıl","a":[["voc olcum",14],["ucucu organik bilesik",14],["voc",9],["toplam organik karbon",6],["toc",3],["solvent",2],["boya kabini",2]],"n":[],"genel":[]},{"id":"yillik-cevre-beyan","ad":"Yıllık Çevre Beyanları Takibi","not":"Yıl sonu toplu çevre beyan ve bildirimleri.","kisa":"Yıllık Çevre Beyanı","tip":"beyan","tarih":"duzenleme","periyot":"1 Yıl","a":[["yillik cevre beyan",15],["yillik cevre bildirim",13],["yil sonu beyan",8],["cevre beyan formu",9],["ocak-aralik",3],["beyan yili",4],["yillik beyan",8]],"n":["atik beyan formu"],"genel":[]},{"id":"atik-yag","ad":"Atık Yağ Beyanı / Teslim Takibi","not":"Atık yağ miktarı beyanı ve lisanslı firmaya teslim kaydı.","kisa":"Atık Yağ Beyanı","tip":"beyan","tarih":"duzenleme","periyot":"1 Yıl","a":[["atik yag beyan",15],["atik yag teslim",14],["kullanilmis yag",10],["atik yag",10],["yag teslim",6],["motor yagi",3],["hidrolik yag",3],["atik yaglarin kontrolu",9]],"n":[],"genel":[]},{"id":"atik-tasima-kayit","ad":"Atık Taşıma / Teslim Formları Takibi","not":"Her atık tesliminde oluşan taşıma (ATF / MOTAT) formu.","kisa":"Atık Taşıma Formu","tip":"olay","tarih":"duzenleme","periyot":"Her teslim","a":[["atik tasima formu",15],["atik tasima",10],["motat",12],["tasima formu",9],["atik teslim formu",10],["arac plaka",3],["tasiyici firma",5],["teslim alan",3],["atf",4]],"n":["atik yag beyan","yillik atik beyan"],"genel":[]},{"id":"desarj-baglanti","ad":"Atıksu Deşarj / Kanal Bağlantı İzni Takibi","not":"Su idaresinden alınan deşarj / kanal bağlantı izin belgesi.","kisa":"Deşarj İzin Belgesi","tip":"sureli","tarih":"gecerlilik","periyot":"5 Yıl","a":[["desarj izin belgesi",16],["desarj izni",14],["kanal baglanti izin",15],["kanal baglanti",10],["atiksu desarj",9],["su ve kanalizasyon idaresi",6],["aski",2],["izin belge no",3],["gecerlilik",2]],"n":["drenaj hatti"],"genel":[]},{"id":"cevre-gorevlisi","ad":"Çevre Görevlisi / Danışmanlık Takibi","not":"Çevre görevlisi atama ve danışmanlık sözleşmesi.","kisa":"Danışmanlık Sözleşmesi","tip":"sureli","tarih":"gecerlilik","periyot":"1 Yıl","a":[["cevre gorevlisi",13],["cevre danismanlik",13],["danismanlik sozlesmesi",10],["cevre yonetim birimi",8],["gorevlendirme",4],["sozlesme suresi",4],["sertifika no",2],["danisman",3]],"n":[],"genel":[]},{"id":"acil-durum-plani","ad":"Çevresel Acil Durum Planı Takibi","not":"Çevresel acil durum planı ve döküntü tatbikat kaydı.","kisa":"Acil Durum Planı","tip":"periyodik","tarih":"duzenleme","periyot":"1 Yıl","a":[["cevresel acil durum",15],["acil durum plani",10],["dokuntu tatbikat",12],["tatbikat",6],["dokuntu",5],["mudahale ekibi",4],["acil durum",4],["tatbikat raporu",6]],"n":["yangin tatbikat"],"genel":[]},{"id":"gekap-beyan","ad":"Ambalaj / GEKAP Yıllık Beyan Takibi","not":"Ambalaj atığı ve GEKAP yıllık beyan kaydı.","kisa":"GEKAP Beyanı","tip":"beyan","tarih":"duzenleme","periyot":"1 Yıl","a":[["gekap",13],["geri kazanim katilim payi",14],["ambalaj atigi",11],["ambalaj beyan",12],["piyasaya suren",6],["urun sorumlulugu",5],["ambalaj",5],["yillik beyan",3]],"n":[],"genel":[]}];
+
+/* ===== Profiller: Çevre / Makine / Su ===== */
+const BM_GRUP = {
+  cevre:  { ad: 'Çevre Süreçleri', kisa: 'Çevre' },
+  makine: { ad: 'Makine Ekipman Kontrolleri', kisa: 'Makine' },
+  su:     { ad: 'Su Analiz Kontrolleri', kisa: 'Su analizi' }
+};
+const BM_TIPAD = { sureli: 'Süreli belge', periyodik: 'Periyodik ölçüm / kontrol', beyan: 'Yıllık beyan / bildirim', olay: 'Olay bazlı kayıt', tekil: 'Tek seferlik belge' };
+const BM_SEVIYE = { hafif: { ad: 'Hafif', dpi: 170, q: 0.72 }, dengeli: { ad: 'Dengeli', dpi: 130, q: 0.60 }, guclu: { ad: 'Güçlü', dpi: 100, q: 0.48 } };
+const BM_LS_SIK = 'bm_sik_v1';
+window.bmOgren = window.bmOgren || [];
+try { const o = JSON.parse(localStorage.getItem('bm_ogren_v1') || '[]'); if (Array.isArray(o) && !window.bmOgren.length) window.bmOgren = o; } catch (e) {}
+
+const bmSlug = s => BME.fold(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const bmFmt = iso => iso ? String(iso).split('-').reverse().join('.') : '—';
+const bmMB = b => (b / 1048576 >= 10 ? (b / 1048576).toFixed(0) : (b / 1048576).toFixed(1)).replace('.', ',');
+function bmPeriyot(s) { const m = String(s || '').match(/^(\d+)\s*Yıl/); return m ? { val: m[1], unit: 'year' } : null; }
+function bmSonraki(iso, per) {
+  if (!iso) return '—';
+  const p = bmPeriyot(per); if (!p) return '—';
+  const [y, a, g] = iso.split('-'); return `${g}.${a}.${+y + +p.val}`;
+}
+const BM_STOP = new Set(['kontrol', 'kontrolu', 'ekipman', 'ekipmani', 'tesisat', 'tesisati', 'sistemi', 'sistem', 'periyodik', 'takibi', 'olcumu', 'analizi', 'ekipmanlari', 'tesisatlari']);
+function bmMakineKat() {
+  const L = [];
+  (typeof KONTROL_EKIPMAN_KATALOG !== 'undefined' ? KONTROL_EKIPMAN_KATALOG : []).forEach(k => k.items.forEach(([key, ad]) => {
+    const t = BME.tok(ad), a = [[t.join(' '), 14]], gor = new Set();
+    for (let i = 0; i + 1 < t.length; i++) { const f = t[i] + ' ' + t[i + 1]; if (!gor.has(f)) { gor.add(f); a.push([f, 6]); } }
+    t.forEach(w => { if (w.length >= 5 && !gor.has(w)) { gor.add(w); a.push([w, BM_STOP.has(w) ? 1 : 4]); } });
+    L.push({ id: key, ad, not: '', kisa: ad, tip: 'periyodik', tarih: 'rapor', periyot: '1 Yıl', a, n: [], genel: [], katAd: k.ad });
+  }));
+  return L;
+}
+const BM_SU_HAZIR = [
+  ['İçme-Kullanma Suyu Analizi', [['icme kullanma suyu', 14], ['icme suyu', 10], ['kullanma suyu', 10], ['ts 266', 8], ['insani tuketim amacli sular', 12], ['fiziksel kimyasal analiz', 6], ['su numunesi', 4]]],
+  ['Mikrobiyolojik Su Analizi', [['mikrobiyolojik analiz', 12], ['mikrobiyolojik', 9], ['e coli', 8], ['koliform', 8], ['enterokok', 8], ['toplam bakteri', 5]]],
+  ['Legionella Analizi', [['legionella', 14], ['legionella pneumophila', 14], ['sogutma kulesi', 4]]],
+  ['Soğutma Kulesi Suyu Analizi', [['sogutma kulesi suyu', 14], ['sogutma kulesi', 8], ['kazan suyu', 6]]]
+];
+function bmSuKat() {
+  const L = [], gor = new Set();
+  const ekle = (ad, a) => { const id = 'su:' + bmSlug(ad); if (gor.has(id)) return; gor.add(id); L.push({ id, ad, not: '', kisa: ad, tip: 'periyodik', tarih: 'rapor', periyot: '1 Yıl', a, n: [], genel: [] }); };
+  BM_SU_HAZIR.forEach(([ad, a]) => ekle(ad, a));
+  kontrolItems.filter(it => kontrolGrupId(it) === 'su').forEach(it => {
+    const t = BME.tok(it.name || ''); if (!t.length) return;
+    const a = [[t.join(' '), 14]]; t.forEach(w => { if (w.length >= 5 && !BM_STOP.has(w)) a.push([w, 4]); });
+    ekle(it.name, a);
+  });
+  return L;
+}
+function bmKatListe(grup) {
+  if (grup === 'makine') return bmMakineKat();
+  if (grup === 'su') return bmSuKat();
+  return BM_KAT_CEVRE.map(k => Object.assign({}, k));
+}
+// Kullanıcı düzeltmelerinden öğrenilen ifadeler motorun listesine eklenir
+function bmMotor(grup) {
+  const L = bmKatListe(grup);
+  (window.bmOgren || []).forEach(r => {
+    if (r.grup !== grup) return;
+    const k = L.find(x => x.id === r.kat); if (k) k.a.push([r.fraz, 60]);
+  });
+  return { L, H: BME.hazirla(L) };
+}
+const BM_NOT = {};
+BM_KAT_CEVRE.forEach(k => { BM_NOT[k.id] = k.not; });
+function bmTipOf(it) { const k = it && it.environmentKey ? BM_KAT_CEVRE.find(x => x.id === it.environmentKey) : null; return k ? k.tip : 'periyodik'; }
+function bmCevreTakip(key) { const k = BM_KAT_CEVRE.find(x => x.id === key); return k && (k.tip === 'olay' || k.tip === 'tekil') ? { takip: k.tip } : {}; }
+// Satırın tarih etiketleri kayıt tipine göre değişir
+function bmEtiket(it) {
+  return { sureli: ['Veriliş tarihi', 'Geçerlilik bitişi'], periyodik: ['Son kontrol', 'Sonraki kontrol'], beyan: ['Beyan tarihi', 'Sonraki beyan'], olay: ['Son teslim', 'Takip'], tekil: ['Karar tarihi', 'Takip'] }[bmTipOf(it)] || ['Son kontrol', 'Sonraki kontrol'];
+}
+function bmSatirNot(it) { return (it && it.environmentKey && BM_NOT[it.environmentKey]) || ''; }
+function bmSatirAnahtar(it) {
+  const g = kontrolGrupId(it);
+  if (g === 'cevre') return it.environmentKey || '';
+  if (g === 'makine') return it.equipmentKey || '';
+  return 'su:' + bmSlug(it.name || '');
+}
+function bmSatirBul(grup, kat, fab) {
+  const ad = String(kat.ad || '').toLocaleLowerCase('tr-TR');
+  return kontrolItems.find(it => kontrolGrupId(it) === grup && kontrolKayitFabrikalari(it).includes(fab) &&
+    (bmSatirAnahtar(it) === kat.id || (!bmSatirAnahtar(it).replace(/^su:.*/, '') && String(it.name || '').toLocaleLowerCase('tr-TR') === ad))) || null;
+}
+function bmSatirYap(grup, kat, fab) {
+  const p = bmPeriyot(kat.periyot) || { val: '1', unit: 'year' };
+  const it = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 8), grup, name: kat.ad, fabs: [fab], fab, lastDate: '', periodVal: p.val, periodUnit: p.unit, firm: '', result: 'bekliyor', note: '', belgeler: [] };
+  if (grup === 'cevre') { it.environmentKey = kat.id; const b = kontrolCevreBul(kat.id); if (b) it.environmentCategory = b.katId; }
+  else if (grup === 'makine') { it.equipmentKey = kat.id; if (kat.katAd) { const b = kontrolEkipmanBul(kat.id); if (b) it.equipmentCategory = b.katId; } }
+  if (kat.tip === 'olay' || kat.tip === 'tekil') it.takip = kat.tip;
+  return it;
+}
+function bmFabKisaAd(ad) {
+  const f = (typeof fabrikalar !== 'undefined' ? fabrikalar : []).find(x => x.name === ad);
+  return (f && f.kisa) || BME.fabKisa(ad);
+}
+// Belgede geçen fabrika adı (tüm anlamlı sözcükler yan yana geçmeli)
+function bmFabBul(metin) {
+  const t = BME.tok(metin), bul = [];
+  fabrikalar.forEach(f => {
+    const w = BME.tok(f.name).filter(x => x.length >= 3);
+    if (w.length && BME.bul(w, t)) bul.push({ ad: f.name, n: w.join('').length });
+  });
+  if (!bul.length) return '';
+  bul.sort((a, b) => b.n - a.n);
+  return bul.length === 1 || bul[0].n > bul[1].n ? bul[0].ad : '';
+}
+
+/* ===== Kütüphaneler (gerektiğinde yüklenir) ===== */
+const BM_LIB = {
+  pdfjs: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  worker: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  pdflib: 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
+  tess: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'
+};
+const bmJsYuk = {};
+function bmJs(url, hazir) {
+  if (hazir()) return Promise.resolve();
+  if (bmJsYuk[url]) return bmJsYuk[url];
+  return bmJsYuk[url] = new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = url;
+    s.onload = () => { let n = 0; (function bekle() { if (hazir()) res(); else if (++n > 80) { delete bmJsYuk[url]; rej(new Error('Kütüphane başlatılamadı')); } else setTimeout(bekle, 100); })(); };
+    s.onerror = () => { delete bmJsYuk[url]; rej(new Error('Kütüphane yüklenemedi, internet bağlantısını kontrol et')); };
+    document.head.appendChild(s);
+  });
+}
+async function bmPdfJs() {
+  await bmJs(BM_LIB.pdfjs, () => !!window.pdfjsLib);
+  const o = window.pdfjsLib.GlobalWorkerOptions; if (o && !o.workerSrc) o.workerSrc = BM_LIB.worker;
+  return window.pdfjsLib;
+}
+async function bmPdfLib() { await bmJs(BM_LIB.pdflib, () => !!window.PDFLib); return window.PDFLib; }
+let bmWorker = null;
+async function bmOcr(canvas) {
+  if (!bmWorker) {
+    await bmJs(BM_LIB.tess, () => !!window.Tesseract);
+    try { bmWorker = await window.Tesseract.createWorker('tur'); }
+    catch (e) { bmWorker = await window.Tesseract.createWorker('eng'); }
+  }
+  const r = await bmWorker.recognize(canvas);
+  return (r && r.data && r.data.text) || '';
+}
+async function bmOcrKapat() { if (bmWorker) { try { await bmWorker.terminate(); } catch (e) {} bmWorker = null; } }
+
+/* ===== PDF okuma ===== */
+async function bmMetin(page) {
+  const tc = await page.getTextContent();
+  let out = '', sonY = null, sonX = null;
+  for (const it of tc.items) {
+    if (typeof it.str !== 'string') continue;
+    const y = it.transform ? it.transform[5] : 0, x = it.transform ? it.transform[4] : 0;
+    if (sonY !== null && Math.abs(y - sonY) > 3) out += '\n';
+    else if (sonX !== null && out && x - sonX > ((it.height || 10) * 0.12) && !/\s$/.test(out) && it.str) out += ' ';
+    out += it.str; sonY = y; sonX = x + (it.width || 0);
+    if (it.hasEOL) { out += '\n'; sonY = null; sonX = null; }
+  }
+  return out;
+}
+async function bmCanvas(page, dpi) {
+  let sc = dpi / 72; const v0 = page.getViewport({ scale: 1 });
+  const uzun = Math.max(v0.width, v0.height) * sc; if (uzun > 3000) sc *= 3000 / uzun;
+  const vp = page.getViewport({ scale: sc });
+  const c = document.createElement('canvas'); c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  await page.render({ canvasContext: ctx, canvas: c, viewport: vp }).promise;
+  return c;
+}
+async function bmKucuk(page, yuk) {
+  const v0 = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: yuk / v0.height });
+  const c = document.createElement('canvas'); c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  await page.render({ canvasContext: ctx, canvas: c, viewport: vp }).promise;
+  return c.toDataURL('image/jpeg', 0.55);
+}
+// Dosyayı aç: sayfa sayısı ve ilk sayfanın metinli/taranmış olduğu (yükleme listesi için)
+async function bmDosyaAc(file) {
+  const js = await bmPdfJs(), buf = new Uint8Array(await file.arrayBuffer());
+  const doc = await js.getDocument({ data: buf.slice(0) }).promise;
+  let taranmis = false;
+  try { const p = await doc.getPage(1); taranmis = (await bmMetin(p)).replace(/\s/g, '').length < 25; } catch (e) {}
+  return { ad: file.name, boyut: file.size, u8: buf, doc, n: doc.numPages, taranmis, lib: null };
+}
+// Tüm sayfaları oku: metin (taranmışsa OCR), küçük görüntü
+async function bmDosyaOku(d, ilerle) {
+  d.sayfalar = [];
+  for (let i = 0; i < d.n; i++) {
+    if (BM.durdur) throw new Error('durdu');
+    ilerle(i, 'hazirla');
+    const page = await d.doc.getPage(i + 1), v = page.getViewport({ scale: 1 });
+    let metin = await bmMetin(page), tar = false;
+    if (metin.replace(/\s/g, '').length < 25) {
+      tar = true; ilerle(i, 'ocr');
+      const c = await bmCanvas(page, 200);
+      try { metin = await bmOcr(c); } catch (e) { console.error('OCR', e); metin = ''; if (!BM.ocrHata) { BM.ocrHata = String(e && e.message || e); } }
+      c.width = c.height = 1;
+    }
+    const th = await bmKucuk(page, 116);
+    d.sayfalar.push({ metin, taranmis: tar, w: v.width, h: v.height, th });
+  }
+}
+
+/* ===== Bölüm için PDF üret (metinli: dokunulmaz, taranmış: sıkıştır) ===== */
+async function bmBolumPdf(d, idx, seviye) {
+  const PL = await bmPdfLib();
+  if (!d.lib) d.lib = await PL.PDFDocument.load(d.u8, { ignoreEncryption: true });
+  const ham = await PL.PDFDocument.create();
+  (await ham.copyPages(d.lib, idx)).forEach(p => ham.addPage(p));
+  const hamU8 = await ham.save();
+  const tar = idx.filter(i => d.sayfalar[i].taranmis).length >= Math.ceil(idx.length / 2);
+  if (!tar || !seviye) return { u8: hamU8, ham: hamU8.length, sik: false };
+  const sv = BM_SEVIYE[seviye], out = await PL.PDFDocument.create();
+  for (const i of idx) {
+    if (BM.durdur) throw new Error('durdu');
+    const page = await d.doc.getPage(i + 1), v0 = page.getViewport({ scale: 1 });
+    const c = await bmCanvas(page, sv.dpi);
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', sv.q));
+    const img = await out.embedJpg(new Uint8Array(await blob.arrayBuffer()));
+    const pg = out.addPage([v0.width, v0.height]);
+    pg.drawImage(img, { x: 0, y: 0, width: v0.width, height: v0.height });
+    c.width = c.height = 1;
+  }
+  const u8 = await out.save();
+  return u8.length < hamU8.length * 0.95 ? { u8, ham: hamU8.length, sik: true } : { u8: hamU8, ham: hamU8.length, sik: false };
+}
+// Sıkıştırma ekranı için tahmin: örnek sayfa, her seviyede gerçek JPEG boyutu
+async function bmTahmin() {
+  const ornek = BM.ornek;
+  if (!ornek) return;
+  const d = BM.dosyalar[ornek.d], page = await d.doc.getPage(ornek.s + 1);
+  const hamC = await bmCanvas(page, 200), onizle = {};
+  const jpg = async (c, q) => { const b = await new Promise(r => c.toBlob(r, 'image/jpeg', q)); return b; };
+  const ref = await jpg(hamC, 0.85);
+  onizle.orijinal = URL.createObjectURL(ref);
+  const boy = {};
+  for (const k of Object.keys(BM_SEVIYE)) {
+    const sv = BM_SEVIYE[k], c = await bmCanvas(page, sv.dpi), b = await jpg(c, sv.q);
+    boy[k] = b.size; onizle[k] = URL.createObjectURL(b);
+  }
+  BM.tah = { boy, onizle, ref: ref.size };
+}
+
+/* ===== Bulut deposu (PDF parçaları) ===== */
+const BM_PARCA = 3 * 700000;
+const bmBlobOku = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
+async function bmBlobYaz(id, u8) {
+  if (!window._fbBelge) throw new Error('Bulut bağlantısı hazır değil');
+  const parcalar = [];
+  for (let s = 0; s < u8.length; s += BM_PARCA) parcalar.push(await bmBlobOku(new Blob([u8.subarray(s, Math.min(u8.length, s + BM_PARCA))], { type: 'application/pdf' })));
+  await window._fbBelge.sil(id);
+  for (let k = 0; k < parcalar.length; k++) await window._fbBelge.yaz(id, k, parcalar[k]);
+}
+const bmOnbellek = new Map();
+async function bmBlobOkuBulut(id) {
+  if (bmOnbellek.has(id)) return bmOnbellek.get(id);
+  if (!window._fbBelge) throw new Error('Bulut bağlantısı hazır değil');
+  const v = await window._fbBelge.oku(id);
+  if (!v) throw new Error('Belge bulutta bulunamadı');
+  const L = Array.isArray(v) ? v : Object.keys(v).sort((a, b) => a - b).map(k => v[k]);
+  const par = [];
+  for (const s of L) par.push(new Uint8Array(await (await fetch(s)).arrayBuffer()));
+  let n = 0; par.forEach(p => { n += p.length; });
+  const u8 = new Uint8Array(n); let o = 0; par.forEach(p => { u8.set(p, o); o += p.length; });
+  if (bmOnbellek.size > 6) bmOnbellek.delete(bmOnbellek.keys().next().value);
+  bmOnbellek.set(id, u8);
+  return u8;
+}
+async function bmBlobSil(id) { bmOnbellek.delete(id); if (window._fbBelge) { try { await window._fbBelge.sil(id); } catch (e) { console.error(e); } } }
+function bmTumBelgeler(it) {
+  const L = (it && it.belgeler || []).slice();
+  (it && it.altlar || []).forEach(a => (a.belgeler || []).forEach(x => L.push(x)));
+  return L;
+}
+
+/* ===== Akış durumu ===== */
+const BM = { grup: 'cevre', hedef: null, hedefAlt: null, ekr: 'yukle', dosyalar: [], bol: [], fab: '', sik: 'dengeli', durdur: false, ok: null, ornek: null, tah: null, sheet: null, sonuc: null, grupSec: false, L: [], H: [] };
+try { const s = localStorage.getItem(BM_LS_SIK); if (BM_SEVIYE[s]) BM.sik = s; } catch (e) {}
+const bmUid = () => 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const bmEl = id => document.getElementById(id);
+const bmKat = id => BM.L.find(k => k.id === id) || null;
+const bmGV = { yuksek: ['Yüksek', 'p-y'], orta: ['Orta', 'p-o'], dusuk: ['Düşük', 'p-d'] };
+const bmJ = s => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+function bmHazirMi(b) { return !!(b.kat && (b.guven !== 'dusuk' || b.elle)); }
+function bmHazirlar() { return BM.bol.filter(bmHazirMi); }
+function bmBolumTarih(b) { return b.gec || b.duz || ''; }
+function bmAd(b) {
+  if (b.adElle) return b.adElle;
+  const k = bmKat(b.kat); if (!k) return '';
+  const alt = bmAltAd(b), d = bmBolumTarih(b);
+  return `${k.kisa || k.ad}${alt ? ' – ' + alt : ''}${d ? ' - ' + bmFmt(d) : ''}${b.fab ? ' (' + bmFabKisaAd(b.fab) + ')' : ''}`;
+}
+function bmAltAd(b) {
+  if (!b.alt) return '';
+  if (b.alt.t === 'yeni') return b.alt.ad || '';
+  if (b.alt.t === 'var') { const it = bmSatirBul(BM.grup, bmKat(b.kat) || {}, b.fab); const a = it && (it.altlar || []).find(x => x.id === b.alt.id); return a ? a.ad : ''; }
+  return '';
+}
+// Bölüm alanlarını metinden yeniden oku
+function bmBolumDoldur(b, koru) {
+  const d = BM.dosyalar[b.di], metin = b.sayfalar.map(i => d.sayfalar[i].metin).join('\n'), k = bmKat(b.kat);
+  const t = BME.tarihSec(metin, k && k.tarih), a = BME.alanlar(metin);
+  b.metin = metin;
+  if (!koru) {
+    b.duz = t.duzenleme || ((t.tumu || []).slice().sort()[0]) || '';
+    b.gec = t.gecerlilik || '';
+    b.belgeNo = a.belgeNo || '';
+    b.kurum = BME.kurumBul(metin) || '';
+    b.adElle = '';
+  }
+  b.ekipman = a.ekipman || ''; b.seri = a.seri || '';
+  b.fabOkunan = bmFabBul(metin);
+  b.fab = b.fabOkunan || BM.fab || '';
+}
+function bmBolumKur(di, bl) {
+  const b = { id: bmUid(), di, sayfalar: bl.sayfalar.slice(), kat: bl.kat ? bl.kat.id : null, motor: bl.kat ? bl.kat.id : null, guven: bl.guven, ipucu: bl.ipucu || [], elle: false, alt: null };
+  bmBolumDoldur(b);
+  return b;
+}
+
+/* ===== Aç / kapat ===== */
+function bmHtml() {
+  if (bmEl('bm-bg')) return;
+  const bg = document.createElement('div'); bg.id = 'bm-bg';
+  bg.innerHTML = '<div id="bm-sh"><div class="top">İSG Yönetim &amp; Performans</div><div class="scr" id="bm-scr"></div><div class="onay" id="bm-on"></div></div>';
+  document.body.appendChild(bg);
+  const vw = document.createElement('div'); vw.id = 'bm-vw'; document.body.appendChild(vw);
+  const dh = document.createElement('div'); dh.id = 'bm-dh'; document.body.appendChild(dh);
+  const fi = document.createElement('input'); fi.type = 'file'; fi.id = 'bm-fi'; fi.accept = 'application/pdf,.pdf'; fi.multiple = true; fi.style.display = 'none';
+  fi.onchange = () => { const f = Array.from(fi.files || []); fi.value = ''; if (f.length) bmAc(BM.pg, f, BM.ph, BM.pa); };
+  document.body.appendChild(fi);
+}
+function bmAc(grup, files, hedefId, hedefAlt) {
+  bmHtml();
+  if (BM.calisiyor) { toast('Önceki işlem sürüyor'); return; }
+  Object.assign(BM, { grup: grup || 'cevre', hedef: hedefId || null, hedefAlt: hedefAlt || null, ekr: 'yukle', dosyalar: [], bol: [], durdur: false, ok: null, ornek: null, tah: null, sheet: null, sonuc: null, ocrHata: '', grupSec: !grup });
+  const it = hedefId ? kontrolItems.find(x => x.id === hedefId) : null;
+  BM.fab = (it && kontrolKayitFabrikalari(it)[0]) || kontrolFabFilter || (fabrikalar.length === 1 ? fabrikalar[0].name : '');
+  if (it) BM.grup = kontrolGrupId(it);
+  BM.pg = BM.grup; BM.ph = null; BM.pa = null;
+  const m = bmMotor(BM.grup); BM.L = m.L; BM.H = m.H;
+  bmEl('bm-bg').classList.add('on'); document.body.style.overflow = 'hidden';
+  bmCiz();
+  if (files && files.length) bmDosyaEkle(files);
+}
+function bmKapat(zorla) {
+  if (BM.calisiyor && !zorla) return;
+  BM.durdur = true; bmOcrKapat();
+  BM.dosyalar.forEach(d => { try { d.doc && d.doc.destroy(); } catch (e) {} });
+  BM.dosyalar = []; BM.bol = [];
+  if (BM.tah) Object.values(BM.tah.onizle).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
+  BM.tah = null;
+  const bg = bmEl('bm-bg'); if (bg) bg.classList.remove('on');
+  document.body.style.overflow = '';
+}
+function bmGit(e) { BM.ekr = e; bmCiz(); const s = bmEl('bm-scr'); if (s) s.scrollTop = 0; }
+
+/* ===== Ekran iskeleti ===== */
+function bmHd(t, s, geri) { return `<div class="hd">${geri ? `<button class="bk" onclick="${geri}">‹</button>` : ''}<div><b>${esc(t)}</b><small>${esc(s)}</small></div></div>`; }
+function bmThumbs(b) { const d = BM.dosyalar[b.di]; return `<div class="th">${b.sayfalar.map(i => `<img src="${d.sayfalar[i].th}" alt="">`).join('')}</div>`; }
+function bmCiz() {
+  const sc = bmEl('bm-scr'); if (!sc) return;
+  const f = { yukle: bmEkrYukle, okuma: bmEkrOkuma, esle: bmEkrEsle, alt: bmEkrAlt, aktar: bmEkrAktar, sik: bmEkrSik, onay: bmEkrOnay, ilerle: bmEkrIlerle, bitti: bmEkrBitti }[BM.ekr];
+  sc.innerHTML = f();
+  sc.querySelectorAll('textarea').forEach(t => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; });
+  const on = bmEl('bm-on'); on.classList.toggle('on', !!BM.sheet); on.innerHTML = BM.sheet ? bmSheetHtml() : '';
+  bmSurukleKur();
+}
+function bmBtn(geri, ileri, ileriYazi, pasif) {
+  return `<div class="btns"><button class="s" onclick="${geri[1]}">${geri[0]}</button>${ileri ? `<button class="p" onclick="${ileri}"${pasif ? ' disabled' : ''}>${ileriYazi}</button>` : ''}</div>`;
+}
+
+/* ===== 1. Yükle ===== */
+const bmDokunmatik = () => { try { return window.matchMedia('(pointer:coarse)').matches; } catch (e) { return false; } };
+function bmEkrYukle() {
+  const L = BM.dosyalar, hazir = L.filter(d => !d.yukleniyor && !d.hata);
+  const grupSec = BM.grupSec ? `<div class="card"><div class="lb">HANGİ BÖLÜM İÇİN</div><div class="gp">${Object.keys(BM_GRUP).map(g => `<button class="${BM.grup === g ? 'on' : ''}" onclick="bmGrupDegis('${g}')">${BM_GRUP[g].kisa}</button>`).join('')}</div></div>` : '';
+  const hedef = BM.hedef ? (() => { const it = kontrolItems.find(x => x.id === BM.hedef); return it ? `<div class="eff">Bu satıra eklenecek: <b>${esc(it.name)}</b>. Belgenin içeriği başka bir başlığa daha çok benziyorsa sonraki adımda görürsün.</div>` : ''; })() : '';
+  return bmHd('Toplu belge yükle', 'PDF seç, program okusun', 'bmKapat()') + `<div class="bd">${grupSec}${hedef}
+  <label class="drop" id="bm-drop"><span style="font-size:26px">📄</span><b style="color:var(--text)">PDF dosyalarını seç</b><span class="one">Birden çok dosya ve çok sayfalı PDF olur</span>${bmDokunmatik() ? '' : '<span class="one">Bilgisayardan buraya sürükleyip bırakabilirsin</span>'}<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="bmDosyaEkle(this.files);this.value=''"></label>
+  ${L.length ? `<div class="card"><div class="lb">SEÇİLEN DOSYALAR</div>${L.map((d, i) => `<div class="fl"><div class="ic">PDF</div><div><b>${esc(d.ad)}</b><small>${d.yukleniyor ? 'Açılıyor…' : d.hata ? esc(d.hata) : `${d.n} sayfa · ${bmMB(d.boyut)} MB · ${d.taranmis ? 'taranmış' : 'metinli'}`}</small></div>${d.yukleniyor ? '<span class="pill p-n">…</span>' : d.hata ? `<button class="x" onclick="bmDosyaSil(${i})">✕</button>` : `<span class="pill p-n">${d.taranmis ? 'OCR' : 'Metin'}</span>`}</div>`).join('')}</div>` : ''}
+  <div class="eff">Dosyalar cihazında okunur, bu aşamada buluta gönderilmez. Onay vermeden hiçbir kayıt değişmez.</div></div>` +
+  bmBtn(['Vazgeç', 'bmKapat()'], 'bmOku()', 'Oku', !hazir.length || L.some(d => d.yukleniyor));
+}
+function bmGrupDegis(g) { BM.grup = g; const m = bmMotor(g); BM.L = m.L; BM.H = m.H; bmCiz(); }
+async function bmDosyaEkle(files) {
+  const L = Array.from(files || []).filter(f => /pdf$/i.test(f.name) || f.type === 'application/pdf');
+  if (!L.length) { toast('Yalnızca PDF dosyaları okunur'); return; }
+  if (BM.ekr !== 'yukle') BM.ekr = 'yukle';
+  for (const f of L) {
+    if (BM.dosyalar.length >= 20) { toast('Bir seferde en fazla 20 dosya'); break; }
+    const kayit = { ad: f.name, boyut: f.size, yukleniyor: true }; BM.dosyalar.push(kayit); bmCiz();
+    try { Object.assign(kayit, await bmDosyaAc(f), { yukleniyor: false }); }
+    catch (e) { console.error(e); kayit.yukleniyor = false; kayit.hata = /Kütüphane/.test(e.message) ? e.message : 'Bu dosya açılamadı'; }
+    bmCiz();
+  }
+}
+function bmDosyaSil(i) { BM.dosyalar.splice(i, 1); bmCiz(); }
+
+/* ===== 2. Okuma ===== */
+function bmEkrOkuma() {
+  const o = BM.ok || { d: 0, s: 0, adim: '' }, tot = BM.dosyalar.reduce((s, d) => s + d.n, 0);
+  return bmHd('Belgeler okunuyor', 'Pencereyi kapatmayın') + `<div class="bd">${BM.dosyalar.map((d, i) => {
+    const bitti = i < o.d, simdi = i === o.d, y = bitti ? 100 : simdi ? Math.round((o.s) / d.n * 100) : 0;
+    return `<div class="card"><div class="lb">${esc(d.ad.toUpperCase())}</div>${simdi ? `<div class="kv"><b>Sayfa ${Math.min(o.s + 1, d.n)} / ${d.n}</b><b>%${y}</b></div>` : `<div class="kv"><b>${bitti ? 'Tamamlandı' : 'Sırada'}</b></div>`}<div class="pb"><i style="width:${y}%"></i></div>
+    ${simdi ? `<div class="kv"><span>${o.adim === 'ocr' ? '… Metin okunuyor (OCR)' : '… Sayfa hazırlanıyor'}</span></div>` : ''}</div>`;
+  }).join('')}</div><div class="btns"><button class="s" onclick="bmDurdur()">Durdur</button></div>`;
+}
+function bmDurdur() { BM.durdur = true; }
+async function bmOku() {
+  const hazir = BM.dosyalar.filter(d => !d.hata && !d.yukleniyor);
+  BM.dosyalar = hazir; BM.durdur = false; BM.bol = []; BM.calisiyor = true; BM.ocrHata = '';
+  BM.ekr = 'okuma'; BM.ok = { d: 0, s: 0, adim: '' }; bmCiz();
+  try {
+    for (let i = 0; i < BM.dosyalar.length; i++) {
+      const d = BM.dosyalar[i]; BM.ok.d = i;
+      await bmDosyaOku(d, (s, adim) => { BM.ok.s = s; BM.ok.adim = adim; bmCiz(); });
+      const r = BME.bol(BM.H, d.sayfalar.map(p => p.metin));
+      r.bolumler.forEach(bl => BM.bol.push(bmBolumKur(i, bl)));
+    }
+    await bmOcrKapat();
+    bmHedefUygula();
+    BM.calisiyor = false; bmGit('esle');
+    if (BM.ocrHata) toast('Taranmış sayfalar okunamadı, kategorileri elle seç');
+  } catch (e) {
+    BM.calisiyor = false; await bmOcrKapat();
+    if (e.message !== 'durdu') { console.error(e); toast('Okuma sırasında hata oluştu'); }
+    bmGit('yukle');
+  }
+}
+// Satırdan yüklemede emin olunmayan bölümler o satırın başlığına atanır
+function bmHedefUygula() {
+  const it = BM.hedef ? kontrolItems.find(x => x.id === BM.hedef) : null; if (!it) return;
+  let k = bmKat(bmSatirAnahtar(it)) || BM.L.find(x => String(x.ad).toLocaleLowerCase('tr-TR') === String(it.name || '').toLocaleLowerCase('tr-TR'));
+  if (!k) return;
+  BM.bol.forEach(b => {
+    if (!b.kat || b.guven !== 'yuksek') { b.kat = k.id; b.elle = true; bmBolumDoldur(b, true); }
+    if (BM.hedefAlt && b.kat === k.id) { b.alt = { t: 'var', id: BM.hedefAlt }; b.altElle = true; }
+  });
+}
+
+/* ===== 3. Bölme ve eşleştirme ===== */
+function bmSonrakiYaz(b) {
+  const k = bmKat(b.kat); if (!k) return '—';
+  if (k.tip === 'sureli') return b.gec ? bmFmt(b.gec) : bmSonraki(b.duz, k.periyot);
+  if (k.tip === 'periyodik' || k.tip === 'beyan') { const it = b.fab ? bmSatirBul(BM.grup, k, b.fab) : null; return it && it.lastDate !== undefined && it.periodUnit === 'year' ? bmSonraki(b.duz, it.periodVal + ' Yıl') : bmSonraki(b.duz, k.periyot); }
+  return '—';
+}
+function bmSayfaYazi(b) { const s = b.sayfalar; return s.length > 1 ? `Sayfa ${s[0] + 1}–${s[s.length - 1] + 1}` : `Sayfa ${s[0] + 1}`; }
+function bmKart(b, i) {
+  const k = bmKat(b.kat), g = bmGV[b.guven] || bmGV.dusuk, hazir = bmHazirMi(b);
+  const onceki = BM.bol[i - 1], ayniDosya = onceki && onceki.di === b.di;
+  const satirYok = k && b.fab && !bmSatirBul(BM.grup, k, b.fab);
+  return `<div class="card">${bmThumbs(b)}
+   <button class="sel" onclick="bmSheetAc('kat',${i})"><span>${k ? esc(k.ad) : 'Kategori seç…'}</span>${k && hazir ? `<span class="pill ${g[1]}" style="flex:none">${g[0]}</span>` : '<span class="pill p-d" style="flex:none">Seçilmedi</span>'}<span style="flex:none">▾</span></button>
+   <div class="one">${bmSayfaYazi(b)} · Belge tarihi ${bmFmt(b.duz)} · Sonraki ${bmSonrakiYaz(b)}</div>
+   ${k ? `<div class="one" style="color:var(--text)">📄 ${esc(bmAd(b))}</div>` : ''}
+   ${b.ipucu.length && b.kat === b.motor ? `<div class="nt">Eşleşen ifadeler: ${esc(b.ipucu.slice(0, 4).join(', '))}</div>` : (k ? '' : '<div class="nt">Başlık bulunamadı, kategoriyi elle seç.</div>')}
+   ${k && satirYok ? '<div class="nt">Bu fabrikada bu başlık için satır yok, onayda oluşturulur.</div>' : ''}
+   ${b.fabOkunan && b.fab === b.fabOkunan && b.fab !== BM.fab ? `<div class="nt">Fabrika belgeden okundu: ${esc(b.fab)}</div>` : ''}
+   <div class="chips">${ayniDosya ? `<button class="chip" onclick="bmBirlestir(${i})">↑ Üsttekiyle birleştir</button>` : ''}${b.sayfalar.length > 1 ? `<button class="chip" onclick="bmAyir(${i})">Son sayfayı ayır</button>` : ''}${fabrikalar.length > 1 ? `<button class="chip" onclick="bmSheetAc('fab',${i})">Fabrika: ${esc(b.fab ? bmFabKisaAd(b.fab) : 'seç')}</button>` : ''}</div></div>`;
+}
+function bmEkrEsle() {
+  const tot = BM.dosyalar.reduce((s, d) => s + d.n, 0), yuk = BM.bol.filter(b => b.guven === 'yuksek' && b.kat).length;
+  const bas = BM.dosyalar.length > 1 ? `${BM.dosyalar.length} dosya, ${tot} sayfa` : `${tot} sayfa`;
+  const fabSatir = fabrikalar.length > 1 || !BM.fab ? `<div class="card"><div class="lb">FABRİKA</div><button class="sel" onclick="bmSheetAc('fab',-1)"><span>${BM.fab ? esc(BM.fab) : 'Fabrika seç…'}</span><span style="flex:none">▾</span></button><div class="nt">Belgede fabrika adı geçiyorsa o kullanılır, geçmiyorsa buradaki seçim.</div></div>` : '';
+  let h = bmHd('Bölme ve eşleştirme', BM.dosyalar.length === 1 ? BM.dosyalar[0].ad : `${BM.dosyalar.length} dosya`, "bmGit('yukle')") + `<div class="bd">
+   <div class="eff">${bas} <b>${BM.bol.length} belgeye</b> ayrıldı. ${yuk} tanesi yüksek güvenle eşleşti. Kategoriyi veya sayfa sınırını değiştirebilirsin.</div>${fabSatir}`;
+  BM.dosyalar.forEach((d, di) => {
+    const L = BM.bol.map((b, i) => [b, i]).filter(x => x[0].di === di), sorun = L.filter(x => !bmHazirMi(x[0])).length;
+    if (BM.dosyalar.length > 1 || sorun) h += `<div class="lb" style="margin-top:4px">${esc(d.ad.toUpperCase())} · ${d.n} SAYFA${sorun ? ' · KONTROL GEREKİYOR' : ''}</div>`;
+    if (sorun) h += '<div class="warn">Motor bazı sayfalardan emin olamadı. Kategori seçmediğin belge kayda işlenmez.</div>';
+    h += L.map(x => bmKart(x[0], x[1])).join('');
+  });
+  const eksikFab = bmHazirlar().some(b => !b.fab);
+  return h + `</div>` + bmBtn(['Geri', "bmGit('yukle')"], 'bmIleri(\'esle\')', eksikFab ? 'Fabrika seç' : 'Devam', !bmHazirlar().length);
+}
+function bmBirlestir(i) {
+  const a = BM.bol[i - 1], b = BM.bol[i]; if (!a || a.di !== b.di) return;
+  a.sayfalar = a.sayfalar.concat(b.sayfalar); BM.bol.splice(i, 1); bmBolumDoldur(a); bmCiz();
+}
+function bmAyir(i) {
+  const a = BM.bol[i]; if (a.sayfalar.length < 2) return;
+  const son = a.sayfalar.pop(), d = BM.dosyalar[a.di];
+  const s = BME.sinifla(BM.H, d.sayfalar[son].metin);
+  const nb = bmBolumKur(a.di, { kat: s.en ? { id: s.en.id } : null, guven: s.guven, sayfalar: [son], ipucu: s.en ? s.en.ipucu : [] });
+  BM.bol.splice(i + 1, 0, nb); bmBolumDoldur(a); bmCiz();
+}
+function bmIleri(nereden) {
+  if (nereden === 'esle') {
+    if (!BM.fab && bmHazirlar().some(b => !b.fab)) { bmSheetAc('fab', -1); return; }
+    bmHazirlar().forEach(b => { if (!b.fab) b.fab = BM.fab; });
+    bmAltHazirla(); bmGit(bmAltGerek() ? 'alt' : 'aktar'); return;
+  }
+  if (nereden === 'alt') { bmGit('aktar'); return; }
+  if (nereden === 'aktar') { bmSikHazirla(); return; }
+  if (nereden === 'sik') { bmGit('onay'); }
+}
+function bmGeri(nereden) {
+  if (nereden === 'aktar') bmGit(bmAltGerek() ? 'alt' : 'esle');
+  else if (nereden === 'alt') bmGit('esle');
+  else if (nereden === 'sik') bmGit('aktar');
+  else if (nereden === 'onay') bmGit(BM.ornek ? 'sik' : 'aktar');
+}
+
+/* ===== Seçim sayfaları (kategori, fabrika, alt kayıt) ===== */
+function bmSheetAc(tur, i) { BM.sheet = { tur, i, q: '' }; bmCiz(); }
+function bmSheetKapat() { BM.sheet = null; bmCiz(); }
+function bmSheetHtml() {
+  const s = BM.sheet, ara = s.tur === 'kat' && BM.L.length > 12 ? `<input class="q" placeholder="Ara…" oninput="bmSheetFiltre(this.value)">` : '';
+  const bas = { kat: 'Kategori seç', fab: 'Fabrika seç', alt: 'Alt kayıt seç' }[s.tur];
+  return `<div><div class="kv"><b style="font-size:15px">${bas}</b><button class="chip" onclick="bmSheetKapat()">Kapat</button></div>${ara}<div class="ls" id="bm-sl">${bmSheetListe()}</div></div>`;
+}
+function bmSheetFiltre(q) { BM.sheet.q = q; bmEl('bm-sl').innerHTML = bmSheetListe(); }
+function bmSheetListe() {
+  const s = BM.sheet, q = BME.fold(s.q || '');
+  if (s.tur === 'kat') {
+    const b = BM.bol[s.i];
+    const L = BM.L.filter(k => !q || BME.fold(k.ad + ' ' + (k.not || '')).includes(q));
+    return `<button class="op${!b.kat ? ' on' : ''}" onclick="bmKatSecildi(${s.i},'')"><span>Kategori yok, kayda işleme<small>Bu sayfalar kayda işlenmez</small></span></button>` +
+      L.map(k => `<button class="op${b.kat === k.id ? ' on' : ''}" onclick="bmKatSecildi(${s.i},'${bmJ(k.id)}')"><span>${esc(k.ad)}${k.not ? `<small>${esc(k.not)}</small>` : ''}</span>${b.kat === k.id ? '✓' : ''}</button>`).join('');
+  }
+  if (s.tur === 'fab') {
+    const mevcut = s.i < 0 ? BM.fab : (BM.bol[s.i] || {}).fab;
+    return fabrikalar.map(f => `<button class="op${mevcut === f.name ? ' on' : ''}" onclick="bmFabSecildi(${s.i},'${bmJ(f.name)}')"><span>${esc(f.name)}</span>${mevcut === f.name ? '✓' : ''}</button>`).join('');
+  }
+  const b = BM.bol[s.i], it = bmSatirBul(BM.grup, bmKat(b.kat) || {}, b.fab);
+  return (it && it.altlar || []).map(a => `<button class="op${b.alt && b.alt.t === 'var' && b.alt.id === a.id ? ' on' : ''}" onclick="bmAltSecildi(${s.i},'var','${bmJ(a.id)}')"><span>${esc(a.ad)}${a.no ? `<small>${esc(a.no)}</small>` : ''}</span></button>`).join('') +
+    `<button class="op${b.alt && b.alt.t === 'yeni' ? ' on' : ''}" onclick="bmAltSecildi(${s.i},'yeni')"><span>Yeni alt kayıt: ${esc(b.ekipman || 'adı belgeden okunamadı')}<small>Onaylarsan alt kayıt açılır</small></span></button>` +
+    `<button class="op${!b.alt ? ' on' : ''}" onclick="bmAltSecildi(${s.i},'yok')"><span>Alt kayıt yok<small>Belge doğrudan satıra eklenir</small></span></button>`;
+}
+function bmKatSecildi(i, id) {
+  const b = BM.bol[i]; b.kat = id || null; b.elle = !!id; b.alt = null;
+  if (id) b.guven = b.guven === 'dusuk' ? 'orta' : b.guven;
+  BM.sheet = null; bmBolumDoldur(b); bmCiz();
+}
+function bmFabSecildi(i, ad) {
+  if (i < 0) { BM.fab = ad; BM.bol.forEach(b => { if (!b.fabOkunan) b.fab = ad; }); }
+  else BM.bol[i].fab = ad;
+  BM.sheet = null; bmCiz();
+}
+
+/* ===== 4. Alt kayıt ===== */
+function bmAltAday(b) { // alt kayıt eşleştirmesi gereken bölüm mü
+  if (!bmHazirMi(b) || !b.fab || BM.hedefAlt) return null;
+  const it = bmSatirBul(BM.grup, bmKat(b.kat) || {}, b.fab);
+  return it && (it.altlar || []).length ? it : null;
+}
+function bmAltGerek() { return bmHazirlar().some(b => bmAltAday(b)); }
+function bmAltHazirla() {
+  bmHazirlar().forEach(b => {
+    const it = bmAltAday(b); if (!it || b.altElle) return;
+    const m = BME.fold(b.metin || ''); let best = null, puan = 0;
+    it.altlar.forEach(a => {
+      let p = 0;
+      if (a.no && m.includes(BME.fold(a.no).replace(/\s+/g, ' '))) p += 10;
+      const t = BME.tok(a.ad).filter(x => x.length >= 3); if (t.length && BME.bul(t, BME.tok(b.metin || ''))) p += 6;
+      if (p > puan) { puan = p; best = a; }
+    });
+    if (best) { b.alt = { t: 'var', id: best.id }; b.altG = puan >= 10 ? 'yuksek' : 'orta'; }
+    else if (b.ekipman) { b.alt = { t: 'yeni', ad: b.ekipman, no: b.seri || '' }; b.altG = 'orta'; }
+    else { b.alt = null; b.altG = 'dusuk'; }
+  });
+}
+function bmAltSecildi(i, tur, id) {
+  const b = BM.bol[i]; b.altElle = true;
+  if (tur === 'var') b.alt = { t: 'var', id };
+  else if (tur === 'yeni') b.alt = { t: 'yeni', ad: b.ekipman || 'Yeni alt kayıt', no: b.seri || '' };
+  else b.alt = null;
+  BM.sheet = null; bmCiz();
+}
+function bmEkrAlt() {
+  const L = bmHazirlar().filter(b => bmAltAday(b));
+  const k0 = bmKat(L[0].kat);
+  return bmHd('Alt kayıt eşleştirme', esc(BM.dosyalar[L[0].di].ad), "bmGeri('alt')") + `<div class="bd">
+  <div class="eff">Ana başlık <b>${esc(k0.ad)}</b>. Belgedeki ekipman adı ve numarasına göre alt kayıt bulundu.</div>
+  ${L.map(b => { const i = BM.bol.indexOf(b), g = bmGV[b.altG || 'dusuk'], k = bmKat(b.kat); const ad = b.alt ? (b.alt.t === 'yeni' ? 'Yeni: ' + (b.alt.ad || '') : bmAltAd(b)) : 'Alt kayıt seç…';
+    return `<div class="card">${bmThumbs(b)}<button class="sel" onclick="bmSheetAc('alt',${i})"><span>${esc(k.kisa || k.ad)} › ${esc(ad)}</span><span class="pill ${g[1]}" style="flex:none">${b.alt && b.alt.t === 'yeni' ? 'Yeni' : g[0]}</span></button>
+    <div class="one">Okunan: ${esc([b.ekipman || 'ekipman adı yok', b.seri, bmFmt(b.duz)].filter(Boolean).join(' · '))}</div>
+    <div class="nt">${b.alt && b.alt.t === 'var' ? 'Mevcut alt kayıtla eşleşti, belge bu kaydın geçmişine eklenir.' : b.alt && b.alt.t === 'yeni' ? 'Onaylarsan alt kayıt otomatik açılır, adı belgeden alınır.' : 'Alt kayıt seçilmezse belge doğrudan satıra eklenir.'}</div></div>`; }).join('')}
+  <div class="card"><div class="lb">DOSYA ADI (DÜZENLENEBİLİR)</div>${L.map(b => `<div class="sel wr"><textarea rows="1" onchange="bmAdGir('${b.id}',this.value)">${esc(bmAd(b))}</textarea></div>`).join('')}</div></div>` + bmBtn(['Geri', "bmGeri('alt')"], "bmIleri('alt')", 'Devam');
+}
+function bmAdGir(id, v) { const b = BM.bol.find(x => x.id === id); if (b) b.adElle = v.trim(); }
+
+/* ===== 5. Satıra aktarım ===== */
+function bmAlanTanim(b) {
+  const k = bmKat(b.kat), t = k.tip, per = k.periyot;
+  if (t === 'sureli') return [['Veriliş', 'duz', 'date'], ['Geçerlilik bitişi', 'gec', 'date'], ['Belge no', 'belgeNo', 'text'], ['Kurum', 'kurum', 'text']];
+  if (t === 'periyodik') return [['Son kontrol', 'duz', 'date'], ['Sonraki kontrol', null, 'calc', bmSonrakiYaz(b)], ['Firma', 'kurum', 'text'], ['Belge no', 'belgeNo', 'text']];
+  if (t === 'beyan') return [['Beyan tarihi', 'duz', 'date'], ['Sonraki beyan', null, 'calc', bmSonraki(b.duz, '1 Yıl')], ['Kurum', 'kurum', 'text'], ['Belge no', 'belgeNo', 'text']];
+  if (t === 'olay') { const it = b.fab ? bmSatirBul(BM.grup, k, b.fab) : null, y = (b.duz || '').slice(0, 4); const say = (it ? bmTumBelgeler(it).filter(x => (x.tarih || '').slice(0, 4) === y).length : 0) + BM.bol.filter(x => x.kat === b.kat && x.fab === b.fab && (x.duz || '').slice(0, 4) === y && bmHazirMi(x)).length; return [['Teslim tarihi', 'duz', 'date'], ['Taşıyıcı firma', 'kurum', 'text'], ['Bu yıl', null, 'calc', say + ' kayıt'], ['Belge no', 'belgeNo', 'text']]; }
+  return [['Karar tarihi', 'duz', 'date'], ['Karar no', 'belgeNo', 'text'], ['Kurum', 'kurum', 'text'], ['Takip tarihi', null, 'calc', 'gerekmez']];
+}
+function bmAlanKutu(b, a) {
+  const [ad, key, tur, hesap] = a, v = key ? b[key] : hesap, dolu = !!(v && v !== '—');
+  const mk = tur === 'calc' ? '' : `<span class="mk" style="color:${dolu ? 'var(--good-tx)' : 'var(--warn-tx)'}">${dolu ? '✓' : 'elle gir'}</span>`;
+  const girdi = tur === 'calc' ? `<div style="font-weight:700;font-size:13px;color:var(--text)">${esc(v || '—')}</div>` : `<input type="${tur === 'date' ? 'date' : 'text'}" value="${esc(v || '')}" onchange="bmAlanGir('${b.id}','${key}',this.value)">`;
+  return `<div class="abx"><div class="lb" style="font-size:10px">${esc(ad)}</div>${girdi}${mk}</div>`;
+}
+function bmAlanGir(id, key, v) { const b = BM.bol.find(x => x.id === id); if (!b) return; b[key] = v; bmCiz(); }
+function bmEkrAktar() {
+  const L = bmHazirlar(), fabs = [...new Set(L.map(b => b.fab).filter(Boolean))];
+  return bmHd('Satıra aktarım', 'Okunan bilgiler kayda yazılır', "bmGeri('aktar')") + `<div class="bd">
+  <div class="eff">Her belge kendi kayıt tipine göre yazılır. Okunamayan alan boş kalır, sen doldurursun. Belge adı <b>Belge adı - Tarih (Fabrika)</b> biçiminde oluşur; geçerlilik tarihi varsa o, yoksa veriliş tarihi yazılır.</div>
+  ${L.map(b => `<div class="card"><div class="lb">${esc(BM_TIPAD[bmKat(b.kat).tip].toUpperCase())}</div><div class="sel wr"><textarea rows="1" onchange="bmAdGir('${b.id}',this.value)">${esc(bmAd(b))}</textarea><span style="flex:none">✎</span></div>
+   <div class="grid2">${bmAlanTanim(b).map(a => bmAlanKutu(b, a)).join('')}</div></div>`).join('')}
+  ${fabs.map(f => `<div class="card"><div class="lb">KISA FABRİKA ADI${fabs.length > 1 ? ' · ' + esc(f.toUpperCase()) : ''}</div><div class="sel"><input value="${esc(bmFabKisaAd(f))}" onchange="bmKisaGir('${bmJ(f)}',this.value)"><span style="flex:none">✎</span></div><div class="nt">“${esc(f)}” için otomatik kısaltıldı. Fabrika ayarlarından değiştirebilirsin.</div></div>`).join('')}</div>` + bmBtn(['Geri', "bmGeri('aktar')"], "bmIleri('aktar')", 'Devam');
+}
+function bmKisaGir(fab, v) {
+  const f = fabrikalar.find(x => x.name === fab); if (!f) return;
+  v = v.trim(); if (v && v !== BME.fabKisa(fab)) f.kisa = v; else delete f.kisa;
+  bmCiz();
+}
+
+/* ===== 6. Sıkıştırma ===== */
+function bmTaramaBolumleri() { return bmHazirlar().filter(b => b.sayfalar.filter(i => BM.dosyalar[b.di].sayfalar[i].taranmis).length >= Math.ceil(b.sayfalar.length / 2)); }
+async function bmSikHazirla() {
+  const T = bmTaramaBolumleri();
+  BM.ornek = T.length ? { d: T[0].di, s: T[0].sayfalar.find(i => BM.dosyalar[T[0].di].sayfalar[i].taranmis) } : null;
+  if (BM.ornek && !BM.tah) { BM.calisiyor = true; BM.tahHesap = true; bmGit('sik'); let hata = false; try { await bmTahmin(); } catch (e) { console.error(e); BM.tah = null; hata = true; }
+    BM.tahHesap = false; BM.calisiyor = false;
+    if (hata) { BM.ornek = null; toast('Önizleme hazırlanamadı, belgeler sıkıştırılmadan eklenecek'); bmGit('onay'); } else bmCiz(); }
+  else bmGit(BM.ornek ? 'sik' : 'onay');
+}
+function bmSikBoyut() {
+  return bmSikBoyutSv(BM.sik);
+}
+// Seviye başına tahmin: örnek sayfanın gerçek kodlanmış boyutu, sayfa başına özgün ortalamayı geçemez
+function bmSikBoyutSv(sv) {
+  const T = bmTaramaBolumleri(), t = BM.tah; let once = 0, sonra = 0;
+  T.forEach(b => { const d = BM.dosyalar[b.di], ort = d.boyut / d.n; b.sayfalar.forEach(() => { once += ort; sonra += t ? Math.min(ort, t.boy[sv]) : ort; }); });
+  return { once, sonra };
+}
+function bmEkrSik() {
+  if (BM.tahHesap || !BM.tah) return bmHd('Belge boyutu', 'Örnek sayfa hazırlanıyor', "bmGeri('sik')") + `<div class="bd"><div class="eff">Taranmış sayfalar için üç seviyenin sonucu hesaplanıyor…</div></div>`;
+  const b = bmSikBoyut(), t = BM.tah, s = (k, ad, dpi) => `<button class="${BM.sik === k ? 'on' : ''}" onclick="bmSikSec('${k}')">${ad}<small>${bmMB(bmSikBoyutSv(k).sonra)} MB · ${dpi} dpi</small></button>`;
+  const ad = BM.dosyalar[BM.ornek.d].ad;
+  return bmHd('Belge boyutu', ad, "bmGeri('sik')") + `<div class="bd">
+  <div class="card"><div class="kv"><span>Şu anki boyut</span><b>${bmMB(b.once)} MB</b></div><div class="kv"><span>Seçilen seviye sonrası (tahmini)</span><b>${bmMB(b.sonra)} MB</b></div><div class="pb"><i style="width:${Math.max(3, b.sonra / b.once * 100)}%"></i></div></div>
+  <div class="lb">SIKIŞTIRMA SEVİYESİ</div><div class="seg">${s('hafif', 'Hafif', 170)}${s('dengeli', 'Dengeli', 130)}${s('guclu', 'Güçlü', 100)}</div>
+  <div class="card"><div class="lb">ÖNCE · SONRA</div><div class="grid2" style="gap:8px"><div><img src="${t.onizle.orijinal}" style="width:100%;border-radius:6px;border:1px solid var(--line)"><div class="one">Orijinal</div></div><div><img src="${t.onizle[BM.sik]}" style="width:100%;border-radius:6px;border:1px solid var(--line)"><div class="one">${BM_SEVIYE[BM.sik].ad}</div></div></div></div>
+  <div class="eff">Taranmış sayfalar yeniden paketlenir. Yazı okunur kalır, okunan metin kayıtla saklanır ve aramada kullanılır. Metinli PDF'e dokunulmaz.</div></div>` + bmBtn(['Geri', "bmGeri('sik')"], "bmIleri('sik')", 'Devam');
+}
+function bmSikSec(k) { BM.sik = k; try { localStorage.setItem(BM_LS_SIK, k); } catch (e) {} bmCiz(); }
+
+/* ===== 7. Onay ve kayıt ===== */
+function bmEkrOnay() {
+  const L = bmHazirlar(), atla = BM.bol.length - L.length;
+  const bos = BM.bol.filter(b => !bmHazirMi(b)).reduce((s, b) => s + b.sayfalar.length, 0);
+  const sb = BM.ornek ? bmSikBoyut() : null;
+  return bmHd('Son kontrol', 'Hiçbir şey henüz yazılmadı', "bmGeri('onay')") + `<div class="bd"><div class="card"><div class="lb">${L.length} BELGE KAYDA İŞLENECEK</div>
+  ${L.map(b => { const k = bmKat(b.kat); const alt = bmAltAd(b); return `<div class="kv"><span>${esc((k.kisa || k.ad).replace(' Takibi', '').replace(' Kontrolü', ''))}${alt ? ' › ' + esc(alt) : ''}</span><b>${bmFmt(bmBolumTarih(b))}</b></div>`; }).join('')}</div>
+  ${atla ? `<div class="warn">${bos} sayfa (${atla} belge) için kategori seçilmedi, kayda işlenmeyecek.</div>` : ''}
+  <div class="eff">Her belge ilgili satıra eklenir, tarihler kayıt tipine göre güncellenir. Sonuç alanına dokunulmaz.</div>
+  ${sb ? `<div class="card"><div class="kv"><span>Dosya boyutu (tahmini)</span><b>${bmMB(sb.once)} → ${bmMB(sb.sonra)} MB</b></div></div>` : ''}</div>` + bmBtn(['Geri', "bmGeri('onay')"], 'bmOnayAc()', 'Kayda işle', !L.length);
+}
+function bmOnayAc() {
+  const n = bmHazirlar().length;
+  isgOnay({ baslik: `${n} belge kayda işlensin mi?`, mesaj: 'Belgeler satırlara eklenir ve tarihler güncellenir. Sonradan her belgeyi satırdan silebilirsin.', evet: 'Kayda işle', iptal: 'Vazgeç', tehlike: false }, bmIsle);
+}
+function bmEkrIlerle() {
+  const s = BM.isle || { n: 0, i: 0, ad: '' };
+  return bmHd('Kayda işleniyor', 'Pencereyi kapatmayın') + `<div class="bd"><div class="card"><div class="kv"><b>Belge ${Math.min(s.i + 1, s.n)} / ${s.n}</b><b>%${s.n ? Math.round(s.i / s.n * 100) : 0}</b></div><div class="pb"><i style="width:${s.n ? s.i / s.n * 100 : 0}%"></i></div><div class="one">${esc(s.ad || '')}</div><div class="nt">${esc(s.adim || '')}</div></div></div><div class="btns"><button class="s" onclick="bmDurdur()">Durdur</button></div>`;
+}
+function bmEkrBitti() {
+  const r = BM.sonuc || { satirlar: [], not: '' };
+  return bmHd(r.baslik || 'Kayda işlendi', r.alt || '') + `<div class="bd"><div class="card">${r.satirlar.map(x => `<div class="kv"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join('')}</div>${r.not ? `<div class="warn">${esc(r.not)}</div>` : ''}</div><div class="btns"><button class="p" onclick="bmKapat(true)">Kapat</button></div>`;
+}
+function bmOgrenEkle(b) {
+  if (!b.elle || !b.kat || b.kat === b.motor) return;
+  // Başlık satırı: büyük harfli, anahtar sözcük içeren, kurum antetine benzemeyen satır
+  const kurumRe = /laboratuvar|muayene kurulus|mudurlug|bakanlig|idaresi|danismanlik|belediye|kurulus|lisansli|ltd|a\.s\.|sti\b/;
+  const satirlar = String(b.metin || '').split(/\n+/).map(s => s.trim()).filter(Boolean).slice(0, 8);
+  const sat = satirlar.find(s => {
+    const f = BME.fold(s), harf = s.replace(/[^A-Za-zÇĞİÖŞÜçğıöşü]/g, '');
+    if (harf.length < 8 || kurumRe.test(f) || (s.match(/\d/g) || []).length > 3) return false;
+    const buyuk = (harf.match(/[A-ZÇĞİÖŞÜ]/g) || []).length / harf.length;
+    return buyuk >= 0.7 && /rapor|belge|form|beyan|izin|plan|sertifika|sozlesme|kontrol|olcum|analiz|bildirim|karar/.test(f);
+  });
+  if (!sat) return;
+  const t = BME.tok(sat); if (t.length < 2 || t.length > 8) return;
+  const fraz = t.join(' ');
+  if (window.bmOgren.some(r => r.grup === BM.grup && r.fraz === fraz && r.kat === b.kat)) return;
+  window.bmOgren.push({ grup: BM.grup, kat: b.kat, fraz });
+  if (window.bmOgren.length > 300) window.bmOgren.shift();
+}
+async function bmIsle() {
+  const L = bmHazirlar(); if (!L.length) return;
+  if (!window._fbBelge || navigator.onLine === false) { toast('Belgeler buluta kaydedilir, internet bağlantısı gerekir'); return; }
+  BM.calisiyor = true; BM.durdur = false; BM.isle = { n: L.length, i: 0, ad: '', adim: '' };
+  const sv = BM.ornek ? BM.sik : '';
+  BM.ekr = 'ilerle'; bmCiz();
+  let eklenen = 0, once = 0, sonra = 0, hata = '';
+  const grupAcik = BM.grup;
+  try {
+    for (let n = 0; n < L.length; n++) {
+      if (BM.durdur) throw new Error('durdu');
+      const b = L[n], d = BM.dosyalar[b.di], k = bmKat(b.kat);
+      BM.isle.i = n; BM.isle.ad = bmAd(b); BM.isle.adim = 'PDF hazırlanıyor'; bmCiz();
+      const pdf = await bmBolumPdf(d, b.sayfalar, sv);
+      BM.isle.adim = 'Buluta kaydediliyor'; bmCiz();
+      const id = bmUid(); await bmBlobYaz(id, pdf.u8);
+      once += pdf.ham; sonra += pdf.u8.length;
+      const doc = { id, ad: bmAd(b), tarih: bmBolumTarih(b), sayfa: b.sayfalar.length, boyut: pdf.u8.length, th: d.sayfalar[b.sayfalar[0]].th, ts: Date.now(), kurum: b.kurum || '', belgeNo: b.belgeNo || '', kaynak: d.ad };
+      bmKayda(b, k, doc);
+      bmOgrenEkle(b);
+      kontrolSave(); eklenen++;
+    }
+    BM.isle.i = L.length;
+  } catch (e) { if (e.message !== 'durdu') { console.error(e); hata = e.message || 'Bilinmeyen hata'; } else hata = 'İşlem durduruldu'; }
+  await bmOcrKapat();
+  try { localStorage.setItem('bm_ogren_v1', JSON.stringify(window.bmOgren)); if (window._fbSaveKontrol) window._fbSaveKontrol(); } catch (e) {}
+  kontrolGrupAcik[grupAcik] = true; kontrolRender(); if (typeof dashRender === 'function') dashRender();
+  BM.calisiyor = false;
+  const fark = once && sonra < once ? ' (' + bmMB(once) + ' → ' + bmMB(sonra) + ' MB)' : '';
+  BM.sonuc = { baslik: hata ? 'Kısmen tamamlandı' : 'Kayda işlendi', alt: eklenen + ' / ' + L.length + ' belge eklendi', satirlar: [['Eklenen belge', String(eklenen)], ['Dosya boyutu', sonra ? bmMB(sonra) + ' MB' + fark : '—']], not: hata ? 'Hata: ' + hata + '. Eklenemeyen belgeler için işlemi yeniden başlatabilirsin.' : '' };
+  bmGit('bitti');
+}
+function bmKayda(b, k, doc) {
+  let it = bmSatirBul(BM.grup, k, b.fab);
+  if (!it) { it = bmSatirYap(BM.grup, k, b.fab); kontrolItems.push(it); }
+  if (!Array.isArray(it.belgeler)) it.belgeler = [];
+  const ilk = !it.lastDate, yeni = !it.lastDate || (b.duz && b.duz >= it.lastDate);
+  let hedef = it;
+  if (b.alt) {
+    if (!Array.isArray(it.altlar)) it.altlar = [];
+    if (b.alt.t === 'yeni') { const a = { id: bmUid(), ad: b.alt.ad || 'Alt kayıt', no: b.alt.no || '', lastDate: '', belgeler: [] }; it.altlar.push(a); hedef = a; }
+    else hedef = it.altlar.find(x => x.id === b.alt.id) || it;
+  }
+  if (!Array.isArray(hedef.belgeler)) hedef.belgeler = [];
+  hedef.belgeler.push(doc);
+  if (hedef !== it) {
+    if (b.duz && (!hedef.lastDate || b.duz >= hedef.lastDate)) hedef.lastDate = b.duz;
+    return;
+  }
+  if (!yeni) return;
+  if (b.duz) it.lastDate = b.duz;
+  if (ilk) { const p = bmPeriyot(k.periyot); if (p && BM.grup === 'cevre') { it.periodVal = p.val; it.periodUnit = p.unit; } }
+  if (k.tip === 'sureli') it.bitis = b.gec || '';
+  if (k.tip === 'olay' || k.tip === 'tekil') it.takip = k.tip;
+  if (b.kurum) it.firm = b.kurum;
+  if (b.belgeNo) it.belgeNo = b.belgeNo;
+}
+
+/* ===== Kontrol satırı: belgeler, alt kayıtlar, sürükle-bırak ===== */
+function bmSatirBelgeHtml(it, idJs) {
+  const L = it.belgeler || [], A = it.altlar || [];
+  const th = (x, aid) => `<button type="button" class="bm-t" onclick="bmGoruntule('${idJs}','${x.id}')" title="${esc(x.ad)}">${x.th ? `<img src="${x.th}" alt="">` : '<span class="nb">PDF</span>'}<span>${x.tarih ? esc(bmFmt(x.tarih).slice(0, 6) + bmFmt(x.tarih).slice(8)) : 'PDF'}</span></button>`;
+  return `<div class="bm-dc">
+    ${L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : ''}
+    ${A.map(a => `<div class="bm-alt"><div class="kv"><span>▸ ${esc(a.ad)}${a.no ? ' · ' + esc(a.no) : ''}</span><b>${a.lastDate ? esc(bmFmt(a.lastDate)) : '—'}</b></div>${(a.belgeler || []).length ? `<div class="bm-th">${a.belgeler.map(x => th(x)).join('')}</div>` : ''}<div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}','${bmJ(a.id)}')">＋ Belge</button><button type="button" class="bm-ch" onclick="bmAltSil('${idJs}','${bmJ(a.id)}')">Alt kaydı sil</button></div></div>`).join('')}
+    <div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}')">📄 Belge ekle</button><button type="button" class="bm-ch" onclick="bmAltEkle('${idJs}')">＋ Alt kayıt</button></div>
+    ${!L.length && !A.length ? '<div class="nt" style="font-size:11.5px;color:var(--text2);font-style:italic">PDF ekleyince küçük resmi burada görünür.</div>' : ''}</div>`;
+}
+function bmSatirDosya(id, altId) { bmHtml(); BM.pg = null; BM.ph = id; BM.pa = altId || null; const it = kontrolItems.find(x => x.id === id); BM.pg = it ? kontrolGrupId(it) : 'cevre'; bmEl('bm-fi').click(); }
+function bmGrupYukle(g) { bmHtml(); BM.pg = g; BM.ph = null; BM.pa = null; bmAc(g, null, null, null); }
+
+function bmAltEkle(id) {
+  const eski = bmEl('bm-mini'); if (eski) eski.remove();
+  const bg = document.createElement('div'); bg.id = 'bm-mini'; bg.className = 'isg-onay-bg';
+  bg.innerHTML = `<div class="isg-onay-card" role="dialog" aria-modal="true"><div class="isg-onay-b">Alt kayıt ekle</div><div class="isg-onay-m">Örn. Hava Tankı, seri no HT-0412. Her alt kaydın belgeleri ve tarihi ayrı izlenir.</div><div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px"><input class="kx-in" id="bm-ad" placeholder="Alt kayıt adı"><input class="kx-in" id="bm-no" placeholder="Seri / numara (isteğe bağlı)"></div><div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">Vazgeç</button><button class="isg-onay-btn ok" data-k="evet">Ekle</button></div></div>`;
+  bg.addEventListener('click', e => {
+    if (e.target === bg) { bg.remove(); return; }
+    const k = e.target.closest('[data-k]'); if (!k) return;
+    if (k.dataset.k === 'evet') {
+      const ad = bmEl('bm-ad').value.trim(); if (!ad) { bmEl('bm-ad').focus(); return; }
+      const it = kontrolItems.find(x => x.id === id); if (!it) { bg.remove(); return; }
+      if (!Array.isArray(it.altlar)) it.altlar = [];
+      it.altlar.push({ id: bmUid(), ad, no: bmEl('bm-no').value.trim(), lastDate: '', belgeler: [] });
+      kontrolSatirAcik.add(id); kontrolSave(); kontrolRender();
+    }
+    bg.remove();
+  });
+  document.body.appendChild(bg); bmEl('bm-ad').focus();
+}
+function bmAltSil(id, altId) {
+  const it = kontrolItems.find(x => x.id === id), a = it && (it.altlar || []).find(x => x.id === altId); if (!a) return;
+  const n = (a.belgeler || []).length;
+  isgOnay({ baslik: 'Alt kayıt silinsin mi?', mesaj: `"${a.ad}" alt kaydı${n ? ` ve içindeki ${n} belge` : ''} silinecek. Geri alınamaz.`, evet: 'Sil' }, async () => {
+    for (const x of (a.belgeler || [])) await bmBlobSil(x.id);
+    it.altlar = it.altlar.filter(x => x.id !== altId); kontrolSave(); kontrolRender(); toast('Alt kayıt silindi');
+  });
+}
+// Satır silinirken PDF'lerini de buluttan kaldır
+function bmSatirBlobSil(it) { bmTumBelgeler(it).forEach(x => { bmBlobSil(x.id); }); }
+
+/* Sürükle-bırak: sayfa üzerinde ve yükleme ekranında */
+function bmDosyaSurukleniyor(e) { const t = e.dataTransfer && e.dataTransfer.types; return !!t && Array.prototype.indexOf.call(t, 'Files') >= 0; }
+function bmSurukleHedef(e) {
+  const s = e.target && e.target.closest ? e.target : null; if (!s) return {};
+  const row = s.closest('.kx-row[data-id]'), sec = s.closest('.kontrol-grup[data-grup]');
+  return { row, sec };
+}
+function bmSurukleTemizle() { document.querySelectorAll('.bm-dz').forEach(x => x.classList.remove('bm-dz')); const dh = bmEl('bm-dh'); if (dh) dh.classList.remove('on'); }
+(function bmSurukleBaslat() {
+  const kok = () => bmEl('kontrol-wrap');
+  document.addEventListener('dragleave', e => { if (!e.relatedTarget) bmSurukleTemizle(); });
+  document.addEventListener('dragend', bmSurukleTemizle);
+  document.addEventListener('dragover', e => {
+    if (!bmDosyaSurukleniyor(e)) return;
+    const k = kok();
+    if (bmEl('bm-bg') && bmEl('bm-bg').classList.contains('on')) { if (!e.target.closest || !e.target.closest('#bm-drop')) { e.preventDefault(); } return; }
+    if (!k || k.style.display === 'none' || !k.contains(e.target)) return;
+    e.preventDefault(); bmHtml();
+    const { row, sec } = bmSurukleHedef(e);
+    document.querySelectorAll('.bm-dz').forEach(x => x.classList.remove('bm-dz'));
+    const dh = bmEl('bm-dh');
+    if (row) { row.classList.add('bm-dz'); dh.textContent = 'PDF’leri bırak · bu satıra eklenir'; }
+    else if (sec) { sec.classList.add('bm-dz'); dh.textContent = 'PDF’leri bırak · ' + BM_GRUP[sec.dataset.grup].kisa + ' belgeleri için okunur'; }
+    else dh.textContent = 'PDF’leri bırak';
+    dh.classList.add('on');
+  });
+  document.addEventListener('drop', e => {
+    if (!bmDosyaSurukleniyor(e)) return;
+    const acik = bmEl('bm-bg') && bmEl('bm-bg').classList.contains('on');
+    if (acik) { if (!e.target.closest || !e.target.closest('#bm-drop')) { e.preventDefault(); } return; }
+    const k = kok(); if (!k || k.style.display === 'none' || !k.contains(e.target)) return;
+    e.preventDefault();
+    const { row, sec } = bmSurukleHedef(e), f = Array.from(e.dataTransfer.files || []);
+    bmSurukleTemizle();
+    if (row) bmAc(null, f, row.dataset.id);
+    else if (sec) bmAc(sec.dataset.grup, f);
+    else bmAc(null, f);
+  });
+})();
+function bmSurukleKur() {
+  const z = bmEl('bm-drop'); if (!z || z.dataset.k) return; z.dataset.k = 1;
+  ['dragenter', 'dragover'].forEach(n => z.addEventListener(n, e => { if (!bmDosyaSurukleniyor(e)) return; e.preventDefault(); z.classList.add('ov'); }));
+  z.addEventListener('dragleave', () => z.classList.remove('ov'));
+  z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('ov'); bmDosyaEkle(e.dataTransfer.files); });
+}
+
+/* ===== Belge görüntüleyici (büyütme, kaydırma) ===== */
+const BV = { it: null, doc: null, pdf: null, n: 0, p: 1, z: 1, x: 0, y: 0, u8: null };
+async function bmGoruntule(itemId, docId) {
+  bmHtml();
+  const it = kontrolItems.find(x => x.id === itemId); if (!it) return;
+  const L = bmTumBelgeler(it), doc = L.find(x => x.id === docId); if (!doc) return;
+  Object.assign(BV, { it, doc, pdf: null, p: 1, z: 1, x: 0, y: 0, u8: null });
+  const vw = bmEl('bm-vw'); vw.classList.add('on'); document.body.style.overflow = 'hidden';
+  vw.innerHTML = `<div class="h"><button onclick="bmVKapat()">✕</button><div style="flex:1;min-width:0"><b>${esc(doc.ad)}.pdf</b><small>Sayfa <span id="bv-pn">1</span> / <span id="bv-nn">${doc.sayfa || 1}</span></small></div><button title="İndir" onclick="bmVIndir()">⬇</button><button title="Sil" onclick="bmVSil()">🗑</button></div><div class="st" id="bv-st"><div class="ms">Belge açılıyor…</div></div><div class="f"><button onclick="bmVSayfa(-1)">‹</button><button onclick="bmVZoom(-.25)">−</button><span id="bv-zl">100%</span><button onclick="bmVZoom(.25)">＋</button><button onclick="bmVSayfa(1)">›</button></div>`;
+  try {
+    const js = await bmPdfJs(); BV.u8 = await bmBlobOkuBulut(doc.id);
+    BV.pdf = await js.getDocument({ data: BV.u8.slice(0) }).promise; BV.n = BV.pdf.numPages;
+    bmEl('bv-nn').textContent = BV.n; bmVCiz(); bmVOlay();
+  } catch (e) { console.error(e); const st = bmEl('bv-st'); if (st) st.innerHTML = `<div class="ms">${esc(e.message || 'Belge açılamadı')}</div>`; }
+}
+async function bmVCiz() {
+  const st = bmEl('bv-st'); if (!st || !BV.pdf) return;
+  const page = await BV.pdf.getPage(BV.p), v0 = page.getViewport({ scale: 1 }), gen = st.clientWidth || 360;
+  const res = Math.min(3, (window.devicePixelRatio || 1) * 1.5), vp = page.getViewport({ scale: gen * res / v0.width });
+  let c = st.querySelector('canvas'); if (!c) { st.innerHTML = ''; c = document.createElement('canvas'); st.appendChild(c); }
+  c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height); c.style.width = gen + 'px'; c.style.height = (gen * v0.height / v0.width) + 'px';
+  await page.render({ canvasContext: c.getContext('2d'), canvas: c, viewport: vp }).promise;
+  bmVUygula();
+}
+function bmVUygula() { const c = document.querySelector('#bv-st canvas'); if (!c) return; c.style.transform = `translate(calc(-50% + ${BV.x}px),${BV.y}px) scale(${BV.z})`; const z = bmEl('bv-zl'); if (z) z.textContent = Math.round(BV.z * 100) + '%'; }
+function bmVZoom(d) { BV.z = Math.min(4, Math.max(.5, BV.z + d)); if (BV.z <= 1) { BV.x = 0; BV.y = 0; } bmVUygula(); }
+function bmVSayfa(d) { const n = BV.p + d; if (n < 1 || n > BV.n) return; BV.p = n; BV.z = 1; BV.x = 0; BV.y = 0; bmEl('bv-pn').textContent = n; bmVCiz(); }
+function bmVOlay() {
+  const s = bmEl('bv-st'); if (!s) return; let d = null; const pts = {};
+  s.onpointerdown = e => { s.setPointerCapture(e.pointerId); pts[e.pointerId] = e; if (Object.keys(pts).length === 1) d = { x: e.clientX - BV.x, y: e.clientY - BV.y }; };
+  s.onpointermove = e => {
+    if (!pts[e.pointerId]) return; const ids = Object.keys(pts);
+    if (ids.length === 2) { const a = pts[ids[0]], b = pts[ids[1]], eski = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); pts[e.pointerId] = e; const A = pts[ids[0]], B = pts[ids[1]], yeni = Math.hypot(A.clientX - B.clientX, A.clientY - B.clientY); if (eski) BV.z = Math.min(4, Math.max(.5, BV.z * yeni / eski)); bmVUygula(); return; }
+    pts[e.pointerId] = e; if (d && BV.z > 1) { BV.x = e.clientX - d.x; BV.y = e.clientY - d.y; bmVUygula(); }
+  };
+  const up = e => { delete pts[e.pointerId]; d = null; }; s.onpointerup = up; s.onpointercancel = up;
+  s.ondblclick = () => { BV.z = BV.z > 1 ? 1 : 2.2; if (BV.z === 1) { BV.x = 0; BV.y = 0; } bmVUygula(); };
+  s.onwheel = e => { e.preventDefault(); bmVZoom(e.deltaY < 0 ? .15 : -.15); };
+}
+function bmVKapat() { const vw = bmEl('bm-vw'); vw.classList.remove('on'); vw.innerHTML = ''; try { BV.pdf && BV.pdf.destroy(); } catch (e) {} BV.pdf = null; if (!(bmEl('bm-bg') && bmEl('bm-bg').classList.contains('on'))) document.body.style.overflow = ''; }
+function bmVIndir() { if (!BV.u8) return; afIndir(new Blob([BV.u8], { type: 'application/pdf' }), (BV.doc.ad || 'belge').replace(/[\\/:*?"<>|]/g, '-') + '.pdf'); }
+function bmVSil() {
+  const { it, doc } = BV; if (!doc) return;
+  isgOnay({ baslik: 'Belge silinsin mi?', mesaj: `${doc.ad}.pdf kalıcı silinir. Bu işlem geri alınamaz.`, evet: 'Sil', iptal: 'Vazgeç' }, async () => {
+    await bmBlobSil(doc.id);
+    it.belgeler = (it.belgeler || []).filter(x => x.id !== doc.id);
+    (it.altlar || []).forEach(a => { a.belgeler = (a.belgeler || []).filter(x => x.id !== doc.id); });
+    kontrolSave(); bmVKapat(); kontrolRender(); toast('Belge silindi');
+  });
+}
+
+/* ===== Fabrika kısa adı (Kontroller > fabrika ayarları) ===== */
+function bmKisaDuzenle(i) {
+  const ad = kontrolFabs[i], f = fabrikalar.find(x => x.name === ad); if (!f) return;
+  const el = document.querySelector(`[data-ks="${i}"]`); if (!el) return;
+  el.outerHTML = `<span class="bm-ks" data-ks="${i}"><input id="bm-ks-in" value="${esc(bmFabKisaAd(ad))}" style="height:30px;width:170px;border-radius:8px;border:1px solid var(--kx-line);background:var(--kx-soft);color:var(--text);padding:0 8px;font:inherit;font-size:12px" onkeydown="if(event.key==='Enter')bmKisaKaydet(${i})" onblur="bmKisaKaydet(${i})"></span>`;
+  const g = bmEl('bm-ks-in'); if (g) { g.focus(); g.select(); }
+}
+function bmKisaKaydet(i) {
+  const g = bmEl('bm-ks-in'); if (!g) return; const ad = kontrolFabs[i], f = fabrikalar.find(x => x.name === ad);
+  if (f) { const v = g.value.trim(); if (v && v !== BME.fabKisa(ad)) f.kisa = v; else delete f.kisa; saveFabrikalar(); parametreSenkron(); }
+  kontrolRenderFabList();
+}
+
 </script>
 </body>
 </html>
