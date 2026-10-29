@@ -7682,7 +7682,7 @@ px}
 <div id="settings-bg" onclick="if(event.target===this)closeSettings()">
   <div id="settings-panel">
     <div class="st-hd">
-      <button type="button" class="st-ic" id="st-back" onclick="settingsGit('menu')" style="display:none" aria-label="Geri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button type="button" class="st-ic" id="st-back" onclick="stGeri()" style="display:none" aria-label="Geri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div class="st-t"><b id="st-ttl">Ayarlar</b><small id="st-sub">Program tercihleri</small></div>
       <button type="button" class="st-ic" onclick="closeSettings()" aria-label="Kapat">×</button>
     </div>
@@ -7691,6 +7691,7 @@ px}
       <button type="button" class="st-mi" onclick="settingsGit('durum')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg></span><span class="st-mt"><b>Görev durumları</b><span class="st-v" id="st-v-durum"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('param')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l6 3V9l6 3V4h6v17z"/></svg></span><span class="st-mt"><b>Fabrika, departman, personel</b><span class="st-v" id="st-v-param"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('gorunum')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.2"/><circle cx="14" cy="8.5" r="1.2"/><circle cx="16" cy="13" r="1.2"/></svg></span><span class="st-mt"><b>Görünüm</b><span class="st-v" id="st-v-tema"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button type="button" class="st-mi" onclick="settingsGit('depo')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></span><span class="st-mt"><b>Depolama</b><span class="st-v" id="st-v-depo"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('ai')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><span class="st-mt"><b>Yapay zeka</b><span class="st-v" id="st-v-ai"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('hesap')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></span><span class="st-mt"><b>Hesap ve uygulama</b><span class="st-v" id="st-v-hesap"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
     </div></div></div>
@@ -7735,6 +7736,8 @@ px}
         <div id="ai-test-sonuc" style="font-size:11px;margin-top:8px;color:var(--text2);line-height:1.5"></div>
       </details>
     </div></div>
+
+    <div class="st-pg" id="st-p-depo"><div class="st-bd" id="depo-ic"></div></div>
 
     <div class="st-pg" id="st-p-hesap"><div class="st-bd" id="settings-pwa-section">
       <div class="st-kv">Sürüm <span><script>document.write(window.APP_VERSION||'')</script></span></div>
@@ -8969,7 +8972,7 @@ async function kazaRaporMotorTest(deep) {
 function closeSettings() { document.getElementById('settings-bg').classList.remove('on'); }
 
 let stSayfa = 'menu', stTemaAcik = false;
-const ST_BASLIK = {menu:['Ayarlar','Program tercihleri'],durum:['Görev durumları','Board sütunları'],param:['Fabrika, departman, personel','Tüm bölümlerde ortak liste'],gorunum:['Görünüm','Renk teması'],ai:['Yapay zeka','Gemini ile öneri'],hesap:['Hesap ve uygulama','Oturum ve kurulum']};
+const ST_BASLIK = {menu:['Ayarlar','Program tercihleri'],durum:['Görev durumları','Board sütunları'],param:['Fabrika, departman, personel','Tüm bölümlerde ortak liste'],gorunum:['Görünüm','Renk teması'],ai:['Yapay zeka','Gemini ile öneri'],hesap:['Hesap ve uygulama','Oturum ve kurulum'],depo:['Depolama','Veri tabanı kullanımı (tahmini)']};
 function settingsGit(k) {
   stSayfa = k;
   document.querySelectorAll('#settings-panel .st-pg').forEach(p => p.classList.toggle('on', p.id === 'st-p-' + k));
@@ -8979,6 +8982,7 @@ function settingsGit(k) {
   document.getElementById('st-back').style.display = k === 'menu' ? 'none' : 'grid';
   stColForm(false); stParForm(false);
   if (k === 'menu') settingsOzet();
+  if (k === 'depo' && typeof depAc === 'function') depAc();
 }
 function stColForm(ac) { const f = document.getElementById('st-col-add'), b = document.getElementById('st-col-plus'); if (f) f.style.display = ac ? 'grid' : 'none'; if (b) b.style.display = ac ? 'none' : 'block'; if (ac) document.getElementById('new-col-name')?.focus(); }
 function stParForm(ac) { const f = document.getElementById('st-par-add'), b = document.getElementById('st-par-plus'); if (f) f.style.display = ac ? 'grid' : 'none'; if (b) b.style.display = ac ? 'none' : 'block'; if (ac) document.getElementById('param-yeni-ad')?.focus(); }
@@ -8991,6 +8995,7 @@ function settingsOzet() {
   set('st-v-tema', t ? t.name.replace(/\s*[☀🌙🌈]\uFE0F?/g, '') : '');
   const anahtar = !!aiKeyAl();
   set('st-v-ai', anahtar ? 'Bağlı ✓' : 'Anahtar yok', anahtar);
+  try { const dc = JSON.parse(localStorage.getItem('depo_cache_v1') || 'null'); if (dc) { const dp = Math.round(dc.tot / 1e9 * 100); set('st-v-depo', (dc.tot / 1e9).toFixed(2).replace('.', ',') + ' GB / 1 GB · %' + dp + (dp >= 85 ? ' ⚠' : '')); } else set('st-v-depo', 'Ölçmek için aç'); } catch (e) {}
   set('st-v-hesap', 'Sürüm ' + (window.APP_VERSION || ''));
   const d = document.getElementById('ai-key-durum');
   if (d) d.innerHTML = anahtar ? '<span style="color:var(--good-tx);font-weight:700">✓</span><span>Anahtar kayıtlı. Öneri düğmeleri aktif.</span>' : '<span>Anahtar girilmedi. Öneri düğmeleri uyarı verir.</span>';
@@ -20558,6 +20563,14 @@ window.addEventListener('resize', calMobInit);
   };
 
   window._fbSaveDenetim = () => yaz('denetim', () => ({ denetimler, bulgular }));
+  // Depolama modülü köprüsü: tüm ağacın boyutu ve küçültme/silme işaretleri
+  window._fbDepo = {
+    oku: () => ROOT.once('value').then(sn => sn.val()),
+    metaOku: () => ROOT.child('depoMeta').once('value').then(sn => sn.val() || {}),
+    metaYaz: v => ROOT.child('depoMeta').set(v),
+    kazaRaporSil: id => ROOT.child('kazaRaporlari').child(String(id)).remove(),
+    kazaRaporYaz: (id, v) => ROOT.child('kazaRaporlari').child(String(id)).set(v)
+  };
 
   window._fbReady = true;
 
@@ -21085,6 +21098,35 @@ window.addEventListener('resize', calMobInit);
 </style>
 
 
+<style id="depo-style">
+#depo-ic{display:flex;flex-direction:column;gap:10px}#depo-ic>*{flex:none}
+.dp-card{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.dp-big{display:flex;align-items:baseline;justify-content:space-between}.dp-big b{font-size:26px;color:var(--text)}.dp-big b span{font-size:13px;color:var(--text2);font-weight:600}.dp-big em{font-style:normal;font-weight:800;font-size:22px;color:var(--text)}
+.dp-big em.w{color:var(--warn-tx)}
+.dp-pb{height:10px;border-radius:99px;background:var(--surface2);overflow:hidden}.dp-pb i{display:block;height:100%;border-radius:99px;transition:width .3s;background:var(--acc)}.dp-pb.w i{background:var(--warn)}.dp-pb.sm{height:7px}
+.dp-warn{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--warn) 16%,var(--surface));color:var(--warn-tx);font-weight:700;font-size:12.5px;line-height:1.4}
+.dp-warn.bad{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--bad-tx)}
+.dp-lb{font-size:11px;font-weight:800;color:var(--text2);letter-spacing:.04em}
+.dp-yr{display:grid;grid-template-columns:44px 1fr auto 16px;align-items:center;gap:10px;padding:10px 4px;border:0;border-top:1px solid var(--line);background:none;color:var(--text);cursor:pointer;width:100%;text-align:left;font:inherit;min-height:0}
+.dp-yr.f{border-top:0}.dp-yr b{font-size:13.5px}.dp-yr span{font-size:12px;color:var(--text2);white-space:nowrap}.dp-yr u{text-decoration:none;color:var(--text3)}
+.dp-tag{display:inline-block;margin:-4px 0 6px 54px;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--acc) 16%,var(--surface));color:var(--acc-tx)}.dp-tag.g{background:var(--surface2);color:var(--text2)}
+.dp-kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;color:var(--text)}.dp-kv span{color:var(--text2)}
+.dp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+.dp-opt{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;cursor:pointer;background:var(--surface);color:var(--text);width:100%;text-align:left;font:inherit;min-height:0}
+.dp-opt i{width:36px;height:36px;border-radius:11px;background:var(--surface2);display:grid;place-items:center;font-style:normal;flex:none}
+.dp-opt b{display:block;font-size:13.5px}.dp-opt small{color:var(--text2);font-size:11.5px}.dp-opt.d i{background:color-mix(in srgb,var(--bad) 16%,var(--surface))}
+.dp-seg{display:flex;gap:8px}.dp-seg button{flex:1;min-height:46px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;line-height:1.2;font-family:inherit;padding:4px 6px}
+.dp-seg button small{display:block;color:var(--text2);font-weight:600;font-size:11px}
+.dp-seg button.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,var(--surface))}
+.dp-sel{display:flex;align-items:center;min-height:46px;padding:0 14px;border:1px solid var(--border2);border-radius:14px;background:var(--surface);font-weight:700;gap:8px;color:var(--text)}
+.dp-sel small{color:var(--text2);font-weight:600}.dp-sel select{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:inherit;font-weight:700;outline:0;padding:10px 0}
+.dp-chk{display:flex;gap:10px;align-items:flex-start;padding:2px 0;color:var(--text);font-size:13px;font-weight:600}.dp-chk input{width:20px;height:20px;margin-top:1px;flex:none}.dp-chk small{display:block;color:var(--text2);font-size:11.5px;font-weight:500}
+.dp-eff{padding:11px 12px;border-radius:12px;background:var(--surface2);font-size:12.5px;line-height:1.45;font-weight:600;color:var(--text)}
+.dp-btns{display:flex;gap:8px;padding-top:2px}.dp-btns button{flex:1;min-height:48px;border-radius:14px;border:0;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+.dp-btns .s{background:var(--surface2);color:var(--text)}.dp-btns .p{background:var(--acc);color:var(--acc-fg)}.dp-btns .d{background:var(--bad-bg);color:#fff}
+.dp-btns button:disabled{opacity:.5;cursor:default}
+.dp-mut{font-size:12px;color:var(--text2)}.dp-lnk{border:0;background:none;color:var(--acc-tx);font-weight:800;font-size:12.5px;cursor:pointer;padding:6px 0;min-height:0}
+</style>
 <style id="kfa-style">
 /* Fabrika ayarları + fabrika seçici (Kontroller) */
 .kfa-sheet{background:var(--surface);color:var(--text);width:100%;max-width:520px;max-height:86vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 30px rgba(0,0,0,.25);overflow:hidden}
@@ -24130,6 +24172,332 @@ window.addEventListener('beforeprint',()=>{
     } else bar.style.transform = 'translate(-50%,-60px)';
   }, { passive: true });
 })();
+</script>
+<script id="depo-js">
+// ══ DEPOLAMA ═════════════════════════════════════════════════════════════
+// Firebase Realtime Database kotası 1 GB. Fotoğraflar (ve ileride eklenecek her
+// türlü dosya) veri URL'si olarak kayıtların içinde durur. Bu modül: kullanımı
+// ölçer, fotoğrafları küçültür / siler, istenirse bir yılın verilerini tamamen siler.
+const DEPO_KOTA = 1e9, DEPO_UYARI = 85, DEPO_TTL = 6 * 3600e3, DEPO_LS = 'depo_cache_v1';
+let depS = 'ana', depTaraniyor = false, depDur = false, depMeta = {}, depMetaOk = false;
+const depSt = { yil: '', fab: '', to: '12', px: 1200, yedek: true, act: 'kucult', ilerle: null };
+
+function depGB(b) { b = +b || 0; if (b >= 1e8) return (b / 1e9).toFixed(2).replace('.', ',') + ' GB'; if (b >= 1e5) return (b / 1e6).toFixed(b >= 1e7 ? 0 : 1).replace('.', ',') + ' MB'; return Math.max(1, Math.round(b / 1e3)) + ' KB'; }
+function depIso(s) {
+  s = String(s || '');
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if (m) return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+  return '';
+}
+function depTs(n) { if (!n) return ''; const d = new Date(+n); return isNaN(d) ? '' : d.toISOString().slice(0, 10); }
+const depFoto = s => typeof s === 'string' && s.indexOf('data:image/') === 0;
+function depCache() { try { return JSON.parse(localStorage.getItem(DEPO_LS) || 'null'); } catch (e) { return null; } }
+
+// ── Ölçüm: tüm ağaç tek geçişte; veri URL'leri MIME türüne göre ayrı kategori ──
+function depWalk(x, f) {
+  if (typeof x === 'string') {
+    if (x.indexOf('data:') === 0) {
+      const m = x.slice(5, 40).split(/[;,]/)[0].toLowerCase();
+      if (m.indexOf('image/') === 0) f.f += x.length; else if (m === 'application/pdf') f.p += x.length; else f.d += x.length;
+    }
+    return x.length + 2;
+  }
+  if (x && typeof x === 'object') {
+    let n = 2;
+    for (const k in x) n += k.length + 4 + depWalk(x[k], f);
+    return n;
+  }
+  return String(x).length;
+}
+function depTara(v) {
+  const c = { foto: 0, pdf: 0, diger: 0, den: 0, gor: 0, kaza: 0 };
+  let tot = 0;
+  Object.keys(v || {}).forEach(k => {
+    const f = { f: 0, p: 0, d: 0 };
+    const n = depWalk(v[k], f) + k.length + 4;
+    tot += n; c.foto += f.f; c.pdf += f.p; c.diger += f.d;
+    const kalan = n - f.f - f.p - f.d;
+    if (k === 'denetim') c.den += kalan; else if (k === 'tasks' || k === 'archive') c.gor += kalan; else c.kaza += kalan;
+  });
+  return { t: Date.now(), tot, c };
+}
+function depYenile(zorla) {
+  const ch = depCache();
+  if (!zorla && ch && Date.now() - ch.t < DEPO_TTL) { depCizAna(); return Promise.resolve(); }
+  if (!window._fbDepo) { depCizAna(); return Promise.resolve(); }
+  depTaraniyor = true; depCizAna();
+  return window._fbDepo.oku().then(v => {
+    try { localStorage.setItem(DEPO_LS, JSON.stringify(depTara(v))); } catch (e) {}
+  }).catch(e => { console.error('Depolama ölçülemedi', e); }).then(() => { depTaraniyor = false; depCizAna(); try { settingsOzet(); } catch (e) {} });
+}
+function depMetaYukle() {
+  if (depMetaOk || !window._fbDepo) return Promise.resolve();
+  return window._fbDepo.metaOku().then(m => { depMeta = m || {}; depMetaOk = true; }).catch(() => {});
+}
+
+// ── Kayıt kapsamı (bellekteki veriden) ──
+function depDenMap() { const m = {}; denetimler.forEach(d => { m[d.id] = d; }); return m; }
+function depKayitlar() {
+  const dm = depDenMap(), L = [];
+  denetimler.forEach(d => L.push({ tur: 'den', o: d, iso: depIso(d.tarih), fab: d.fab || '' }));
+  bulgular.forEach(b => { const d = dm[b.denetimId]; L.push({ tur: 'bul', o: b, iso: d ? depIso(d.tarih) : depTs(b.createdAt), fab: d ? (d.fab || '') : '' }); });
+  kazaItems.forEach(k => L.push({ tur: 'kaza', o: k, iso: depIso(k.tarih) || depTs(k.createdAt), fab: k.fab || '' }));
+  const km = {}; kazaItems.forEach(k => { km[k.id] = k; });
+  const rc = window._fbKazaRaporCache || {};
+  Object.keys(rc).forEach(iid => {
+    const k = km[iid], inc = rc[iid]; if (!inc || typeof inc !== 'object') return;
+    L.push({ tur: 'rapor', o: inc, id: iid, iso: k ? (depIso(k.tarih) || depTs(k.createdAt)) : '', fab: k ? (k.fab || '') : '' });
+  });
+  const gor = (t, tur) => L.push({ tur, o: t, iso: depIso(t.date) || depTs(t.addedAt), fab: (t.fabs && t.fabs.length > 1) ? '*' : (t.fab || (t.fabs && t.fabs[0]) || ''), acik: t.status !== 'tamam' });
+  tasks.forEach(t => gor(t, 'gor')); archived.forEach(t => gor(t, 'arsiv'));
+  return L;
+}
+function depKapsam(yil, fab, kesim) {
+  return depKayitlar().filter(r => {
+    if (!r.iso || r.iso.slice(0, 4) !== String(yil)) return false;
+    if (kesim && r.iso.slice(5) > kesim) return false;
+    if (fab && r.fab !== fab && r.fab !== '*') return false;
+    return true;
+  });
+}
+function depFotoRefs(o, out) {
+  out = out || [];
+  if (Array.isArray(o)) o.forEach((v, i) => { if (depFoto(v)) out.push({ p: o, k: i }); else if (v && typeof v === 'object') depFotoRefs(v, out); });
+  else if (o && typeof o === 'object') for (const k in o) { if (depFoto(o[k])) out.push({ p: o, k }); else if (o[k] && typeof o[k] === 'object') depFotoRefs(o[k], out); }
+  return out;
+}
+function depFotoSilO(o) {
+  if (Array.isArray(o)) { for (let i = o.length - 1; i >= 0; i--) { if (depFoto(o[i])) o.splice(i, 1); else if (o[i] && typeof o[i] === 'object') depFotoSilO(o[i]); } }
+  else if (o && typeof o === 'object') { for (const k in o) { if (depFoto(o[k])) o[k] = ''; else if (o[k] && typeof o[k] === 'object') depFotoSilO(o[k]); } if ('alfa' in o && Array.isArray(o.fotolar)) o.alfa = 0; }
+}
+function depYillar() {
+  const m = {};
+  depKayitlar().forEach(r => {
+    if (!r.iso) return; const y = r.iso.slice(0, 4); const e = m[y] || (m[y] = { y, b: 0, fb: 0 });
+    const s = JSON.stringify(r.o).length; e.b += s;
+    depFotoRefs(r.o).forEach(f => { e.fb += f.p[f.k].length; });
+  });
+  return Object.values(m).sort((a, b) => b.y - a.y);
+}
+function depFabAd() { return depSt.fab || 'Tüm fabrikalar'; }
+function depFabSecim() {
+  const o = '<option value="">Tüm fabrikalar</option>' + fabrikalar.map(f => `<option value="${esc(f.name)}"${f.name === depSt.fab ? ' selected' : ''}>${esc(f.name)}</option>`).join('');
+  return `<div class="dp-sel"><small>Fabrika</small><select onchange="depSt.fab=this.value;depCiz()">${o}</select></div>`;
+}
+
+// ── Ekranlar ──
+const DEPO_BASLIK = { ana: ['Depolama', 'Veri tabanı kullanımı (tahmini)'], yil: null, kucult: null, sil: null, ilerle: ['İşlem sürüyor', 'Pencereyi kapatmayın'] };
+function depBaslik() {
+  const y = depSt.yil, b = DEPO_BASLIK[depS];
+  let t, a;
+  if (b) { t = b[0]; a = b[1]; }
+  else if (depS === 'yil') { t = y + ' yılı'; a = 'Bu yıla ait veriler'; }
+  else if (depS === 'kucult') { t = y + ' · Fotoğraf küçültme'; a = 'Kayıtlar aynı kalır, eski kalite geri gelmez'; }
+  else { const tm = depSt.act === 'tum'; t = y + (tm ? ' · Tüm verileri sil' : ' · Fotoğrafları sil'); a = tm ? 'Geri alınamaz' : 'Kayıtlar kalır, fotoğraflar kalıcı silinir'; }
+  document.getElementById('st-ttl').textContent = t; document.getElementById('st-sub').textContent = a;
+  document.getElementById('st-back').style.display = depS === 'ilerle' ? 'none' : 'grid';
+}
+function depGit(s) { depS = s; depCiz(); const bd = document.querySelector('#st-p-depo'); if (bd) bd.scrollTop = 0; }
+function depAc() { depS = 'ana'; depCiz(); depMetaYukle().then(() => { if (depS === 'ana') depCizAna(); }); depYenile(false); }
+function depCiz() { depBaslik(); ({ ana: depCizAna, yil: depCizYil, kucult: depCizKucult, sil: depCizSil, ilerle: depCizIlerle })[depS](); }
+function depBar(p, sm, nw) { return `<div class="dp-pb${p >= DEPO_UYARI && !nw ? ' w' : ''}${sm ? ' sm' : ''}"><i style="width:${Math.max(0, Math.min(100, p))}%"></i></div>`; }
+function depYuzde() { const ch = depCache(); return ch ? Math.round(ch.tot / DEPO_KOTA * 100) : null; }
+function depCizAna() {
+  if (depS !== 'ana') return;
+  const el = document.getElementById('depo-ic'); if (!el) return;
+  const ch = depCache();
+  if (!ch) { el.innerHTML = `<div class="dp-card"><div class="dp-lb">KULLANIM</div><div class="dp-mut">${depTaraniyor ? 'Hesaplanıyor…' : (window._fbDepo ? 'Henüz ölçülmedi.' : 'Bulut bağlantısı hazır değil.')}</div></div>${depTaraniyor ? '' : '<div class="dp-btns"><button class="p" onclick="depYenile(true)">Şimdi ölç</button></div>'}`; return; }
+  const p = ch.tot / DEPO_KOTA * 100, w = p >= DEPO_UYARI, c = ch.c;
+  const kat = [['foto', 'Fotoğraflar', 'var(--acc)'], ['pdf', 'PDF belgeleri', 'var(--bad)'], ['diger', 'Diğer dosyalar', 'var(--text2)'], ['den', 'Denetim ve bulgular', 'var(--good)'], ['gor', 'Görevler ve arşiv', 'var(--warn)'], ['kaza', 'Kaza, kontrol, diğer', 'var(--text3)']]
+    .filter(x => c[x[0]] > 0).map(x => `<div class="dp-kv"><span><i class="dp-dot" style="background:${x[2]}"></i>${x[1]}</span><b>${depGB(c[x[0]])}</b></div>`).join('');
+  const yl = depYillar(), maxb = Math.max(1, ...yl.map(r => r.b));
+  const yr = yl.map((r, i) => {
+    const m = depMeta[r.y] || {};
+    let tag = '';
+    const sf = x => (x && x.fab ? ' · ' + esc(x.fab) : '');
+    if (m.f) tag += `<span class="dp-tag g">Fotoğraflar silindi${sf(m.f)}</span>`;
+    if (m.t) tag += `<span class="dp-tag g">Veriler silindi${sf(m.t)}</span>`;
+    if (m.k) tag += `<span class="dp-tag">Küçültüldü · ${+m.k.px} px${sf(m.k)}</span>`;
+    return `<button type="button" class="dp-yr${i ? '' : ' f'}" onclick="depSt.yil='${r.y}';depSt.fab='';depGit('yil')"><b>${r.y}</b>${depBar(r.b / maxb * 100, 1).replace(' w', '')}<span>${depGB(r.b)}</span><u>›</u></button>${tag}`;
+  }).join('');
+  const enb = yl.slice().sort((a, b) => b.fb - a.fb)[0];
+  const hizli = w && enb && enb.fb > 0 ? `<div class="dp-card"><b style="color:var(--text)">Hızlı işlem</b><div class="dp-mut">En çok fotoğraf tutan yıl: ${enb.y} (${depGB(enb.fb)}). Küçültmek bunun yaklaşık %70’ini boşaltır.</div><div class="dp-btns"><button class="p" onclick="depSt.yil='${enb.y}';depSt.fab='';depSt.to='12';depGit('kucult')">${enb.y} fotoğraflarını küçült</button></div></div>` : '';
+  const ago = Math.round((Date.now() - ch.t) / 60000), zs = ago < 1 ? 'az önce' : ago < 60 ? ago + ' dk önce' : ago < 1440 ? Math.round(ago / 60) + ' sa önce' : Math.round(ago / 1440) + ' gün önce';
+  el.innerHTML = `<div class="dp-card"><div class="dp-big"><b>${depGB(ch.tot)} <span>/ 1 GB</span></b><em class="${w ? 'w' : ''}">%${Math.round(p)}</em></div>${depBar(p)}
+    ${w ? '<div class="dp-warn">Kota %85’i aştı. Eski yılların fotoğraflarını küçültün veya silin.</div>' : ''}${kat}</div>
+    ${yl.length ? `<div class="dp-card"><div class="dp-lb">YILLARA GÖRE KULLANIM</div>${yr}</div>` : ''}${hizli}
+    <div class="dp-kv" style="color:var(--text2)"><span>Son hesap: ${zs}</span><button type="button" class="dp-lnk" onclick="depYenile(true)" ${depTaraniyor ? 'disabled' : ''}>${depTaraniyor ? 'Hesaplanıyor…' : 'Yenile'}</button></div>`;
+}
+function depSeg() { return `<div class="dp-seg"><button class="${!depSt.fab ? 'on' : ''}" onclick="depSt.fab='';depCiz()">Tüm fabrikalar</button><button class="${depSt.fab ? 'on' : ''}" onclick="depSt.fab=depSt.fab||(fabrikalar[0]&&fabrikalar[0].name)||'';depCiz()">Fabrika seç</button></div>${depSt.fab ? depFabSecim() : ''}`; }
+function depCizYil() {
+  document.getElementById('depo-ic').innerHTML = `${depSeg()}
+    <button type="button" class="dp-opt" onclick="depGit('kucult')"><i>🗜️</i><div><b>Fotoğrafları küçült</b><small>1000 / 1200 px · veriler aynı kalır</small></div></button>
+    <button type="button" class="dp-opt" onclick="depSt.act='foto';depGit('sil')"><i>🖼️</i><div><b>Sadece fotoğrafları sil</b><small>Bulgu ve kaza kayıtları kalır</small></div></button>
+    <button type="button" class="dp-opt d" onclick="depSt.act='tum';depGit('sil')"><i>🗑️</i><div><b>Tüm verileri sil</b><small>Fotoğraflar ve kayıtlar · yıl/fabrika kapsamında</small></div></button>`;
+}
+function depKesim() { return { '03': '03-31', '06': '06-30', '12': '12-31' }[depSt.to] || '12-31'; }
+function depKucultBilgi() {
+  const k = depKapsam(depSt.yil, depSt.fab, depKesim()), refs = [];
+  k.forEach(r => depFotoRefs(r.o, refs));
+  const b = refs.reduce((s, f) => s + f.p[f.k].length * 0.75, 0), kalan = depSt.px === 1200 ? 0.3 : 0.2;
+  return { k, n: refs.length, b, yeni: b * kalan };
+}
+function depCizKucult() {
+  const bi = depKucultBilgi(), s = (v, a, ek) => `<button class="${depSt.to === v ? 'on' : ''}" onclick="depSt.to='${v}';depCiz()">${a}<small>${ek}</small></button>`;
+  const px = (v, ek) => `<button class="${depSt.px === v ? 'on' : ''}" onclick="depSt.px=${v};depCiz()">${v} px<small>${ek}</small></button>`;
+  const parca = Math.max(1, Math.ceil(bi.b / 150e6));
+  document.getElementById('depo-ic').innerHTML = `<div class="dp-lb">HANGİ TARİHE KADAR</div>
+    <div class="dp-seg">${s('03', 'Ç1 sonu', '31 Mart')}${s('06', 'Yarı yıl', '30 Haziran')}${s('12', 'Tüm yıl', '31 Aralık')}</div>
+    <div class="dp-lb">KAPSAM</div>${depSeg()}
+    <div class="dp-lb">KÜÇÜLTME BOYUTU</div>
+    <div class="dp-seg">${px(1200, 'yaklaşık %70 kazanç')}${px(1000, 'yaklaşık %80 kazanç')}</div>
+    <div class="dp-eff">${bi.n ? `${bi.n} fotoğraf · ${depGB(bi.b)} → yaklaşık ${depGB(bi.yeni)} (${depGB(bi.b - bi.yeni)} boşalır)` : 'Bu kapsamda küçültülecek fotoğraf yok.'}</div>
+    <label class="dp-chk"><input type="checkbox" ${depSt.yedek ? 'checked' : ''} onchange="depSt.yedek=this.checked"><span>Önce orijinal fotoğrafların yedeğini indir<small>JSON dosyası, yaklaşık ${parca} parça (150 MB)</small></span></label>
+    <div class="dp-btns"><button class="s" onclick="depGit('yil')">Vazgeç</button><button class="p" ${bi.n ? '' : 'disabled'} onclick="depKucultBaslat()">Başlat</button></div>`;
+}
+function depSilBilgi() {
+  const tm = depSt.act === 'tum', k = depKapsam(depSt.yil, depSt.fab, '');
+  const say = t => k.filter(r => r.tur === t).length;
+  const refs = []; k.forEach(r => depFotoRefs(r.o, refs));
+  const fb = refs.reduce((s, f) => s + f.p[f.k].length * 0.75, 0);
+  if (!tm) return { k, n: refs.length, fb, txt: refs.length ? `Silinecek: ${refs.length} fotoğraf (yaklaşık ${depGB(fb)}). Bulgu ve kaza kayıtları aynen kalır.` : 'Bu kapsamda silinecek fotoğraf yok.' };
+  const sil = k.filter(r => depTumSilinir(r));
+  const atl = k.length - sil.length;
+  const sy = t => sil.filter(r => r.tur === t).length;
+  const b = sil.reduce((s, r) => s + JSON.stringify(r.o).length, 0);
+  return { k: sil, n: sil.length, fb, txt: `Silinecek: ${sy('den')} denetim · ${sy('bul')} bulgu · ${sy('kaza')} kaza · ${sy('rapor')} rapor · ${sy('gor') + sy('arsiv')} görev (yaklaşık ${depGB(b)}).${atl ? ' Atlanacak: ' + atl + ' kayıt (açık görev veya birden çok fabrikaya bağlı).' : ''}` };
+}
+function depTumSilinir(r) {
+  if (r.tur === 'gor' && r.acik) return false;
+  if ((r.tur === 'gor' || r.tur === 'arsiv') && r.fab === '*' && depSt.fab) return false;
+  if (r.tur === 'arsiv' && r.acik) return false;
+  return true;
+}
+function depCizSil() {
+  const tm = depSt.act === 'tum', bi = depSilBilgi();
+  document.getElementById('depo-ic').innerHTML = `<div class="dp-lb">KAPSAM</div>${depSeg()}
+    <div class="dp-eff">${bi.txt}</div>
+    ${tm ? '<div class="dp-warn bad">Bu yılın seçilen fabrika kapsamındaki tüm verileri silinir. Yedek almadan geri getirilemez.</div>' : ''}
+    <label class="dp-chk"><input type="checkbox" ${depSt.yedek ? 'checked' : ''} onchange="depSt.yedek=this.checked"><span>Önce yedeği indir<small>${tm ? 'Silinecek tüm kayıtlar JSON parçaları halinde' : 'Fotoğrafların bulunduğu kayıtlar JSON parçaları halinde'}</small></span></label>
+    <div class="dp-btns"><button class="s" onclick="depGit('yil')">Vazgeç</button><button class="d" ${(tm ? bi.n : bi.n) ? '' : 'disabled'} onclick="depSilSor()">${tm ? 'Tüm verileri sil' : 'Fotoğrafları sil'}</button></div>`;
+}
+function depCizIlerle() {
+  const s = depSt.ilerle || { ad: '', n: 0, N: 0, kaz: 0, durdu: false }, p = s.N ? Math.round(s.n / s.N * 100) : 0;
+  document.getElementById('depo-ic').innerHTML = `<div class="dp-card"><div class="dp-lb">${esc(s.ad)}</div><div class="dp-big"><b>${s.n} / ${s.N}</b><em>%${p}</em></div>${depBar(p, 0, 1)}
+    ${s.kaz ? `<div class="dp-kv"><span>Kazanılan alan</span><b>${depGB(s.kaz)}</b></div>` : ''}</div>
+    <div class="dp-btns">${s.bitti ? '<button class="p" onclick="depGit(\'ana\');depYenile(true)">Tamam</button>' : '<button class="s" onclick="depDur=true;this.disabled=true;this.textContent=\'Durduruluyor…\'">Durdur</button>'}</div>`;
+}
+
+// ── İşlemler ──
+function depBeklet(ac) { try { if (navigator.wakeLock) return navigator.wakeLock.request('screen').catch(() => null); } catch (e) {} return Promise.resolve(null); }
+function depIndir(ad, veri) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([veri], { type: 'application/json' })); a.download = ad;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+}
+async function depYedekAl(kayitlar, etiket) {
+  const parcalar = []; let cur = [], boy = 0;
+  kayitlar.forEach(r => { const s = JSON.stringify({ tur: r.tur, id: r.id || r.o.id, veri: r.o }); if (boy + s.length > 150e6 && cur.length) { parcalar.push(cur); cur = []; boy = 0; } cur.push(s); boy += s.length; });
+  if (cur.length) parcalar.push(cur);
+  for (let i = 0; i < parcalar.length; i++) {
+    depIndir(`isg-yedek-${etiket}-${i + 1}-${parcalar.length}.json`, '[' + parcalar[i].join(',\n') + ']');
+    await new Promise(r => setTimeout(r, 700));
+  }
+}
+function depYuklenir(src) {
+  return new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+}
+async function depKucultFoto(src, px) {
+  const im = await depYuklenir(src); if (!im) return null;
+  const w = im.naturalWidth, h = im.naturalHeight, m = Math.max(w, h);
+  if (m <= px) return null;
+  const k = px / m, c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+  const out = c.toDataURL('image/jpeg', 0.7);
+  return out.length < src.length ? out : null;
+}
+function depKaydet(set) {
+  const a = ek => set.has(ek);
+  if (a('bul') || a('den')) denetimSave();
+  if (a('kaza')) kazaSave();
+  if (a('gor')) { if (typeof save === 'function') save(); }
+  if (a('arsiv')) saveArchive();
+  ['denetimRender', 'kazaRender', 'render'].forEach(f => { try { if (typeof window[f] === 'function') window[f](); } catch (e) {} });
+}
+async function depMetaKaydet(yil, anahtar, deger) {
+  depMeta = depMeta || {}; const m = depMeta[yil] || {}; m[anahtar] = deger; depMeta[yil] = m;
+  try { await window._fbDepo.metaYaz(depMeta); } catch (e) { console.error(e); }
+}
+function depKucultBaslat() {
+  const bi = depKucultBilgi();
+  const git = async () => {
+    const refs = []; bi.k.forEach(r => depFotoRefs(r.o, refs));
+    const st = depSt.ilerle = { ad: depSt.yil + ' · Fotoğraflar küçültülüyor', n: 0, N: refs.length, kaz: 0, bitti: false };
+    depDur = false; depS = 'ilerle'; depCiz();
+    const kilit = await depBeklet(); const set = new Set(), rapor = new Set();
+    if (depSt.yedek) { st.ad = 'Yedek hazırlanıyor'; depCizIlerle(); await depYedekAl(bi.k, depSt.yil + '-kucult'); st.ad = depSt.yil + ' · Fotoğraflar küçültülüyor'; }
+    for (const r of bi.k) {
+      const rf = depFotoRefs(r.o); let degisti = false;
+      for (const f of rf) {
+        if (depDur) break;
+        const eski = f.p[f.k], yeni = await depKucultFoto(eski, depSt.px);
+        if (yeni) { f.p[f.k] = yeni; st.kaz += (eski.length - yeni.length) * 0.75; degisti = true; }
+        st.n++; if (st.n % 3 === 0) depCizIlerle();
+      }
+      if (degisti) { if (r.tur === 'rapor') rapor.add(r); else set.add(r.tur === 'bul' ? 'bul' : r.tur === 'kaza' ? 'kaza' : r.tur === 'arsiv' ? 'arsiv' : r.tur === 'gor' ? 'gor' : 'den'); }
+      if (depDur) break;
+    }
+    depKaydet(set);
+    for (const r of rapor) { try { await window._fbDepo.kazaRaporYaz(r.id, r.o); } catch (e) { console.error(e); } }
+    if (!depDur && st.N) await depMetaKaydet(depSt.yil, 'k', { px: depSt.px, fab: depSt.fab || '' });
+    if (kilit && kilit.release) try { kilit.release(); } catch (e) {}
+    st.ad = depDur ? 'Durduruldu' : 'Tamamlandı'; st.bitti = true; try { localStorage.removeItem(DEPO_LS); } catch (e) {}
+    depCizIlerle(); try { toast(depDur ? 'Durduruldu' : 'Fotoğraflar küçültüldü'); } catch (e) {}
+  };
+  if (depSt.yedek) git(); else isgOnay({ baslik: 'Yedeksiz devam edilsin mi?', mesaj: 'Yedek indirilmeden küçültülürse orijinal fotoğraflar geri getirilemez.', evet: 'Yine de başlat' }, git);
+}
+function depSilSor() {
+  const tm = depSt.act === 'tum', bi = depSilBilgi();
+  const git = () => depSilBaslat(bi);
+  const mesaj = (tm ? 'Bu işlem geri alınamaz.' : 'Fotoğraflar kalıcı silinir, kayıtlar kalır.') + (depSt.yedek ? '' : '\nYedek indirilmeyecek.');
+  isgOnay({ baslik: tm ? `${depSt.yil} verileri silinsin mi?` : `${depSt.yil} fotoğrafları silinsin mi?`, mesaj, evet: tm ? 'Sil' : 'Fotoğrafları sil' }, git);
+}
+async function depSilBaslat(bi) {
+  const tm = depSt.act === 'tum', st = depSt.ilerle = { ad: depSt.yil + (tm ? ' · Veriler siliniyor' : ' · Fotoğraflar siliniyor'), n: 0, N: bi.k.length, kaz: 0, bitti: false };
+  depDur = false; depS = 'ilerle'; depCiz();
+  const kilit = await depBeklet();
+  const hedef = tm ? bi.k : bi.k.filter(r => depFotoRefs(r.o).length);
+  st.N = hedef.length;
+  if (depSt.yedek) { st.ad = 'Yedek hazırlanıyor'; depCizIlerle(); await depYedekAl(hedef, depSt.yil + (tm ? '-tum' : '-foto')); st.ad = depSt.yil + (tm ? ' · Veriler siliniyor' : ' · Fotoğraflar siliniyor'); }
+  const set = new Set(), kz = new Set(hedef.filter(r => r.tur === 'kaza').map(r => r.o.id));
+  const dn = new Set(hedef.filter(r => r.tur === 'den').map(r => r.o.id));
+  for (const r of hedef) {
+    if (depDur) break;
+    const once = JSON.stringify(r.o).length;
+    if (tm) {
+      if (r.tur === 'rapor') { try { await window._fbDepo.kazaRaporSil(r.id); delete window._fbKazaRaporCache[r.id]; } catch (e) { console.error(e); } }
+    } else if (r.tur === 'rapor') {
+      depFotoSilO(r.o); try { await window._fbDepo.kazaRaporYaz(r.id, r.o); } catch (e) { console.error(e); }
+    } else { depFotoSilO(r.o); set.add(r.tur === 'bul' ? 'bul' : r.tur === 'kaza' ? 'kaza' : r.tur === 'arsiv' ? 'arsiv' : r.tur === 'gor' ? 'gor' : 'den'); }
+    st.kaz += once * (tm ? 1 : 0.9); st.n++; if (st.n % 5 === 0) depCizIlerle();
+  }
+  if (tm && !depDur) {
+    const sil = new Set(hedef.map(r => r.o));
+    denetimler = denetimler.filter(x => !sil.has(x)); bulgular = bulgular.filter(x => !sil.has(x) && !dn.has(x.denetimId));
+    kazaItems = kazaItems.filter(x => !sil.has(x));
+    for (let i = tasks.length - 1; i >= 0; i--) if (sil.has(tasks[i])) tasks.splice(i, 1);
+    archived = archived.filter(x => !sil.has(x));
+    depKaydet(new Set(['den', 'bul', 'kaza', 'gor', 'arsiv']));
+  } else depKaydet(set);
+  if (!depDur && st.N) await depMetaKaydet(depSt.yil, tm ? 't' : 'f', { fab: depSt.fab || '' });
+  if (tm) { try { const m = depMeta[depSt.yil]; if (m && !depSt.fab) { delete depMeta[depSt.yil]; await window._fbDepo.metaYaz(depMeta); } } catch (e) {} }
+  if (kilit && kilit.release) try { kilit.release(); } catch (e) {}
+  st.ad = depDur ? 'Durduruldu' : 'Tamamlandı'; st.bitti = true; try { localStorage.removeItem(DEPO_LS); } catch (e) {}
+  depCizIlerle(); try { toast(depDur ? 'Durduruldu' : 'Silindi'); } catch (e) {}
+}
+function stGeri() {
+  if (stSayfa === 'depo' && depS !== 'ana') { depGit(depS === 'yil' ? 'ana' : 'yil'); return; }
+  settingsGit('menu');
+}
 </script>
 </body>
 </html>
