@@ -6817,16 +6817,11 @@ px}
 
 <!-- Kontrol Ayarlar Modal -->
 <div id="kontrol-settings-bg" onclick="if(event.target===this)kontrolCloseSettings()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border-radius:12px;padding:20px;width:400px;max-width:95vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:85vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <h3 style="font-size:14px;font-weight:700;color:var(--text);">⚙️ Fabrikalar</h3>
-      <button onclick="kontrolCloseSettings()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
-    </div>
-    <div id="kontrol-fab-list" style="display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto;"></div>
-    <div style="display:flex;gap:6px;">
-      <input id="kontrol-new-fab" placeholder="Fabrika adı..." onkeydown="if(event.key==='Enter')kontrolAddFab()" style="flex:1;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:12px;outline:none;"/>
-      <button onclick="kontrolAddFab()" style="padding:7px 14px;background:var(--good-bg);color:#fff;border:none;border-radius:var(--r);font-size:12px;cursor:pointer;">Ekle</button>
-    </div>
+  <div class="kfa-sheet">
+    <div class="kfa-hd"><div><b>⚙️ Fabrikalar</b><small>Değişiklik tüm bölümlere yansır</small></div><button type="button" class="kfa-x" onclick="kontrolCloseSettings()" aria-label="Kapat">✕</button></div>
+    <div id="kontrol-fab-list" class="kfa-list"></div>
+    <div class="kfa-add" id="kfa-add"></div>
+    <div class="kfa-info">Renk noktasına dokunarak fabrika rengini değiştirebilirsiniz.</div>
   </div>
 </div>
 
@@ -13054,10 +13049,23 @@ function kontrolDaysLeft(nextDate) {
 function kontrolRenderFabFilter() {
   const el = document.getElementById('kontrol-fab-filter');
   if (!el) return;
-  el.innerHTML = `<span class="kontrol-fab-chip${kontrolFabFilter===null?' active':''}"
-    onclick="kontrolSetFabFilter(null)">Tümü</span>` +
-    kontrolFabs.map(f => `<span class="kontrol-fab-chip${kontrolFabFilter===f?' active':''}"
-      onclick="kontrolSetFabFilter('${String(f).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">${esc(f)}</span>`).join('');
+  if (kontrolFabFilter !== null && !kontrolFabs.includes(kontrolFabFilter)) kontrolFabFilter = null;
+  el.innerHTML = `<button type="button" class="kfs-btn" onclick="kontrolFabSecAc()"><small>Fabrika</small><span class="kfs-v">${kontrolFabFilter===null ? 'Tüm fabrikalar' : esc(kontrolFabFilter)}</span><i>▾</i></button>`;
+}
+function kontrolFabSecAc() {
+  let bg = document.getElementById('kfs-bg'); if (bg) bg.remove();
+  bg = document.createElement('div'); bg.id = 'kfs-bg'; bg.className = 'kfs-bg';
+  const sec = (v) => kontrolFabFilter === v;
+  const opt = (v, ad, nokta) => `<button type="button" class="kfs-opt${sec(v)?' on':''}" data-v="${v===null?'':encodeURIComponent(v)}">${nokta}<span class="kfs-nm">${ad}</span><span class="kfs-ck">${sec(v)?'✓':''}</span></button>`;
+  bg.innerHTML = `<div class="kfa-sheet"><div class="kfa-hd"><div><b>Fabrika seç</b><small>Listeyi bu fabrikaya göre süzer</small></div><button type="button" class="kfa-x" data-kapat aria-label="Kapat">✕</button></div>
+    <div class="kfa-list">${opt(null,'Tüm fabrikalar','<span class="kfs-ic">🏭</span>')}${kontrolFabs.map(f => opt(f, esc(f), `<span class="kfa-dot s" style="--c:${kontrolFabRengi(f)}"></span>`)).join('')}</div></div>`;
+  bg.addEventListener('click', e => {
+    if (e.target === bg || e.target.closest('[data-kapat]')) { bg.remove(); return; }
+    const o = e.target.closest('.kfs-opt'); if (!o) return;
+    const v = o.dataset.v; bg.remove();
+    kontrolSetFabFilter(v === '' ? null : decodeURIComponent(v));
+  });
+  document.body.appendChild(bg);
 }
 function kontrolSetFabFilter(fab) {
   kontrolFabFilter = fab;
@@ -13258,6 +13266,8 @@ function kontrolOpenAdd(editId) {
   setTimeout(()=>document.getElementById('km-name').focus(),80);
 }
 function kxFabRenk(f) {
+  const fb = (typeof fabrikalar !== 'undefined') && fabrikalar.find(x => x.name === f);
+  if (fb && fb.color) return fb.color;
   const i = Math.max(0, (kontrolFabs||[]).indexOf(f));
   return `var(--kx-f${(i%5)+1})`;
 }
@@ -13321,36 +13331,66 @@ function kontrolOpenSettings() {
 function kontrolCloseSettings() {
   document.getElementById('kontrol-settings-bg').style.display = 'none';
 }
+function kontrolFabSayi(ad) {
+  return kontrolItems.filter(it => (Array.isArray(it.fabs) ? it.fabs : [it.fab]).includes(ad)).length;
+}
+function kontrolFabRengi(ad) {
+  const f = fabrikalar.find(x => x.name === ad);
+  return (f && f.color) || '#4A86D8';
+}
 function kontrolRenderFabList() {
   const el = document.getElementById('kontrol-fab-list');
   el.innerHTML = kontrolFabs.map((f,i)=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border-radius:var(--r);">
-      <span style="flex:1;font-size:12px;color:var(--text);">🏭 ${esc(f)}</span>
-      <span onclick="kontrolDelFab(${i})" style="cursor:pointer;color:var(--text3);font-size:16px;padding:0 4px;" title="Sil">×</span>
-    </div>`).join('') || '<div style="font-size:12px;color:var(--text3);">Fabrika yok</div>';
+    <div class="kfa-row">
+      <button type="button" class="kfa-dot" style="--c:${kontrolFabRengi(f)}" onclick="kontrolFabRenkSec(${i})" aria-label="Rengi değiştir"></button>
+      <span class="kfa-nm">${esc(f)}</span>
+      <span class="kfa-cnt">${kontrolFabSayi(f)} kontrol</span>
+      <button type="button" class="kfa-del" onclick="kontrolDelFab(${i})" aria-label="Sil">🗑</button>
+    </div>`).join('') || '<div class="kfa-empty">Henüz fabrika yok</div>';
+  kontrolFabAddKur(false);
+}
+function kontrolFabAddKur(acik) {
+  const el = document.getElementById('kfa-add'); if (!el) return;
+  el.innerHTML = acik
+    ? `<input id="kontrol-new-fab" type="text" placeholder="Fabrika adı" onkeydown="if(event.key==='Enter')kontrolAddFab()"><button type="button" class="kfa-ok" onclick="kontrolAddFab()">Ekle</button>`
+    : `<button type="button" class="kfa-plus" onclick="kontrolFabAddKur(true)">＋ Yeni fabrika</button>`;
+  if (acik) document.getElementById('kontrol-new-fab').focus();
+}
+function kontrolFabRenkSec(i) {
+  const ad = kontrolFabs[i];
+  openPalette(kontrolFabRengi(ad), c => {
+    const f = fabrikalar.find(x => x.name === ad);
+    if (!f) return;
+    f.color = c;
+    saveFabrikalar(); parametreSenkron();
+    kontrolRenderFabList(); kontrolRenderFabFilter();
+    if (typeof kontrolRender === 'function') kontrolRender();
+  });
 }
 // Fabrika ekleme/silme merkezi listeye yazar → tüm modüllere yansır
 function kontrolAddFab() {
   const inp = document.getElementById('kontrol-new-fab');
+  if (!inp) return;
   const name = inp.value.trim();
-  if (!name) return;
-  if (fabrikalar.find(f => f.name.toLowerCase() === name.toLowerCase())) { alert('Bu fabrika zaten var.'); return; }
+  if (!name) { kontrolFabAddKur(false); return; }
+  if (fabrikalar.find(f => f.name.toLowerCase() === name.toLowerCase())) { toast('Bu fabrika zaten var'); return; }
   fabrikalar.push({ name, color: RENK_PALETI[fabrikalar.length % RENK_PALETI.length] });
   saveFabrikalar(); parametreSenkron();
-  inp.value='';
   kontrolRenderFabList();
   kontrolRenderFabFilter();
   toast(name + ' eklendi — tüm bölümlere yansıdı');
 }
 function kontrolDelFab(i) {
   const ad = kontrolFabs[i];
-  if (!confirm(`"${ad}" silinsin mi?\nBu fabrika tüm bölümlerden kaldırılacak.`)) return;
-  const j = fabrikalar.findIndex(f => f.name === ad);
-  if (j >= 0) fabrikalar.splice(j, 1);
-  saveFabrikalar(); parametreSenkron();
-  kontrolRenderFabList();
-  kontrolRenderFabFilter();
-  toast(ad + ' silindi');
+  const say = kontrolFabSayi(ad);
+  isgOnay({ baslik:'Fabrika silinsin mi?', mesaj:`"${ad}" tüm bölümlerden kaldırılacak.` + (say ? `\nBu fabrikaya bağlı ${say} kontrol kaydı var.` : ''), evet:'Sil', iptal:'Vazgeç' }, () => {
+    const j = fabrikalar.findIndex(f => f.name === ad);
+    if (j >= 0) fabrikalar.splice(j, 1);
+    saveFabrikalar(); parametreSenkron();
+    kontrolRenderFabList();
+    kontrolRenderFabFilter();
+    toast(ad + ' silindi');
+  });
 }
 // ── Kontroller modülü PDF raporu ──
 const LS_KONTROL_RAPOR_SECIM = 'yeni_isg_kontrol_rapor_secim_v1';
@@ -21042,6 +21082,41 @@ window.addEventListener('resize', calMobInit);
 #topbar{background:linear-gradient(135deg,var(--hd1),var(--hd2))!important;border-bottom:0!important}
 #topbar #main-tabs{background:rgba(255,255,255,.10)!important}
 #topbar .tb-yan>button:first-of-type{background:var(--acc)!important;color:var(--acc-fg)!important;border-color:var(--acc)!important}
+</style>
+
+
+<style id="kfa-style">
+/* Fabrika ayarları + fabrika seçici (Kontroller) */
+.kfa-sheet{background:var(--surface);color:var(--text);width:100%;max-width:520px;max-height:86vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 30px rgba(0,0,0,.25);overflow:hidden}
+#kontrol-settings-bg{align-items:flex-end!important}
+.kfa-hd{display:flex;align-items:center;gap:10px;padding:16px 16px 10px;flex:none}
+.kfa-hd b{display:block;font-size:16px}.kfa-hd small{display:block;color:var(--text2);font-size:11.5px;margin-top:2px}
+.kfa-x{margin-left:auto;width:34px;height:34px;min-height:0;border-radius:50%;border:0;background:var(--surface2);color:var(--text);font-size:15px;cursor:pointer}
+.kfa-list{padding:0 14px 8px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:0}
+.kfa-list>*{flex:none}
+.kfa-row{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.kfa-dot{width:26px;height:26px;min-height:0;border-radius:50%;border:0;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent);cursor:pointer;flex:none;padding:0}
+.kfa-dot.s{width:14px;height:14px;cursor:default}
+.kfa-nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;font-size:13.5px}
+.kfa-cnt{font-size:11px;color:var(--text2);background:var(--surface2);padding:3px 9px;border-radius:99px;white-space:nowrap}
+.kfa-del{width:34px;height:34px;min-height:0;border-radius:10px;border:0;background:transparent;color:var(--text3);font-size:15px;cursor:pointer;padding:0}
+.kfa-empty{color:var(--text3);font-size:12.5px;padding:8px 2px}
+.kfa-add{display:flex;gap:8px;padding:6px 14px 8px;flex:none}
+.kfa-plus{flex:1;min-height:46px;border:1.5px dashed var(--border2);border-radius:14px;background:transparent;color:var(--acc-tx);font-weight:800;font-size:13px;cursor:pointer}
+.kfa-add input{flex:1;min-width:0;min-height:46px;border:1px solid var(--border2);border-radius:14px;background:var(--surface2);color:var(--text);padding:0 12px}
+.kfa-ok{min-height:46px;padding:0 18px;border:0;border-radius:14px;background:var(--acc);color:var(--acc-fg);font-weight:800;cursor:pointer}
+.kfa-info{padding:0 16px calc(14px + env(safe-area-inset-bottom));color:var(--text3);font-size:11.5px;flex:none}
+#kontrol-fab-filter.module-filter-strip{display:block;overflow:visible;padding:10px 14px 0}
+.kfs-btn{width:100%;display:flex;align-items:center;gap:8px;min-height:46px;padding:0 14px;border:1px solid var(--border2);border-radius:14px;background:var(--surface);color:var(--text);font-weight:700;font-size:13.5px;cursor:pointer;text-align:left}
+.kfs-btn small{color:var(--text2);font-weight:600;font-size:12px}
+.kfs-v{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kfs-btn i{color:var(--text3);font-style:normal}
+.kfs-bg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.kfs-opt{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border-radius:14px;border:1px solid transparent;background:transparent;color:var(--text);font-weight:700;font-size:13.5px;text-align:left;cursor:pointer}
+.kfs-opt.on{background:color-mix(in srgb,var(--acc) 14%,var(--surface));border-color:var(--acc)}
+.kfs-nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kfs-ck{color:var(--acc-tx);font-weight:800}
+.kfs-ic{width:14px;text-align:center;font-size:13px}
 </style>
 
 <!-- ══════════════════════════════════════════════════════════════
