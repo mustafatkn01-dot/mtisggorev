@@ -21221,6 +21221,7 @@ window.addEventListener('resize', calMobInit);
 .ekp-it span{flex:1;min-width:0}.ekp-it.on{color:var(--acc);font-weight:700}.ekp-it b{font-size:13px}
 .ekp-bos{padding:16px;text-align:center;font-size:12px;color:var(--text3)}
 .ekp-per{display:flex;gap:8px}.ekp-per .kx-in{flex:1;min-width:0}.ekp-per .ekp-seg{flex:1}
+.ekp-hint{font-size:11.5px;color:var(--text2);font-style:italic;line-height:1.4;margin:-2px 2px 0}
 .ekp-lb{font-size:10.5px;color:var(--text3);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
 .ekp-chips{display:flex;flex-wrap:wrap;gap:6px}
 .ekp-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--kx-line);border-radius:99px;background:var(--surface);color:var(--text);padding:7px 12px;font:600 12px/1 inherit;cursor:pointer}
@@ -26466,7 +26467,7 @@ function ekipKartHtml(k, kids, c) {
 let EKP = null;
 function ekipOzelAc() {
   const fabs = kontrolFabs.length ? kontrolFabs : fabrikalar.map(f => f.name);
-  EKP = { tip: 'lpg', katId: 'basinc', after: 'lpg-tanki', pu: 'year', pv: '1', ad: '', std: '', fab: kontrolFabFilter && fabs.includes(kontrolFabFilter) ? kontrolFabFilter : (fabs[0] || ''), pn: false, q: '', acik: 'basinc', fabs };
+  EKP = { tip: 'tek', katId: 'basinc', after: 'lpg-tanki', pu: 'year', pv: '1', ad: '', std: '', fab: kontrolFabFilter && fabs.includes(kontrolFabFilter) ? kontrolFabFilter : (fabs[0] || ''), pn: false, q: '', acik: 'basinc', fabs };
   const eski = document.getElementById('ekp-mini'); if (eski) eski.remove();
   const bg = document.createElement('div'); bg.id = 'ekp-mini'; bg.className = 'isg-onay-bg';
   bg.innerHTML = '<div class="isg-onay-card ekp-card" role="dialog" aria-modal="true"></div>';
@@ -26489,7 +26490,8 @@ function ekipOzelCiz() {
   const seg = (alan, liste) => `<div class="ekp-seg">${liste.map(([v, t]) => `<button type="button" class="${EKP[alan] === v ? 'on' : ''}" onclick="ekipOzelSec('${alan}','${v}')">${t}</button>`).join('')}</div>`;
   card.innerHTML = `<div class="isg-onay-b">Özel ekipman ekle</div><div class="isg-onay-m">Katalogda olmayan ekipmanını yaz, hangi ekipmanın altına yerleşeceğini seç.</div>
   <div class="ekp-form">
-    ${seg('tip', [['lpg', 'LPG tipi · 3 başlık'], ['tek', 'Tek başlık']])}
+    ${seg('tip', [['tek', 'Tek kontrol'], ['lpg', '3 ayrı kontrol']])}
+    <div class="ekp-hint">${EKP.tip === 'tek' ? 'Ekipman tek bir periyotla takip edilir. Örn. her yıl veya 6 ayda bir.' : 'Aynı ekipman için 3 ayrı kontrol açılır: 10 yılda bir periyodik muayene, 5 yılda bir emniyet valfi testi ve yıllık kontrol. LPG tankı gibi ekipmanlar için.'}</div>
     <input class="kx-in" id="ekp-ad" placeholder="Ekipman adı" maxlength="70" value="${esc(EKP.ad)}">
     <button type="button" class="ekp-fld" onclick="ekipPanelAc()" aria-expanded="${EKP.pn}"><span><small>Yerleşim</small><b>${esc(ekipYerAd())}</b></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="${EKP.pn ? 'up' : ''}"><path d="M6 9l6 6 6-6"/></svg></button>
     ${EKP.pn ? `<div class="ekp-pn"><input class="kx-in ekp-q" id="ekp-q" placeholder="Ekipman ara…" value="${esc(EKP.q)}" oninput="ekipAra(this.value)"><div class="ekp-lst" id="ekp-lst"></div></div>` : ''}
