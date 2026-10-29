@@ -12314,21 +12314,8 @@ function kontrolEkipmanAddSelected() {
     hedefFabs.forEach(fab => {
       if (kontrolEkipmanTakipte(e.key,e.ad,fab)) return;
 
-      kontrolItems.push({
-        id:Date.now() + '-' + Math.random().toString(36).slice(2,8),
-        grup:'makine',
-        equipmentKey:e.key,
-        equipmentCategory:e.katId,
-        name:e.ad,
-        fabs:[fab],
-        fab:fab,
-        lastDate:'',
-        periodVal:'1',
-        periodUnit:'year',
-        firm:'',
-        result:'bekliyor',
-        note:''
-      });
+      ekipSatirUret(e, fab).forEach(r => kontrolItems.push(r));
+      if (ekipCok(e.key)) kontrolSatirAcik.add('ekp:' + e.key + '|' + fab);
       eklendi++;
     });
   });
@@ -13176,6 +13163,7 @@ function kontrolKartHtml(it) {
       <span class="kx-bar"></span>
       <span style="min-width:0;">
         <div class="kx-nm">${esc(it.name||'')}</div>
+        ${(typeof ekipStd === 'function' && ekipStd(it)) ? `<div class="kx-std">${esc(ekipStd(it))}</div>` : ''}
         ${bmNot ? `<div class="kx-nt">${esc(bmNot)}</div>` : ''}
         <div class="kx-mt">${fabHtml}<span style="white-space:nowrap">${esc(periodStr)}${tarihli?` · Sonraki: ${esc(nextStr)}`:''}</span></div>
       </span>
@@ -13216,6 +13204,7 @@ function kontrolRender() {
     const e = BM_ESKI_AD[it.environmentKey]; if (e && it.name === e[0]) { it.name = e[1]; adDegisti = true; }
     if (it.environmentKey && !it.takip && typeof bmCevreTakip === 'function') { const t = bmCevreTakip(it.environmentKey); if (t.takip) { it.takip = t.takip; adDegisti = true; } }
   });
+  if (typeof ekipGocEt === 'function' && ekipGocEt()) adDegisti = true;
   if (adDegisti) kontrolSave();
 
   let items = kontrolFabFilter
@@ -13279,6 +13268,7 @@ function kontrolRender() {
         </div>` : ''}
         ${id==='makine' ? `<div class="kontrol-cevre-toolbar">
           <button onclick="event.stopPropagation();bmGrupYukle('makine')">📄 Toplu belge yükle</button>
+          <button onclick="event.stopPropagation();ekipOzelAc()">＋ Özel ekipman ekle</button>
           <span>Periyodik kontrol raporlarını PDF olarak yükleyin; program okuyup ilgili ekipman satırına yerleştirir.</span>
         </div>` : ''}
         ${id==='cevre' ? `<div class="kontrol-cevre-toolbar">
@@ -13286,7 +13276,7 @@ function kontrolRender() {
           <button onclick="event.stopPropagation();bmGrupYukle('cevre')">📄 Toplu belge yükle</button>
           <span>Hazır listeden çevre izin, belge, atık, atıksu, emisyon ve raporlama süreçlerini takip listesine ekleyebilirsiniz.</span>
         </div>` : ''}
-        ${grupItems.length ? grupItems.map(kontrolKartHtml).join('') : '<div style="text-align:center;padding:18px 8px;font-size:12px;color:var(--text3);">Bu grupta kayıt yok.</div>'}
+        ${grupItems.length ? (typeof ekipListeHtml === 'function' && id === 'makine' ? ekipListeHtml(grupItems) : grupItems.map(kontrolKartHtml).join('')) : '<div style="text-align:center;padding:18px 8px;font-size:12px;color:var(--text3);">Bu grupta kayıt yok.</div>'}
       </div>
     </section>`;
   }).join('');
@@ -20512,7 +20502,7 @@ window.addEventListener('resize', calMobInit);
   window._fbSaveArchive = () => yaz('archive', () => archived);
   window._fbSaveTakvim  = () => yaz('takvim',  () => calReminders);
   window._fbSavePer     = () => yaz('per',     () => ({ tasks: perTasks, persons: perPersons, fabs: perFabs }));
-  window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs, ogren: window.bmOgren || [] }));
+  window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs, ogren: window.bmOgren || [], ozel: window.bmOzel || [] }));
   window._fbSaveKaza    = () => yaz('kaza',    () => { try { kazaGecmisKodla(); } catch (e) {} return { items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }; });
 
   // ── Kaza / Olay raporları — cihazlar arası bulut deposu ─────
@@ -20677,6 +20667,7 @@ window.addEventListener('resize', calMobInit);
       doldur(kontrolItems, d.kontrol.items);
       doldur(kontrolFabs,  d.kontrol.fabs);
       if (Array.isArray(d.kontrol.ogren)) window.bmOgren = d.kontrol.ogren;
+      if (Array.isArray(d.kontrol.ozel)) { window.bmOzel = d.kontrol.ozel; try { if (typeof ekipOzelUygula === 'function') ekipOzelUygula(); } catch (e) {} }
       window._kontrolReady = true;  // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
     // Rapor deposu ana kaza kaydından bağımsızdır; başka cihazda oluşturulan
@@ -21194,6 +21185,11 @@ window.addEventListener('resize', calMobInit);
 .dp-btns .s{background:var(--surface2);color:var(--text)}.dp-btns .p{background:var(--acc);color:var(--acc-fg)}.dp-btns .d{background:var(--bad-bg);color:#fff}
 .dp-btns button:disabled{opacity:.5;cursor:default}
 .dp-mut{font-size:12px;color:var(--text2)}.dp-lnk{border:0;background:none;color:var(--acc-tx);font-weight:800;font-size:12.5px;cursor:pointer;padding:6px 0;min-height:0}
+</style>
+<style id="ekip-style">
+.kx-std{font-size:11px;color:var(--text3);font-style:italic;line-height:1.35;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ekp .ekp-kids{display:flex;flex-direction:column;gap:8px;margin-left:6px;padding-left:10px;border-left:2px solid var(--kx-line)}
+.ekp .kx-row:not(.open) .kx-det{display:none}
 </style>
 <style id="belge-style">
 /* ===== Belge motoru (PDF okuma, bölme, eşleştirme) ===== */
@@ -25257,6 +25253,13 @@ function bmSonraki(iso, per) {
   const [y, a, g] = iso.split('-'); return `${g}.${a}.${+y + +p.val}`;
 }
 const BM_STOP = new Set(['kontrol', 'kontrolu', 'ekipman', 'ekipmani', 'tesisat', 'tesisati', 'sistemi', 'sistem', 'periyodik', 'takibi', 'olcumu', 'analizi', 'ekipmanlari', 'tesisatlari']);
+function bmCokKat(L, key, katAd) {
+  const c = ekipCok(key), ozt = c.ozel ? BME.tok(c.ad) : [];
+  c.kids.forEach(kd => {
+    const a = kd.a.map(x => x.slice()); if (ozt.length) a.push([ozt.join(' '), 14]);
+    L.push({ id: key + ':' + kd.alt, ana: key, alt: kd.alt, ad: c.kisa + ' – ' + kd.ad, not: '', kisa: c.kisa + ' ' + kd.kisa, tip: 'periyodik', tarih: 'rapor', periyot: kd.pv + ' Yıl', a, n: [], genel: [], katAd });
+  });
+}
 const BM_MAKINE_ES = {
   'yangin-algilama': ['yangin alarm', 'yangin alarm sistemi', 'yangin alarm ve uyari', 'yangin ihbar', 'yangin uyari', 'yangin algilama', 'yangin dedeksiyon'],
   'yangin-mekanik': ['yangin tesisati', 'yangin mekanik', 'yangin sondurme tesisati'],
@@ -25299,7 +25302,10 @@ const BM_MAKINE_ES = {
   'kizgin-yag-kazani': ['kizgin yag'],
   'basincli-hava-tanki': ['hava tanki', 'basincli hava tanki', 'hava deposu'],
   'kompresor-hava-tanki': ['kompresor', 'hava kompresoru'],
-  'lpg-tanki': ['lpg tanki', 'lpg', 'sivilastirilmis petrol gazi'],
+  'kullanimdaki-lpg-tupu':['lpg tupu','sanayi tipi lpg','ts en 1440'],
+  'tasinabilir-gaz-tupu':['gaz tupu','kaynak tupu','oksijen tupu','azot tupu','argon tupu','tasinabilir tup'],
+  'asetilen-tup-demet':['asetilen tupu','asetilen','tup demeti','ts en iso 10462'],
+  'yangin-sondurucu':['sondurme cihazi','yangin sondurucu','sondurucu','kuru kimyevi toz','yangin tupu'],
   'kriyojenik-tank': ['kriyojenik', 'sivi azot', 'azot tanki', 'oksijen tanki', 'argon tanki'],
   'hidrofor-genlesme': ['hidrofor', 'genlesme tanki'],
   'mekanik-pres': ['mekanik pres', 'eksantrik pres'],
@@ -25324,6 +25330,7 @@ const BM_MAKINE_ES = {
 function bmMakineKat() {
   const L = [];
   (typeof KONTROL_EKIPMAN_KATALOG !== 'undefined' ? KONTROL_EKIPMAN_KATALOG : []).forEach(k => k.items.forEach(([key, ad]) => {
+    if (typeof ekipCok === 'function' && ekipCok(key)) { bmCokKat(L, key, k.ad); return; }
     const t = BME.tok(ad), a = [[t.join(' '), 14]], gor = new Set();
     for (let i = 0; i + 1 < t.length; i++) { const f = t[i] + ' ' + t[i + 1]; if (!gor.has(f)) { gor.add(f); a.push([f, 6]); } }
     t.forEach(w => { if (w.length >= 5 && !gor.has(w)) { gor.add(w); a.push([w, BM_STOP.has(w) ? 1 : 4]); } });
@@ -25375,7 +25382,7 @@ function bmSatirNot(it) { return (it && it.environmentKey && BM_NOT[it.environme
 function bmSatirAnahtar(it) {
   const g = kontrolGrupId(it);
   if (g === 'cevre') return it.environmentKey || '';
-  if (g === 'makine') return it.equipmentKey || '';
+  if (g === 'makine') return (it.equipmentKey || '') + (it.ekipAlt ? ':' + it.ekipAlt : '');
   return 'su:' + bmSlug(it.name || '');
 }
 function bmSatirBul(grup, kat, fab) {
@@ -25387,7 +25394,7 @@ function bmSatirYap(grup, kat, fab) {
   const p = bmPeriyot(kat.periyot) || { val: '1', unit: 'year' };
   const it = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 8), grup, name: kat.ad, fabs: [fab], fab, lastDate: '', periodVal: p.val, periodUnit: p.unit, firm: '', result: 'bekliyor', note: '', belgeler: [] };
   if (grup === 'cevre') { it.environmentKey = kat.id; const b = kontrolCevreBul(kat.id); if (b) it.environmentCategory = b.katId; }
-  else if (grup === 'makine') { it.equipmentKey = kat.id; if (kat.katAd) { const b = kontrolEkipmanBul(kat.id); if (b) it.equipmentCategory = b.katId; } }
+  else if (grup === 'makine') { it.equipmentKey = kat.ana || kat.id; if (kat.ana) it.ekipAlt = kat.alt; if (kat.katAd || kat.ana) { const b = kontrolEkipmanBul(kat.ana || kat.id); if (b) it.equipmentCategory = b.katId; } }
   if (kat.tip === 'olay' || kat.tip === 'tekil') it.takip = kat.tip;
   return it;
 }
@@ -26296,6 +26303,162 @@ function bmKisaKaydet(i) {
   kontrolRenderFabList();
 }
 
+</script>
+<script id="ekip-js">
+/* ===== Ekipman: iç içe kontroller (LPG), özel ekipman, standart satırı ===== */
+const EKIP_LPG = {
+  ad: 'Sıvılaştırılmış Gaz Tankları (LPG ve benzeri)', kisa: 'LPG Tankı', std: 'TS 1446 · TS EN 12817 · TS EN 12819',
+  kids: [
+    { alt: 'muayene', ad: 'Periyodik muayene / yeniden değerlendirme (10 yıl)', kisa: 'Periyodik Muayene', pv: 10, std: 'TS 1446 · TS EN 12817 · TS EN 12819',
+      a: [['lpg tanki periyodik muayene', 14], ['yeniden degerlendirme', 12], ['periyodik muayene raporu', 6], ['hidrostatik test', 8], ['ts en 12817', 10], ['ts en 12819', 10], ['ts 1446', 8], ['et kalinligi', 6], ['lpg tanki', 6], ['sivilastirilmis petrol gazi', 5], ['lpg', 3]] },
+    { alt: 'valf', ad: 'Emniyet valfi kontrol / test / değişim (5 yıl)', kisa: 'Emniyet Valfi', pv: 5, std: 'Yönetmelik EK-III: 5 yılda bir kontrol ve test',
+      a: [['emniyet ventili', 12], ['emniyet valfi', 12], ['emniyet ventil', 10], ['set basinci', 10], ['valf test', 10], ['ventil test', 10], ['safety valve', 8], ['lpg emniyet', 12], ['lpg', 3]] },
+    { alt: 'yillik', ad: 'Yıllık kontrol', kisa: 'Yıllık Kontrol', pv: 1, std: 'LPG firması servis kontrolü',
+      a: [['lpg yillik kontrol', 14], ['lpg servis formu', 14], ['lpg servis', 10], ['yillik kontrol formu', 10], ['yillik gozle kontrol', 10], ['servis kontrol formu', 8], ['gozle kontrol', 6], ['lpg', 3]] }
+  ]
+};
+const EKIP_STD = {
+  'buhar-kazani': 'TS 2025 · TS EN 12952-6 · TS EN 12953-5', 'kalorifer-sicak-su-kazani': 'TS EN 13445-5 · TS EN 303-1',
+  'basincli-hava-tanki': 'TS EN 286-1 · TS EN 1012-1 · TS EN 13445-5', 'kompresor-hava-tanki': 'TS EN 286-1 · TS EN 1012-1 · TS EN 13445-5',
+  'kriyojenik-tank': 'TS EN ISO 21009-2 · TS EN 13530-3', 'tehlikeli-sivi-tanki': 'API 620 · API 650 · API 653', 'atmosferik-depolama': 'API 650 · API 653',
+  'kullanimdaki-lpg-tupu': 'TS EN 1440', 'tasinabilir-gaz-tupu': 'TS EN 1802 · TS EN 1968 · TS EN ISO 16148', 'asetilen-tup-demet': 'TS EN ISO 10462 · TS EN ISO 13088',
+  'yangin-sondurucu': 'TSE ISO/TS 11602-2', 'yangin-mekanik': 'TS 9811 · TS EN 12845', 'yangin-pompa': 'TS EN 12845', 'sprinkler': 'TS EN 12845', 'yangin-dolabi': 'TS EN 671-3',
+  'yildirimdan-korunma': 'TS EN 62305-3', 'topraklama': 'Topraklamalar Yönetmeliği', 'elektrik-tesisati': 'Elektrik İç Tesisleri Yönetmeliği',
+  'akumulator': 'Üretici koşulları', 'transformator': 'Üretici koşulları', 'klima': 'Proje kriterleri', 'havalandirma': 'Proje kriterleri'
+};
+const EKIP_PER = { 'tehlikeli-sivi-tanki': 10, 'tasinabilir-gaz-tupu': 3 };
+(function ekipKatalogEkle() {
+  const K = typeof KONTROL_EKIPMAN_KATALOG !== 'undefined' ? KONTROL_EKIPMAN_KATALOG : [];
+  const ek = (katId, sonra, liste) => { const k = K.find(x => x.id === katId); if (!k) return; let ix = k.items.findIndex(i => i[0] === sonra); liste.forEach(i => { if (k.items.some(x => x[0] === i[0])) return; k.items.splice(ix >= 0 ? ++ix : k.items.length, 0, i); }); };
+  ek('basinc', 'lpg-tanki', [['kullanimdaki-lpg-tupu', 'Kullanımdaki LPG Tüpleri'], ['tasinabilir-gaz-tupu', 'Taşınabilir Gaz Tüpleri (Kaynak, Oksijen, Azot vb.)'], ['asetilen-tup-demet', 'Asetilen Tüpleri / Tüp Demetleri']]);
+  ek('tesisat', 'yangin-dolabi', [['yangin-sondurucu', 'Yangın Söndürme Cihazları (Tüp)']]);
+})();
+window.bmOzel = window.bmOzel || [];
+try { const o = JSON.parse(localStorage.getItem('bm_ozel_v1') || '[]'); if (Array.isArray(o) && !window.bmOzel.length) window.bmOzel = o; } catch (e) {}
+function ekipCok(key) {
+  if (key === 'lpg-tanki') return EKIP_LPG;
+  const o = (window.bmOzel || []).find(x => x.key === key && x.tip === 'lpg');
+  return o ? { ad: o.ad, kisa: o.ad, std: o.std || EKIP_LPG.std, kids: EKIP_LPG.kids, ozel: o } : null;
+}
+function ekipOzelUygula() {
+  const K = KONTROL_EKIPMAN_KATALOG;
+  K.forEach(k => { k.items = k.items.filter(i => !String(i[0]).startsWith('ozel-')); });
+  (window.bmOzel || []).forEach(o => {
+    const kat = K.find(k => k.id === o.katId) || K[0];
+    let ix = kat.items.findIndex(i => i[0] === o.after);
+    while (ix >= 0 && kat.items[ix + 1] && String(kat.items[ix + 1][0]).startsWith('ozel-')) ix++;
+    kat.items.splice(ix >= 0 ? ix + 1 : kat.items.length, 0, [o.key, o.ad]);
+  });
+}
+ekipOzelUygula();
+function ekipOzelKaydet() { try { localStorage.setItem('bm_ozel_v1', JSON.stringify(window.bmOzel)); } catch (e) {} if (window._fbSaveKontrol) window._fbSaveKontrol(); }
+function ekipYeniSatir(e, fabs, ek) {
+  return Object.assign({ id: Date.now() + '-' + Math.random().toString(36).slice(2, 8), grup: 'makine', equipmentKey: e.key, equipmentCategory: e.katId, name: e.ad, fabs: fabs.slice(), fab: fabs[0], lastDate: '', periodVal: '1', periodUnit: 'year', firm: '', result: 'bekliyor', note: '' }, ek || {});
+}
+// Katalogdan eklenen ekipman için satır(lar): çok başlıklı ekipmanda her kontrol ayrı satır
+function ekipSatirUret(e, fab) {
+  const c = ekipCok(e.key);
+  if (c) return c.kids.map(k => ekipYeniSatir(e, [fab], { ekipAlt: k.alt, name: c.kisa + ' – ' + k.ad, periodVal: String(k.pv) }));
+  const o = (window.bmOzel || []).find(x => x.key === e.key);
+  if (o) return [ekipYeniSatir(e, [fab], { periodVal: String(o.pv || 1), periodUnit: o.pu === 'month' ? 'month' : 'year' })];
+  const pv = EKIP_PER[e.key];
+  return [ekipYeniSatir(e, [fab], pv ? { periodVal: String(pv) } : {})];
+}
+// Eski tek satırlı LPG kaydını 3 başlığa tamamla (bir kez)
+function ekipGocEt() {
+  let d = false; const c = EKIP_LPG;
+  kontrolItems.filter(it => it.grup === 'makine' && it.equipmentKey === 'lpg-tanki' && !it.ekipAlt).forEach(it => {
+    const pv = +it.periodVal || 1, ay = it.periodUnit === 'month' ? pv / 12 : pv;
+    it.ekipAlt = ay >= 10 ? 'muayene' : ay >= 5 ? 'valf' : 'yillik';
+    const k = c.kids.find(x => x.alt === it.ekipAlt);
+    if (!it.name || it.name === c.ad) it.name = c.kisa + ' – ' + k.ad;
+    d = true;
+  });
+  const gruplar = {};
+  kontrolItems.filter(it => it.grup === 'makine' && it.equipmentKey === 'lpg-tanki' && it.ekipAlt).forEach(it => { const fk = (Array.isArray(it.fabs) ? it.fabs : [it.fab]).join('|'); (gruplar[fk] = gruplar[fk] || []).push(it); });
+  Object.values(gruplar).forEach(L => c.kids.forEach(k => {
+    if (L.some(x => x.ekipAlt === k.alt)) return;
+    const f = L[0], e = { key: 'lpg-tanki', ad: c.ad, katId: f.equipmentCategory };
+    kontrolItems.push(ekipYeniSatir(e, Array.isArray(f.fabs) ? f.fabs : [f.fab], { ekipAlt: k.alt, name: c.kisa + ' – ' + k.ad, periodVal: String(k.pv) })); d = true;
+  }));
+  return d;
+}
+function ekipStd(it) {
+  if (!it || kontrolGrupId(it) !== 'makine') return '';
+  const k = it.equipmentKey || '';
+  if (it.ekipAlt) { const c = ekipCok(k), kd = c && c.kids.find(x => x.alt === it.ekipAlt); return kd ? kd.std : ''; }
+  const o = (window.bmOzel || []).find(x => x.key === k);
+  return (o && o.std) || EKIP_STD[k] || '';
+}
+const ekipAnahtar = it => (it.equipmentKey || '') + '|' + ((Array.isArray(it.fabs) && it.fabs[0]) || it.fab || '');
+function ekipListeHtml(L) {
+  const gor = new Set(), out = [];
+  L.forEach(it => {
+    if (!it.ekipAlt) { out.push(kontrolKartHtml(it)); return; }
+    const k = ekipAnahtar(it); if (gor.has(k)) return; gor.add(k);
+    const c = ekipCok(it.equipmentKey), sira = x => c ? c.kids.findIndex(y => y.alt === x.ekipAlt) : 0;
+    out.push(ekipKartHtml(k, L.filter(x => x.ekipAlt && ekipAnahtar(x) === k).sort((a, b) => sira(a) - sira(b)), c));
+  });
+  return out.join('');
+}
+function ekipKartHtml(k, kids, c) {
+  const fab = (Array.isArray(kids[0].fabs) && kids[0].fabs[0]) || kids[0].fab || '';
+  const dated = kids.filter(x => x.daysLeft !== null && x.lastDate && x.nextDate).sort((a, b) => a.daysLeft - b.daysLeft), en = dated[0];
+  const dl = en ? en.daysLeft : null;
+  const ton = dl === null ? 'gry' : dl < 0 ? 'red' : dl <= 30 ? 'org' : dl <= 90 ? 'yel' : 'grn';
+  const dgB = dl === null ? '—' : dl < 0 ? Math.abs(dl) : dl === 0 ? 'Bugün' : dl, dgS = dl === null ? 'tarihsiz' : dl < 0 ? 'gün geçti' : dl === 0 ? 'son gün' : 'gün kaldı';
+  const acik = kontrolSatirAcik.has('ekp:' + k), idJs = ('ekp:' + k).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const kd = en && c ? c.kids.find(x => x.alt === en.ekipAlt) : null;
+  const ozet = kids.length + ' kontrol' + (en && kd ? ' · en yakın: ' + kd.kisa : ' · tarih girilmedi');
+  const fabHtml = fab ? `<span class="kx-fb" style="--c:${kxFabRenk(fab)}"><i></i>${esc(fab)}</span>` : '';
+  return `<div class="kx-row ekp kx-${ton}${acik ? ' open' : ''}" data-ekp="${esc(k)}">
+    <button type="button" class="kx-sum" aria-expanded="${acik ? 'true' : 'false'}" onclick="kontrolSatirToggle('${idJs}',this)">
+      <span class="kx-bar"></span>
+      <span style="min-width:0;"><div class="kx-nm">${esc(c ? c.ad : kids[0].name)}</div>${c && c.std ? `<div class="kx-std">${esc(c.std)}</div>` : ''}<div class="kx-mt">${fabHtml}<span style="white-space:nowrap">${esc(ozet)}</span></div></span>
+      <span class="kx-dg"><b>${dgB}</b><span>${dgS}</span></span>
+      <svg class="kx-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="kx-det"><div class="ekp-kids">${kids.map(x => { const kd2 = c && c.kids.find(y => y.alt === x.ekipAlt); return kontrolKartHtml(kd2 ? Object.assign({}, x, { name: kd2.ad }) : x); }).join('')}</div></div>
+  </div>`;
+}
+/* Özel ekipman ekle */
+function ekipOzelAc() {
+  const eski = document.getElementById('ekp-mini'); if (eski) eski.remove();
+  const gruplu = KONTROL_EKIPMAN_KATALOG.map(k => `<optgroup label="${esc(k.ad)}">${k.items.map(i => `<option value="${esc(k.id + '|' + i[0])}"${i[0] === 'lpg-tanki' ? ' selected' : ''}>${esc(i[1])}</option>`).join('')}</optgroup>`).join('');
+  const fabs = kontrolFabs.length ? kontrolFabs : fabrikalar.map(f => f.name), vf = kontrolFabFilter && fabs.includes(kontrolFabFilter) ? kontrolFabFilter : fabs[0];
+  const bg = document.createElement('div'); bg.id = 'ekp-mini'; bg.className = 'isg-onay-bg';
+  bg.innerHTML = `<div class="isg-onay-card" role="dialog" aria-modal="true" style="max-height:92vh;overflow:auto"><div class="isg-onay-b">Özel ekipman ekle</div><div class="isg-onay-m">Katalogda olmayan ekipmanını yaz. Seçtiğin ekipmanın hemen altına yerleşir.</div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px;text-align:left">
+    <select class="kx-in" id="ekp-tip" onchange="ekipOzelTip()"><option value="lpg">LPG tipi: 10 yıl + 5 yıl valf + yıllık kontrol (3 başlık)</option><option value="tek">Tek başlık (kendi periyodum)</option></select>
+    <input class="kx-in" id="ekp-ad" placeholder="Ekipman adı" maxlength="70">
+    <select class="kx-in" id="ekp-yer">${gruplu}</select>
+    <input class="kx-in" id="ekp-std" placeholder="Standart / not (isteğe bağlı)" maxlength="80">
+    <div id="ekp-per" style="display:none;gap:8px"><input class="kx-in" id="ekp-pv" type="number" min="1" value="1" style="flex:1;min-width:0"><select class="kx-in" id="ekp-pu" style="flex:1;min-width:0"><option value="year">Yıl</option><option value="month">Ay</option></select></div>
+    <select class="kx-in" id="ekp-fab">${fabs.map(f => `<option value="${esc(f)}"${f === vf ? ' selected' : ''}>${esc(f)}</option>`).join('')}${fabs.length > 1 ? '<option value="*">Tüm fabrikalar</option>' : ''}</select>
+  </div><div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">Vazgeç</button><button class="isg-onay-btn ok" data-k="evet">Ekle</button></div></div>`;
+  bg.addEventListener('click', e => {
+    if (e.target === bg) { bg.remove(); return; }
+    const b = e.target.closest('[data-k]'); if (!b) return;
+    if (b.dataset.k === 'evet' && !ekipOzelEkle()) return;
+    bg.remove();
+  });
+  document.body.appendChild(bg); document.getElementById('ekp-ad').focus();
+}
+function ekipOzelTip() { const t = document.getElementById('ekp-tip').value; document.getElementById('ekp-per').style.display = t === 'tek' ? 'flex' : 'none'; }
+function ekipOzelEkle() {
+  const ad = document.getElementById('ekp-ad').value.trim(); if (!ad) { document.getElementById('ekp-ad').focus(); return false; }
+  const var_ = KONTROL_EKIPMAN_KATALOG.some(k => k.items.some(i => i[1].toLocaleLowerCase('tr-TR') === ad.toLocaleLowerCase('tr-TR')));
+  if (var_) { toast('Bu adla bir ekipman zaten var'); return false; }
+  const tip = document.getElementById('ekp-tip').value, [katId, after] = document.getElementById('ekp-yer').value.split('|');
+  const o = { key: 'ozel-' + Date.now().toString(36), ad, katId, after, tip, std: document.getElementById('ekp-std').value.trim(), pv: tip === 'tek' ? (+document.getElementById('ekp-pv').value || 1) : 1, pu: tip === 'tek' ? document.getElementById('ekp-pu').value : 'year' };
+  window.bmOzel.push(o); ekipOzelUygula(); ekipOzelKaydet();
+  const fs = document.getElementById('ekp-fab').value, hedef = fs === '*' ? (kontrolFabs.length ? kontrolFabs : fabrikalar.map(f => f.name)) : [fs];
+  const e = kontrolEkipmanBul(o.key);
+  hedef.forEach(f => { ekipSatirUret(e, f).forEach(r => kontrolItems.push(r)); if (tip === 'lpg') kontrolSatirAcik.add('ekp:' + o.key + '|' + f); });
+  kontrolGrupAcik.makine = true; kontrolSave(); kontrolRender(); if (typeof dashRender === 'function') dashRender();
+  toast(ad + ' eklendi · katalogda ' + (kontrolEkipmanBul(after) ? kontrolEkipmanBul(after).ad.split(' (')[0] : 'listede') + ' altına yerleşti');
+  return true;
+}
 </script>
 </body>
 </html>
