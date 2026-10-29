@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta name="app-version" content="8.6.6">
+<meta name="app-version" content="8.6.7">
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
 
-  const APP_VERSION = '8.6.6';
+  const APP_VERSION = '8.6.7';
   const VERSION_PARAM = 'v';
   const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -7691,6 +7691,7 @@ px}
       <button type="button" class="st-mi" onclick="settingsGit('durum')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg></span><span class="st-mt"><b>Görev durumları</b><span class="st-v" id="st-v-durum"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('param')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l6 3V9l6 3V4h6v17z"/></svg></span><span class="st-mt"><b>Fabrika, departman, personel</b><span class="st-v" id="st-v-param"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('gorunum')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.2"/><circle cx="14" cy="8.5" r="1.2"/><circle cx="16" cy="13" r="1.2"/></svg></span><span class="st-mt"><b>Görünüm</b><span class="st-v" id="st-v-tema"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button type="button" class="st-mi" onclick="settingsGit('arsivf')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/></svg></span><span class="st-mt"><b>Fabrika arşivi</b><span class="st-v" id="st-v-arsivf"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('depo')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></span><span class="st-mt"><b>Depolama</b><span class="st-v" id="st-v-depo"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('ai')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><span class="st-mt"><b>Yapay zeka</b><span class="st-v" id="st-v-ai"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
       <button type="button" class="st-mi" onclick="settingsGit('hesap')"><span class="st-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></span><span class="st-mt"><b>Hesap ve uygulama</b><span class="st-v" id="st-v-hesap"></span></span><svg class="st-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
@@ -7736,6 +7737,8 @@ px}
         <div id="ai-test-sonuc" style="font-size:11px;margin-top:8px;color:var(--text2);line-height:1.5"></div>
       </details>
     </div></div>
+
+    <div class="st-pg" id="st-p-arsivf"><div class="st-bd" id="af-ic"></div></div>
 
     <div class="st-pg" id="st-p-depo"><div class="st-bd" id="depo-ic"></div></div>
 
@@ -8972,7 +8975,7 @@ async function kazaRaporMotorTest(deep) {
 function closeSettings() { document.getElementById('settings-bg').classList.remove('on'); }
 
 let stSayfa = 'menu', stTemaAcik = false;
-const ST_BASLIK = {menu:['Ayarlar','Program tercihleri'],durum:['Görev durumları','Board sütunları'],param:['Fabrika, departman, personel','Tüm bölümlerde ortak liste'],gorunum:['Görünüm','Renk teması'],ai:['Yapay zeka','Gemini ile öneri'],hesap:['Hesap ve uygulama','Oturum ve kurulum'],depo:['Depolama','Veri tabanı kullanımı (tahmini)']};
+const ST_BASLIK = {menu:['Ayarlar','Program tercihleri'],durum:['Görev durumları','Board sütunları'],param:['Fabrika, departman, personel','Tüm bölümlerde ortak liste'],gorunum:['Görünüm','Renk teması'],ai:['Yapay zeka','Gemini ile öneri'],hesap:['Hesap ve uygulama','Oturum ve kurulum'],depo:['Depolama','Veri tabanı kullanımı (tahmini)'],arsivf:['Fabrika arşivi','Eski fabrikaları sakla']};
 function settingsGit(k) {
   stSayfa = k;
   document.querySelectorAll('#settings-panel .st-pg').forEach(p => p.classList.toggle('on', p.id === 'st-p-' + k));
@@ -8983,6 +8986,7 @@ function settingsGit(k) {
   stColForm(false); stParForm(false);
   if (k === 'menu') settingsOzet();
   if (k === 'depo' && typeof depAc === 'function') depAc();
+  if (k === 'arsivf' && typeof afAc === 'function') afAc();
 }
 function stColForm(ac) { const f = document.getElementById('st-col-add'), b = document.getElementById('st-col-plus'); if (f) f.style.display = ac ? 'grid' : 'none'; if (b) b.style.display = ac ? 'none' : 'block'; if (ac) document.getElementById('new-col-name')?.focus(); }
 function stParForm(ac) { const f = document.getElementById('st-par-add'), b = document.getElementById('st-par-plus'); if (f) f.style.display = ac ? 'grid' : 'none'; if (b) b.style.display = ac ? 'none' : 'block'; if (ac) document.getElementById('param-yeni-ad')?.focus(); }
@@ -8995,6 +8999,7 @@ function settingsOzet() {
   set('st-v-tema', t ? t.name.replace(/\s*[☀🌙🌈]\uFE0F?/g, '') : '');
   const anahtar = !!aiKeyAl();
   set('st-v-ai', anahtar ? 'Bağlı ✓' : 'Anahtar yok', anahtar);
+  set('st-v-arsivf', typeof afArsivListe === 'function' && afMetaOk ? (afArsivListe().length ? afArsivListe().length + ' arşivli' : 'Henüz yok') : 'Saklı fabrikalar');
   try { const dc = JSON.parse(localStorage.getItem('depo_cache_v1') || 'null'); if (dc) { const dp = Math.round(dc.tot / 1e9 * 100); set('st-v-depo', (dc.tot / 1e9).toFixed(2).replace('.', ',') + ' GB / 1 GB · %' + dp + (dp >= 85 ? ' ⚠' : '')); } else set('st-v-depo', 'Ölçmek için aç'); } catch (e) {}
   set('st-v-hesap', 'Sürüm ' + (window.APP_VERSION || ''));
   const d = document.getElementById('ai-key-durum');
@@ -20571,6 +20576,14 @@ window.addEventListener('resize', calMobInit);
     kazaRaporSil: id => ROOT.child('kazaRaporlari').child(String(id)).remove(),
     kazaRaporYaz: (id, v) => ROOT.child('kazaRaporlari').child(String(id)).set(v)
   };
+  // Fabrika arşivi: özet (fabArsivMeta) ve parçalı kayıtlar (fabArsivVeri) ayrı düğümlerde
+  window._fbArsiv = {
+    metaOku: () => ROOT.child('fabArsivMeta').once('value').then(sn => sn.val() || {}),
+    metaYaz: (id, v) => ROOT.child('fabArsivMeta').child(id).set(v),
+    veriOku: (id, modul) => ROOT.child('fabArsivVeri').child(id + (modul ? '/' + modul : '')).once('value').then(sn => sn.val()),
+    veriYaz: (id, modul, k, arr) => ROOT.child('fabArsivVeri').child(id + '/' + modul + '/' + k).set(arr),
+    sil: id => Promise.all([ROOT.child('fabArsivMeta').child(id).remove(), ROOT.child('fabArsivVeri').child(id).remove()])
+  };
 
   window._fbReady = true;
 
@@ -21126,6 +21139,23 @@ window.addEventListener('resize', calMobInit);
 .dp-btns .s{background:var(--surface2);color:var(--text)}.dp-btns .p{background:var(--acc);color:var(--acc-fg)}.dp-btns .d{background:var(--bad-bg);color:#fff}
 .dp-btns button:disabled{opacity:.5;cursor:default}
 .dp-mut{font-size:12px;color:var(--text2)}.dp-lnk{border:0;background:none;color:var(--acc-tx);font-weight:800;font-size:12.5px;cursor:pointer;padding:6px 0;min-height:0}
+</style>
+<style id="arsiv-style">
+.af-opt{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;cursor:pointer;background:var(--surface);color:var(--text);width:100%;text-align:left;font:inherit;min-height:0}
+.af-opt.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,var(--surface))}
+.af-opt div{flex:1;min-width:0}.af-opt b{display:block;font-size:13.5px}.af-opt small{color:var(--text2);font-size:11.5px}
+.af-opt i{width:36px;height:36px;border-radius:11px;background:var(--surface2);display:grid;place-items:center;font-style:normal;flex:none}
+.af-opt.d i{background:color-mix(in srgb,var(--bad) 16%,var(--surface))}
+.af-rad{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);flex:none;display:grid;place-items:center}.af-opt.on .af-rad{border-color:var(--acc)}.af-opt.on .af-rad::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--acc)}
+.af-sz{font-weight:800;font-size:12.5px;white-space:nowrap;color:var(--text);flex:none}
+.af-frow{display:flex;align-items:center;gap:10px;padding:11px 4px;border:0;border-top:1px solid var(--line);background:none;color:var(--text);width:100%;text-align:left;font:inherit;min-height:0}.af-frow.f{border-top:0}
+.af-frow .c{width:14px;height:14px;border-radius:50%;flex:none}.af-frow>b{font-size:13.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.af-frow small{color:var(--text2);font-size:11.5px;display:block}
+.af-mini{min-height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
+.af-sw{width:46px;height:28px;border-radius:99px;background:var(--surface2);border:1px solid var(--border2);position:relative;flex:none}.af-sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--text3);transition:left .2s}.af-sw.on{background:var(--acc);border-color:var(--acc)}.af-sw.on::after{left:21px;background:var(--acc-fg)}
+.af-tgl{display:flex;align-items:center;gap:12px;cursor:pointer;width:100%;border:0;background:none;color:var(--text);text-align:left;font:inherit;padding:0;min-height:0}.af-tgl div{flex:1}.af-tgl b{display:block;font-size:13.5px}.af-tgl small{color:var(--text2);font-size:11.5px}
+.af-tg{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--good) 18%,var(--surface));color:var(--good-tx)}
+.af-drop{border:1.5px dashed var(--border2);border-radius:16px;padding:26px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;cursor:pointer;background:var(--surface);color:var(--text)}
+.af-in{width:100%;min-height:46px;padding:0 14px;border:1px solid var(--border2);border-radius:14px;background:var(--surface);color:var(--text);font:inherit;font-weight:600}
 </style>
 <style id="kfa-style">
 /* Fabrika ayarları + fabrika seçici (Kontroller) */
@@ -24210,12 +24240,13 @@ function depWalk(x, f) {
   return String(x).length;
 }
 function depTara(v) {
-  const c = { foto: 0, pdf: 0, diger: 0, den: 0, gor: 0, kaza: 0 };
+  const c = { foto: 0, pdf: 0, diger: 0, den: 0, gor: 0, kaza: 0, arsiv: 0 };
   let tot = 0;
   Object.keys(v || {}).forEach(k => {
     const f = { f: 0, p: 0, d: 0 };
     const n = depWalk(v[k], f) + k.length + 4;
-    tot += n; c.foto += f.f; c.pdf += f.p; c.diger += f.d;
+    tot += n;
+    if (k === 'fabArsivVeri') { c.arsiv += n; return; } c.foto += f.f; c.pdf += f.p; c.diger += f.d;
     const kalan = n - f.f - f.p - f.d;
     if (k === 'denetim') c.den += kalan; else if (k === 'tasks' || k === 'archive') c.gor += kalan; else c.kaza += kalan;
   });
@@ -24308,7 +24339,7 @@ function depCizAna() {
   const ch = depCache();
   if (!ch) { el.innerHTML = `<div class="dp-card"><div class="dp-lb">KULLANIM</div><div class="dp-mut">${depTaraniyor ? 'Hesaplanıyor…' : (window._fbDepo ? 'Henüz ölçülmedi.' : 'Bulut bağlantısı hazır değil.')}</div></div>${depTaraniyor ? '' : '<div class="dp-btns"><button class="p" onclick="depYenile(true)">Şimdi ölç</button></div>'}`; return; }
   const p = ch.tot / DEPO_KOTA * 100, w = p >= DEPO_UYARI, c = ch.c;
-  const kat = [['foto', 'Fotoğraflar', 'var(--acc)'], ['pdf', 'PDF belgeleri', 'var(--bad)'], ['diger', 'Diğer dosyalar', 'var(--text2)'], ['den', 'Denetim ve bulgular', 'var(--good)'], ['gor', 'Görevler ve arşiv', 'var(--warn)'], ['kaza', 'Kaza, kontrol, diğer', 'var(--text3)']]
+  const kat = [['foto', 'Fotoğraflar', 'var(--acc)'], ['pdf', 'PDF belgeleri', 'var(--bad)'], ['diger', 'Diğer dosyalar', 'var(--text2)'], ['arsiv', 'Fabrika arşivi', 'var(--acc-tx)'], ['den', 'Denetim ve bulgular', 'var(--good)'], ['gor', 'Görevler ve arşiv', 'var(--warn)'], ['kaza', 'Kaza, kontrol, diğer', 'var(--text3)']]
     .filter(x => c[x[0]] > 0).map(x => `<div class="dp-kv"><span><i class="dp-dot" style="background:${x[2]}"></i>${x[1]}</span><b>${depGB(c[x[0]])}</b></div>`).join('');
   const yl = depYillar(), maxb = Math.max(1, ...yl.map(r => r.b));
   const yr = yl.map((r, i) => {
@@ -24495,8 +24526,406 @@ async function depSilBaslat(bi) {
   depCizIlerle(); try { toast(depDur ? 'Durduruldu' : 'Silindi'); } catch (e) {}
 }
 function stGeri() {
+  if (stSayfa === 'arsivf') { afGeri(); return; }
   if (stSayfa === 'depo' && depS !== 'ana') { depGit(depS === 'yil' ? 'ana' : 'yil'); return; }
   settingsGit('menu');
+}
+</script>
+<script id="arsiv-js">
+// ══ FABRİKA ARŞİVİ ═══════════════════════════════════════════════════════
+// Arşivlenen fabrikanın kayıtları canlı listelerden çıkarılır ve bulutta
+// isg/fabArsivVeri/{id} altında saklanır (özet: isg/fabArsivMeta/{id}).
+// Canlı modüller değişmez; arşivdeki fabrika hiçbir listede görünmez.
+const AF_FORMAT = 'isg-fab-arsiv';
+let afS = 'ana', afMeta = {}, afMetaOk = false, afDur = false, afBusy = false;
+const AF = { fab: '', id: '', pk: true, sec: 'b', not: '', ilerle: null, yuk: null, cak: 'ayri', ad: '' };
+const AF_MOD = [['den', 'Denetim'], ['bul', 'Bulgu'], ['kaza', 'Kaza'], ['rapor', 'Kaza raporu'], ['gor', 'Görev'], ['arsiv', 'Arşivli görev'], ['kontrol', 'Periyodik kontrol']];
+
+// ── ZIP (bağımlılıksız: CompressionStream + elle yazılan ZIP yapısı) ──
+const AF_CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function afCrc(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = AF_CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+async function afDeflate(u8) {
+  if (typeof CompressionStream === 'undefined') return null;
+  const cs = new Blob([u8]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(cs).arrayBuffer());
+}
+async function afInflate(u8) {
+  const ds = new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(ds).arrayBuffer());
+}
+async function afZipYaz(girdiler) {
+  const enc = new TextEncoder(), parcalar = [], merkez = []; let ofs = 0;
+  const d = new Date(), dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+  for (const g of girdiler) {
+    const ad = enc.encode(g.ad), ham = typeof g.veri === 'string' ? enc.encode(g.veri) : g.veri, crc = afCrc(ham);
+    let sik = await afDeflate(ham), yon = 8; if (!sik || sik.length >= ham.length) { sik = ham; yon = 0; }
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, yon, true); lh.setUint16(10, dt, true); lh.setUint16(12, dd, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, sik.length, true); lh.setUint32(22, ham.length, true); lh.setUint16(26, ad.length, true); lh.setUint16(28, 0, true);
+    parcalar.push(new Uint8Array(lh.buffer), ad, sik);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, yon, true); ch.setUint16(12, dt, true); ch.setUint16(14, dd, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, sik.length, true); ch.setUint32(24, ham.length, true); ch.setUint16(28, ad.length, true); ch.setUint32(42, ofs, true);
+    merkez.push(new Uint8Array(ch.buffer), ad);
+    ofs += 30 + ad.length + sik.length;
+  }
+  let mb = 0; merkez.forEach(x => { mb += x.length; });
+  const eo = new DataView(new ArrayBuffer(22));
+  eo.setUint32(0, 0x06054b50, true); eo.setUint16(8, girdiler.length, true); eo.setUint16(10, girdiler.length, true); eo.setUint32(12, mb, true); eo.setUint32(16, ofs, true);
+  return new Blob([...parcalar, ...merkez, new Uint8Array(eo.buffer)], { type: 'application/zip' });
+}
+async function afZipOku(dosya) {
+  const buf = new Uint8Array(await dosya.arrayBuffer()), dv = new DataView(buf.buffer);
+  let e = -1; for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65600); i--) if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
+  if (e < 0) throw new Error('ZIP dosyası okunamadı');
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true); const dec = new TextDecoder(), liste = {};
+  for (let k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('ZIP dizini bozuk');
+    const yon = dv.getUint16(p + 10, true), crc = dv.getUint32(p + 16, true), cs = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    const ad = dec.decode(buf.subarray(p + 46, p + 46 + nl));
+    liste[ad] = async () => {
+      const ln = dv.getUint16(lo + 26, true), le = dv.getUint16(lo + 28, true), bas = lo + 30 + ln + le, ham = buf.subarray(bas, bas + cs);
+      const u = yon === 8 ? await afInflate(ham) : ham.slice();
+      if (afCrc(u) !== crc) throw new Error(ad + ' doğrulanamadı');
+      return dec.decode(u);
+    };
+    p += 46 + nl + el + cl;
+  }
+  return liste;
+}
+function afIndir(blob, ad) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = ad; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 6000);
+}
+
+// ── Veri toplama ──
+const afKopya = o => JSON.parse(JSON.stringify(o));
+const afSlug = s => String(s).toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'fabrika';
+const afTarihYaz = iso => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '.' + m[2] + '.' + m[1] : ''; };
+function afTek(o, ad) { return o && o.fab === ad && !(Array.isArray(o.fabs) && o.fabs.length > 1); }
+function afOrtak(ad) { const f = o => o && Array.isArray(o.fabs) && o.fabs.length > 1 && o.fabs.includes(ad); return tasks.filter(f).length + archived.filter(f).length + kontrolItems.filter(f).length; }
+function afTopla(ad) {
+  const den = denetimler.filter(d => d.fab === ad), dids = new Set(den.map(d => d.id));
+  const bul = bulgular.filter(b => dids.has(b.denetimId)), kaza = kazaItems.filter(k => k.fab === ad), rc = window._fbKazaRaporCache || {};
+  return {
+    den, bul, kaza,
+    rapor: kaza.filter(k => rc[k.id] && typeof rc[k.id] === 'object').map(k => ({ id: k.id, veri: rc[k.id] })),
+    gor: tasks.filter(t => afTek(t, ad)), arsiv: archived.filter(t => afTek(t, ad)), kontrol: kontrolItems.filter(t => afTek(t, ad))
+  };
+}
+function afSay(v) { const s = {}; AF_MOD.forEach(m => { s[m[0]] = (v[m[0]] || []).length; }); s.foto = 0; AF_MOD.forEach(m => (v[m[0]] || []).forEach(r => { s.foto += depFotoRefs(r).length; })); return s; }
+function afBoyut(v) {
+  let kayit = 0, foto = 0;
+  AF_MOD.forEach(m => (v[m[0]] || []).forEach(r => { kayit += JSON.stringify(r).length; depFotoRefs(r).forEach(f => { foto += f.p[f.k].length; }); }));
+  return { kayit: kayit - foto, foto: foto * 0.75 };
+}
+function afTahmin(b, sec) { const k = Math.max(1e4, b.kayit * 0.18); return sec === 'a' ? k + b.foto * 0.98 : sec === 'b' ? k + b.foto * 0.2 : k; }
+function afYillar(v) {
+  const y = {}, ek = (iso, t) => { const yl = String(iso || '').slice(0, 4); if (!/^\d{4}$/.test(yl)) return; (y[yl] = y[yl] || { den: 0, kaza: 0 })[t]++; };
+  (v.den || []).forEach(d => ek(depIso(d.tarih), 'den')); (v.kaza || []).forEach(k => ek(depIso(k.tarih) || depTs(k.createdAt), 'kaza'));
+  return y;
+}
+function afYeniId() { return 'fa' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+function afParcala(arr, sinir) {
+  const out = []; let cur = [], boy = 0;
+  arr.forEach(r => { const s = JSON.stringify(r).length; if (cur.length && boy + s > sinir) { out.push(cur); cur = []; boy = 0; } cur.push(r); boy += s; });
+  if (cur.length) out.push(cur);
+  return out;
+}
+
+// ── Köprü yardımcıları ──
+const afOkunur = () => !!window._fbArsiv && navigator.onLine !== false;
+function afMetaYukle() { if (!window._fbArsiv) return Promise.resolve(); return window._fbArsiv.metaOku().then(m => { afMeta = m || {}; afMetaOk = true; }).catch(() => {}); }
+function afAktifSay() { return fabrikalar.length; }
+function afArsivListe() { return Object.keys(afMeta).map(id => ({ id, ...afMeta[id] })).sort((a, b) => String(b.tarih).localeCompare(String(a.tarih))); }
+
+// ── Ekranlar ──
+function afBaslik() {
+  const m = afMeta[AF.id] || {}, L = afArsivListe().length;
+  const T = {
+    ana: ['Fabrika arşivi', afAktifSay() + ' aktif · ' + L + ' arşivli'], arsivle: [AF.fab, 'Fabrikayı arşivle'], ilerle: [AF.ilerle ? AF.ilerle.baslik : 'İşlem sürüyor', 'Pencereyi kapatmayın'],
+    arsivli: ['Arşivlenmiş fabrikalar', 'Salt okunur'], detay: [m.ad || 'Fabrika', m.tarih ? 'Arşivlendi ' + afTarihYaz(m.tarih) : ''],
+    paket: [m.ad || 'Fabrika', 'Arşiv paketi indir'], sablon: [m.ad || 'Fabrika', 'Şablon olarak kopyala'],
+    yukle: ['Arşiv paketi yükle', 'ZIP dosyasını seç'], onizle: ['Paketi kontrol et', 'Henüz hiçbir şey yüklenmedi'], cakis: ['Aynı adlı fabrika var', (AF.yuk ? AF.yuk.ad : '') + ' zaten kayıtlı'],
+    bitti: [AF.ilerle ? AF.ilerle.baslik : 'Tamamlandı', AF.ilerle ? AF.ilerle.alt || '' : '']
+  }[afS] || ['Fabrika arşivi', ''];
+  document.getElementById('st-ttl').textContent = T[0]; document.getElementById('st-sub').textContent = T[1];
+  document.getElementById('st-back').style.display = (afS === 'ilerle') ? 'none' : 'grid';
+}
+const AF_GERI = { arsivle: 'ana', arsivli: 'ana', detay: 'arsivli', paket: 'detay', sablon: 'detay', yukle: 'ana', onizle: 'yukle', cakis: 'onizle', bitti: 'ana' };
+function afGeri() { if (afS === 'ana') { settingsGit('menu'); return; } afGit(AF_GERI[afS] || 'ana'); }
+function afGit(s) { afS = s; afCiz(); const p = document.getElementById('st-p-arsivf'); if (p) p.scrollTop = 0; }
+function afAc() { afS = 'ana'; afCiz(); afMetaYukle().then(() => { if (afS === 'ana' || afS === 'arsivli') afCiz(); try { settingsOzet(); } catch (e) {} }); }
+function afCiz() { afBaslik(); ({ ana: afCizAna, arsivle: afCizArsivle, ilerle: afCizIlerle, arsivli: afCizArsivli, detay: afCizDetay, paket: afCizPaket, sablon: afCizSablon, yukle: afCizYukle, onizle: afCizOnizle, cakis: afCizCakis, bitti: afCizBitti })[afS](); }
+const afEl = () => document.getElementById('af-ic');
+const afMenu = (ic, t, sm, oc) => `<button type="button" class="af-opt" onclick="${oc}"><i>${ic}</i><div><b>${t}</b><small>${sm}</small></div><span style="color:var(--text3)">›</span></button>`;
+function afCizAna() {
+  const L = afArsivListe(), toplam = L.reduce((s, x) => s + (x.bytes || 0), 0);
+  const satir = fabrikalar.map((f, i) => `<div class="af-frow${i ? '' : ' f'}"><i class="c" style="background:${esc(f.color || '#888')}"></i><b>${esc(f.name)}</b><button type="button" class="af-mini" data-ad="${esc(f.name)}" onclick="afArsivleAc(this.dataset.ad)">Arşivle</button></div>`).join('');
+  afEl().innerHTML = `<div class="dp-card">${satir || '<div class="dp-mut">Aktif fabrika yok.</div>'}</div>
+    ${afMenu('📥', 'Arşiv paketi yükle', 'Daha önce indirilen ZIP dosyası', "afGit('yukle')")}
+    ${afMenu('🗄️', 'Arşivlenmiş fabrikalar', L.length ? L.length + ' fabrika · ' + depGB(toplam) : 'Henüz yok', "afGit('arsivli')")}`;
+}
+function afArsivleAc(ad) { AF.fab = ad; AF.not = ''; AF.pk = true; AF.sec = 'b'; afGit('arsivle'); }
+function afSecenek(k, t, sm, b) { return `<button type="button" class="af-opt${AF.sec === k ? ' on' : ''}" onclick="AF.sec='${k}';afCiz()"><span class="af-rad"></span><div><b>${t}</b><small>${sm}</small></div><span class="af-sz">≈ ${depGB(afTahmin(b, k))}</span></button>`; }
+function afCizArsivle() {
+  const v = afTopla(AF.fab), s = afSay(v), b = afBoyut(v), ortak = afOrtak(AF.fab), parca = Math.max(1, Math.ceil(afTahmin(b, AF.sec) / 150e6));
+  afEl().innerHTML = `<div class="dp-eff">Arşivlenince listelerde, filtrelerde, formlarda ve özetlerde görünmez. Veriler silinmez ve istediğin zaman geri alınır.</div>
+    <div class="dp-card"><div class="dp-kv"><span>Denetim · bulgu</span><b>${s.den} · ${s.bul}</b></div><div class="dp-kv"><span>Kaza · rapor</span><b>${s.kaza} · ${s.rapor}</b></div><div class="dp-kv"><span>Görev · periyodik kontrol</span><b>${s.gor + s.arsiv} · ${s.kontrol}</b></div><div class="dp-kv"><span>Fotoğraf</span><b>${s.foto} adet · ${depGB(b.foto)}</b></div>${ortak ? `<div class="dp-kv"><span>Birden çok fabrikaya bağlı kayıt</span><b>${ortak} · yerinde kalır</b></div>` : ''}</div>
+    <button type="button" class="af-tgl" onclick="AF.pk=!AF.pk;afCiz()"><div><b>Arşiv paketi indir</b><small>Kayıtlar ZIP içinde sıkıştırılır</small></div><span class="af-sw${AF.pk ? ' on' : ''}"></span></button>
+    ${AF.pk ? `<div class="dp-lb">FOTOĞRAFLAR</div>${afSecenek('a', 'Orijinal', 'Fotoğraflar aynen, kayıtlar sıkıştırılır', b)}${afSecenek('b', '1000 px küçült', 'Yaklaşık %80 küçülme · kalite düşer', b)}${afSecenek('c', 'Fotoğrafsız', 'Fotoğraflar pakete konmaz · en küçük', b)}
+    <div class="dp-eff">Paket ≈ ${depGB(afTahmin(b, AF.sec))} olacak${parca > 1 ? ' · ' + parca + ' parça (150 MB)' : ''}. Bulut verisi arşivde olduğu gibi kalır, paket ek bir kopyadır.</div>` : ''}
+    <div class="dp-lb">NOT (İSTEĞE BAĞLI)</div><input class="af-in" id="af-not" maxlength="200" placeholder="Ayrılış nedeni / tarih" value="${esc(AF.not)}" oninput="AF.not=this.value">
+    <div class="dp-btns"><button class="s" onclick="afGit('ana')">Vazgeç</button><button class="p" onclick="afArsivleSor()">${AF.pk ? 'Paketi indir ve arşivle' : 'Arşivle'}</button></div>`;
+}
+function afCizIlerle() {
+  const s = AF.ilerle || { ad: '', n: 0, N: 0, ek: '' }, p = s.N ? Math.round(s.n / s.N * 100) : 0;
+  afEl().innerHTML = `<div class="dp-card"><div class="dp-lb">${esc(s.ad)}</div><div class="dp-big"><b>${s.n} / ${s.N}</b><em>%${p}</em></div>${depBar(p, 0, 1)}${s.ek ? `<div class="dp-kv"><span>${esc(s.ekAd || '')}</span><b>${esc(s.ek)}</b></div>` : ''}</div>
+    <div class="dp-btns"><button class="s" onclick="afDur=true;this.disabled=true;this.textContent='Durduruluyor…'">Durdur</button></div>`;
+}
+function afCizArsivli() {
+  const L = afArsivListe();
+  afEl().innerHTML = L.length ? `<div class="dp-card">${L.map((x, i) => `<button type="button" class="af-frow${i ? '' : ' f'}" style="cursor:pointer" onclick="AF.id='${x.id}';afGit('detay')"><i class="c" style="background:${esc(x.renk || '#888')}"></i><div style="flex:1;min-width:0"><b style="display:block;font-size:13.5px">${esc(x.ad)}</b><small>Arşiv: ${afTarihYaz(x.tarih)} · ${depGB(x.bytes)}</small></div><span style="color:var(--text3)">›</span></button>`).join('')}</div>` : '<div class="dp-card"><div class="dp-mut">Arşivlenmiş fabrika yok.</div></div>';
+}
+function afCizDetay() {
+  const m = afMeta[AF.id]; if (!m) { afGit('arsivli'); return; }
+  const s = m.say || {}, y = Object.keys(m.yillar || {}).sort().reverse();
+  afEl().innerHTML = `<div class="dp-card"><div class="dp-lb">ÖZET</div><div class="dp-kv"><span>Denetim · bulgu</span><b>${s.den || 0} · ${s.bul || 0}</b></div><div class="dp-kv"><span>Kaza · rapor</span><b>${s.kaza || 0} · ${s.rapor || 0}</b></div><div class="dp-kv"><span>Görev · periyodik kontrol</span><b>${(s.gor || 0) + (s.arsiv || 0)} · ${s.kontrol || 0}</b></div><div class="dp-kv"><span>Kullanılan alan</span><b>${depGB(m.bytes)}</b></div></div>
+    ${y.length ? `<div class="dp-card"><div class="dp-lb">YILLARA GÖRE</div>${y.map(k => `<div class="dp-kv"><span>${k}</span><b>${m.yillar[k].den} denetim · ${m.yillar[k].kaza} kaza</b></div>`).join('')}</div>` : ''}
+    ${m.not ? `<div class="dp-card"><div class="dp-lb">NOT</div><div style="color:var(--text)">${esc(m.not)}</div></div>` : ''}
+    ${afMenu('📦', 'Arşiv paketi indir', 'Orijinal · 1000 px · fotoğrafsız', "AF.sec='b';afGit('paket')")}
+    ${afMenu('♻️', 'Şablon olarak kopyala', 'Periyodik kontrol tanımları, boş', "AF.ad='';afGit('sablon')")}
+    ${afMenu('↩️', 'Arşivden çıkar', 'Fabrika yeniden aktif olur', 'afCikarSor()')}
+    <button type="button" class="af-opt d" onclick="afSilSor()"><i>🗑️</i><div><b>Kalıcı sil</b><small>Önce paket indirmeniz önerilir</small></div><span style="color:var(--text3)">›</span></button>`;
+}
+function afCizPaket() {
+  const m = afMeta[AF.id] || {}, b = { kayit: m.kayitByte || 0, foto: m.fotoByte || 0 };
+  afEl().innerHTML = `<div class="dp-lb">FOTOĞRAFLAR</div>${afSecenek('a', 'Orijinal', 'Fotoğraflar aynen, kayıtlar sıkıştırılır', b)}${afSecenek('b', '1000 px küçült', 'Yaklaşık %80 küçülme · kalite düşer', b)}${afSecenek('c', 'Fotoğrafsız', 'Fotoğraflar pakete konmaz · en küçük', b)}
+    <div class="dp-eff">Veriler buluttan okunup paket hazırlanır. Arşiv olduğu gibi kalır.</div>
+    <div class="dp-btns"><button class="s" onclick="afGit('detay')">Vazgeç</button><button class="p" onclick="afPaketIndirBaslat()">Paketi indir</button></div>`;
+}
+function afCizSablon() {
+  const m = afMeta[AF.id] || {};
+  afEl().innerHTML = `<div class="dp-eff">${esc(m.ad)} fabrikasındaki periyodik kontrol tanımları yeni bir fabrikaya boş olarak kopyalanır. Tarih, sonuç, not ve fotoğraf taşınmaz.</div>
+    <div class="dp-lb">YENİ FABRİKA ADI</div><input class="af-in" id="af-sad" maxlength="60" placeholder="Örn. Kocaeli Fabrikası" value="${esc(AF.ad)}" oninput="AF.ad=this.value">
+    <div class="dp-btns"><button class="s" onclick="afGit('detay')">Vazgeç</button><button class="p" onclick="afSablonYap()">Kopyala</button></div>`;
+}
+function afCizYukle() {
+  afEl().innerHTML = `<div class="dp-eff">Daha önce indirdiğin arşiv paketini seç. Paket parçalıysa tüm parçaları birlikte seç. Yükleme bitince fabrika arşivlenmiş olarak gelir.</div>
+    <label class="af-drop"><span style="font-size:26px">📦</span><b>ZIP dosyası seç</b><span class="dp-mut">Birden fazla parça seçebilirsin</span><input type="file" id="af-file" accept=".zip,application/zip" multiple style="display:none" onchange="afDosyaSec(this.files)"></label>
+    <div id="af-hata" class="dp-warn bad" hidden></div>`;
+}
+function afCizOnizle() {
+  const y = AF.yuk; if (!y) { afGit('yukle'); return; }
+  const mf = y.mf, s = mf.say || {}, fm = { a: 'orijinal', b: '1000 px', c: 'yok' }[mf.foto] || '';
+  afEl().innerHTML = `<div class="dp-card"><div style="display:flex;align-items:center;gap:10px"><i class="dp-dot" style="background:${esc(mf.fab.renk || '#888')};width:14px;height:14px;margin:0"></i><b style="color:var(--text);font-size:15px;flex:1;min-width:0">${esc(mf.fab.ad)}</b><span class="af-tg">Paket sağlam ✓</span></div>
+    <div class="dp-kv"><span>Arşiv tarihi</span><b>${afTarihYaz(mf.tarih)}</b></div><div class="dp-kv"><span>Parça</span><b>${y.parca} / ${y.parca} tamam</b></div><div class="dp-kv"><span>Denetim · bulgu</span><b>${s.den || 0} · ${s.bul || 0}</b></div><div class="dp-kv"><span>Kaza · rapor</span><b>${s.kaza || 0} · ${s.rapor || 0}</b></div><div class="dp-kv"><span>Görev · periyodik kontrol</span><b>${(s.gor || 0) + (s.arsiv || 0)} · ${s.kontrol || 0}</b></div><div class="dp-kv"><span>Fotoğraf</span><b>${mf.foto === 'c' ? 'yok' : (s.foto || 0) + ' adet · ' + fm}</b></div></div>
+    <div class="dp-eff">Fabrika <b>arşivlenmiş</b> olarak yüklenir. İstersen sonra Arşivden çıkar ile aktif yaparsın.</div>
+    ${mf.foto !== 'a' ? '<div class="dp-warn">' + (mf.foto === 'c' ? 'Pakette fotoğraf yok.' : 'Fotoğraflar küçültülmüş haliyle gelir, orijinal kalite geri gelmez.') + ' HSE Verim görev bağlantıları taşınmaz.</div>' : '<div class="dp-warn">HSE Verim görev bağlantıları taşınmaz.</div>'}
+    <div class="dp-btns"><button class="s" onclick="afGit('yukle')">Vazgeç</button><button class="p" onclick="afYukleBasla()">Yükle</button></div>`;
+}
+function afCizCakis() {
+  const y = AF.yuk; if (!y) { afGit('yukle'); return; }
+  const arsivde = afArsivListe().some(x => x.ad === y.mf.fab.ad), canli = fabrikalar.some(f => f.name === y.mf.fab.ad);
+  afEl().innerHTML = `<div class="dp-eff">${canli ? 'Programda bu adla aktif bir fabrika var' : ''}${canli && arsivde ? ' ve ' : ''}${arsivde ? 'arşivde bu adla bir fabrika var' : ''}. Paketteki kayıtlarla ne yapılsın?</div>
+    <button type="button" class="af-opt${AF.cak === 'ayri' ? ' on' : ''}" onclick="AF.cak='ayri';afCiz()"><span class="af-rad"></span><div><b>Ayrı ekle</b><small>“${esc(y.mf.fab.ad)} (arşiv)” adıyla, mevcut verilere dokunulmaz</small></div></button>
+    <button type="button" class="af-opt${AF.cak === 'birles' ? ' on' : ''}" onclick="AF.cak='birles';afCiz()"><span class="af-rad"></span><div><b>Birleştir</b><small>${arsivde ? 'Mevcut arşive eklenir, aynı kayıt atlanır' : 'Aynı adla yeni arşiv oluşur'}</small></div></button>
+    <div class="dp-eff">Hiçbir seçenekte mevcut kayıtların üzerine yazılmaz.</div>
+    <div class="dp-btns"><button class="s" onclick="afGit('onizle')">Vazgeç</button><button class="p" onclick="afYukle()">Devam et</button></div>`;
+}
+function afCizBitti() {
+  const s = AF.ilerle || {}, ok = s.satirlar || [];
+  afEl().innerHTML = `<div class="dp-card">${ok.map(x => `<div class="dp-kv"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>${s.not ? `<div class="dp-warn">${esc(s.not)}</div>` : ''}
+    ${s.id ? afMenu('🗄️', 'Arşivde aç', 'Salt okunur özet', "AF.id='" + s.id + "';afGit('detay')") : ''}<div class="dp-btns"><button class="s" onclick="afGit('ana')">Kapat</button></div>`;
+}
+
+// ── Arşivle ──
+function afArsivleSor() {
+  if (afBusy) return;
+  if (!afOkunur()) { toast('Çevrimdışı: arşivleme için internet gerekir'); return; }
+  isgOnay({ baslik: AF.fab + ' arşivlensin mi?', mesaj: 'Fabrika listelerden gizlenir, veriler korunur. Arşivden geri alabilirsin.', evet: AF.pk ? 'İndir ve arşivle' : 'Arşivle', tehlike: false }, afArsivleBasla);
+}
+async function afFotoIsle(kayitlar, sec, st) {
+  // sec: a (aynen) | b (1000 px) | c (fotoğrafsız). Kopyalar üzerinde çalışır.
+  if (sec === 'a') return kayitlar;
+  const out = kayitlar.map(afKopya);
+  if (sec === 'c') { out.forEach(depFotoSilO); return out; }
+  for (const r of out) for (const f of depFotoRefs(r)) { if (afDur) return out; const y = await depKucultFoto(f.p[f.k], 1000); if (y) f.p[f.k] = y; st.n++; if (st.n % 3 === 0) afCizIlerle(); }
+  return out;
+}
+async function afPaketHazirla(id, meta, veri, sec, st) {
+  const enc = {}; for (const m of AF_MOD) enc[m[0]] = await afFotoIsle(veri[m[0]] || [], sec, st);
+  const dosyalar = [];
+  AF_MOD.forEach(m => afParcala(enc[m[0]], 20e6).forEach((c, k) => dosyalar.push({ ad: m[0] + '-' + (k + 1) + '.json', modul: m[0], adet: c.length, str: JSON.stringify(c) })));
+  const gruplar = []; let cur = [], boy = 0;
+  dosyalar.forEach(d => { if (cur.length && boy + d.str.length > 150e6) { gruplar.push(cur); cur = []; boy = 0; } cur.push(d); boy += d.str.length; });
+  if (cur.length || !gruplar.length) gruplar.push(cur);
+  const n = gruplar.length, say = meta.say;
+  for (let i = 0; i < n; i++) {
+    const mf = { format: AF_FORMAT, v: 1, app: window.APP_VERSION || '', id, fab: { ad: meta.ad, renk: meta.renk, owner: meta.owner || '' }, tarih: meta.tarih, not: meta.not || '', foto: sec, say, yillar: meta.yillar, parca: n, parcaNo: i + 1, dosyalar: gruplar[i].map(d => ({ ad: d.ad, modul: d.modul, adet: d.adet })) };
+    const zip = await afZipYaz([{ ad: 'manifest.json', veri: JSON.stringify(mf) }, ...gruplar[i].map(d => ({ ad: d.ad, veri: d.str }))]);
+    afIndir(zip, `isg-arsiv-${afSlug(meta.ad)}-${i + 1}-${n}.zip`);
+    await new Promise(r => setTimeout(r, 800));
+  }
+  return n;
+}
+async function afBulutaYaz(id, meta, veri, st) {
+  for (const m of AF_MOD) {
+    const parcalar = afParcala(veri[m[0]] || [], 4e6);
+    for (let k = 0; k < parcalar.length; k++) { if (afDur) throw new Error('durdu'); await window._fbArsiv.veriYaz(id, m[0], k, afKopya(parcalar[k])); st.n += parcalar[k].length; afCizIlerle(); }
+  }
+  await window._fbArsiv.metaYaz(id, afKopya(meta));
+}
+function afMetaOlustur(id, ad, renk, owner, not, veri) {
+  const b = afBoyut(veri), say = afSay(veri);
+  return { ad, renk, owner: owner || '', tarih: new Date().toISOString().slice(0, 10), not: not || '', say, yillar: afYillar(veri), bytes: Math.round(b.kayit * 1 + b.foto / 0.75), kayitByte: Math.round(b.kayit), fotoByte: Math.round(b.foto), v: 1 };
+}
+async function afArsivleBasla() {
+  afBusy = true; afDur = false;
+  const ad = AF.fab, f = fabrikalar.find(x => x.name === ad); if (!f) { afBusy = false; return; }
+  const veri = afTopla(ad), sec = AF.sec, id = afYeniId(), toplam = AF_MOD.reduce((s, m) => s + veri[m[0]].length, 0), foto = afSay(veri).foto;
+  const st = AF.ilerle = { baslik: 'Arşiv hazırlanıyor', ad: ad + (AF.pk ? ' · paket hazırlanıyor' : ' · buluta yazılıyor'), n: 0, N: (AF.pk && sec === 'b' ? foto : 0) + toplam, ek: '', ekAd: '' };
+  afS = 'ilerle'; afCiz();
+  const kilit = await depBeklet();
+  try {
+    const meta = afMetaOlustur(id, ad, f.color, (perFabs.find(x => x.name === ad) || {}).owner, AF.not.trim(), veri);
+    let parca = 0;
+    if (AF.pk) { parca = await afPaketHazirla(id, meta, veri, sec, st); if (afDur) throw new Error('durdu'); }
+    st.ad = ad + ' · buluta yazılıyor'; afCizIlerle();
+    await afBulutaYaz(id, meta, veri, st);
+    // Canlı listelerden çıkar (bulut kopyası yazıldıktan sonra)
+    const S = new Set(); AF_MOD.forEach(m => veri[m[0]].forEach(r => S.add(r)));
+    const dn = new Set(veri.den.map(d => d.id));
+    denetimler = denetimler.filter(x => !S.has(x)); bulgular = bulgular.filter(x => !S.has(x) && !dn.has(x.denetimId));
+    kazaItems = kazaItems.filter(x => !S.has(x)); archived = archived.filter(x => !S.has(x)); kontrolItems = kontrolItems.filter(x => !S.has(x));
+    for (let i = tasks.length - 1; i >= 0; i--) if (S.has(tasks[i])) tasks.splice(i, 1);
+    for (const r of veri.rapor) { try { await window._fbDepo.kazaRaporSil(r.id); delete window._fbKazaRaporCache[r.id]; } catch (e) { console.error(e); } }
+    const i0 = fabrikalar.findIndex(x => x.name === ad); if (i0 >= 0) fabrikalar.splice(i0, 1);
+    if (kontrolFabFilter === ad) kontrolFabFilter = null;
+    saveFabrikalar(); parametreSenkron(); save(); saveArchive(); kontrolSave(); denetimSave(); kazaSave();
+    try { renderSettingsPanel(); } catch (e) {}
+    afMeta[id] = meta; try { localStorage.removeItem(DEPO_LS); } catch (e) {}
+    AF.ilerle = { baslik: 'Arşivlendi', alt: ad, id, satirlar: [['Denetim · bulgu', meta.say.den + ' · ' + meta.say.bul + ' ✓'], ['Kaza · rapor', meta.say.kaza + ' · ' + meta.say.rapor + ' ✓'], ['Görev · periyodik kontrol', meta.say.gor + meta.say.arsiv + ' · ' + meta.say.kontrol + ' ✓'], ['Fotoğraf', meta.say.foto + ' ✓']], not: parca ? 'Paket ' + parca + ' dosya olarak indirildi.' : '' };
+    afS = 'bitti';
+  } catch (e) {
+    console.error(e); AF.ilerle = { baslik: e.message === 'durdu' ? 'Durduruldu' : 'Arşivlenemedi', alt: ad, satirlar: [], not: e.message === 'durdu' ? 'Hiçbir veri silinmedi; fabrika aktif.' : 'Hata: ' + (e.message || e) + '. Hiçbir veri silinmedi.' }; afS = 'bitti';
+  }
+  if (kilit && kilit.release) try { kilit.release(); } catch (e) {}
+  afBusy = false; afCiz();
+}
+
+// ── Arşivden paket indir / şablon / çıkar / sil ──
+async function afVeriOku(id, modul) {
+  const raw = await window._fbArsiv.veriOku(id, modul), v = {};
+  AF_MOD.forEach(m => { v[m[0]] = []; });
+  const al = (mk, c) => { if (!c) return; const ch = Array.isArray(c) ? c : Object.keys(c).sort((x, y) => x - y).map(k => c[k]); ch.forEach(p => { (Array.isArray(p) ? p : Object.values(p || {})).forEach(r => { if (r) v[mk].push(r); }); }); };
+  if (modul) al(modul, raw); else if (raw) AF_MOD.forEach(m => al(m[0], raw[m[0]]));
+  return v;
+}
+async function afPaketIndirBaslat() {
+  if (afBusy) return; if (!afOkunur()) { toast('Çevrimdışı: internet gerekir'); return; }
+  afBusy = true; afDur = false; const m = afMeta[AF.id], id = AF.id, sec = AF.sec;
+  const st = AF.ilerle = { baslik: 'Paket hazırlanıyor', ad: m.ad + ' · veriler okunuyor', n: 0, N: sec === 'b' ? (m.say.foto || 0) : 0 };
+  afS = 'ilerle'; afCiz();
+  try {
+    const veri = await afVeriOku(id); st.ad = m.ad + ' · paket hazırlanıyor'; afCizIlerle();
+    const n = await afPaketHazirla(id, m, veri, sec, st);
+    AF.ilerle = { baslik: afDur ? 'Durduruldu' : 'Paket indirildi', alt: m.ad, satirlar: [['Dosya', n + ' parça']], not: '' };
+  } catch (e) { console.error(e); AF.ilerle = { baslik: 'Paket hazırlanamadı', alt: m.ad, satirlar: [], not: 'Hata: ' + (e.message || e) }; }
+  afS = 'bitti'; afBusy = false; afCiz();
+}
+async function afSablonYap() {
+  const ad = AF.ad.trim(), m = afMeta[AF.id];
+  if (!ad) { toast('Fabrika adı gir'); return; }
+  if (fabrikalar.some(f => f.name.toLowerCase() === ad.toLowerCase())) { toast('Bu adla fabrika var'); return; }
+  if (!afOkunur()) { toast('Çevrimdışı: internet gerekir'); return; }
+  try {
+    const v = await afVeriOku(AF.id, 'kontrol'), zaman = Date.now();
+    fabrikalar.push({ name: ad, color: m.renk || '#378ADD' });
+    const yeni = v.kontrol.map((o, i) => { const c = afKopya(o); depFotoSilO(c); c.id = 'kx' + (zaman + i) + Math.random().toString(36).slice(2, 5); c.fab = ad; c.fabs = [ad]; c.lastDate = ''; c.result = 'bekliyor'; c.note = ''; return c; });
+    yeni.forEach(c => kontrolItems.push(c));
+    saveFabrikalar(); parametreSenkron(); kontrolSave();
+    toast(yeni.length + ' kontrol tanımı kopyalandı'); AF.ilerle = { baslik: 'Kopyalandı', alt: ad, satirlar: [['Yeni fabrika', esc(ad)], ['Periyodik kontrol tanımı', yeni.length]], not: '' }; afS = 'bitti'; afCiz();
+  } catch (e) { console.error(e); toast('Kopyalanamadı'); }
+}
+function afCikarSor() {
+  const m = afMeta[AF.id]; if (!m) return;
+  isgOnay({ baslik: m.ad + ' aktif olsun mu?', mesaj: 'Fabrika ve kayıtları yeniden aktif listelere döner. Arşiv kaydı silinir.' + (fabrikalar.some(f => f.name === m.ad) ? '\nAynı adlı fabrika var; ad “(geri)” eklenerek açılır.' : ''), evet: 'Arşivden çıkar', tehlike: false }, afCikar);
+}
+async function afCikar() {
+  if (afBusy) return; if (!afOkunur()) { toast('Çevrimdışı: internet gerekir'); return; }
+  afBusy = true; afDur = false; const id = AF.id, m = afMeta[id];
+  const st = AF.ilerle = { baslik: 'Arşivden çıkarılıyor', ad: m.ad + ' · veriler okunuyor', n: 0, N: 1 }; afS = 'ilerle'; afCiz();
+  try {
+    const v = await afVeriOku(id);
+    let yeniAd = m.ad; if (fabrikalar.some(f => f.name === yeniAd)) { yeniAd = m.ad + ' (geri)'; let k = 2; while (fabrikalar.some(f => f.name === yeniAd)) yeniAd = m.ad + ' (geri ' + k++ + ')'; }
+    const fx = o => { if (!o || typeof o !== 'object') return; if (o.fab === m.ad) o.fab = yeniAd; if (Array.isArray(o.fabs)) o.fabs = o.fabs.map(x => x === m.ad ? yeniAd : x); if (o.factory === m.ad) o.factory = yeniAd; };
+    const idler = (a, k) => new Set(a.map(x => String(x[k || 'id'])));
+    const mevcut = { den: idler(denetimler), bul: idler(bulgular), kaza: idler(kazaItems), gor: idler(tasks), arsiv: idler(archived), kontrol: idler(kontrolItems) };
+    const hedef = { den: denetimler, bul: bulgular, kaza: kazaItems, gor: tasks, arsiv: archived, kontrol: kontrolItems };
+    let atla = 0; Object.keys(hedef).forEach(k => (v[k] || []).forEach(r => { if (mevcut[k].has(String(r.id))) { atla++; return; } fx(r); hedef[k].push(r); }));
+    for (const r of (v.rapor || [])) { try { await window._fbDepo.kazaRaporYaz(r.id, r.veri); window._fbKazaRaporCache[r.id] = r.veri; } catch (e) { console.error(e); } }
+    fabrikalar.push({ name: yeniAd, color: m.renk || '#378ADD' });
+    saveFabrikalar(); parametreSenkron(); const pf = perFabs.find(x => x.name === yeniAd); if (pf && m.owner) { pf.owner = m.owner; perSaveFabs(); }
+    save(); saveArchive(); kontrolSave(); denetimSave(); kazaSave();
+    await window._fbArsiv.sil(id); delete afMeta[id]; try { localStorage.removeItem(DEPO_LS); renderSettingsPanel(); } catch (e) {}
+    AF.ilerle = { baslik: 'Aktif edildi', alt: yeniAd, satirlar: [['Denetim · bulgu', (v.den || []).length + ' · ' + (v.bul || []).length], ['Kaza', (v.kaza || []).length], ['Görev · kontrol', (v.gor || []).length + (v.arsiv || []).length + ' · ' + (v.kontrol || []).length]], not: atla ? atla + ' kayıt aynı kodla zaten vardı, atlandı.' : '' };
+  } catch (e) { console.error(e); AF.ilerle = { baslik: 'Geri alınamadı', alt: m.ad, satirlar: [], not: 'Hata: ' + (e.message || e) + '. Arşiv silinmedi.' }; }
+  afS = 'bitti'; afBusy = false; afCiz();
+}
+function afSilSor() {
+  const m = afMeta[AF.id]; if (!m) return;
+  isgOnay({ baslik: m.ad + ' kalıcı silinsin mi?', mesaj: 'Arşivdeki tüm kayıtlar ve fotoğraflar buluttan silinir. Bu işlem geri alınamaz.', evet: 'Kalıcı sil' }, async () => {
+    try { await window._fbArsiv.sil(AF.id); delete afMeta[AF.id]; try { localStorage.removeItem(DEPO_LS); } catch (e) {} toast('Arşiv silindi'); afGit('arsivli'); } catch (e) { toast('Silinemedi'); }
+  });
+}
+
+// ── Paket yükle ──
+async function afDosyaSec(files) {
+  const hata = document.getElementById('af-hata'), say = m => { if (hata) { hata.hidden = false; hata.textContent = m; } };
+  if (!files || !files.length) return;
+  try {
+    const parcalar = {}; let ref = null;
+    for (const f of files) {
+      const z = await afZipOku(f); if (!z['manifest.json']) throw new Error(f.name + ': arşiv paketi değil (manifest yok)');
+      const mf = JSON.parse(await z['manifest.json']());
+      if (mf.format !== AF_FORMAT || mf.v !== 1) throw new Error(f.name + ': desteklenmeyen paket sürümü');
+      if (ref && mf.id !== ref.id) throw new Error('Farklı paketlerin parçaları karışmış');
+      ref = ref || mf; parcalar[mf.parcaNo] = { mf, z };
+    }
+    const eksik = []; for (let i = 1; i <= ref.parca; i++) if (!parcalar[i]) eksik.push(i);
+    if (eksik.length) throw new Error('Eksik parça: ' + eksik.join(', ') + ' / ' + ref.parca);
+    const veri = {}; AF_MOD.forEach(m => { veri[m[0]] = []; });
+    for (const no of Object.keys(parcalar)) { const { mf, z } = parcalar[no]; for (const d of mf.dosyalar) { if (!z[d.ad]) throw new Error(d.ad + ' pakette yok'); const arr = JSON.parse(await z[d.ad]()); if (arr.length !== d.adet) throw new Error(d.ad + ' kayıt sayısı tutmuyor'); arr.forEach(r => veri[d.modul].push(r)); } }
+    AF.yuk = { mf: ref, parca: ref.parca, veri, ad: ref.fab.ad }; AF.cak = 'ayri'; afGit('onizle');
+  } catch (e) { console.error(e); say(e.message || 'Paket okunamadı'); }
+}
+function afYukleBasla() {
+  const y = AF.yuk, ad = y.mf.fab.ad;
+  if (fabrikalar.some(f => f.name === ad) || afArsivListe().some(x => x.ad === ad)) afGit('cakis'); else afYukle();
+}
+async function afYukle() {
+  if (afBusy) return; if (!afOkunur()) { toast('Çevrimdışı: internet gerekir'); return; }
+  afBusy = true; afDur = false;
+  const y = AF.yuk, mf = y.mf, veri = y.veri; let ad = mf.fab.ad, id = afYeniId(), birlesik = null;
+  const cakisma = fabrikalar.some(f => f.name === ad) || afArsivListe().some(x => x.ad === ad);
+  if (cakisma && AF.cak === 'birles') { const e = afArsivListe().find(x => x.ad === ad); if (e) { id = e.id; birlesik = e; } }
+  else if (cakisma) { let k = 1, yeni = ad + ' (arşiv)'; while (fabrikalar.some(f => f.name === yeni) || afArsivListe().some(x => x.ad === yeni)) yeni = ad + ' (arşiv ' + (++k) + ')'; ad = yeni; }
+  const st = AF.ilerle = { baslik: 'Paket yükleniyor', ad: ad + ' · buluta yazılıyor', n: 0, N: AF_MOD.reduce((s, m) => s + veri[m[0]].length, 0) }; afS = 'ilerle'; afCiz();
+  try {
+    let son = veri, atla = 0;
+    if (birlesik) {
+      const mv = await afVeriOku(id); son = {};
+      AF_MOD.forEach(m => { const var_ = new Set(mv[m[0]].map(r => String(r.id))); const yeni = veri[m[0]].filter(r => !var_.has(String(r.id))); atla += veri[m[0]].length - yeni.length; son[m[0]] = mv[m[0]].concat(yeni); });
+      await window._fbArsiv.sil(id); st.N = AF_MOD.reduce((s, m) => s + son[m[0]].length, 0);
+    }
+    const meta = afMetaOlustur(id, ad, mf.fab.renk, mf.fab.owner, birlesik ? (birlesik.not || mf.not) : mf.not, son);
+    meta.tarih = birlesik ? birlesik.tarih : (mf.tarih || meta.tarih); if (!birlesik) meta.not = mf.not || '';
+    await afBulutaYaz(id, meta, son, st);
+    afMeta[id] = meta; try { localStorage.removeItem(DEPO_LS); } catch (e) {}
+    AF.ilerle = { baslik: 'Yüklendi', alt: ad + ' arşivlendi', id, satirlar: [['Denetim · bulgu', meta.say.den + ' · ' + meta.say.bul + ' ✓'], ['Kaza · rapor', meta.say.kaza + ' · ' + meta.say.rapor + ' ✓'], ['Görev · periyodik kontrol', meta.say.gor + meta.say.arsiv + ' · ' + meta.say.kontrol + ' ✓'], ['Fotoğraf', meta.say.foto + ' ✓']], not: atla ? atla + ' kayıt zaten arşivde vardı, atlandı.' : '' };
+  } catch (e) { console.error(e); AF.ilerle = { baslik: e.message === 'durdu' ? 'Durduruldu' : 'Yüklenemedi', alt: ad, satirlar: [], not: e.message === 'durdu' ? 'Yükleme yarıda kaldı; Arşivlenmiş listesini kontrol et.' : 'Hata: ' + (e.message || e) }; }
+  AF.yuk = null; afS = 'bitti'; afBusy = false; afCiz();
 }
 </script>
 </body>
