@@ -6579,6 +6579,11 @@ px}
   </div>
   <!-- Fabrika filtre chips -->
   <div id="kontrol-fab-filter" class="module-filter-strip"></div>
+  <div class="kx-srch">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+    <input id="kontrol-ara" type="search" autocomplete="off" placeholder="Ara: ekipman, firma, belge adı…" oninput="kontrolAraGir(this.value)">
+    <div class="rt"><span class="n" id="kontrol-ara-n"></span><button type="button" class="x" id="kontrol-ara-x" hidden aria-label="Aramayı temizle" onclick="kontrolAraTemizle(true);document.getElementById('kontrol-ara').focus()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  </div>
   <div class="kx-mgr">
     <button type="button" onclick="kontrolEkipmanOpen()">☑ Ekipmanları Yönet</button>
     <button type="button" onclick="kontrolTopluOpen()">↻ Toplu Güncelle</button>
@@ -13245,6 +13250,9 @@ function kontrolRender() {
     return a.daysLeft - b.daysLeft;
   });
 
+  const aq = typeof kontrolAraQ === 'function' ? kontrolAraQ() : '', gor = aq ? items.filter(it => kontrolAraEsles(it, aq)) : items;
+  if (aq) { kontrolSatirAcik.clear(); gor.filter(it => bmTumBelgeler(it).some(d => kontrolAraDoc(d, aq))).slice(0, 8).forEach(it => { kontrolSatirAcik.add(it.id); if (it.ekipAlt && typeof ekipAnahtar === 'function') kontrolSatirAcik.add('ekp:' + ekipAnahtar(it)); }); }
+  body.classList.toggle('kx-aranan', !!aq);
   const total = items.length;
   const gecikmis = items.filter(it => it.daysLeft !== null && it.daysLeft < 0).length;
   const yaklasan = items.filter(it => it.daysLeft !== null && it.daysLeft >= 0 && it.daysLeft <= 90).length;
@@ -13257,12 +13265,13 @@ function kontrolRender() {
     <div class="kontrol-summary-card overdue"><b>${gecikmis}</b><span>Gecikmiş</span></div>
   </div>`;
 
-  body.innerHTML = summaryHtml + Object.entries(KONTROL_GRUPLAR).map(([id,g]) => {
-    const grupItems = items.filter(it => it.grup === id);
+  body.innerHTML = (aq ? '' : summaryHtml) + (aq && !gor.length ? `<div class="kx-bos"><b>Eşleşen kayıt yok</b>“${esc(kontrolAra.trim())}” için ekipman, firma veya belge adında sonuç bulunamadı. Yazımı kısaltmayı dene.</div>` : '') + Object.entries(KONTROL_GRUPLAR).map(([id,g]) => {
+    const grupItems = gor.filter(it => it.grup === id);
+    if (aq && !grupItems.length) return '';
     const gGec = grupItems.filter(it => it.daysLeft !== null && it.daysLeft < 0).length;
     const gYak = grupItems.filter(it => it.daysLeft !== null && it.daysLeft >= 0 && it.daysLeft <= 90).length;
     const gGun = grupItems.filter(it => it.daysLeft !== null && it.daysLeft > 90).length;
-    const acik = kontrolGrupAcik[id] !== false;
+    const acik = aq ? true : kontrolGrupAcik[id] !== false;
     return `<section class="kontrol-grup${acik?' acik':''}" data-grup="${id}">
       <div class="kontrol-grup-hd" onclick="kontrolToggleGrup('${id}')" role="button" aria-expanded="${acik?'true':'false'}">
         <span class="kontrol-grup-ok">${acik?'▾':'▸'}</span>
@@ -13302,6 +13311,8 @@ function kontrolRender() {
       </div>
     </section>`;
   }).join('');
+  const an = document.getElementById('kontrol-ara-n'); if (an) an.textContent = aq && gor.length ? gor.length + ' sonuç' : '';
+  if (aq) kontrolAraIsaretle(aq);
 }
 
 // ── Ekle / Düzenle ─────────────────────────────────────────
@@ -26197,8 +26208,11 @@ function bmKayda(b, k, doc) {
 /* ===== Kontrol satırı: belgeler, alt kayıtlar, sürükle-bırak ===== */
 function bmSatirBelgeHtml(it, idJs) {
   const L = it.belgeler || [], A = it.altlar || [];
-  const th = (x, aid) => `<button type="button" class="bm-t${BMS.has(x.id) ? ' sel' : ''}" data-bd="${esc(x.id)}" onclick="bmTikla('${idJs}','${x.id}')" title="${esc(x.ad)} · PC'de klasöre sürükleyip indirebilirsin">${x.th ? `<img src="${x.th}" alt="" draggable="false">` : '<span class="nb">PDF</span>'}<span>${x.tarih ? esc(bmFmt(x.tarih).slice(0, 6) + bmFmt(x.tarih).slice(8)) : 'PDF'}</span></button>`;
+  const aq = typeof kontrolAraQ === 'function' ? kontrolAraQ() : '';
+  const th = (x, aid) => `<button type="button" class="bm-t${BMS.has(x.id) ? ' sel' : ''}${aq && kontrolAraDoc(x, aq) ? ' hit' : ''}" data-bd="${esc(x.id)}" onclick="bmTikla('${idJs}','${x.id}')" title="${esc(x.ad)} · PC'de klasöre sürükleyip indirebilirsin">${x.th ? `<img src="${x.th}" alt="" draggable="false">` : '<span class="nb">PDF</span>'}<span>${x.tarih ? esc(bmFmt(x.tarih).slice(0, 6) + bmFmt(x.tarih).slice(8)) : 'PDF'}</span></button>`;
+  const eslesen = aq ? bmTumBelgeler(it).filter(x => x.kaynak && kontrolAraDoc(x, aq)).map(x => x.kaynak).filter((v, i, a) => a.indexOf(v) === i).slice(0, 2) : [];
   return `<div class="bm-dc">
+    ${eslesen.length ? `<div class="bm-src">📄 ${eslesen.map(esc).join(' · ')}</div>` : ''}
     ${L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : ''}
     ${A.map(a => `<div class="bm-alt"><div class="kv"><span>▸ ${esc(a.ad)}${a.no ? ' · ' + esc(a.no) : ''}</span><b>${a.lastDate ? esc(bmFmt(a.lastDate)) : '—'}</b></div>${(a.belgeler || []).length ? `<div class="bm-th">${a.belgeler.map(x => th(x)).join('')}</div>` : ''}<div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}','${bmJ(a.id)}')">＋ Belge</button><button type="button" class="bm-ch" onclick="bmAltSil('${idJs}','${bmJ(a.id)}')">Alt kaydı sil</button></div></div>`).join('')}
     <div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}')">📄 Belge ekle</button><button type="button" class="bm-ch" onclick="bmAltEkle('${idJs}')">＋ Alt kayıt</button></div>
@@ -26767,7 +26781,61 @@ function ekipOzelEkle() {
 .mv-it{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:0;border:0;border-top:1px solid var(--border2);background:transparent;color:var(--text);padding:11px 12px;font:500 13.5px/1.3 inherit;text-align:left;cursor:pointer}
 .mv-gh+.mv-it,.mv-it:first-child{border-top:0}.mv-it.on{background:color-mix(in srgb,var(--acc) 11%,transparent);font-weight:700}.mv-it b{color:var(--acc)}.mv-it em{font-style:normal;color:var(--text2);font-weight:500;font-size:12px}
 .mv-bos{padding:14px;font-size:12.5px;color:var(--text2);font-style:italic}.mv-al{font-size:11.5px;font-weight:700;color:var(--text2);margin:2px 0 6px}.mv-ch{display:flex;flex-wrap:wrap;gap:6px}
+.kx-srch{position:relative;margin:8px 14px 2px}
+.kx-srch input{width:100%;box-sizing:border-box;height:44px;border:1px solid var(--border2);border-radius:14px;background:var(--surface);color:var(--text);padding:0 84px 0 42px;font:500 14.5px/1 inherit}
+.kx-srch input::-webkit-search-cancel-button,.kx-srch input::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.kx-srch input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 18%,transparent)}
+.kx-srch>svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);pointer-events:none}
+.kx-srch .rt{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:2px}
+.kx-srch .n{font-size:12px;font-weight:700;color:var(--acc);margin-right:2px;white-space:nowrap}
+.kx-srch .x{width:34px;height:34px;min-height:0;border:0;background:none;color:var(--text2);cursor:pointer;border-radius:10px;display:grid;place-items:center;padding:0}.kx-srch .x[hidden]{display:none}
+mark.kx-mk{background:#fff0a8;color:#15212f;border-radius:3px;padding:0 1px}
+html[data-theme="dark"] mark.kx-mk{background:#6b5a14;color:#fff3c4}
+.kx-aranan .kontrol-cevre-toolbar,.kx-aranan .kontrol-ekipman-toolbar{display:none}
+.kx-bos{text-align:center;padding:22px 16px;border:1px dashed var(--border2);border-radius:14px;color:var(--text2);font-size:13px;line-height:1.5}.kx-bos b{display:block;color:var(--text);margin-bottom:3px}
+.bm-src{font-size:11.5px;color:var(--text2);background:color-mix(in srgb,var(--acc) 7%,transparent);border-radius:8px;padding:5px 8px;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bm-t.hit img{outline:2.5px solid var(--acc);outline-offset:1px}
 </style>
+<script id="ara-js">
+/* ===== Kontroller: tek arama kutusu ===== */
+let kontrolAra = '';
+const kaN = s => String(s || '').split('').map(c => { const x = c.replace('İ', 'I').replace('ı', 'i').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[̀-ͯ]/g, ''); return x.length === 1 ? x : c.toLocaleLowerCase('tr-TR'); }).join('');
+function kontrolAraQ() { return kaN(kontrolAra).trim(); }
+function kontrolAraSamanlik(it) {
+  const p = [it.name, it.firm, it.belgeNo, it.note, it.fab, (it.fabs || []).join(' ')];
+  const e = it.equipmentKey && typeof kontrolEkipmanBul === 'function' ? kontrolEkipmanBul(it.equipmentKey) : null; if (e) p.push(e.ad);
+  const c = it.environmentKey ? BM_KAT_CEVRE.find(x => x.id === it.environmentKey) : null; if (c) p.push(c.ad, c.kisa);
+  (it.altlar || []).forEach(a => p.push(a.ad, a.no));
+  bmTumBelgeler(it).forEach(d => p.push(d.ad, d.kaynak, d.kurum, d.belgeNo));
+  return kaN(p.filter(Boolean).join(' '));
+}
+const kontrolAraEsles = (it, q) => kontrolAraSamanlik(it).includes(q || kontrolAraQ());
+const kontrolAraDoc = (d, q) => !!q && kaN([d.ad, d.kaynak, d.kurum, d.belgeNo].filter(Boolean).join(' ')).includes(q);
+function kontrolAraGir(v) { kontrolAra = v; kontrolRender(); kontrolAraArayuz(); }
+function kontrolAraArayuz() {
+  const x = document.getElementById('kontrol-ara-x'), inp = document.getElementById('kontrol-ara');
+  if (inp && inp.value !== kontrolAra) inp.value = kontrolAra;
+  if (x) x.hidden = !kontrolAra.trim();
+}
+function kontrolAraTemizle(kapat) {
+  kontrolAra = ''; kontrolAraArayuz();
+  if (kapat) { Object.keys(kontrolGrupAcik).forEach(k => { kontrolGrupAcik[k] = false; }); kontrolSatirAcik.clear(); }
+  const n = document.getElementById('kontrol-ara-n'); if (n) n.textContent = '';
+  if (document.getElementById('kontrol-body')) kontrolRender();
+}
+// Aranan yazıyı satırlarda işaretle
+function kontrolAraIsaretle(q) {
+  const kok = document.getElementById('kontrol-body'); if (!kok || !q) return;
+  const w = document.createTreeWalker(kok, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement && !n.parentElement.closest('script,style,.bm-sel,mark,.kx-chev,.bm-ch,.kbulk-btn,.kontrol-cevre-toolbar') && n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+  const L = []; while (w.nextNode()) L.push(w.currentNode);
+  L.forEach(n => {
+    const t = n.nodeValue, nt = kaN(t); if (nt.length !== t.length) return; const i = nt.indexOf(q); if (i < 0) return;
+    const f = document.createDocumentFragment(), m = document.createElement('mark'); m.className = 'kx-mk'; m.textContent = t.slice(i, i + q.length);
+    f.append(document.createTextNode(t.slice(0, i)), m, document.createTextNode(t.slice(i + q.length))); n.replaceWith(f);
+  });
+}
+(function () { const st = window.switchTab; if (typeof st === 'function') window.switchTab = function () { if (kontrolAra) { kontrolAra = ''; kontrolAraArayuz(); } return st.apply(this, arguments); }; })();
+</script>
 <script id="pick-js">
 /* Tarih / ay / saat seçici: tarayıcının yerel penceresi yerine temaya uygun panel */
 (function () {
