@@ -26609,5 +26609,151 @@ function ekipOzelEkle() {
   return true;
 }
 </script>
+<style id="pick-style">
+.pk-btn{display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:left;cursor:pointer;min-width:0;font-family:inherit;line-height:1.2;border-style:solid}
+.pk-btn span{overflow:hidden;text-overflow:ellipsis;min-width:0}.pk-btn.ph span{opacity:.6}.pk-btn svg{flex:none;opacity:.7}.pk-btn.on{border-color:var(--acc)!important}
+.pk-pop{position:fixed;z-index:100100;background:var(--surface);color:var(--text);border:1px solid var(--border2);border-radius:14px;box-shadow:0 10px 28px rgba(10,20,35,.22);overflow:hidden;font-family:inherit}
+.pk-pop[hidden]{display:none}
+.pk-c{padding:10px}.pk-h{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.pk-t{flex:1;border:0;background:color-mix(in srgb,var(--acc) 9%,transparent);border-radius:10px;height:40px;color:var(--text);font:800 14px/1 inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:0;padding:0}
+.pk-n{width:40px;height:40px;min-height:0;border:1px solid var(--border2);background:var(--surface);border-radius:10px;color:var(--text);cursor:pointer;display:grid;place-items:center;padding:0}
+.pk-wd,.pk-dg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.pk-wd span{text-align:center;font-size:11px;font-weight:700;color:var(--text2);padding:4px 0}
+.pk-dg button{height:38px;min-height:0;border:0;background:none;border-radius:10px;color:var(--text);font:600 14px/1 inherit;cursor:pointer;padding:0;font-variant-numeric:tabular-nums}
+.pk-dg button.o{opacity:.45}.pk-dg button.w{color:var(--text2)}.pk-dg button.bg{box-shadow:inset 0 0 0 1.5px var(--acc);font-weight:800}
+.pk-dg button.on{background:var(--acc);color:var(--acc-fg);font-weight:800;box-shadow:none}.pk-dg button.x{opacity:.25;cursor:default}
+.pk-my{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pk-my button,.pk-g6 button{height:42px;min-height:0;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:10px;font:600 14px/1 inherit;cursor:pointer;padding:0;font-variant-numeric:tabular-nums}
+.pk-my button.on,.pk-g6 button.on{background:var(--acc);border-color:var(--acc);color:var(--acc-fg);font-weight:800}
+.pk-g6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:10px}.pk-g6 .oth{grid-column:span 2;color:var(--acc);font-weight:700}
+.pk-tabs{display:flex;gap:4px;background:color-mix(in srgb,var(--acc) 9%,transparent);padding:4px;margin:10px 10px 0;border-radius:12px}
+.pk-tabs button{flex:1;min-height:0;border:0;background:none;border-radius:9px;padding:8px 4px;color:var(--text2);font:700 12.5px/1.1 inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.pk-tabs button b{font-size:21px;color:var(--text);font-variant-numeric:tabular-nums}.pk-tabs button.on{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.18);color:var(--acc)}.pk-tabs button.on b{color:var(--acc)}
+.pk-mi{display:flex;gap:8px;padding:0 10px 10px}.pk-mi input{flex:1;min-width:0;height:42px;border-radius:10px;border:1px solid var(--acc);background:var(--bg);color:var(--text);padding:0 12px;font:600 15px/1 inherit;box-sizing:border-box}
+.pk-mi button{height:42px;min-height:0;padding:0 16px;border:0;border-radius:10px;background:var(--acc);color:var(--acc-fg);font:800 13px/1 inherit;cursor:pointer}
+.pk-ft{display:flex;border-top:1px solid var(--border2)}.pk-ft button{flex:1;min-height:0;border:0;background:none;padding:13px 6px;font:700 13px/1 inherit;color:var(--acc);cursor:pointer}
+.pk-ft button+button{border-left:1px solid var(--border2)}.pk-ft button.d{color:var(--text2)}
+</style>
+<script id="pick-js">
+/* Tarih / ay / saat seçici: tarayıcının yerel penceresi yerine temaya uygun panel */
+(function () {
+  const AY = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  const p2 = n => String(n).padStart(2, '0'), isoY = (y, m, d) => y + '-' + p2(m + 1) + '-' + p2(d);
+  const VD = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  const ARR = d => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+  const IC = { date: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M8 3.5v4M16 3.5v4M4 10h16"/></svg>', time: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>' };
+  IC.month = IC.date;
+  let A = null, pop = null;
+  const hoy = () => { const t = new Date(); return isoY(t.getFullYear(), t.getMonth(), t.getDate()); };
+  function yaz(el, v) {
+    if (el.type === 'month') return v ? AY[+v.slice(5, 7) - 1] + ' ' + v.slice(0, 4) : 'Seç';
+    if (el.type === 'time') return v || 'Seç';
+    return v ? v.slice(8, 10) + '.' + v.slice(5, 7) + '.' + v.slice(0, 4) : 'Seç';
+  }
+  function etiket(el) { const b = el._pkb; if (!b) return; const v = VD.get.call(el); b.firstChild.textContent = yaz(el, v); b.classList.toggle('ph', !v); }
+  function kur(el) {
+    if (el._pkb || !/^(date|month|time)$/.test(el.type)) return;
+    const cs = getComputedStyle(el), b = document.createElement('button'); b.type = 'button'; b.className = 'pk-btn';
+    ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderTopLeftRadius', 'backgroundColor', 'color', 'fontSize', 'fontFamily', 'fontWeight', 'minHeight', 'maxWidth', 'boxSizing'].forEach(p => { if (cs[p]) b.style[p] = cs[p]; });
+    if (cs.height && cs.height !== 'auto' && !/%$/.test(cs.height)) b.style.height = cs.height;
+    b.style.borderStyle = 'solid'; b.style.borderWidth = parseFloat(cs.borderTopWidth) ? cs.borderTopWidth : '1px'; b.style.borderColor = cs.borderTopColor; b.style.borderRadius = cs.borderTopLeftRadius; b.style.paddingRight = cs.paddingLeft;
+    if (el.type === 'time') { const ref = document.querySelector('input[type=date]'); if (ref) b.style.fontSize = getComputedStyle(ref).fontSize; }
+    if (el.type === 'month') b.style.maxWidth = 'none';
+    b.style.fontFamily = 'inherit'; b.style.whiteSpace = 'nowrap';
+    b.style.width = el.style.width || (el.getAttribute('style') ? 'auto' : '100%');
+    b.innerHTML = '<span></span>' + IC[el.type];
+    el._pkb = b; el.style.display = 'none'; el.after(b);
+    Object.defineProperty(el, 'value', { configurable: true, get() { return VD.get.call(this); }, set(v) { VD.set.call(this, v); etiket(this); } });
+    b.addEventListener('click', () => ac(el)); etiket(el);
+  }
+  function tara(k) { (k || document).querySelectorAll('input[type=date],input[type=month],input[type=time]').forEach(kur); }
+  function panel() {
+    if (pop) return pop;
+    pop = document.createElement('div'); pop.className = 'pk-pop'; pop.hidden = true; document.body.appendChild(pop);
+    pop.addEventListener('click', olay);
+    document.addEventListener('pointerdown', e => { if (A && !pop.contains(e.target) && !(A.el._pkb && A.el._pkb.contains(e.target))) kapat(); }, true);
+    document.addEventListener('keydown', e => { if (A && e.key === 'Escape') kapat(); });
+    window.addEventListener('resize', konum); document.addEventListener('scroll', konum, true);
+    return pop;
+  }
+  function ac(el) {
+    if (A && A.el === el) { kapat(); return; }
+    const v = VD.get.call(el), t = new Date(), baz = v || (el.min && el.min > hoy() ? el.min : hoy());
+    A = { el, tur: el.type, Y: +baz.slice(0, 4) || t.getFullYear(), M: (+baz.slice(5, 7) || t.getMonth() + 1) - 1, mod: 'g', sek: v ? 'm' : 'h', H: v ? +v.slice(0, 2) : null, Dk: v ? +v.slice(3, 5) : null, dk: false };
+    panel(); pop.hidden = false; el._pkb.classList.add('on'); ciz();
+  }
+  function kapat() { if (!A) return; A.el._pkb.classList.remove('on'); A = null; if (pop) pop.hidden = true; }
+  function sec(v) { const el = A.el; VD.set.call(el, v); etiket(el); kapat(); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
+  const disa = (el, v) => (el.min && v < el.min) || (el.max && v > el.max);
+  function ciz() {
+    const a = A, el = a.el; let h = '';
+    if (a.tur === 'date') {
+      const bas = a.mod === 'g' ? AY[a.M] + ' ' + a.Y + ARR('M6 9l6 6 6-6') : a.Y + ARR('M6 15l6-6 6 6');
+      h = `<div class="pk-c"><div class="pk-h"><button type="button" class="pk-n" data-a="on" aria-label="Önceki">${ARR('M15 6l-6 6 6 6')}</button><button type="button" class="pk-t" data-a="mod">${bas}</button><button type="button" class="pk-n" data-a="sn" aria-label="Sonraki">${ARR('M9 6l6 6-6 6')}</button></div>`;
+      if (a.mod === 'g') {
+        const ilk = (new Date(a.Y, a.M, 1).getDay() + 6) % 7, gun = new Date(a.Y, a.M + 1, 0).getDate(), onc = new Date(a.Y, a.M, 0).getDate(), cur = VD.get.call(el), bg = hoy();
+        h += '<div class="pk-wd"><span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span></div><div class="pk-dg">';
+        const n = ilk + gun <= 35 ? 35 : 42;
+        for (let i = 0; i < n; i++) {
+          let dn, mm = a.M, d = false;
+          if (i < ilk) { dn = onc - ilk + i + 1; mm--; d = true; } else if (i >= ilk + gun) { dn = i - ilk - gun + 1; mm++; d = true; } else dn = i - ilk + 1;
+          const dt = new Date(a.Y, mm, dn), v = isoY(dt.getFullYear(), dt.getMonth(), dt.getDate()), c = [];
+          if (d) c.push('o'); if (dt.getDay() === 0 || dt.getDay() === 6) c.push('w'); if (v === bg) c.push('bg'); if (v === cur) c.push('on'); if (disa(el, v)) c.push('x');
+          h += `<button type="button" data-v="${v}" class="${c.join(' ')}"${disa(el, v) ? ' disabled' : ''}>${dn}</button>`;
+        }
+        h += '</div>';
+      } else h += '<div class="pk-my">' + AY.map((m, i) => `<button type="button" data-m="${i}" class="${i === a.M ? 'on' : ''}">${m}</button>`).join('') + '</div>';
+      h += '</div><div class="pk-ft"><button type="button" data-a="bugun">Bugün</button><button type="button" class="d" data-a="temiz">Temizle</button><button type="button" class="d" data-a="kapat">Kapat</button></div>';
+    } else if (a.tur === 'month') {
+      const cur = VD.get.call(el);
+      h = `<div class="pk-c"><div class="pk-h"><button type="button" class="pk-n" data-a="on" aria-label="Önceki yıl">${ARR('M15 6l-6 6 6 6')}</button><div class="pk-t" style="cursor:default">${a.Y}</div><button type="button" class="pk-n" data-a="sn" aria-label="Sonraki yıl">${ARR('M9 6l6 6-6 6')}</button></div><div class="pk-my">${AY.map((m, i) => { const v = a.Y + '-' + p2(i + 1); return `<button type="button" data-ay="${v}" class="${v === cur ? 'on' : ''}">${m}</button>`; }).join('')}</div></div><div class="pk-ft"><button type="button" data-a="buay">Bu ay</button><button type="button" class="d" data-a="kapat">Kapat</button></div>`;
+    } else {
+      const sg = (x, ad) => `<button type="button" data-a="sek-${x}" class="${a.sek === x ? 'on' : ''}"><span>${ad}</span><b>${(x === 'h' ? a.H : a.Dk) === null ? '--' : p2(x === 'h' ? a.H : a.Dk)}</b></button>`;
+      h = `<div class="pk-tabs">${sg('h', 'Saat')}${sg('m', 'Dakika')}</div>`;
+      if (a.sek === 'h') h += '<div class="pk-g6">' + Array.from({ length: 24 }, (_, i) => `<button type="button" data-h="${i}" class="${i === a.H ? 'on' : ''}">${p2(i)}</button>`).join('') + '</div>';
+      else {
+        h += '<div class="pk-g6">' + Array.from({ length: 12 }, (_, i) => `<button type="button" data-dk="${i * 5}" class="${i * 5 === a.Dk ? 'on' : ''}">${p2(i * 5)}</button>`).join('') + '<button type="button" class="oth" data-a="dkdiger">Başka dakika</button></div>';
+        if (a.dk) h += '<div class="pk-mi"><input id="pk-dk" type="number" inputmode="numeric" min="0" max="59" placeholder="Dakika (0-59)"><button type="button" data-a="dkok">Tamam</button></div>';
+      }
+      h += '<div class="pk-ft"><button type="button" data-a="simdi">Şimdi</button><button type="button" class="d" data-a="temiz">Temizle</button><button type="button" class="d" data-a="kapat">Kapat</button></div>';
+    }
+    pop.innerHTML = h; konum();
+    if (a.dk) { const i = document.getElementById('pk-dk'); if (i) { i.focus(); i.onkeydown = e => { if (e.key === 'Enter') dkOk(); }; } }
+  }
+  function dkOk() { const i = document.getElementById('pk-dk'), v = parseInt(i.value, 10); if (isNaN(v) || v < 0 || v > 59) { i.style.borderColor = 'var(--danger,#c0392b)'; return; } A.Dk = v; A.dk = false; sec(p2(A.H) + ':' + p2(v)); }
+  function olay(e) {
+    const b = e.target.closest('button'); if (!b || !A) return; const a = A, d = b.dataset;
+    if (d.v) { sec(d.v); return; }
+    if (d.ay) { sec(d.ay); return; }
+    if (d.m !== undefined) { a.M = +d.m; a.mod = 'g'; ciz(); return; }
+    if (d.h !== undefined) { a.H = +d.h; if (a.Dk === null) a.Dk = 0; a.sek = 'm'; ciz(); return; }
+    if (d.dk !== undefined) { a.Dk = +d.dk; sec(p2(a.H) + ':' + p2(a.Dk)); return; }
+    switch (d.a) {
+      case 'on': if (a.tur === 'date' && a.mod === 'g') { a.M--; if (a.M < 0) { a.M = 11; a.Y--; } } else a.Y--; ciz(); break;
+      case 'sn': if (a.tur === 'date' && a.mod === 'g') { a.M++; if (a.M > 11) { a.M = 0; a.Y++; } } else a.Y++; ciz(); break;
+      case 'mod': a.mod = a.mod === 'g' ? 'm' : 'g'; ciz(); break;
+      case 'bugun': { const h = hoy(); if (disa(a.el, h)) { a.Y = +h.slice(0, 4); a.M = +h.slice(5, 7) - 1; ciz(); } else sec(h); break; }
+      case 'buay': sec(hoy().slice(0, 7)); break;
+      case 'temiz': sec(''); break;
+      case 'kapat': kapat(); break;
+      case 'sek-h': a.sek = 'h'; ciz(); break;
+      case 'sek-m': if (a.H !== null) { a.sek = 'm'; ciz(); } break;
+      case 'dkdiger': a.dk = true; ciz(); break;
+      case 'dkok': dkOk(); break;
+      case 'simdi': { const t = new Date(); sec(p2(t.getHours()) + ':' + p2(t.getMinutes())); break; }
+    }
+  }
+  function konum() {
+    if (!A || !pop) return; const r = A.el._pkb.getBoundingClientRect(), W = Math.min(330, innerWidth - 16);
+    pop.style.width = W + 'px'; pop.style.left = Math.max(8, Math.min(r.left, innerWidth - W - 8)) + 'px';
+    const H = pop.offsetHeight; let top = r.bottom + 6;
+    if (top + H > innerHeight - 8) top = r.top - 6 - H > 8 ? r.top - 6 - H : Math.max(8, innerHeight - H - 8);
+    pop.style.top = top + 'px';
+  }
+  tara();
+  new MutationObserver(m => m.forEach(x => x.addedNodes.forEach(n => { if (n.nodeType === 1) { if (n.matches && n.matches('input')) kur(n); else tara(n); } }))).observe(document.body, { childList: true, subtree: true });
+  window.pkTara = tara;
+})();
+</script>
 </body>
 </html>
