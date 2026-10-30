@@ -26196,7 +26196,7 @@ function bmKayda(b, k, doc) {
 /* ===== Kontrol satırı: belgeler, alt kayıtlar, sürükle-bırak ===== */
 function bmSatirBelgeHtml(it, idJs) {
   const L = it.belgeler || [], A = it.altlar || [];
-  const th = (x, aid) => `<button type="button" class="bm-t" data-bd="${esc(x.id)}" onclick="bmGoruntule('${idJs}','${x.id}')" title="${esc(x.ad)} · PC'de klasöre sürükleyip indirebilirsin">${x.th ? `<img src="${x.th}" alt="" draggable="false">` : '<span class="nb">PDF</span>'}<span>${x.tarih ? esc(bmFmt(x.tarih).slice(0, 6) + bmFmt(x.tarih).slice(8)) : 'PDF'}</span></button>`;
+  const th = (x, aid) => `<button type="button" class="bm-t${BMS.has(x.id) ? ' sel' : ''}" data-bd="${esc(x.id)}" onclick="bmTikla('${idJs}','${x.id}')" title="${esc(x.ad)} · PC'de klasöre sürükleyip indirebilirsin">${x.th ? `<img src="${x.th}" alt="" draggable="false">` : '<span class="nb">PDF</span>'}<span>${x.tarih ? esc(bmFmt(x.tarih).slice(0, 6) + bmFmt(x.tarih).slice(8)) : 'PDF'}</span></button>`;
   return `<div class="bm-dc">
     ${L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : ''}
     ${A.map(a => `<div class="bm-alt"><div class="kv"><span>▸ ${esc(a.ad)}${a.no ? ' · ' + esc(a.no) : ''}</span><b>${a.lastDate ? esc(bmFmt(a.lastDate)) : '—'}</b></div>${(a.belgeler || []).length ? `<div class="bm-th">${a.belgeler.map(x => th(x)).join('')}</div>` : ''}<div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}','${bmJ(a.id)}')">＋ Belge</button><button type="button" class="bm-ch" onclick="bmAltSil('${idJs}','${bmJ(a.id)}')">Alt kaydı sil</button></div></div>`).join('')}
@@ -26298,8 +26298,8 @@ async function bmGoruntule(itemId, docId) {
 }
 async function bmVCiz() {
   const st = bmEl('bv-st'); if (!st || !BV.pdf) return;
-  const page = await BV.pdf.getPage(BV.p), v0 = page.getViewport({ scale: 1 }), gen = st.clientWidth || 360;
-  const res = Math.min(3, (window.devicePixelRatio || 1) * 1.5), vp = page.getViewport({ scale: gen * res / v0.width });
+  const page = await BV.pdf.getPage(BV.p), v0 = page.getViewport({ scale: 1 }), sw = st.clientWidth || 360, sh = st.clientHeight || 600, gen = Math.min(sw, sh * v0.width / v0.height);
+  const res = Math.min(4, Math.max(2.5, (window.devicePixelRatio || 1) * 1.5)), vp = page.getViewport({ scale: gen * res / v0.width });
   let c = st.querySelector('canvas'); if (!c) { st.innerHTML = ''; c = document.createElement('canvas'); st.appendChild(c); }
   c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height); c.style.width = gen + 'px'; c.style.height = (gen * v0.height / v0.width) + 'px';
   await page.render({ canvasContext: c.getContext('2d'), canvas: c, viewport: vp }).promise;
@@ -26307,7 +26307,7 @@ async function bmVCiz() {
 }
 function bmVUygula() { const c = document.querySelector('#bv-st canvas'); if (!c) return; c.style.transform = `translate(calc(-50% + ${BV.x}px),${BV.y}px) scale(${BV.z})`; const z = bmEl('bv-zl'); if (z) z.textContent = Math.round(BV.z * 100) + '%'; }
 function bmVZoom(d) { BV.z = Math.min(4, Math.max(.5, BV.z + d)); if (BV.z <= 1) { BV.x = 0; BV.y = 0; } bmVUygula(); }
-function bmVSayfa(d) { const n = BV.p + d; if (n < 1 || n > BV.n) return; BV.p = n; BV.z = 1; BV.x = 0; BV.y = 0; bmEl('bv-pn').textContent = n; bmVCiz(); }
+function bmVSayfa(d) { const n = BV.p + d; if (n < 1 || n > BV.n) return; BV.p = n; BV.x = 0; BV.y = 0; bmEl('bv-pn').textContent = n; bmVCiz(); }
 function bmVOlay() {
   const s = bmEl('bv-st'); if (!s) return; let d = null; const pts = {};
   s.onpointerdown = e => { s.setPointerCapture(e.pointerId); pts[e.pointerId] = e; if (Object.keys(pts).length === 1) d = { x: e.clientX - BV.x, y: e.clientY - BV.y }; };
@@ -26318,7 +26318,8 @@ function bmVOlay() {
   };
   const up = e => { delete pts[e.pointerId]; d = null; }; s.onpointerup = up; s.onpointercancel = up;
   s.ondblclick = () => { BV.z = BV.z > 1 ? 1 : 2.2; if (BV.z === 1) { BV.x = 0; BV.y = 0; } bmVUygula(); };
-  s.onwheel = e => { e.preventDefault(); bmVZoom(e.deltaY < 0 ? .15 : -.15); };
+  s.onwheel = e => { e.preventDefault(); if (e.ctrlKey) bmVZoom(e.deltaY < 0 ? .15 : -.15); else if (BV.z > 1) { BV.x -= e.deltaX; BV.y -= e.deltaY; bmVUygula(); } };
+  if (!window._bvKey) { window._bvKey = 1; document.addEventListener('keydown', e => { const vw = bmEl('bm-vw'); if (!vw || !vw.classList.contains('on') || bmEl('bm-mini') || document.getElementById('isg-onay-bg')) return; if (e.key === 'ArrowRight' || e.key === 'PageDown') bmVSayfa(1); else if (e.key === 'ArrowLeft' || e.key === 'PageUp') bmVSayfa(-1); else if (e.key === '+' || e.key === '=') bmVZoom(.25); else if (e.key === '-') bmVZoom(-.25); else if (e.key === 'Escape') bmVKapat(); }); }
 }
 function bmVKapat() { const vw = bmEl('bm-vw'); vw.classList.remove('on'); vw.innerHTML = ''; try { BV.pdf && BV.pdf.destroy(); } catch (e) {} BV.pdf = null; if (!(bmEl('bm-bg') && bmEl('bm-bg').classList.contains('on'))) document.body.style.overflow = ''; }
 function bmVIndir() { if (!BV.u8) return; afIndir(new Blob([BV.u8], { type: 'application/pdf' }), (BV.doc.ad || 'belge').replace(/[\\/:*?"<>|]/g, '-') + '.pdf'); }
@@ -26357,47 +26358,31 @@ document.addEventListener('dragstart', e => {
 });
 // Yanlış kategoriye düşen belgeyi doğru satıra / alt kayda taşı
 function bmTasiHedefSatir(grup, kid, fab) { const kat = bmKatListe(grup).find(x => x.id === kid); return kat ? bmSatirBul(grup, kat, fab) : null; }
-function bmTasiAc() {
-  const { it, doc } = BV; if (!doc) return;
-  const grup = kontrolGrupId(it), L = bmKatListe(grup), simdi = bmSatirAnahtar(it);
-  const sec = [], gruplu = new Map();
-  L.forEach(k => { const o = `<option value="${esc(k.id)}"${k.id === simdi ? ' selected' : ''}>${esc(k.ad)}${k.id === simdi ? ' (şimdiki)' : ''}</option>`; if (k.katAd) { if (!gruplu.has(k.katAd)) gruplu.set(k.katAd, []); gruplu.get(k.katAd).push(o); } else sec.push(o); });
-  gruplu.forEach((v, ad) => sec.push(`<optgroup label="${esc(ad)}">${v.join('')}</optgroup>`));
-  const eski = bmEl('bm-mini'); if (eski) eski.remove();
-  const bg = document.createElement('div'); bg.id = 'bm-mini'; bg.className = 'isg-onay-bg'; bg.style.zIndex = 100001;
-  bg.innerHTML = `<div class="isg-onay-card" role="dialog" aria-modal="true"><div class="isg-onay-b">Belgeyi taşı</div><div class="isg-onay-m">${esc(doc.ad)}.pdf için doğru kategoriyi seç. Ad ve tarihler yeni kategoriye göre güncellenir.</div><div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px"><select class="kx-in" id="bm-tk" onchange="bmTasiKat()">${sec.join('')}</select><select class="kx-in" id="bm-ta"></select></div><div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">Vazgeç</button><button class="isg-onay-btn ok" data-k="evet">Taşı</button></div></div>`;
-  bg.addEventListener('click', e => {
-    if (e.target === bg) { bg.remove(); return; }
-    const k = e.target.closest('[data-k]'); if (!k) return;
-    if (k.dataset.k === 'evet') { if (!bmTasiYap(bmEl('bm-tk').value, bmEl('bm-ta').value)) return; }
-    bg.remove();
-  });
-  document.body.appendChild(bg); bmTasiKat();
+/* ===== Belge seçimi (basılı tut), taşıma ve silme ===== */
+function bmDocBul(id) {
+  for (const it of kontrolItems) {
+    const d = (it.belgeler || []).find(x => x.id === id); if (d) return { it, kap: it, doc: d };
+    for (const a of (it.altlar || [])) { const e = (a.belgeler || []).find(x => x.id === id); if (e) return { it, kap: a, doc: e }; }
+  }
+  return null;
 }
-function bmTasiKat() {
-  const { it } = BV, grup = kontrolGrupId(it), fab = kontrolKayitFabrikalari(it)[0] || it.fab;
-  const h = bmTasiHedefSatir(grup, bmEl('bm-tk').value, fab), a = h ? (h.altlar || []) : [];
-  const ta = bmEl('bm-ta'); ta.innerHTML = '<option value="">Ana satır</option>' + a.map(x => `<option value="${esc(x.id)}">${esc(x.ad)}${x.no ? ' · ' + esc(x.no) : ''}</option>`).join('');
-  ta.style.display = a.length ? '' : 'none';
-}
-function bmTasiYap(kid, altId) {
-  const { it, doc } = BV, grup = kontrolGrupId(it), L = bmKatListe(grup), kat = L.find(x => x.id === kid); if (!kat || !doc) return false;
+// Belgeyi (ana kategori + alt kategori) hedefe taşır; arayüz işi çağıranda
+function bmTasiDoc(b, grupH, kid, altId) {
+  const { it, kap, doc } = b, grup = kontrolGrupId(it), kat = bmKatListe(grupH).find(x => x.id === kid); if (!kat) return { s: 'yok' };
   const fab = kontrolKayitFabrikalari(it)[0] || it.fab;
-  let kaynak = (it.belgeler || []).some(x => x.id === doc.id) ? it : (it.altlar || []).find(a => (a.belgeler || []).some(x => x.id === doc.id));
-  if (!kaynak) return false;
-  let hed = bmSatirBul(grup, kat, fab), yeniSatir = false;
-  if (!hed) { hed = bmSatirYap(grup, kat, fab); yeniSatir = true; }
+  let hed = bmSatirBul(grupH, kat, fab), yeniSatir = false;
+  if (!hed) { hed = bmSatirYap(grupH, kat, fab); yeniSatir = true; }
   let kon = hed, altAd = '';
   if (altId) { const a = (hed.altlar || []).find(x => x.id === altId); if (a) { kon = a; altAd = a.ad; } }
-  if (kon === kaynak) { toast('Belge zaten bu kayıtta'); return false; }
+  if (kon === kap) return { s: 'ayni' };
   if (yeniSatir) kontrolItems.push(hed);
-  const kk = L.find(x => x.id === bmSatirAnahtar(it)), dz = (d, tip) => d.duz || (tip === 'sureli' ? '' : (d.tarih || ''));
+  const kk = bmKatListe(grup).find(x => x.id === bmSatirAnahtar(it)), dz = (d, tip) => d.duz || (tip === 'sureli' ? '' : (d.tarih || ''));
   const eskiTarih = dz(doc, kk && kk.tip);
-  kaynak.belgeler = kaynak.belgeler.filter(x => x.id !== doc.id);
-  if (eskiTarih && kaynak.lastDate === eskiTarih) {
-    const kalan = kaynak.belgeler.map(d => dz(d, kk && kk.tip)).filter(Boolean).sort();
-    if (kalan.length) kaynak.lastDate = kalan[kalan.length - 1];
-    else if (!kaynak.belgeler.length) { kaynak.lastDate = ''; if (kaynak === it) it.bitis = ''; }
+  kap.belgeler = kap.belgeler.filter(x => x.id !== doc.id);
+  if (eskiTarih && kap.lastDate === eskiTarih) {
+    const kalan = kap.belgeler.map(d => dz(d, kk && kk.tip)).filter(Boolean).sort();
+    if (kalan.length) kap.lastDate = kalan[kalan.length - 1];
+    else if (!kap.belgeler.length) { kap.lastDate = ''; if (kap === it) it.bitis = ''; }
   }
   const ad = `${kat.kisa || kat.ad}${altAd ? ' – ' + altAd : ''}${doc.tarih ? ' - ' + bmFmt(doc.tarih) : ''}${fab ? ' (' + bmFabKisaAd(fab) + ')' : ''}`;
   if (!Array.isArray(kon.belgeler)) kon.belgeler = [];
@@ -26412,9 +26397,105 @@ function bmTasiYap(kid, altId) {
       if (doc.belgeNo && !hed.belgeNo) hed.belgeNo = doc.belgeNo;
     }
   }
-  kontrolSatirAcik.add(hed.id); kontrolSave(); bmVKapat(); kontrolRender(); toast('Belge taşındı: ' + (kat.kisa || kat.ad));
+  return { s: 'ok', hed, kat };
+}
+let MV = null;
+const MV_GRUP = [['su', 'Su analizi'], ['makine', 'Makine / Ekipman'], ['cevre', 'Çevre süreçleri']];
+function bmTasiAc(idler) {
+  const ids = Array.isArray(idler) && idler.length ? idler : (BV.doc ? [BV.doc.id] : []); if (!ids.length) return;
+  const b0 = bmDocBul(ids[0]); if (!b0) return;
+  MV = { ids, grup: kontrolGrupId(b0.it), q: '', kid: '', altId: '', gk: kontrolGrupId(b0.it), ak: bmSatirAnahtar(b0.it), tek: ids.length === 1 };
+  const eski = bmEl('bm-mini'); if (eski) eski.remove();
+  const bg = document.createElement('div'); bg.id = 'bm-mini'; bg.className = 'isg-onay-bg'; bg.style.zIndex = 100001;
+  bg.innerHTML = `<div class="isg-onay-card mv-card" role="dialog" aria-modal="true"><div class="isg-onay-b">${ids.length > 1 ? ids.length + ' belgeyi taşı' : 'Belgeyi taşı'}</div><div class="isg-onay-m">Ana kategoriyi ve alt kategoriyi seç. Ad ve tarihler yeni kategoriye göre güncellenir.</div><div class="ekp-seg" id="mv-seg"></div><input class="mv-q" id="mv-q" placeholder="Kategori ara…" autocomplete="off" oninput="mvAra(this.value)"><div class="mv-lst" id="mv-lst"></div><div class="mv-alt" id="mv-alt"></div><div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">Vazgeç</button><button class="isg-onay-btn ok" data-k="evet" id="mv-ok" disabled>Taşı</button></div></div>`;
+  bg.addEventListener('click', e => {
+    if (e.target === bg) { bg.remove(); return; }
+    const k = e.target.closest('[data-k]'); if (!k) return;
+    if (k.dataset.k === 'evet') { if (!mvYap()) return; }
+    bg.remove();
+  });
+  document.body.appendChild(bg); mvCiz();
+}
+function mvCiz() {
+  bmEl('mv-seg').innerHTML = MV_GRUP.map(g => `<button type="button" class="${MV.grup === g[0] ? 'on' : ''}" onclick="mvGrup('${g[0]}')">${g[1]}</button>`).join('');
+  mvListe(); mvAlt();
+}
+function mvGrup(g) { MV.grup = g; MV.kid = ''; MV.altId = ''; MV.q = ''; bmEl('mv-q').value = ''; mvCiz(); }
+function mvAra(v) { MV.q = v; mvListe(); }
+function mvSec(id) { MV.kid = id; MV.altId = ''; mvListe(); mvAlt(); }
+function mvAltSec(id) { MV.altId = id; mvAlt(); }
+function mvListe() {
+  const q = kzNorm(MV.q), L = bmKatListe(MV.grup).filter(k => !q || kzNorm(k.ad + ' ' + (k.kisa || '') + ' ' + (k.katAd || '')).includes(q));
+  let h = '', son = null;
+  L.forEach(k => {
+    if (k.katAd && k.katAd !== son) { son = k.katAd; h += `<div class="mv-gh">${esc(k.katAd)}</div>`; } else if (!k.katAd) son = null;
+    const simdi = MV.tek && MV.gk === MV.grup && MV.ak === k.id, sec = MV.kid === k.id;
+    h += `<button type="button" class="mv-it${sec ? ' on' : ''}" data-id="${esc(k.id)}" onclick="mvSec(this.dataset.id)"><span>${esc(k.ad)}${simdi ? ' <em>(şimdiki)</em>' : ''}</span>${sec ? '<b>✓</b>' : ''}</button>`;
+  });
+  bmEl('mv-lst').innerHTML = h || '<div class="mv-bos">Eşleşen kategori yok</div>';
+  const ok = bmEl('mv-ok'); if (ok) ok.disabled = !MV.kid;
+}
+function mvAlt() {
+  const el = bmEl('mv-alt'); if (!el) return; el.innerHTML = '';
+  if (!MV.kid) return;
+  const bl = MV.ids.map(bmDocBul).filter(Boolean); if (!bl.length) return;
+  const fabs = new Set(bl.map(b => kontrolKayitFabrikalari(b.it)[0] || b.it.fab)); if (fabs.size !== 1) return;
+  const h = bmTasiHedefSatir(MV.grup, MV.kid, [...fabs][0]), a = h ? (h.altlar || []) : []; if (!a.length) return;
+  el.innerHTML = '<div class="mv-al">Hangi kayda?</div><div class="mv-ch">' + [['', 'Ana satır']].concat(a.map(x => [x.id, x.ad + (x.no ? ' · ' + x.no : '')])).map(x => `<button type="button" class="ekp-chip${MV.altId === x[0] ? ' on' : ''}" data-id="${esc(x[0])}" onclick="mvAltSec(this.dataset.id)">${esc(x[1])}</button>`).join('') + '</div>';
+}
+function mvYap() {
+  if (!MV || !MV.kid) return false;
+  let ok = 0, ayni = 0, son = null, kat = null;
+  MV.ids.forEach(id => { const b = bmDocBul(id); if (!b) return; const r = bmTasiDoc(b, MV.grup, MV.kid, MV.altId); if (r.s === 'ok') { ok++; son = r.hed; kat = r.kat; } else if (r.s === 'ayni') ayni++; });
+  if (!ok) { toast(ayni ? 'Belge zaten bu kayıtta' : 'Taşınamadı'); return false; }
+  bmSelTemizle(); if (bmEl('bm-vw') && bmEl('bm-vw').classList.contains('on')) bmVKapat();
+  kontrolGrupSadeceAc(MV.grup); kontrolSatirAcik.add(son.id); kontrolSave(); kontrolRender();
+  toast(ok + ' belge taşındı: ' + (kat.kisa || kat.ad) + (ayni ? ' · ' + ayni + ' belge zaten orada' : ''));
   return true;
 }
+const BMS = new Map(); let bmLP = 0;
+function bmSelBar() {
+  let b = bmEl('bm-sel');
+  if (!BMS.size) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('div'); b.id = 'bm-sel'; b.className = 'bm-sel'; document.body.appendChild(b); b.addEventListener('click', e => { const t = e.target.closest('[data-a]'); if (!t) return; const a = t.dataset.a; if (a === 'tasi') bmTasiAc(Array.from(BMS.keys())); else if (a === 'sil') bmSelSil(); else bmSelTemizle(); }); }
+  b.innerHTML = `<span><b>${BMS.size}</b> belge seçili</span><button type="button" data-a="tasi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 7l5 5-5 5"/></svg>Taşı</button><button type="button" class="dn" data-a="sil"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>Sil</button><button type="button" class="x" data-a="iptal" aria-label="Seçimi bırak">✕</button>`;
+}
+function bmSelToggle(id) {
+  if (BMS.has(id)) BMS.delete(id); else BMS.set(id, 1);
+  document.querySelectorAll('.bm-t[data-bd]').forEach(t => { if (t.dataset.bd === id) t.classList.toggle('sel', BMS.has(id)); });
+  bmSelBar();
+}
+function bmSelTemizle() { BMS.clear(); document.querySelectorAll('.bm-t.sel').forEach(t => t.classList.remove('sel')); bmSelBar(); }
+function bmTikla(itemId, docId) {
+  if (bmLP && Date.now() - bmLP < 800) { bmLP = 0; return; }
+  if (BMS.size) { bmSelToggle(docId); return; }
+  bmGoruntule(itemId, docId);
+}
+function bmSelSil() {
+  const ids = Array.from(BMS.keys()), adlar = ids.map(id => { const b = bmDocBul(id); return b ? b.doc.ad + '.pdf' : ''; }).filter(Boolean); if (!adlar.length) return;
+  isgOnay({ baslik: `${adlar.length} belge silinsin mi?`, mesaj: 'Seçili PDF\'ler kalıcı silinir, geri alınamaz:\n' + adlar.slice(0, 6).join('\n') + (adlar.length > 6 ? '\n… +' + (adlar.length - 6) + ' belge' : ''), evet: 'Sil', iptal: 'Vazgeç' }, async () => {
+    for (const id of ids) {
+      const b = bmDocBul(id); if (!b) continue;
+      try { await bmBlobSil(id); } catch (e) { console.error(e); }
+      b.kap.belgeler = (b.kap.belgeler || []).filter(x => x.id !== id);
+    }
+    bmSelTemizle(); kontrolSave(); kontrolRender(); toast(adlar.length + ' belge silindi');
+  });
+}
+(function bmBasiliTut() {
+  let tm = null, x0 = 0, y0 = 0;
+  const iptal = () => { if (tm) { clearTimeout(tm); tm = null; } };
+  document.addEventListener('pointerdown', e => {
+    const t = e.target.closest && e.target.closest('.bm-t[data-bd]'); if (!t || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    x0 = e.clientX; y0 = e.clientY; iptal();
+    tm = setTimeout(() => { tm = null; bmLP = Date.now(); bmSelToggle(t.dataset.bd); try { navigator.vibrate && navigator.vibrate(15); } catch (er) {} }, 500);
+  });
+  document.addEventListener('pointermove', e => { if (tm && Math.hypot(e.clientX - x0, e.clientY - y0) > 8) iptal(); });
+  ['pointerup', 'pointercancel', 'dragstart'].forEach(n => document.addEventListener(n, iptal, true));
+  document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('.bm-t[data-bd]')) e.preventDefault(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && BMS.size && !bmEl('bm-mini') && !document.getElementById('isg-onay-bg')) bmSelTemizle(); });
+  const st = window.switchTab; if (typeof st === 'function') window.switchTab = function () { bmSelTemizle(); return st.apply(this, arguments); };
+})();
 function bmVSil() {
   const { it, doc } = BV; if (!doc) return;
   isgOnay({ baslik: 'Belge silinsin mi?', mesaj: `${doc.ad}.pdf kalıcı silinir. Bu işlem geri alınamaz.`, evet: 'Sil', iptal: 'Vazgeç' }, async () => {
@@ -26657,6 +26738,20 @@ function ekipOzelEkle() {
 .pk-mi button{height:42px;min-height:0;padding:0 16px;border:0;border-radius:10px;background:var(--acc);color:var(--acc-fg);font:800 13px/1 inherit;cursor:pointer}
 .pk-ft{display:flex;border-top:1px solid var(--border2)}.pk-ft button{flex:1;min-height:0;border:0;background:none;padding:13px 6px;font:700 13px/1 inherit;color:var(--acc);cursor:pointer}
 .pk-ft button+button{border-left:1px solid var(--border2)}.pk-ft button.d{color:var(--text2)}
+
+.bm-t{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.bm-t.sel img,.bm-t.sel.nb{outline:2.5px solid var(--acc);outline-offset:1px}
+.bm-t.sel::after{content:'✓';position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:var(--acc);color:var(--acc-fg);font:800 12px/20px inherit;text-align:center}
+.bm-sel{position:fixed;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom,0px));z-index:3050;display:flex;align-items:center;gap:6px;background:var(--surface);color:var(--text);border:1px solid var(--border2);border-radius:16px;padding:8px 8px 8px 14px;box-shadow:0 10px 28px rgba(10,20,35,.28);max-width:calc(100vw - 24px)}
+.bm-sel span{font-size:13px;white-space:nowrap;margin-right:4px}.bm-sel b{color:var(--acc)}
+.bm-sel button{min-height:0;height:38px;display:flex;align-items:center;gap:6px;border:0;border-radius:11px;padding:0 13px;background:color-mix(in srgb,var(--acc) 12%,transparent);color:var(--acc);font:700 13px/1 inherit;cursor:pointer}
+.bm-sel button.dn{background:color-mix(in srgb,#d64545 13%,transparent);color:#d64545}.bm-sel button.x{width:38px;padding:0;justify-content:center;background:transparent;color:var(--text2)}
+.mv-card{max-width:420px}.mv-q{width:100%;box-sizing:border-box;height:42px;border:1px solid var(--border2);background:var(--bg);color:var(--text);border-radius:11px;padding:0 12px;font:500 14px/1 inherit}
+.mv-lst{max-height:min(280px,38vh);overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--border2);border-radius:12px;background:var(--surface)}
+.mv-gh{position:sticky;top:0;background:color-mix(in srgb,var(--acc) 8%,var(--surface));color:var(--text2);font:700 10.5px/1 inherit;letter-spacing:.4px;text-transform:uppercase;padding:9px 12px;border-top:1px solid var(--border2)}.mv-gh:first-child{border-top:0}
+.mv-it{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:0;border:0;border-top:1px solid var(--border2);background:transparent;color:var(--text);padding:11px 12px;font:500 13.5px/1.3 inherit;text-align:left;cursor:pointer}
+.mv-gh+.mv-it,.mv-it:first-child{border-top:0}.mv-it.on{background:color-mix(in srgb,var(--acc) 11%,transparent);font-weight:700}.mv-it b{color:var(--acc)}.mv-it em{font-style:normal;color:var(--text2);font-weight:500;font-size:12px}
+.mv-bos{padding:14px;font-size:12.5px;color:var(--text2);font-style:italic}.mv-al{font-size:11.5px;font-weight:700;color:var(--text2);margin:2px 0 6px}.mv-ch{display:flex;flex-wrap:wrap;gap:6px}
 </style>
 <script id="pick-js">
 /* Tarih / ay / saat seçici: tarayıcının yerel penceresi yerine temaya uygun panel */
