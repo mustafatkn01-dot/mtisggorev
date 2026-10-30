@@ -13220,6 +13220,7 @@ const BM_ESKI_AD = { 'atik-yag':['Atık Yağ Gönderim Takibi','Atık Yağ Beyan
 function kontrolRender() {
   const body = document.getElementById('kontrol-body');
   if (!body) return;
+  if (typeof bmIdTekille === 'function' && bmIdTekille()) { try { kontrolSave(); } catch (e) {} }
   let adDegisti = false;
   kontrolItems.forEach(it => {
     const e = BM_ESKI_AD[it.environmentKey]; if (e && it.name === e[0]) { it.name = e[1]; adDegisti = true; }
@@ -26359,6 +26360,13 @@ document.addEventListener('dragstart', e => {
 // Yanlış kategoriye düşen belgeyi doğru satıra / alt kayda taşı
 function bmTasiHedefSatir(grup, kid, fab) { const kat = bmKatListe(grup).find(x => x.id === kid); return kat ? bmSatirBul(grup, kat, fab) : null; }
 /* ===== Belge seçimi (basılı tut), taşıma ve silme ===== */
+function bmIdSayisi(id) { let n = 0; kontrolItems.forEach(it => bmTumBelgeler(it).forEach(x => { if (x.id === id) n++; })); return n; }
+// Aynı kimlikli (aynı dosyayı gösteren) yinelenen kayıtları temizle
+function bmIdTekille() {
+  let d = false;
+  kontrolItems.forEach(it => { const gor = new Set(); [it].concat(it.altlar || []).forEach(k => { if (!Array.isArray(k.belgeler)) return; const y = k.belgeler.filter(x => { if (!x || !x.id) return true; if (gor.has(x.id)) return false; gor.add(x.id); return true; }); if (y.length !== k.belgeler.length) { k.belgeler = y; d = true; } }); });
+  return d;
+}
 function bmDocBul(id) {
   for (const it of kontrolItems) {
     const d = (it.belgeler || []).find(x => x.id === id); if (d) return { it, kap: it, doc: d };
@@ -26404,7 +26412,7 @@ const MV_GRUP = [['su', 'Su analizi'], ['makine', 'Makine / Ekipman'], ['cevre',
 function bmTasiAc(idler) {
   const ids = Array.isArray(idler) && idler.length ? idler : (BV.doc ? [BV.doc.id] : []); if (!ids.length) return;
   const b0 = bmDocBul(ids[0]); if (!b0) return;
-  MV = { ids, grup: kontrolGrupId(b0.it), q: '', kid: '', altId: '', gk: kontrolGrupId(b0.it), ak: bmSatirAnahtar(b0.it), tek: ids.length === 1 };
+  MV = { ids, acik: (bmKatListe(kontrolGrupId(b0.it)).find(k => k.id === bmSatirAnahtar(b0.it)) || {}).katAd || '', grup: kontrolGrupId(b0.it), q: '', kid: '', altId: '', gk: kontrolGrupId(b0.it), ak: bmSatirAnahtar(b0.it), tek: ids.length === 1 };
   const eski = bmEl('bm-mini'); if (eski) eski.remove();
   const bg = document.createElement('div'); bg.id = 'bm-mini'; bg.className = 'isg-onay-bg'; bg.style.zIndex = 100001;
   bg.innerHTML = `<div class="isg-onay-card mv-card" role="dialog" aria-modal="true"><div class="isg-onay-b">${ids.length > 1 ? ids.length + ' belgeyi taşı' : 'Belgeyi taşı'}</div><div class="isg-onay-m">Ana kategoriyi ve alt kategoriyi seç. Ad ve tarihler yeni kategoriye göre güncellenir.</div><div class="ekp-seg" id="mv-seg"></div><input class="mv-q" id="mv-q" placeholder="Kategori ara…" autocomplete="off" oninput="mvAra(this.value)"><div class="mv-lst" id="mv-lst"></div><div class="mv-alt" id="mv-alt"></div><div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">Vazgeç</button><button class="isg-onay-btn ok" data-k="evet" id="mv-ok" disabled>Taşı</button></div></div>`;
@@ -26420,21 +26428,25 @@ function mvCiz() {
   bmEl('mv-seg').innerHTML = MV_GRUP.map(g => `<button type="button" class="${MV.grup === g[0] ? 'on' : ''}" onclick="mvGrup('${g[0]}')">${g[1]}</button>`).join('');
   mvListe(); mvAlt();
 }
-function mvGrup(g) { MV.grup = g; MV.kid = ''; MV.altId = ''; MV.q = ''; bmEl('mv-q').value = ''; mvCiz(); }
+function mvGrup(g) { MV.grup = g; MV.acik = (g === MV.gk && MV.tek ? (bmKatListe(g).find(k => k.id === MV.ak) || {}).katAd : '') || ''; MV.kid = ''; MV.altId = ''; MV.q = ''; bmEl('mv-q').value = ''; mvCiz(); }
 function mvAra(v) { MV.q = v; mvListe(); }
 function mvSec(id) { MV.kid = id; MV.altId = ''; mvListe(); mvAlt(); }
 function mvAltSec(id) { MV.altId = id; mvAlt(); }
 function mvListe() {
   const q = kzNorm(MV.q), L = bmKatListe(MV.grup).filter(k => !q || kzNorm(k.ad + ' ' + (k.kisa || '') + ' ' + (k.katAd || '')).includes(q));
-  let h = '', son = null;
-  L.forEach(k => {
-    if (k.katAd && k.katAd !== son) { son = k.katAd; h += `<div class="mv-gh">${esc(k.katAd)}</div>`; } else if (!k.katAd) son = null;
-    const simdi = MV.tek && MV.gk === MV.grup && MV.ak === k.id, sec = MV.kid === k.id;
-    h += `<button type="button" class="mv-it${sec ? ' on' : ''}" data-id="${esc(k.id)}" onclick="mvSec(this.dataset.id)"><span>${esc(k.ad)}${simdi ? ' <em>(şimdiki)</em>' : ''}</span>${sec ? '<b>✓</b>' : ''}</button>`;
+  const it = k => { const simdi = MV.tek && MV.gk === MV.grup && MV.ak === k.id, sec = MV.kid === k.id; return `<button type="button" class="mv-it${sec ? ' on' : ''}" data-id="${esc(k.id)}" onclick="mvSec(this.dataset.id)"><span>${esc(k.ad)}${simdi ? ' <em>(şimdiki)</em>' : ''}</span>${sec ? '<b>✓</b>' : ''}</button>`; };
+  const gr = [], tek = [];
+  L.forEach(k => { if (!k.katAd) { tek.push(k); return; } let g = gr.find(x => x.ad === k.katAd); if (!g) { g = { ad: k.katAd, L: [] }; gr.push(g); } g.L.push(k); });
+  let h = tek.map(it).join('');
+  gr.forEach((g, i) => {
+    const ac = !!q || MV.acik === g.ad, sec = g.L.some(k => k.id === MV.kid);
+    h += `<button type="button" class="mv-gh${ac ? ' open' : ''}" data-g="${i}" onclick="mvKat(${i})" aria-expanded="${ac}"><span>${esc(g.ad)}</span>${sec ? '<b class="dot">●</b>' : ''}<em>${g.L.length}</em><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>${ac ? g.L.map(it).join('') : ''}`;
   });
+  MV.gr = gr.map(g => g.ad);
   bmEl('mv-lst').innerHTML = h || '<div class="mv-bos">Eşleşen kategori yok</div>';
   const ok = bmEl('mv-ok'); if (ok) ok.disabled = !MV.kid;
 }
+function mvKat(i) { const ad = MV.gr[i]; MV.acik = MV.acik === ad ? '' : ad; mvListe(); }
 function mvAlt() {
   const el = bmEl('mv-alt'); if (!el) return; el.innerHTML = '';
   if (!MV.kid) return;
@@ -26476,8 +26488,8 @@ function bmSelSil() {
   isgOnay({ baslik: `${adlar.length} belge silinsin mi?`, mesaj: 'Seçili PDF\'ler kalıcı silinir, geri alınamaz:\n' + adlar.slice(0, 6).join('\n') + (adlar.length > 6 ? '\n… +' + (adlar.length - 6) + ' belge' : ''), evet: 'Sil', iptal: 'Vazgeç' }, async () => {
     for (const id of ids) {
       const b = bmDocBul(id); if (!b) continue;
-      try { await bmBlobSil(id); } catch (e) { console.error(e); }
-      b.kap.belgeler = (b.kap.belgeler || []).filter(x => x.id !== id);
+      b.kap.belgeler = (b.kap.belgeler || []).filter(x => x !== b.doc);
+      if (!bmIdSayisi(id)) { try { await bmBlobSil(id); } catch (e) { console.error(e); } }
     }
     bmSelTemizle(); kontrolSave(); kontrolRender(); toast(adlar.length + ' belge silindi');
   });
@@ -26499,7 +26511,7 @@ function bmSelSil() {
 function bmVSil() {
   const { it, doc } = BV; if (!doc) return;
   isgOnay({ baslik: 'Belge silinsin mi?', mesaj: `${doc.ad}.pdf kalıcı silinir. Bu işlem geri alınamaz.`, evet: 'Sil', iptal: 'Vazgeç' }, async () => {
-    await bmBlobSil(doc.id);
+    if (bmIdSayisi(doc.id) <= 1) await bmBlobSil(doc.id);
     it.belgeler = (it.belgeler || []).filter(x => x.id !== doc.id);
     (it.altlar || []).forEach(a => { a.belgeler = (a.belgeler || []).filter(x => x.id !== doc.id); });
     kontrolSave(); bmVKapat(); kontrolRender(); toast('Belge silindi');
@@ -26748,7 +26760,10 @@ function ekipOzelEkle() {
 .bm-sel button.dn{background:color-mix(in srgb,#d64545 13%,transparent);color:#d64545}.bm-sel button.x{width:38px;padding:0;justify-content:center;background:transparent;color:var(--text2)}
 .mv-card{max-width:420px}.mv-q{width:100%;box-sizing:border-box;height:42px;border:1px solid var(--border2);background:var(--bg);color:var(--text);border-radius:11px;padding:0 12px;font:500 14px/1 inherit}
 .mv-lst{max-height:min(280px,38vh);overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--border2);border-radius:12px;background:var(--surface)}
-.mv-gh{position:sticky;top:0;background:color-mix(in srgb,var(--acc) 8%,var(--surface));color:var(--text2);font:700 10.5px/1 inherit;letter-spacing:.4px;text-transform:uppercase;padding:9px 12px;border-top:1px solid var(--border2)}.mv-gh:first-child{border-top:0}
+.mv-gh{display:flex;align-items:center;gap:8px;width:100%;min-height:0;border:0;border-top:1px solid var(--border2);background:color-mix(in srgb,var(--acc) 7%,var(--surface));color:var(--text);padding:12px;font:700 12.5px/1.3 inherit;text-align:left;cursor:pointer}
+.mv-gh:first-child{border-top:0}.mv-gh span{flex:1;min-width:0}.mv-gh em{font-style:normal;font-weight:600;color:var(--text2);font-size:11.5px}.mv-gh .dot{color:var(--acc);font-size:10px}
+.mv-gh svg{flex:none;color:var(--text2);transition:transform .15s}.mv-gh.open svg{transform:rotate(180deg)}
+.mv-it{padding-left:22px!important}
 .mv-it{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:0;border:0;border-top:1px solid var(--border2);background:transparent;color:var(--text);padding:11px 12px;font:500 13.5px/1.3 inherit;text-align:left;cursor:pointer}
 .mv-gh+.mv-it,.mv-it:first-child{border-top:0}.mv-it.on{background:color-mix(in srgb,var(--acc) 11%,transparent);font-weight:700}.mv-it b{color:var(--acc)}.mv-it em{font-style:normal;color:var(--text2);font-weight:500;font-size:12px}
 .mv-bos{padding:14px;font-size:12.5px;color:var(--text2);font-style:italic}.mv-al{font-size:11.5px;font-weight:700;color:var(--text2);margin:2px 0 6px}.mv-ch{display:flex;flex-wrap:wrap;gap:6px}
