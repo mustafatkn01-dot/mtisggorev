@@ -670,6 +670,15 @@ html, body { height: 100%; overflow: hidden;
   background:var(--bg); color:var(--text); outline:none; font-family:inherit;
 }
 .mfield input:focus, .mfield select:focus, .mfield textarea:focus { border-color:var(--acc); }
+.kz-cb-in{position:relative}.kz-cb-in input{padding-right:42px!important}
+.kz-cb-ar{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:34px;height:34px;min-height:0;padding:0;border:0;border-radius:9px;background:transparent;color:var(--text2);display:grid;place-items:center;cursor:pointer}
+.kz-cb-ar svg{transition:transform .15s}.kz-cb-ar.up svg{transform:rotate(180deg)}
+.kz-cb-pn{margin-top:6px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);max-height:210px;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.kz-cb-pn[hidden]{display:none}
+.kz-cb-it{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:0;border:0;border-top:1px solid var(--border2);background:transparent;color:var(--text);padding:12px 14px;font:500 14px/1.3 inherit;text-align:left;cursor:pointer}
+.kz-cb-it:first-child{border-top:0}.kz-cb-it.on{background:color-mix(in srgb,var(--acc) 10%,transparent);font-weight:700}.kz-cb-it b{color:var(--acc)}
+.kz-cb-it:active{background:color-mix(in srgb,var(--acc) 16%,transparent)}
+.kz-cb-bos{padding:12px 14px;font-size:12.5px;color:var(--text2);font-style:italic}
 .mfield textarea { resize:vertical; min-height:70px; }
 .modal-footer { padding:10px 16px 14px; display:flex; gap:8px; justify-content:flex-end; border-top:1px solid var(--border); }
 .modal-footer button { padding:7px 18px; font-size:12px; font-weight:500; border:1px solid var(--border2); border-radius:var(--r); cursor:pointer; }
@@ -7171,7 +7180,7 @@ px}
         </div>
         <div class="mrow2">
           <div class="mfield"><label>Fabrika *</label><select id="kaza-m-fab" onchange="kazaBolumDatalist()"></select></div>
-          <div class="mfield"><label>Bölüm / Birim</label><input id="kaza-m-bolum" list="kaza-bolum-list" autocomplete="off" placeholder="Listeden seçin veya yazın"/><datalist id="kaza-bolum-list"></datalist></div>
+          <div class="mfield kz-cb"><label>Bölüm / Birim</label><div class="kz-cb-in"><input id="kaza-m-bolum" autocomplete="off" placeholder="Listeden seçin veya yazın" onfocus="kzCbAc(true)" oninput="kzCbAc(true)"/><button type="button" class="kz-cb-ar" id="kaza-bolum-ar" aria-label="Listeyi aç" onclick="kzCbAc(document.getElementById('kaza-bolum-pn').hidden,true)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></div><div class="kz-cb-pn" id="kaza-bolum-pn" hidden></div></div>
         </div>
         <div class="mrow2">
           <div class="mfield"><label>Kazazede <span>(zorunlu değil)</span></label><input id="kaza-m-kisi" placeholder="Baş harf yeterli — örn: A.Y."/></div>
@@ -16459,11 +16468,18 @@ function kazaBolumListesi(fab) {
   }));
   return out;
 }
-function kazaBolumDatalist() {
-  const dl = document.getElementById('kaza-bolum-list'); if (!dl) return;
-  const fab = document.getElementById('kaza-m-fab')?.value || '';
-  dl.innerHTML = kazaBolumListesi(fab).map(b => `<option value="${esc(b)}"></option>`).join('');
+function kazaBolumDatalist() { kzCbAc(false); }
+// Bölüm / Birim: temaya uygun açılır liste (yazarak filtreler, listede olmayan ad da yazılabilir)
+function kzCbAc(ac, tumu) {
+  const pn = document.getElementById('kaza-bolum-pn'), inp = document.getElementById('kaza-m-bolum'); if (!pn || !inp) return;
+  pn.hidden = !ac; const ar = document.getElementById('kaza-bolum-ar'); if (ar) ar.classList.toggle('up', !!ac);
+  if (!ac) return;
+  const fab = document.getElementById('kaza-m-fab')?.value || '', q = tumu ? '' : kzNorm(inp.value || ''), tum = kazaBolumListesi(fab);
+  const L = tum.filter(b => !q || kzNorm(b).includes(q)), cur = kzNorm(inp.value || '');
+  pn.innerHTML = L.length ? L.map(b => `<button type="button" class="kz-cb-it${kzNorm(b) === cur ? ' on' : ''}" data-v="${esc(b)}" onmousedown="event.preventDefault()" onclick="kzCbSec(this.dataset.v)"><span>${esc(b)}</span>${kzNorm(b) === cur ? '<b>✓</b>' : ''}</button>`).join('') : `<div class="kz-cb-bos">${tum.length ? 'Listede yok · yazdığın ad olduğu gibi kaydedilir' : 'Bu fabrika için tanımlı bölüm yok · yazarak ekleyebilirsin'}</div>`;
 }
+function kzCbSec(v) { const i = document.getElementById('kaza-m-bolum'); i.value = v; i.dispatchEvent(new Event('input', { bubbles: true })); kzCbAc(false); i.blur(); }
+document.addEventListener('pointerdown', e => { const pn = document.getElementById('kaza-bolum-pn'); if (pn && !pn.hidden && !(e.target.closest && e.target.closest('.kz-cb'))) kzCbAc(false); });
 let ksKAcik = {};      // açık kartlar (varsayılan hepsi kapalı)
 let ksKPg = {};        // açık Pareto alanları
 function ksKReset() {
