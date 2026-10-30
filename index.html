@@ -26040,14 +26040,16 @@ function bmEskiOnizle(L) {
     let c = it;
     if (b.alt) { if (b.alt.t === 'var') c = (it.altlar || []).find(x => x.id === b.alt.id) || null; else c = null; }
     if (!c) return;
-    const t = bmBolumTarih(b), o = kap.get(c) || { c, min: '', yok: false };
-    if (!t) o.yok = true; else if (!o.min || t < o.min) o.min = t;
+    const t = bmBolumTarih(b), o = kap.get(c) || { c, min: '', yok: false, kay: new Set(), tar: new Set() };
+    if (!t) o.yok = true; else { if (!o.min || t < o.min) o.min = t; o.tar.add(t); }
+    const dk = BM.dosyalar[b.di]; if (dk) o.kay.add(dk.ad);
     kap.set(c, o);
   });
   const liste = []; let n = 0;
   kap.forEach(o => {
     if (o.yok || !o.min) return;
-    const docs = (o.c.belgeler || []).filter(x => !x.tarih || x.tarih < o.min);
+    // Daha eski tarihliler + aynı dosyanın aynı tarihli eski kopyası (belge yeniden yüklendiğinde)
+    const docs = (o.c.belgeler || []).filter(x => !x.tarih || x.tarih < o.min || (x.kaynak && o.kay.has(x.kaynak) && o.tar.has(x.tarih)));
     if (docs.length) { liste.push({ c: o.c, docs }); n += docs.length; }
   });
   return { n, liste };
@@ -26060,7 +26062,7 @@ function bmEkrOnay() {
   ${L.map(b => { const k = bmKat(b.kat); const alt = bmAltAd(b); return `<div class="kv"><span>${esc((k.kisa || k.ad).replace(' Takibi', '').replace(' Kontrolü', ''))}${alt ? ' › ' + esc(alt) : ''}</span><b>${bmFmt(bmBolumTarih(b))}</b></div>`; }).join('')}</div>
   ${atla ? `<div class="warn">${bos} sayfa (${atla} belge) için kategori seçilmedi, kayda işlenmeyecek.</div>` : ''}
   <div class="eff">Her belge ilgili satıra eklenir, tarihler kayıt tipine göre güncellenir. Sonuç alanına dokunulmaz.</div>
-  <label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.eskiSil ? 'checked' : ''} onchange="BM.eskiSil=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">Aynı satırdaki eski belgeleri sil</b><small style="color:var(--text2);font-size:11.5px">${BM.eskiSil ? (bmEskiOnizle(L).n ? bmEskiOnizle(L).n + ' eski belge kalıcı silinecek' : 'Silinecek eski belge yok') : 'Yeni belgeden önceki tarihli PDF\'ler silinir'}</small></span></label>
+  <label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.eskiSil ? 'checked' : ''} onchange="BM.eskiSil=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">Aynı satırdaki eski belgeleri sil</b><small style="color:var(--text2);font-size:11.5px">${BM.eskiSil ? (bmEskiOnizle(L).n ? bmEskiOnizle(L).n + ' eski belge kalıcı silinecek' : 'Silinecek eski belge yok') : 'Yeni belgeden önceki tarihli PDF\'ler ve aynı dosyanın eski kopyası silinir'}</small></span></label>
   ${bmBirlesAday(L).length ? `<label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.birles ? 'checked' : ''} onchange="BM.birles=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">Aynı ekipmanın belgelerini tek PDF’te birleştir</b><small style="color:var(--text2);font-size:11.5px">${bmBirlesAday(L).map(g => esc(bmKat(g[0].kat).kisa || bmKat(g[0].kat).ad) + ' · ' + g.length + ' belge').slice(0, 3).join(' | ')}${bmBirlesAday(L).length > 3 ? ' …' : ''}</small></span></label>` : ''}
   ${sb ? `<div class="card"><div class="kv"><span>Dosya boyutu (tahmini)</span><b>${bmMB(sb.once)} → ${bmMB(sb.sonra)} MB</b></div></div>` : ''}</div>` + bmBtn(['Geri', "bmGeri('onay')"], 'bmOnayAc()', 'Kayda işle', !L.length);
 }
@@ -26120,6 +26122,7 @@ async function bmIsle() {
   const GR = bmGruplar(L, BM.birles);
   if (!window._fbBelge || navigator.onLine === false) { toast('Belgeler buluta kaydedilir, internet bağlantısı gerekir'); return; }
   const silPlan = BM.eskiSil ? bmEskiOnizle(L) : null, silKimlik = silPlan ? silPlan.liste.map(o => ({ c: o.c, ids: o.docs.map(x => x.id) })) : [];
+  BM.silIds = new Set(silKimlik.reduce((a, o) => a.concat(o.ids), []));
   BM.calisiyor = true; BM.durdur = false; BM.isle = { n: GR.length, i: 0, ad: '', adim: '' };
   const sv = BM.ornek ? BM.sik : '';
   BM.ekr = 'ilerle'; bmCiz();
@@ -26144,7 +26147,7 @@ async function bmIsle() {
   } catch (e) { if (e.message !== 'durdu') { console.error(e); hata = e.message || 'Bilinmeyen hata'; } else hata = 'İşlem durduruldu'; }
   let silN = 0;
   if (!hata) { for (const o of silKimlik) { for (const id of o.ids) { try { await bmBlobSil(id); silN++; } catch (e) { console.error(e); } } o.c.belgeler = (o.c.belgeler || []).filter(x => !o.ids.includes(x.id)); } if (silN) kontrolSave(); }
-  BM.eskiSil = false; BM.birles = false;
+  BM.eskiSil = false; BM.birles = false; BM.silIds = null;
   await bmOcrKapat();
   try { localStorage.setItem('bm_ogren_v1', JSON.stringify(window.bmOgren)); if (window._fbSaveKontrol) window._fbSaveKontrol(); } catch (e) {}
   kontrolGrupSadeceAc(grupAcik); kontrolRender(); if (typeof dashRender === 'function') dashRender();
@@ -26175,7 +26178,7 @@ function bmKayda(b, k, doc) {
     else hedef = it.altlar.find(x => x.id === b.alt.id) || it;
   }
   if (!Array.isArray(hedef.belgeler)) hedef.belgeler = [];
-  doc.ad = bmAdBenzersiz(hedef.belgeler, doc.ad);
+  doc.ad = bmAdBenzersiz(hedef.belgeler.filter(x => !(BM.silIds && BM.silIds.has(x.id))), doc.ad);
   hedef.belgeler.push(doc);
   if (hedef !== it) {
     if (b.duz && (!hedef.lastDate || b.duz >= hedef.lastDate)) hedef.lastDate = b.duz;
