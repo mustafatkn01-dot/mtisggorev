@@ -25497,17 +25497,34 @@ async function bmPdfJs() {
   return window.pdfjsLib;
 }
 async function bmPdfLib() { await bmJs(BM_LIB.pdflib, () => !!window.PDFLib); return window.PDFLib; }
-let bmWorker = null;
-async function bmOcr(canvas) {
-  if (!bmWorker) {
-    await bmJs(BM_LIB.tess, () => !!window.Tesseract);
-    try { bmWorker = await window.Tesseract.createWorker('tur'); }
-    catch (e) { bmWorker = await window.Tesseract.createWorker('eng'); }
-  }
-  const r = await bmWorker.recognize(canvas);
-  return (r && r.data && r.data.text) || '';
+// OCR havuzu: birden fazla çalışan aynı anda farklı sayfaları okur (kalite aynı, süre kısalır)
+let bmHavuz = [], bmBosta = [], bmBekle = [], bmOlusan = 0;
+function bmOcrSayi() {
+  const mobil = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent || ''), c = navigator.hardwareConcurrency || 4;
+  return Math.max(1, Math.min(mobil ? 2 : 4, Math.floor(c / 2)));
 }
-async function bmOcrKapat() { if (bmWorker) { try { await bmWorker.terminate(); } catch (e) {} bmWorker = null; } }
+async function bmOcrCalisan() {
+  if (bmBosta.length) return bmBosta.pop();
+  if (bmOlusan < bmOcrSayi()) {
+    bmOlusan++;
+    try {
+      await bmJs(BM_LIB.tess, () => !!window.Tesseract);
+      let w; try { w = await window.Tesseract.createWorker('tur'); } catch (e) { w = await window.Tesseract.createWorker('eng'); }
+      bmHavuz.push(w); return w;
+    } catch (e) { bmOlusan--; throw e; }
+  }
+  return new Promise(r => bmBekle.push(r));
+}
+function bmOcrBirak(w) { const r = bmBekle.shift(); if (r) r(w); else bmBosta.push(w); }
+async function bmOcr(canvas) {
+  const w = await bmOcrCalisan();
+  try { const r = await w.recognize(canvas); return (r && r.data && r.data.text) || ''; }
+  finally { bmOcrBirak(w); }
+}
+async function bmOcrKapat() {
+  const L = bmHavuz; bmHavuz = []; bmBosta = []; bmBekle = []; bmOlusan = 0;
+  await Promise.all(L.map(w => w.terminate().catch(() => {})));
+}
 
 /* ===== PDF okuma ===== */
 async function bmMetin(page) {
@@ -25549,21 +25566,25 @@ async function bmDosyaAc(file) {
 }
 // Tüm sayfaları oku: metin (taranmışsa OCR), küçük görüntü
 async function bmDosyaOku(d, ilerle) {
-  d.sayfalar = [];
-  for (let i = 0; i < d.n; i++) {
-    if (BM.durdur) throw new Error('durdu');
-    ilerle(i, 'hazirla');
-    const page = await d.doc.getPage(i + 1), v = page.getViewport({ scale: 1 });
-    let metin = await bmMetin(page), tar = false;
-    if (metin.replace(/\s/g, '').length < 25) {
-      tar = true; ilerle(i, 'ocr');
+  d.sayfalar = new Array(d.n);
+  const N = bmOcrSayi(), bek = new Set(); let bitti = 0;
+  try {
+    for (let i = 0; i < d.n; i++) {
+      if (BM.durdur) throw new Error('durdu');
+      ilerle(bitti, 'hazirla');
+      const page = await d.doc.getPage(i + 1), v = page.getViewport({ scale: 1 });
+      const metin = await bmMetin(page), th = await bmKucuk(page, 116);
+      if (metin.replace(/\s/g, '').length >= 25) { d.sayfalar[i] = { metin, taranmis: false, w: v.width, h: v.height, th }; bitti++; continue; }
+      const sy = d.sayfalar[i] = { metin: '', taranmis: true, w: v.width, h: v.height, th };
+      ilerle(bitti, 'ocr');
       const c = await bmCanvas(page, 200);
-      try { metin = await bmOcr(c); } catch (e) { console.error('OCR', e); metin = ''; if (!BM.ocrHata) { BM.ocrHata = String(e && e.message || e); } }
-      c.width = c.height = 1;
+      const pr = bmOcr(c).then(t => { sy.metin = t; }).catch(e => { console.error('OCR', e); if (!BM.ocrHata) BM.ocrHata = String(e && e.message || e); })
+        .finally(() => { c.width = c.height = 1; bek.delete(pr); bitti++; ilerle(bitti, 'ocr'); });
+      bek.add(pr);
+      if (bek.size >= N) await Promise.race(bek);
     }
-    const th = await bmKucuk(page, 116);
-    d.sayfalar.push({ metin, taranmis: tar, w: v.width, h: v.height, th });
-  }
+    while (bek.size) { if (BM.durdur) throw new Error('durdu'); await Promise.race(bek); }
+  } finally { await Promise.allSettled(Array.from(bek)); }
 }
 
 /* ===== Bölüm için PDF üret (metinli: dokunulmaz, taranmış: sıkıştır) ===== */
