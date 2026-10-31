@@ -850,6 +850,9 @@ html, body { height: 100%; overflow: hidden;
 .bgs-ph3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .bgs-ph3 div{aspect-ratio:1/1;border-radius:10px;overflow:hidden}
 .bgs-ph3 div.al{outline:2px solid var(--warn);outline-offset:-2px}
+.bgs-ph3 div,.bg-foto{cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.bgf-lift{transform:scale(1.06);box-shadow:0 8px 20px rgba(0,0,0,.35);z-index:5;position:relative;transition:none!important}
+.bgf-hedef{outline:3px dashed var(--acc)!important;outline-offset:-3px}
 .bgs-ph3 img{width:100%;height:100%;object-fit:cover;display:block}
 .bgs-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11.5px;font-weight:600}
 .bgs-tag{border-radius:99px;padding:2px 10px;background:var(--surface2);color:var(--text2)}
@@ -18839,6 +18842,7 @@ function denetimRender() {
     const kapaliMi = dnKapali[d.id];
 
     const satirlar = bl.map((b, i) => {
+      bgfNorm(b);
       const onem = BG_ONEM[b.onem] || BG_ONEM.orta;
       const tur  = BG_TURLER[b.tur] || BG_TURLER.uygunsuzluk;
       const gecikmis = b.durum !== 'kapali' && b.termin && new Date(b.termin+'T00:00:00') < bugun;
@@ -18854,7 +18858,7 @@ function denetimRender() {
       const thumb = fl.length
         ? `<span class="bgs-th"><img src="${fl[alfaI]}" alt=""><span class="bgs-n">${fl.length}</span></span>`
         : `<span class="bgs-th no" title="Fotoğraf yok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.2"/></svg></span>`;
-      const fotolar = fl.length ? `<div class="bgs-ph3">${fl.map((f, k) => `<div class="${k===alfaI?'al':''}"><img src="${f}" alt=""></div>`).join('')}</div>` : '';
+      const fotolar = fl.length ? `<div class="bgs-ph3" data-bg="${b.id}">${fl.map((f, k) => `<div data-i="${k}" class="${k===0?'al':''}"><img src="${f}" alt="" draggable="false"></div>`).join('')}</div>` : '';
       const eylem = dnBSilId === b.id
         ? `<div class="bgs-act bgs-onay"><span>Bu bulgu silinsin mi?</span><span class="bgs-sp"></span><button class="bgs-btn" onclick="bulguSilIptal()">Vazgeç</button><button class="bgs-btn sil" onclick="bulguSilOnayli('${b.id}')">Sil</button></div>`
         : `<div class="bgs-act"><button class="bgs-ib" onclick="bulguOpen('${b.id}')" title="Düzenle" aria-label="Düzenle">✏️</button>
@@ -19057,8 +19061,9 @@ function bulguOpen(editId, denetimId) {
   document.getElementById('bg-m-onem').value    = b ? (b.onem||'orta') : 'orta';
   document.getElementById('bg-m-durum').value   = b ? (b.durum||'acik') : 'acik';
   bulguBolumDoldur(b ? (b.bolum||'') : '');
+  if (b) bgfNorm(b);
   bgFotolar = b && Array.isArray(b.fotolar) ? b.fotolar.slice(0, BG_FOTO_MAX) : [];
-  bgAlfa = b && Number.isInteger(b.alfa) && b.alfa >= 0 && b.alfa < bgFotolar.length ? b.alfa : 0;
+  bgAlfa = 0; // ilk fotoğraf kapaktır
   bulguFotoCiz();
   document.getElementById('bg-m-sorumlu').value = b ? (b.sorumlu||'') : '';
   document.getElementById('bg-m-termin').value  = b ? (b.termin||'') : '';
@@ -19113,13 +19118,12 @@ async function bulguFotoEkle(input) {
 function bulguFotoCiz() {
   const k = document.getElementById('bg-foto-liste'); if (!k) return;
   k.innerHTML = bgFotolar.map((s, i) => `
-    <div class="bg-foto${i === bgAlfa ? ' alfa' : ''}">
-      <img src="${s}" alt="Kanıt ${i + 1}">
-      <button type="button" class="bg-foto-yildiz" title="Alfa fotoğraf yap" onclick="bulguFotoAlfa(${i})">★</button>
+    <div class="bg-foto${i === 0 ? ' alfa' : ''}" data-i="${i}">
+      <img src="${s}" alt="Kanıt ${i + 1}" draggable="false">
+      ${i === 0 ? '<span class="bg-foto-etiket">Kapak</span>' : ''}
       <button type="button" class="bg-foto-sil" title="Fotoğrafı kaldır" onclick="bulguFotoSil(${i})">×</button>
     </div>`).join('');
 }
-function bulguFotoAlfa(i) { bgAlfa = i; bulguFotoCiz(); }
 function bulguFotoSil(i) {
   isgOnay({ baslik:'Fotoğraf kaldırılsın mı?', mesaj:'Bu fotoğraf bulgudan kaldırılacak. Kaydetmeden çıkarsanız eski hali korunur.', evet:'Kaldır' }, () => {
     bgFotolar.splice(i, 1);
@@ -19183,7 +19187,7 @@ function bulguSubmit() {
     sorumlu: document.getElementById('bg-m-sorumlu').value.trim(),
     termin:  document.getElementById('bg-m-termin').value,
     fotolar: bgFotolar.slice(),
-    alfa:    bgFotolar.length ? bgAlfa : 0,
+    alfa:    0,
     hseIliski: document.getElementById('bg-m-hse-iliski')?.value || '',
     hseKritik: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-kritik')?.value || 'Orta') : '',
     hseTedbir: document.getElementById('bg-m-hse-iliski')?.value ? (document.getElementById('bg-m-hse-tedbir')?.value || '') : '',
@@ -21345,6 +21349,21 @@ window.addEventListener('resize', calMobInit);
 #bm-sh .onay .op span{flex:1;min-width:0}
 #bm-sh .onay input.q{min-height:40px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:0 12px;font:inherit;font-size:13px;outline:none}
 /* Görüntüleyici */
+#bgf-vw{position:fixed;inset:0;z-index:3500;background:#080b10;display:none;flex-direction:column;touch-action:none}
+#bgf-vw.on{display:flex}
+#bgf-vw .bgf-t{display:flex;align-items:center;gap:8px;padding:max(10px,env(safe-area-inset-top,0px)) 12px 10px;color:#fff;flex:none}
+#bgf-vw .bgf-tt{flex:1;min-width:0;line-height:1.25}#bgf-vw .bgf-tt b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#bgf-vw .bgf-tt small{color:#9fb0c3;font-size:11.5px}
+#bgf-vw .bgf-ib{width:42px;height:42px;min-width:42px;min-height:42px;border-radius:50%;border:0;background:#1f2935;color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;flex:none}
+#bgf-vw .bgf-ib svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#bgf-vw .bgf-ib.sil{color:#ff7b7b;background:color-mix(in srgb,#d14b4b 22%,#1f2935)}
+#bgf-vw .bgf-s{flex:1;min-height:0;position:relative;overflow:hidden;display:grid;place-items:center}
+#bgf-vw .bgf-s img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .12s;user-select:none;-webkit-user-drag:none;cursor:zoom-in}
+#bgf-vw .bgf-nv{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;min-width:44px;min-height:44px;border-radius:50%;border:0;background:rgba(20,28,38,.7);color:#fff;font-size:22px;cursor:pointer;padding:0}
+#bgf-vw .bgf-nv.l{left:10px}#bgf-vw .bgf-nv.r{right:10px}#bgf-vw .bgf-nv:disabled{display:none}
+#bgf-vw .bgf-f{flex:none;display:flex;align-items:center;justify-content:center;gap:10px;color:#9fb0c3;font-size:12px;padding:10px 12px max(14px,env(safe-area-inset-bottom,0px))}
+#bgf-vw .bgf-dt{display:flex;gap:6px}#bgf-vw .bgf-dt i{width:7px;height:7px;border-radius:50%;background:#3a4756}#bgf-vw .bgf-dt i.on{background:#fff}
+#bgf-vw .bgf-zb{border:0;background:#1f2935;color:#fff;border-radius:99px;height:34px;min-height:34px;padding:0 14px;font:700 12px/1 inherit;cursor:pointer}
+#bgf-vw .bgf-kapak{font-size:10.5px;font-weight:800;background:var(--warn);color:#2a1d00;border-radius:99px;padding:3px 8px}
 #bm-vw{position:fixed;inset:0;z-index:3100;background:#0b0f14;display:none;flex-direction:column}
 #bm-vw.on{display:flex}
 #bm-vw .h{display:flex;align-items:center;gap:10px;padding:10px 12px;color:#fff}
@@ -25185,6 +25204,126 @@ async function afYukle() {
   } catch (e) { console.error(e); AF.ilerle = { baslik: e.message === 'durdu' ? 'Durduruldu' : 'Yüklenemedi', alt: ad, satirlar: [], not: e.message === 'durdu' ? 'Yükleme yarıda kaldı; Arşivlenmiş listesini kontrol et.' : 'Hata: ' + (e.message || e) }; }
   AF.yuk = null; afS = 'bitti'; afBusy = false; afCiz();
 }
+</script>
+<script id="bgf-js">
+/* ===== Bulgu fotoğrafları: görüntüleyici (indir, paylaş, sil), basılı tutup sıralama; ilk fotoğraf kapaktır ===== */
+function bgfNorm(b) {
+  if (!b || !Array.isArray(b.fotolar)) return;
+  const a = b.alfa;
+  if (Number.isInteger(a) && a > 0 && a < b.fotolar.length) b.fotolar.unshift(b.fotolar.splice(a, 1)[0]);
+  b.alfa = 0;
+}
+const BGF = { src: null, i: 0, z: 1, son: 0 };
+function bgfKaynak(kap) {
+  if (kap.classList.contains('bgs-ph3')) {
+    const b = bulgular.find(x => x.id === kap.dataset.bg); if (!b) return null;
+    return { dizi: () => b.fotolar, baslik: b.metin, degisti: () => { b.alfa = 0; denetimSave(); denetimRender(); } };
+  }
+  return { dizi: () => bgFotolar, baslik: (document.getElementById('bg-m-metin') || {}).value || 'Bulgu fotoğrafları', degisti: () => bulguFotoCiz() };
+}
+const bgfIc = {
+  x: '<path d="M6 6l12 12M18 6L6 18"/>', in: '<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',
+  pa: '<circle cx="6" cy="12" r="2.4"/><circle cx="17.5" cy="6" r="2.4"/><circle cx="17.5" cy="18" r="2.4"/><path d="M8.2 10.9l7.1-3.7M8.2 13.1l7.1 3.7"/>',
+  si: '<path d="M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>'
+};
+function bgfHtml() {
+  if (document.getElementById('bgf-vw')) return;
+  const ib = (id, k, t, c) => `<button type="button" class="bgf-ib ${c || ''}" id="${id}" aria-label="${t}" title="${t}"><svg viewBox="0 0 24 24">${bgfIc[k]}</svg></button>`;
+  const d = document.createElement('div'); d.id = 'bgf-vw';
+  d.innerHTML = `<div class="bgf-t">${ib('bgf-x', 'x', 'Kapat')}<div class="bgf-tt"><b id="bgf-b1"></b><small id="bgf-b2"></small></div>${ib('bgf-in', 'in', 'İndir')}${ib('bgf-pa', 'pa', 'Paylaş')}${ib('bgf-si', 'si', 'Sil', 'sil')}</div>
+  <div class="bgf-s" id="bgf-s"><button type="button" class="bgf-nv l" id="bgf-l">‹</button><img id="bgf-im" alt=""><button type="button" class="bgf-nv r" id="bgf-r">›</button></div>
+  <div class="bgf-f"><button type="button" class="bgf-zb" id="bgf-zm">−</button><div class="bgf-dt" id="bgf-dt"></div><span id="bgf-kp"></span><button type="button" class="bgf-zb" id="bgf-zp">+</button></div>`;
+  document.body.appendChild(d);
+  const $ = i => document.getElementById(i);
+  $('bgf-x').onclick = bgfKapat;
+  $('bgf-l').onclick = () => bgfGit(-1); $('bgf-r').onclick = () => bgfGit(1);
+  $('bgf-zp').onclick = () => bgfZoom(BGF.z + .5); $('bgf-zm').onclick = () => bgfZoom(BGF.z - .5);
+  $('bgf-im').ondblclick = () => bgfZoom(BGF.z > 1 ? 1 : 2.5);
+  $('bgf-s').addEventListener('wheel', e => { e.preventDefault(); bgfZoom(BGF.z + (e.deltaY < 0 ? .25 : -.25)); }, { passive: false });
+  let sx = null;
+  $('bgf-s').addEventListener('touchstart', e => { sx = e.touches.length === 1 && BGF.z === 1 ? e.touches[0].clientX : null; }, { passive: true });
+  $('bgf-s').addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (dx < -60) bgfGit(1); else if (dx > 60) bgfGit(-1); });
+  $('bgf-in').onclick = () => bgfIndir(false); $('bgf-pa').onclick = () => bgfPaylas();
+  $('bgf-si').onclick = bgfSil;
+  document.addEventListener('keydown', e => {
+    if (!BGF.src || document.getElementById('isg-onay-bg')) return;
+    if (e.key === 'ArrowRight') bgfGit(1); else if (e.key === 'ArrowLeft') bgfGit(-1); else if (e.key === '+' || e.key === '=') bgfZoom(BGF.z + .5); else if (e.key === '-') bgfZoom(BGF.z - .5); else if (e.key === 'Escape') bgfKapat();
+  });
+}
+function bgfAc(src, i) { bgfHtml(); BGF.src = src; BGF.i = i; document.getElementById('bgf-vw').classList.add('on'); document.body.style.overflow = 'hidden'; bgfCiz(); }
+function bgfKapat() { const v = document.getElementById('bgf-vw'); if (v) v.classList.remove('on'); BGF.src = null; document.body.style.overflow = ''; }
+function bgfCiz() {
+  const D = BGF.src.dizi(), $ = i => document.getElementById(i);
+  if (!D.length) { bgfKapat(); return; }
+  if (BGF.i >= D.length) BGF.i = D.length - 1;
+  BGF.z = 1; const im = $('bgf-im'); im.src = D[BGF.i]; im.style.transform = '';
+  $('bgf-b1').textContent = BGF.src.baslik || 'Bulgu fotoğrafları'; $('bgf-b2').textContent = 'Fotoğraf ' + (BGF.i + 1) + ' / ' + D.length;
+  $('bgf-l').disabled = BGF.i === 0; $('bgf-r').disabled = BGF.i === D.length - 1;
+  $('bgf-dt').innerHTML = D.map((_, k) => `<i class="${k === BGF.i ? 'on' : ''}"></i>`).join('');
+  $('bgf-kp').innerHTML = BGF.i === 0 ? '<span class="bgf-kapak">Kapak</span>' : '';
+}
+function bgfGit(d) { const n = BGF.i + d; if (BGF.src && n >= 0 && n < BGF.src.dizi().length) { BGF.i = n; bgfCiz(); } }
+function bgfZoom(v) { BGF.z = Math.max(1, Math.min(4, v)); const im = document.getElementById('bgf-im'); im.style.transform = 'scale(' + BGF.z + ')'; im.style.cursor = BGF.z > 1 ? 'zoom-out' : 'zoom-in'; }
+function bgfDosya() {
+  const u = BGF.src.dizi()[BGF.i], m = /^data:([^;,]+)(;base64)?,(.*)$/.exec(u || ''); if (!m) return null;
+  const bin = atob(decodeURIComponent(m[3])), a = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) a[k] = bin.charCodeAt(k);
+  const ext = (m[1].split('/')[1] || 'jpg').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '');
+  const ad = String(BGF.src.baslik || 'bulgu').toLocaleLowerCase('tr').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ç/g, 'c').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'bulgu';
+  return new File([a], ad + '-foto-' + (BGF.i + 1) + '.' + ext, { type: m[1] });
+}
+function bgfIndir(sessiz) {
+  const f = bgfDosya(); if (!f) return;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  if (!sessiz) toast('Fotoğraf indirildi');
+}
+async function bgfPaylas() {
+  const f = bgfDosya(); if (!f) return;
+  try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f] }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  bgfIndir(true); toast('Paylaşım bu cihazda desteklenmiyor, fotoğraf indirildi');
+}
+function bgfSil() {
+  const S = BGF.src, i = BGF.i; if (!S) return;
+  isgOnay({ baslik: 'Fotoğraf silinsin mi?', mesaj: 'Bu fotoğraf bulgudan kaldırılacak.', evet: 'Sil' }, () => {
+    S.dizi().splice(i, 1); S.degisti();
+    if (!BGF.src) return; if (!S.dizi().length) bgfKapat(); else bgfCiz();
+    toast('Fotoğraf silindi');
+  });
+}
+/* Dokun = büyüt; basılı tut + sürükle = sırala (ilk sıradaki kapak olur) */
+(function () {
+  const SEC = '.bgs-ph3 [data-i], #bg-foto-liste .bg-foto[data-i]';
+  let P = null, tm = null;
+  document.addEventListener('touchmove', e => { if (P && P.lift) e.preventDefault(); }, { passive: false });
+  document.addEventListener('contextmenu', e => { if (e.target.closest(SEC)) e.preventDefault(); });
+  document.addEventListener('dragstart', e => { if (e.target.closest && e.target.closest(SEC)) e.preventDefault(); });
+  document.addEventListener('pointerdown', e => {
+    const t = e.target.closest && e.target.closest(SEC); if (!t || e.target.closest('button') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    P = { t, kap: t.parentNode, x: e.clientX, y: e.clientY, i: +t.dataset.i, mouse: e.pointerType === 'mouse', lift: false, hedef: null };
+    tm = setTimeout(() => { tm = null; if (P) { P.lift = true; BGF.son = Date.now(); P.t.classList.add('bgf-lift'); try { navigator.vibrate && navigator.vibrate(15); } catch (x) {} } }, 450);
+  });
+  document.addEventListener('pointermove', e => {
+    if (!P) return; const dx = e.clientX - P.x, dy = e.clientY - P.y;
+    if (!P.lift) { if (Math.hypot(dx, dy) > 8) { if (P.mouse) { clearTimeout(tm); tm = null; P.lift = true; BGF.son = Date.now(); P.t.classList.add('bgf-lift'); } else { clearTimeout(tm); tm = null; P = null; } } return; }
+    P.t.style.transform = `translate(${dx}px,${dy}px) scale(1.06)`;
+    let en = null, ed = 1e9;
+    Array.from(P.kap.children).forEach(c => { if (c === P.t) return; const r = c.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (d < ed) { ed = d; en = c; } c.classList.remove('bgf-hedef'); });
+    P.hedef = en && ed < 90 ? en : null; if (P.hedef) P.hedef.classList.add('bgf-hedef');
+  });
+  const bitir = () => {
+    clearTimeout(tm); tm = null; const p = P; P = null; if (!p || !p.lift) return;
+    BGF.son = Date.now(); p.t.classList.remove('bgf-lift'); p.t.style.transform = ''; Array.from(p.kap.children).forEach(c => c.classList.remove('bgf-hedef'));
+    if (!p.hedef) return;
+    const S = bgfKaynak(p.kap); if (!S) return; const D = S.dizi(), to = +p.hedef.dataset.i;
+    if (to === p.i || !D) return;
+    D.splice(to, 0, D.splice(p.i, 1)[0]); S.degisti(); toast(to === 0 ? 'Fotoğraf kapak yapıldı' : 'Sıra değişti');
+  };
+  document.addEventListener('pointerup', bitir); document.addEventListener('pointercancel', bitir);
+  document.addEventListener('click', e => {
+    const t = e.target.closest && e.target.closest(SEC); if (!t || e.target.closest('button') || Date.now() - BGF.son < 700) return;
+    const S = bgfKaynak(t.parentNode); if (S) bgfAc(S, +t.dataset.i);
+  });
+})();
 </script>
 <script id="belge-js">
 /* ===== Belge motoru: okuma ve sınıflandırma ===== */
