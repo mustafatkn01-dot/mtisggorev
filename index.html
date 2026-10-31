@@ -13222,6 +13222,21 @@ function kontrolKartHtml(it) {
 
 // ── Ana render: 3 ana grup / akordeon ─────────────────────
 const BM_ESKI_AD = { 'atik-yag':['Atık Yağ Gönderim Takibi','Atık Yağ Beyanı / Teslim Takibi'], 'atik-tasima-kayit':['Atık Taşıma / Teslim Kayıt Takibi','Atık Taşıma / Teslim Formları Takibi'], 'desarj-baglanti':['Deşarj / Kanal Bağlantı Süreç Takibi','Atıksu Deşarj / Kanal Bağlantı İzni Takibi'] };
+// Her kategoride sabit sıra: hazır liste (katalog) sırası; listede olmayanlar ada göre sonda. Tarih sıralamayı değiştirmez.
+let kontrolSiraMap = null;
+function kontrolSiraPos(it) {
+  if (!kontrolSiraMap) {
+    kontrolSiraMap = {}; let n = 0;
+    KONTROL_CEVRE_KATALOG.forEach(k => k.items.forEach(i => { kontrolSiraMap['c:' + i[0]] = n++; }));
+    KONTROL_EKIPMAN_KATALOG.forEach(k => k.items.forEach(i => { kontrolSiraMap['m:' + i[0]] = n++; }));
+  }
+  const g = kontrolGrupId(it), k = g === 'cevre' ? it.environmentKey : g === 'makine' ? it.equipmentKey : '';
+  const v = k ? kontrolSiraMap[(g === 'cevre' ? 'c:' : 'm:') + k] : undefined;
+  return v === undefined ? 1e6 : v;
+}
+function kontrolSabitSira(a, b) {
+  return kontrolSiraPos(a) - kontrolSiraPos(b) || (a.name || '').localeCompare(b.name || '', 'tr') || String(a.ekipAlt || '').localeCompare(String(b.ekipAlt || ''), 'tr');
+}
 function kontrolRender() {
   const body = document.getElementById('kontrol-body');
   if (!body) return;
@@ -13243,12 +13258,7 @@ function kontrolRender() {
     const nextDate = kontrolSonraki(it);
     const daysLeft = kontrolDaysLeft(nextDate);
     return { ...it, lastDate:kontrolSonSonTarih(it), nextDate, daysLeft, grup:kontrolGrupId(it) };
-  }).sort((a,b) => {
-    if (a.daysLeft === null && b.daysLeft === null) return (a.name||'').localeCompare(b.name||'','tr');
-    if (a.daysLeft === null) return 1;
-    if (b.daysLeft === null) return -1;
-    return a.daysLeft - b.daysLeft;
-  });
+  }).sort(kontrolSabitSira);
 
   const aq = typeof kontrolAraQ === 'function' ? kontrolAraQ() : '', gor = aq ? items.filter(it => kontrolAraEsles(it, aq)) : items;
   if (aq) { kontrolSatirAcik.clear(); gor.filter(it => bmTumBelgeler(it).some(d => kontrolAraDoc(d, aq))).slice(0, 8).forEach(it => { kontrolSatirAcik.add(it.id); if (it.ekipAlt && typeof ekipAnahtar === 'function') kontrolSatirAcik.add('ekp:' + ekipAnahtar(it)); }); }
