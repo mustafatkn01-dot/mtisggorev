@@ -25521,16 +25521,54 @@ async function bmOcrCalisan() {
     bmOlusan++;
     try {
       await bmJs(BM_LIB.tess, () => !!window.Tesseract);
-      let w; try { w = await window.Tesseract.createWorker('tur'); } catch (e) { w = await window.Tesseract.createWorker('eng'); }
+      let w;
+      // En doğru Türkçe model (tessdata_best); olmazsa varsayılan 'tur', o da olmazsa 'eng'
+      try { w = await window.Tesseract.createWorker('tur', 1, { langPath: 'https://tessdata.projectnaptha.com/4.0.0_best' }); }
+      catch (e) { try { w = await window.Tesseract.createWorker('tur'); } catch (e2) { w = await window.Tesseract.createWorker('eng'); } }
+      try { await w.setParameters({ preserve_interword_spaces: '1', user_defined_dpi: '200', tessedit_pageseg_mode: '3' }); } catch (e) {}
       bmHavuz.push(w); return w;
     } catch (e) { bmOlusan--; throw e; }
   }
   return new Promise(r => bmBekle.push(r));
 }
 function bmOcrBirak(w) { const r = bmBekle.shift(); if (r) r(w); else bmBosta.push(w); }
+// OCR öncesi görüntü iyileştirme: gri tonlama + kontrast germe (kenar yüzdeliklerine göre); nokta/aksan (İ, Ş, Ç, Ğ) daha net okunur
+function bmOcrOnIsle(c) {
+  try {
+    const ctx = c.getContext('2d'), im = ctx.getImageData(0, 0, c.width, c.height), d = im.data, h = new Uint32Array(256);
+    for (let i = 0; i < d.length; i += 4) { const g = (d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8; d[i] = g; h[g]++; }
+    const T = d.length / 4; let lo = 0, hi = 255, a = 0;
+    for (; lo < 255; lo++) { a += h[lo]; if (a > T * 0.01) break; }
+    a = 0; for (; hi > 0; hi--) { a += h[hi]; if (a > T * 0.30) break; }
+    if (hi - lo < 40) return c;
+    const k = 255 / (hi - lo);
+    for (let i = 0; i < d.length; i += 4) { let g = (d[i] - lo) * k; g = g < 0 ? 0 : g > 255 ? 255 : g; d[i] = d[i + 1] = d[i + 2] = g; }
+    ctx.putImageData(im, 0, 0);
+  } catch (e) {}
+  return c;
+}
+// OCR çıktısındaki Türkçe karakter kayıplarını bilinen sözcüklerle onar (yalnızca harf-harf eşleşen sözcükler; tahmin yok)
+let bmTrSoz = null;
+const BM_TR_EK = 'şube işletme işletmesi müdürlüğü müdürlük bakanlığı çevre şehircilik iklim değişikliği laboratuvarı laboratuvar analiz analizi raporu rapor sonuç sonuçları numune numunesi içme kullanma suyu su sayı tarih tarihi geçerlilik düzenleme onay muayene kontrol periyodik belge belgesi numarası firma unvan adı adres ölçüm ölçümü değerlendirme uygunluk uygundur uygun değildir yönetmeliği standardı akreditasyon akredite kuruluş denetim üretim şirketi sanayi ticaret anonim limited şirket ocak şubat mart nisan mayıs haziran temmuz ağustos eylül ekim kasım aralık mikrobiyolojik kimyasal fiziksel parametre birim limit değer yöntem ekipman cihaz kaldırma basınçlı kap kazan tesisat topraklama paratoner yangın tank gaz sıvılaştırılmış petrol atık yağ gürültü baca emisyon toz uçucu organik bileşik bildirimi beyan beyanı izin lisans kapasite sıfır görevlisi danışmanlık sözleşmesi tatbikat dökülme yönetim planı depolama alanı kapı çalışma güvenliği sağlık işyeri hekimi uzmanı sorumlu yetkili imza kaşe mühür sayfa toplam ölçülen sınır aşım hazırlayan onaylayan kalite müdürü teknik'.split(/\s+/);
+function bmTrSozluk() {
+  if (bmTrSoz) return bmTrSoz;
+  const m = new Map(), ekle = w => { w = String(w || '').toLocaleLowerCase('tr'); if (w.length < 3) return; const f = BME.fold(w); if (!m.has(f)) m.set(f, w); };
+  BM_TR_EK.forEach(ekle);
+  try { ['su', 'makine', 'cevre'].forEach(g => (bmKatListe(g) || []).forEach(k => [k.ad, k.kisa, k.not].forEach(t => String(t || '').split(/[^\p{L}]+/u).forEach(ekle)))); } catch (e) {}
+  return bmTrSoz = m;
+}
+function bmTrDuzelt(t) {
+  const S = bmTrSozluk();
+  return String(t || '').replace(/[\p{L}§|!]{3,}/gu, w => {
+    const dog = S.get(BME.fold(w)); if (!dog) return w;
+    if (w === w.toLocaleUpperCase('tr') && /\p{L}{2}/u.test(w)) return dog.toLocaleUpperCase('tr');
+    if (w.charAt(0) === w.charAt(0).toLocaleUpperCase('tr') && w.slice(1) === w.slice(1).toLocaleLowerCase('tr')) return dog.charAt(0).toLocaleUpperCase('tr') + dog.slice(1);
+    return /[çğıöşüâîû]/i.test(w) && w === dog ? w : (w === w.toLocaleLowerCase('tr') ? dog : w);
+  });
+}
 async function bmOcr(canvas) {
   const w = await bmOcrCalisan();
-  try { const r = await w.recognize(canvas); return (r && r.data && r.data.text) || ''; }
+  try { bmOcrOnIsle(canvas); const r = await w.recognize(canvas); return bmTrDuzelt((r && r.data && r.data.text) || ''); }
   finally { bmOcrBirak(w); }
 }
 async function bmOcrKapat() {
