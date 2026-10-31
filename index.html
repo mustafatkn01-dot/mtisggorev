@@ -10205,7 +10205,7 @@ const CAL_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
 let curMainTab = 'dash';
 function switchTab(tab) {
   curMainTab = tab;
-  if (tab !== 'denetim') { dnBAcik = {}; dnBSilId = null; }
+  if (tab !== 'denetim') { dnBAcik = {}; dnBSilId = null; dnAcikId = null; }
   if (tab !== 'kontrol' && typeof kontrolSatirAcik !== 'undefined') { kontrolSatirAcik.clear(); if (typeof kontrolGrupAcik !== 'undefined') Object.keys(kontrolGrupAcik).forEach(g => { kontrolGrupAcik[g] = false; }); }
   ['dash','board','cal','per','kontrol','denetim','kaza'].forEach(t => {
     const b  = document.getElementById('tab-'+t);
@@ -16512,8 +16512,8 @@ function ksKReset() {
   ksKAcik = {}; ksKPg = {};
   const b = document.getElementById('ks-kiyas-body'); if (b && typeof kazaStatsRender === 'function') kazaStatsRender();
 }
-function ksKToggle(k) { ksKAcik[k] = !ksKAcik[k]; kazaStatsRender(); }
-function ksKPareto(k) { ksKPg[k] = !ksKPg[k]; kazaStatsRender(); }
+function ksKToggle(k) { const ac = !ksKAcik[k]; ksKAcik = ac ? { [k]: true } : {}; ksKPg = {}; kazaStatsRender(); }
+function ksKPareto(k) { const ac = !ksKPg[k]; ksKPg = ac ? { [k]: true } : {}; kazaStatsRender(); }
 
 function ksKBolgeGrup(t) {
   const x = String(t || '').toLocaleLowerCase('tr');
@@ -18674,7 +18674,7 @@ let dnFDurum = null, dnFOnem = null;
 let dnSiralama = 'yeni', dnSadeceAcik = false;
 function dnSirala(k) { dnSiralama = k; denetimRender(); }
 function dnAcikFiltre() { dnSadeceAcik = !dnSadeceAcik; denetimRender(); }
-let dnKapali = {};      // hangi denetim grubu kapalı (akordeon)
+let dnAcikId = null;    // açık denetim kartı (akordeon: aynı anda tek; varsayılan hepsi kapalı, sekmeden çıkınca kapanır)
 let dnBAcik = {};       // hangi bulgu satırı açık (varsayılan kapalı; sekmeden çıkınca sıfırlanır)
 let dnBSilId = null;    // silme onayı bekleyen bulgu
 
@@ -18838,8 +18838,7 @@ function denetimRender() {
     const dAcik = bl.filter(b => b.durum !== 'kapali').length;
     if (dnSadeceAcik && !dAcik) return '';
     const tarihStr = d.tarih ? new Date(d.tarih+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '-';
-    if (!(d.id in dnKapali)) dnKapali[d.id] = true;
-    const kapaliMi = dnKapali[d.id];
+    const kapaliMi = !(dnAcikId === d.id || (document.getElementById('dn-f-ara')?.value || '').trim());
 
     const satirlar = bl.map((b, i) => {
       bgfNorm(b);
@@ -18925,7 +18924,7 @@ function denetimRender() {
 
   body.innerHTML = govde || `<div style="text-align:center;padding:48px;font-size:13px;color:var(--text3);">Bu filtrede bulgu yok.</div>`;
 }
-function dnBulguAcKapa(id) { dnBAcik[id] = !dnBAcik[id]; if (!dnBAcik[id] && dnBSilId === id) dnBSilId = null; denetimRender(); }
+function dnBulguAcKapa(id) { const ac = !dnBAcik[id]; dnBAcik = ac ? { [id]: true } : {}; if (dnBSilId && dnBSilId !== id) dnBSilId = null; denetimRender(); }
 function bulguSilSor(id) { dnBSilId = id; denetimRender(); }
 function bulguSilIptal() { dnBSilId = null; denetimRender(); }
 function bulguSilOnayli(id) {
@@ -18934,7 +18933,7 @@ function bulguSilOnayli(id) {
   denetimSave(); denetimRender();
   toast('Bulgu silindi');
 }
-function dnGrupAcKapa(id) { dnKapali[id] = !dnKapali[id]; denetimRender(); }
+function dnGrupAcKapa(id) { dnAcikId = dnAcikId === id ? null : id; dnBAcik = {}; dnBSilId = null; denetimRender(); }
 
 // ── Denetim ekle / düzenle ──────────────────────────────────
 function denetimOpenAdd(editId) {
@@ -19008,7 +19007,7 @@ function denetimSubmit() {
     const d = denetimler.find(x => x.id === dnEditId);
     if (d) Object.assign(d, veri);
   } else {
-    denetimler.unshift({ id: 'dn'+Date.now(), ...veri, createdAt: Date.now() });
+    const yid = 'dn'+Date.now(); denetimler.unshift({ id: yid, ...veri, createdAt: Date.now() }); dnAcikId = yid;
   }
   denetimSave(); denetimCloseAdd(); denetimFiltreKur(); denetimRender();
   toast(dnEditId ? 'Denetim güncellendi' : 'Denetim eklendi');
@@ -19198,6 +19197,7 @@ function bulguSubmit() {
     if (b) Object.assign(b, veri);
   } else {
     bulgular.push({ id: 'bg'+Date.now()+Math.random().toString(36).slice(2,6), ...veri, createdAt: Date.now() });
+    dnAcikId = veri.denetimId;
   }
   denetimSave(); bulguClose(); denetimRender();
   toast(bgEditId ? 'Bulgu güncellendi' : 'Bulgu eklendi');
