@@ -25944,7 +25944,7 @@ function bmAc(grup, files, hedefId, hedefAlt) {
   bmHtml();
   if (BM.calisiyor) { toast('Önceki işlem sürüyor'); return; }
   Object.assign(BM, { grup: grup || 'cevre', hedef: hedefId || null, hedefAlt: hedefAlt || null, ekr: 'yukle', dosyalar: [], bol: [], durdur: false, ok: null, ornek: null, tah: null, sheet: null, sonuc: null, ocrHata: '', grupSec: !grup });
-  const it = hedefId ? kontrolItems.find(x => x.id === hedefId) : null;
+  const it = hedefId ? kontrolItems.find(x => String(x.id) === String(hedefId)) : null;
   BM.fab = (it && kontrolKayitFabrikalari(it)[0]) || kontrolFabFilter || (fabrikalar.length === 1 ? fabrikalar[0].name : '');
   if (it) BM.grup = kontrolGrupId(it);
   BM.pg = BM.grup; BM.ph = null; BM.pa = null;
@@ -25985,7 +25985,7 @@ const bmDokunmatik = () => { try { return window.matchMedia('(pointer:coarse)').
 function bmEkrYukle() {
   const L = BM.dosyalar, hazir = L.filter(d => !d.yukleniyor && !d.hata);
   const grupSec = BM.grupSec ? `<div class="card"><div class="lb">HANGİ BÖLÜM İÇİN</div><div class="gp">${Object.keys(BM_GRUP).map(g => `<button class="${BM.grup === g ? 'on' : ''}" onclick="bmGrupDegis('${g}')">${BM_GRUP[g].kisa}</button>`).join('')}</div></div>` : '';
-  const hedef = BM.hedef ? (() => { const it = kontrolItems.find(x => x.id === BM.hedef); return it ? `<div class="eff">Bu satıra eklenecek: <b>${esc(it.name)}</b>. Belgenin içeriği başka bir başlığa daha çok benziyorsa sonraki adımda görürsün.</div>` : ''; })() : '';
+  const hedef = BM.hedef ? (() => { const it = kontrolItems.find(x => String(x.id) === String(BM.hedef)); return it ? `<div class="eff">Bu satıra eklenecek: <b>${esc(it.name)}</b>. Belgenin içeriği başka bir başlığa daha çok benziyorsa sonraki adımda görürsün.</div>` : ''; })() : '';
   return bmHd('Toplu belge yükle', 'PDF seç, program okusun', 'bmKapat()') + `<div class="bd">${grupSec}${hedef}
   <label class="drop" id="bm-drop"><span style="font-size:26px">📄</span><b style="color:var(--text)">PDF dosyalarını seç</b><span class="one">Birden çok dosya ve çok sayfalı PDF olur</span>${bmDokunmatik() ? '' : '<span class="one">Bilgisayardan buraya sürükleyip bırakabilirsin</span>'}<input type="file" accept="application/pdf,.pdf" multiple style="display:none" onchange="bmDosyaEkle(this.files);this.value=''"></label>
   ${L.length ? `<div class="card"><div class="lb">SEÇİLEN DOSYALAR</div>${L.map((d, i) => `<div class="fl"><div class="ic">PDF</div><div><b>${esc(d.ad)}</b><small>${d.yukleniyor ? 'Açılıyor…' : d.hata ? esc(d.hata) : `${d.n} sayfa · ${bmMB(d.boyut)} MB · ${d.taranmis ? 'taranmış' : 'metinli'}`}</small></div>${d.yukleniyor ? '<span class="pill p-n">…</span>' : d.hata ? `<button class="x" onclick="bmDosyaSil(${i})">✕</button>` : `<span class="pill p-n">${d.taranmis ? 'OCR' : 'Metin'}</span>`}</div>`).join('')}</div>` : ''}
@@ -26040,7 +26040,7 @@ async function bmOku() {
 }
 // Satırdan yüklemede emin olunmayan bölümler o satırın başlığına atanır
 function bmHedefUygula() {
-  const it = BM.hedef ? kontrolItems.find(x => x.id === BM.hedef) : null; if (!it) return;
+  const it = BM.hedef ? kontrolItems.find(x => String(x.id) === String(BM.hedef)) : null; if (!it) return;
   let k = bmKat(bmSatirAnahtar(it)) || BM.L.find(x => String(x.ad).toLocaleLowerCase('tr-TR') === String(it.name || '').toLocaleLowerCase('tr-TR'));
   if (!k) return;
   BM.bol.forEach(b => {
@@ -26435,7 +26435,7 @@ function bmSatirBelgeHtml(it, idJs) {
     <div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}')">📄 Belge ekle</button><button type="button" class="bm-ch" onclick="bmAltEkle('${idJs}')">＋ Alt kayıt</button></div>
     ${!L.length && !A.length ? '<div class="nt" style="font-size:11.5px;color:var(--text2);font-style:italic">PDF ekleyince küçük resmi burada görünür.</div>' : ''}</div>`;
 }
-function bmSatirDosya(id, altId) { bmHtml(); BM.pg = null; BM.ph = id; BM.pa = altId || null; const it = kontrolItems.find(x => x.id === id); BM.pg = it ? kontrolGrupId(it) : 'cevre'; bmEl('bm-fi').click(); }
+function bmSatirDosya(id, altId) { bmHtml(); BM.pg = null; BM.ph = id; BM.pa = altId || null; const it = kontrolItems.find(x => String(x.id) === String(id)); BM.pg = it ? kontrolGrupId(it) : 'cevre'; bmEl('bm-fi').click(); }
 function bmGrupYukle(g) { bmHtml(); BM.pg = g; BM.ph = null; BM.pa = null; bmAc(g, null, null, null); }
 
 function bmAltEkle(id) {
@@ -26447,7 +26447,7 @@ function bmAltEkle(id) {
     const k = e.target.closest('[data-k]'); if (!k) return;
     if (k.dataset.k === 'evet') {
       const ad = bmEl('bm-ad').value.trim(); if (!ad) { bmEl('bm-ad').focus(); return; }
-      const it = kontrolItems.find(x => x.id === id); if (!it) { bg.remove(); return; }
+      const it = kontrolItems.find(x => String(x.id) === String(id)); if (!it) { bg.remove(); return; }
       if (!Array.isArray(it.altlar)) it.altlar = [];
       it.altlar.push({ id: bmUid(), ad, no: bmEl('bm-no').value.trim(), lastDate: '', belgeler: [] });
       kontrolSatirAcik.add(id); kontrolSave(); kontrolRender();
@@ -26457,7 +26457,7 @@ function bmAltEkle(id) {
   document.body.appendChild(bg); bmEl('bm-ad').focus();
 }
 function bmAltSil(id, altId) {
-  const it = kontrolItems.find(x => x.id === id), a = it && (it.altlar || []).find(x => x.id === altId); if (!a) return;
+  const it = kontrolItems.find(x => String(x.id) === String(id)), a = it && (it.altlar || []).find(x => x.id === altId); if (!a) return;
   const n = (a.belgeler || []).length;
   isgOnay({ baslik: 'Alt kayıt silinsin mi?', mesaj: `"${a.ad}" alt kaydı${n ? ` ve içindeki ${n} belge` : ''} silinecek. Geri alınamaz.`, evet: 'Sil' }, async () => {
     for (const x of (a.belgeler || [])) await bmBlobSil(x.id);
@@ -26517,7 +26517,7 @@ function bmSurukleKur() {
 const BV = { it: null, doc: null, pdf: null, n: 0, p: 1, z: 1, x: 0, y: 0, u8: null };
 async function bmGoruntule(itemId, docId) {
   bmHtml();
-  const it = kontrolItems.find(x => x.id === itemId); if (!it) return;
+  const it = kontrolItems.find(x => String(x.id) === String(itemId)); if (!it) return;
   const L = bmTumBelgeler(it), doc = L.find(x => x.id === docId); if (!doc) return;
   Object.assign(BV, { it, doc, pdf: null, p: 1, z: 1, x: 0, y: 0, u8: null });
   const vw = bmEl('bm-vw'); vw.classList.add('on'); document.body.style.overflow = 'hidden';
