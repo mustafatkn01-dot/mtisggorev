@@ -21319,6 +21319,28 @@ window.addEventListener('resize', calMobInit);
 #bm-sh .seg button{flex:1;min-height:56px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:700;font-size:13px;cursor:pointer;line-height:1.25;font-family:inherit;padding:4px 6px}
 #bm-sh .seg button small{display:block;color:var(--text2);font-weight:600;font-size:11px}
 #bm-sh .seg button.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,var(--surface))}
+#bm-sh .how{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;font-size:11px;color:var(--text2)}#bm-sh .how span{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 9px;white-space:nowrap;flex:none}
+#bm-sh .pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:10px;min-height:86px;padding:2px;border-radius:12px}
+#bm-sh .pg.ins{background:color-mix(in srgb,var(--acc) 9%,transparent);outline:2px dashed var(--acc);outline-offset:2px}
+#bm-sh .pt{position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;touch-action:pan-y}
+#bm-sh .pt img{display:block;width:100%;aspect-ratio:210/297;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff;height:auto}
+#bm-sh .pt .no{position:absolute;left:5px;bottom:5px;background:var(--hd1,#16202c);color:#fff;font:800 10.5px/1 inherit;border-radius:99px;padding:3px 6px}
+#bm-sh .pt .ck{position:absolute;right:4px;top:4px;width:20px;height:20px;border-radius:50%;background:var(--acc);color:var(--acc-fg);font:800 12px/20px inherit;text-align:center;display:none}
+#bm-sh .pt.sel img{outline:3px solid var(--acc);outline-offset:1px}#bm-sh .pt.sel .ck{display:block}
+#bm-sh .pt.dim{opacity:.3}#bm-sh .pt.bi::before{content:"";position:absolute;left:-7px;top:0;bottom:0;width:4px;border-radius:3px;background:var(--acc);z-index:3}
+#bm-sh .pt.tr{cursor:pointer;opacity:.85}#bm-sh .pt.tr::after{content:"Geri al";position:absolute;left:0;right:0;bottom:0;background:rgba(15,25,40,.75);color:#fff;font:700 10px/1 inherit;text-align:center;padding:5px 0;border-radius:0 0 6px 6px}#bm-sh .pt.tr .no{display:none}
+.bm-gh{position:fixed;z-index:3400;pointer-events:none;width:66px;opacity:.92;transform:translate(-50%,-60%) rotate(4deg);filter:drop-shadow(0 8px 14px rgba(0,0,0,.3))}.bm-gh img{display:block;width:100%;border-radius:6px;background:#fff}
+.bm-gh .cnt{position:absolute;right:-6px;top:-6px;background:var(--acc);color:var(--acc-fg);border-radius:99px;font:800 11px/1 inherit;padding:4px 7px}
+#bm-pb{position:absolute;left:12px;right:12px;bottom:12px;z-index:8;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;box-shadow:0 12px 30px rgba(10,20,35,.3);display:flex;flex-direction:column;gap:8px;color:var(--text)}
+#bm-pb .tt{font-size:12.5px}#bm-pb .tt b{color:var(--acc)}#bm-pb .bb{display:flex;gap:6px;flex-wrap:wrap}
+#bm-pb .bb button{flex:1 1 auto;min-width:0;min-height:0;height:40px;border:0;border-radius:11px;background:color-mix(in srgb,var(--acc) 12%,transparent);color:var(--acc);font:700 12.5px/1 inherit;cursor:pointer;padding:0 10px;display:flex;align-items:center;justify-content:center}
+#bm-pb .bb button.dn{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}#bm-pb .bb button.x{flex:none;width:40px;background:transparent;color:var(--text2)}#bm-pb .bb button:disabled{opacity:.35}
+#bm-ut{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:9;background:var(--hd1,#16202c);color:#fff;border-radius:12px;padding:10px 14px;font-size:12.5px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 24px);white-space:nowrap}#bm-ut button{background:none;border:0;color:#9fc3ff;font:800 12.5px/1 inherit;cursor:pointer;padding:0;min-height:0}
+#bm-pv{position:fixed;inset:0;z-index:3300;background:#0b0f14;display:none;flex-direction:column}#bm-pv.on{display:flex}
+#bm-pv .h{display:flex;align-items:center;gap:10px;padding:max(10px,env(safe-area-inset-top,0px)) 12px 10px;color:#fff}#bm-pv .h div{flex:1;min-width:0}#bm-pv .h b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#bm-pv .h small{color:#9fb0c3;font-size:11px}
+#bm-pv button{min-width:40px;height:40px;border-radius:50%;border:0;background:#222c38;color:#fff;cursor:pointer;font:700 16px/1 inherit;padding:0;min-height:0}#bm-pv button:disabled{opacity:.35}
+#bm-pv .st{flex:1;min-height:0;display:grid;place-items:center;padding:8px 12px}#bm-pv .st canvas{max-width:100%;max-height:100%;background:#fff;border-radius:6px}
+#bm-pv .f{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 12px max(14px,env(safe-area-inset-bottom,0px))}#bm-pv .f .rm{width:auto;border-radius:20px;padding:0 16px;background:color-mix(in srgb,#d14b4b 30%,#222c38);font-size:12.5px}
 #bm-sh .th{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
 #bm-sh .th img{height:58px;width:auto;border-radius:4px;border:1px solid var(--line);flex:none}
 #bm-sh .sel{display:flex;align-items:center;gap:8px;min-height:42px;padding:0 12px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);font-weight:700;color:var(--text);cursor:pointer;font-size:13px;width:100%;font-family:inherit;text-align:left}
@@ -24445,7 +24467,7 @@ window.addEventListener('beforeprint',()=>{
   document.body.appendChild(bar);
   let y0 = 0, pull = 0, on = false;
   const scrolled = el => { for (; el && el !== document.body; el = el.parentElement) { if (el.scrollTop > 0 && el.scrollHeight > el.clientHeight) return true; } return false; };
-  const blocked = el => !!el.closest('input,textarea,select,[contenteditable],.modal-overlay,[class*="modal"],[id$="-modal"],[id$="-overlay"]');
+  const blocked = el => !!el.closest('input,textarea,select,[contenteditable],.modal-overlay,[class*="modal"],[id$="-modal"],[id$="-overlay"],#bm-bg,#bm-pv,#bm-vw,#bgf-vw,.bm-gh');
   document.addEventListener('touchstart', e => { on = e.touches.length === 1 && !scrolled(e.target) && !blocked(e.target); y0 = e.touches[0].clientY; pull = 0; }, { passive: true });
   document.addEventListener('touchmove', e => {
     if (!on) return; pull = e.touches[0].clientY - y0;
@@ -25884,7 +25906,7 @@ function bmTumBelgeler(it) {
 }
 
 /* ===== Akış durumu ===== */
-const BM = { grup: 'cevre', hedef: null, hedefAlt: null, ekr: 'yukle', dosyalar: [], bol: [], fab: '', sik: 'dengeli', durdur: false, ok: null, ornek: null, tah: null, sheet: null, sonuc: null, grupSec: false, L: [], H: [] };
+const BM = { grup: 'cevre', hedef: null, hedefAlt: null, ekr: 'yukle', dosyalar: [], bol: [], fab: '', sik: 'dengeli', durdur: false, ok: null, ornek: null, tah: null, sheet: null, sonuc: null, grupSec: false, L: [], H: [], cop: [], ps: new Set() };
 try { const s = localStorage.getItem(BM_LS_SIK); if (BM_SEVIYE[s]) BM.sik = s; } catch (e) {}
 const bmUid = () => 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const bmEl = id => document.getElementById(id);
@@ -25944,7 +25966,7 @@ function bmHtml() {
 function bmAc(grup, files, hedefId, hedefAlt) {
   bmHtml();
   if (BM.calisiyor) { toast('Önceki işlem sürüyor'); return; }
-  Object.assign(BM, { grup: grup || 'cevre', hedef: hedefId || null, hedefAlt: hedefAlt || null, ekr: 'yukle', dosyalar: [], bol: [], durdur: false, ok: null, ornek: null, tah: null, sheet: null, sonuc: null, ocrHata: '', grupSec: !grup });
+  Object.assign(BM, { grup: grup || 'cevre', hedef: hedefId || null, hedefAlt: hedefAlt || null, ekr: 'yukle', dosyalar: [], bol: [], cop: [], ps: new Set(), durdur: false, ok: null, ornek: null, tah: null, sheet: null, sonuc: null, ocrHata: '', grupSec: !grup });
   const it = hedefId ? kontrolItems.find(x => String(x.id) === String(hedefId)) : null;
   BM.fab = (it && kontrolKayitFabrikalari(it)[0]) || kontrolFabFilter || (fabrikalar.length === 1 ? fabrikalar[0].name : '');
   if (it) BM.grup = kontrolGrupId(it);
@@ -25958,7 +25980,7 @@ function bmKapat(zorla) {
   if (BM.calisiyor && !zorla) return;
   BM.durdur = true; bmOcrKapat();
   BM.dosyalar.forEach(d => { try { d.doc && d.doc.destroy(); } catch (e) {} });
-  BM.dosyalar = []; BM.bol = [];
+  BM.dosyalar = []; BM.bol = []; BM.cop = []; BM.ps = new Set(); bmPKapat();
   if (BM.tah) Object.values(BM.tah.onizle).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
   BM.tah = null;
   const bg = bmEl('bm-bg'); if (bg) bg.classList.remove('on');
@@ -25968,14 +25990,16 @@ function bmGit(e) { BM.ekr = e; bmCiz(); const s = bmEl('bm-scr'); if (s) s.scro
 
 /* ===== Ekran iskeleti ===== */
 function bmHd(t, s, geri) { return `<div class="hd">${geri ? `<button class="bk" onclick="${geri}">‹</button>` : ''}<div><b>${esc(t)}</b><small>${esc(s)}</small></div></div>`; }
-function bmThumbs(b) { const d = BM.dosyalar[b.di]; return `<div class="th">${b.sayfalar.map(i => `<img src="${d.sayfalar[i].th}" alt="">`).join('')}</div>`; }
+function bmThumbsSerit(b) { const d = BM.dosyalar[b.di]; return `<div class="th">${b.sayfalar.map(i => `<img src="${d.sayfalar[i].th}" alt="">`).join('')}</div>`; }
+function bmPTile(di, p, tr) { const d = BM.dosyalar[di], k = di + ':' + p; return `<div class="pt${tr ? ' tr' : ''}${!tr && BM.ps.has(k) ? ' sel' : ''}" data-di="${di}" data-p="${p}"><img src="${d.sayfalar[p].th}" alt="" draggable="false"><span class="no">${p + 1}</span><span class="ck">✓</span></div>`; }
+function bmThumbs(b, i) { return `<div class="pg" data-s="${i}">${b.sayfalar.map(p => bmPTile(b.di, p)).join('')}</div>`; }
 function bmCiz() {
   const sc = bmEl('bm-scr'); if (!sc) return;
   const f = { yukle: bmEkrYukle, okuma: bmEkrOkuma, esle: bmEkrEsle, alt: bmEkrAlt, aktar: bmEkrAktar, sik: bmEkrSik, onay: bmEkrOnay, ilerle: bmEkrIlerle, bitti: bmEkrBitti }[BM.ekr];
   sc.innerHTML = f();
   sc.querySelectorAll('textarea').forEach(t => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; });
   const on = bmEl('bm-on'); on.classList.toggle('on', !!BM.sheet); on.innerHTML = BM.sheet ? bmSheetHtml() : '';
-  bmSurukleKur();
+  bmSurukleKur(); bmPKur(); bmPBar();
 }
 function bmBtn(geri, ileri, ileriYazi, pasif) {
   return `<div class="btns"><button class="s" onclick="${geri[1]}">${geri[0]}</button>${ileri ? `<button class="p" onclick="${ileri}"${pasif ? ' disabled' : ''}>${ileriYazi}</button>` : ''}</div>`;
@@ -26020,7 +26044,7 @@ function bmEkrOkuma() {
 function bmDurdur() { BM.durdur = true; }
 async function bmOku() {
   const hazir = BM.dosyalar.filter(d => !d.hata && !d.yukleniyor);
-  BM.dosyalar = hazir; BM.durdur = false; BM.bol = []; BM.calisiyor = true; BM.ocrHata = '';
+  BM.dosyalar = hazir; BM.durdur = false; BM.bol = []; BM.cop = []; BM.ps = new Set(); BM.calisiyor = true; BM.ocrHata = '';
   BM.ekr = 'okuma'; BM.ok = { d: 0, s: 0, adim: '' }; bmCiz();
   try {
     for (let i = 0; i < BM.dosyalar.length; i++) {
@@ -26057,12 +26081,16 @@ function bmSonrakiYaz(b) {
   if (k.tip === 'periyodik' || k.tip === 'beyan') { const it = b.fab ? bmSatirBul(BM.grup, k, b.fab) : null; return it && it.lastDate !== undefined && it.periodUnit === 'year' ? bmSonraki(b.duz, it.periodVal + ' Yıl') : bmSonraki(b.duz, k.periyot); }
   return '—';
 }
-function bmSayfaYazi(b) { const s = b.sayfalar; return s.length > 1 ? `Sayfa ${s[0] + 1}–${s[s.length - 1] + 1}` : `Sayfa ${s[0] + 1}`; }
+function bmSayfaYazi(b) {
+  const s = b.sayfalar; if (s.length < 2) return `Sayfa ${s[0] + 1}`;
+  if (s.every((x, i) => i === 0 || x === s[i - 1] + 1)) return `Sayfa ${s[0] + 1}–${s[s.length - 1] + 1}`;
+  const L = s.map(x => x + 1); return 'Sayfa ' + (L.length > 5 ? L.slice(0, 5).join(', ') + '…' : L.join(', '));
+}
 function bmKart(b, i) {
   const k = bmKat(b.kat), g = bmGV[b.guven] || bmGV.dusuk, hazir = bmHazirMi(b);
   const onceki = BM.bol[i - 1], ayniDosya = onceki && onceki.di === b.di;
   const satirYok = k && b.fab && !bmSatirBul(BM.grup, k, b.fab);
-  return `<div class="card">${bmThumbs(b)}
+  return `<div class="card">${bmThumbs(b, i)}
    <button class="sel" onclick="bmSheetAc('kat',${i})"><span>${k ? esc(k.ad) : 'Kategori seç…'}</span>${k && hazir ? `<span class="pill ${g[1]}" style="flex:none">${g[0]}</span>` : '<span class="pill p-d" style="flex:none">Seçilmedi</span>'}<span style="flex:none">▾</span></button>
    <div class="one">${bmSayfaYazi(b)} · Belge tarihi ${bmFmt(b.duz)} · Sonraki ${bmSonrakiYaz(b)}</div>
    ${k ? `<div class="one" style="color:var(--text)">📄 ${esc(bmAd(b))}</div>` : ''}
@@ -26076,26 +26104,163 @@ function bmEkrEsle() {
   const bas = BM.dosyalar.length > 1 ? `${BM.dosyalar.length} dosya, ${tot} sayfa` : `${tot} sayfa`;
   const fabSatir = fabrikalar.length > 1 || !BM.fab ? `<div class="card"><div class="lb">FABRİKA</div><button class="sel" onclick="bmSheetAc('fab',-1)"><span>${BM.fab ? esc(BM.fab) : 'Fabrika seç…'}</span><span style="flex:none">▾</span></button><div class="nt">Belgede fabrika adı geçiyorsa o kullanılır, geçmiyorsa buradaki seçim.</div></div>` : '';
   let h = bmHd('Bölme ve eşleştirme', BM.dosyalar.length === 1 ? BM.dosyalar[0].ad : `${BM.dosyalar.length} dosya`, "bmGit('yukle')") + `<div class="bd">
-   <div class="eff">${bas} <b>${BM.bol.length} belgeye</b> ayrıldı. ${yuk} tanesi yüksek güvenle eşleşti. Kategoriyi veya sayfa sınırını değiştirebilirsin.</div>${fabSatir}`;
+   <div class="eff">${bas} <b>${BM.bol.length} belgeye</b> ayrıldı${BM.cop.length ? `, <b>${BM.cop.length} sayfa</b> kaldırıldı` : ''}. ${yuk} tanesi yüksek güvenle eşleşti. Kategoriyi veya sayfa sınırını değiştirebilirsin.</div>
+   <div class="how"><span>Dokun: büyüt</span><span>Basılı tut: işaretle</span><span>Sürükle: sırala veya başka bölüme at</span></div>${fabSatir}`;
   BM.dosyalar.forEach((d, di) => {
     const L = BM.bol.map((b, i) => [b, i]).filter(x => x[0].di === di), sorun = L.filter(x => !bmHazirMi(x[0])).length;
     if (BM.dosyalar.length > 1 || sorun) h += `<div class="lb" style="margin-top:4px">${esc(d.ad.toUpperCase())} · ${d.n} SAYFA${sorun ? ' · KONTROL GEREKİYOR' : ''}</div>`;
     if (sorun) h += '<div class="warn">Motor bazı sayfalardan emin olamadı. Kategori seçmediğin belge kayda işlenmez.</div>';
     h += L.map(x => bmKart(x[0], x[1])).join('');
   });
+  if (BM.cop.length) h += `<div class="card" style="border-style:dashed"><div class="lb">KALDIRILAN SAYFALAR · ${BM.cop.length} (kayda işlenmez)</div><div class="pg">${BM.cop.map(x => bmPTile(x.di, x.p, true)).join('')}</div></div>`;
   const eksikFab = bmHazirlar().some(b => !b.fab);
   return h + `</div>` + bmBtn(['Geri', "bmGit('yukle')"], 'bmIleri(\'esle\')', eksikFab ? 'Fabrika seç' : 'Devam', !bmHazirlar().length);
 }
 function bmBirlestir(i) {
   const a = BM.bol[i - 1], b = BM.bol[i]; if (!a || a.di !== b.di) return;
-  a.sayfalar = a.sayfalar.concat(b.sayfalar); BM.bol.splice(i, 1); bmBolumDoldur(a); bmCiz();
+  bmPSnap(); a.sayfalar = a.sayfalar.concat(b.sayfalar); BM.bol.splice(i, 1); bmBolumDoldur(a); bmCiz(); bmPToast('Bölümler birleştirildi', true);
 }
 function bmAyir(i) {
   const a = BM.bol[i]; if (a.sayfalar.length < 2) return;
-  const son = a.sayfalar.pop(), d = BM.dosyalar[a.di];
+  bmPSnap(); const son = a.sayfalar.pop(), d = BM.dosyalar[a.di];
   const s = BME.sinifla(BM.H, d.sayfalar[son].metin);
   const nb = bmBolumKur(a.di, { kat: s.en ? { id: s.en.id } : null, guven: s.guven, sayfalar: [son], ipucu: s.en ? s.en.ipucu : [] });
-  BM.bol.splice(i + 1, 0, nb); bmBolumDoldur(a); bmCiz();
+  BM.bol.splice(i + 1, 0, nb); bmBolumDoldur(a); bmCiz(); bmPToast('Son sayfa ayrıldı', true);
+}
+/* ===== Sayfa düzenleyici (Bölme ve eşleştirme): dokun = büyüt, basılı tut = işaretle, sürükle = sırala / taşı, kaldır ===== */
+const bmPK = (di, p) => di + ':' + p;
+function bmPSnap() { BM.pun = { bol: BM.bol.map(b => ({ b, s: b.sayfalar.slice() })), cop: BM.cop.map(x => ({ di: x.di, p: x.p })) }; }
+function bmPGeri() {
+  const u = BM.pun; if (!u) return; BM.pun = null;
+  BM.bol = u.bol.map(x => { const ayni = x.b.sayfalar.join() === x.s.join(); x.b.sayfalar = x.s.slice(); if (!ayni) bmPDoldur(x.b); return x.b; });
+  BM.cop = u.cop; BM.ps = new Set(); bmPKapat(); bmCiz();
+}
+function bmPDoldur(b) { const f = b.fab; bmBolumDoldur(b); if (f && !b.fabOkunan) b.fab = f; }
+function bmPToast(m, geri) {
+  const sh = bmEl('bm-sh'); if (!sh) return; let t = bmEl('bm-ut'); if (!t) { t = document.createElement('div'); t.id = 'bm-ut'; sh.appendChild(t); }
+  t.innerHTML = `<span>${esc(m)}</span>${geri ? '<button type="button">Geri al</button>' : ''}`;
+  if (geri) t.querySelector('button').onclick = () => { t.remove(); bmPGeri(); };
+  clearTimeout(bmPToast.h); bmPToast.h = setTimeout(() => { const x = bmEl('bm-ut'); if (x) x.remove(); }, 5000);
+}
+function bmPBul(di, p) { for (let i = 0; i < BM.bol.length; i++) { const j = BM.bol[i].sayfalar.indexOf(p); if (BM.bol[i].di === di && j >= 0) return [i, j]; } return null; }
+function bmPSirali(di, anahtarlar) { const o = []; BM.bol.forEach(b => { if (b.di !== di) return; b.sayfalar.forEach(p => { if (anahtarlar.has(bmPK(di, p))) o.push(p); }); }); return o; }
+// değişen bölümleri toparla: boşalanı sil, kalanları yeniden oku
+function bmPBitir(dokunulan) {
+  BM.bol = BM.bol.filter(b => b.sayfalar.length);
+  dokunulan.forEach(b => { if (b.sayfalar.length) bmPDoldur(b); });
+}
+function bmPYerlestir(di, ids, hedef, idx) {
+  const dok = new Set([hedef]); BM.bol.forEach(b => { if (b.di === di && b.sayfalar.some(p => ids.includes(p))) dok.add(b); });
+  const once = hedef.sayfalar.slice(0, idx).filter(p => !ids.includes(p)).length;
+  BM.bol.forEach(b => { if (b.di === di) b.sayfalar = b.sayfalar.filter(p => !ids.includes(p)); });
+  hedef.sayfalar.splice(once, 0, ...ids); bmPBitir(dok);
+}
+function bmPCikar(di, ids) { const dok = new Set(); BM.bol.forEach(b => { if (b.di === di && b.sayfalar.some(p => ids.includes(p))) { dok.add(b); b.sayfalar = b.sayfalar.filter(p => !ids.includes(p)); } }); ids.forEach(p => BM.cop.push({ di, p })); bmPBitir(dok); }
+function bmPBar() {
+  const sh = bmEl('bm-sh'); if (!sh) return; let b = bmEl('bm-pb');
+  if (BM.ekr !== 'esle' || !BM.ps.size) { if (b) b.remove(); if (BM.ekr !== 'esle') BM.ps = new Set(); return; }
+  if (!b) { b = document.createElement('div'); b.id = 'bm-pb'; sh.appendChild(b); b.addEventListener('click', bmPBarTik); }
+  const K = Array.from(BM.ps).map(k => k.split(':').map(Number)), di = K[0][0], tekDosya = K.every(x => x[0] === di);
+  const w = tekDosya ? bmPBul(di, K[0][1]) : null, tekBolum = !!w && K.every(x => { const y = bmPBul(x[0], x[1]); return y && y[0] === w[0]; });
+  const komsu = y => { if (!w) return false; for (let i = w[0] + y; i >= 0 && i < BM.bol.length; i += y) { if (BM.bol[i].di === di) return true; } return false; };
+  b.innerHTML = `<div class="tt"><b>${K.length}</b> sayfa seçili</div><div class="bb"><button data-a="l"${tekBolum ? '' : ' disabled'}>◀ Öne</button><button data-a="r"${tekBolum ? '' : ' disabled'}>Arkaya ▶</button><button data-a="up"${komsu(-1) ? '' : ' disabled'}>↑ Üst bölüme</button><button data-a="dn"${komsu(1) ? '' : ' disabled'}>↓ Alt bölüme</button><button data-a="new"${tekDosya ? '' : ' disabled'}>＋ Yeni bölüm</button><button class="dn" data-a="rm"${tekDosya ? '' : ' disabled'}>Kaldır</button><button class="x" data-a="x" aria-label="Seçimi bırak">✕</button></div>`;
+}
+function bmPBarTik(e) {
+  const t = e.target.closest('button'); if (!t || t.disabled) return; const a = t.dataset.a;
+  const K = Array.from(BM.ps).map(k => k.split(':').map(Number)), di = K[0][0];
+  if (a === 'x') { BM.ps = new Set(); bmCiz(); return; }
+  const ids = bmPSirali(di, BM.ps), w = bmPBul(di, ids[0]); if (!w) return;
+  bmPSnap();
+  if (a === 'l' || a === 'r') {
+    const b = BM.bol[w[0]], p = b.sayfalar, ilk = p.indexOf(ids[0]), kalan = p.filter(x => !ids.includes(x)), pos = a === 'l' ? Math.max(0, ilk - 1) : Math.min(kalan.length, ilk + 1);
+    kalan.splice(pos, 0, ...ids); b.sayfalar = kalan; bmPDoldur(b); bmCiz(); return;
+  }
+  if (a === 'up' || a === 'dn') {
+    let ti = w[0] + (a === 'up' ? -1 : 1); while (BM.bol[ti] && BM.bol[ti].di !== di) ti += a === 'up' ? -1 : 1; const h = BM.bol[ti]; if (!h) return;
+    bmPYerlestir(di, ids, h, a === 'up' ? h.sayfalar.length : 0); BM.ps = new Set(); bmCiz(); bmPToast(ids.length + ' sayfa ' + (a === 'up' ? 'üst' : 'alt') + ' bölüme taşındı', true); return;
+  }
+  if (a === 'new') {
+    const d = BM.dosyalar[di], kay = BM.bol[w[0]], s = BME.sinifla(BM.H, d.sayfalar[ids[0]].metin);
+    const dok = new Set([kay]); BM.bol.forEach(b => { if (b.di === di) b.sayfalar = b.sayfalar.filter(p => !ids.includes(p)); });
+    const nb = bmBolumKur(di, { kat: s.en ? { id: s.en.id } : null, guven: s.guven, sayfalar: ids, ipucu: s.en ? s.en.ipucu : [] });
+    nb.fab = kay.fab || nb.fab; const at = BM.bol.indexOf(kay); BM.bol.splice(at + 1, 0, nb); bmPBitir(dok);
+    BM.ps = new Set(); bmCiz(); bmPToast('Yeni bölüm oluşturuldu', true); return;
+  }
+  if (a === 'rm') { bmPCikar(di, ids); BM.ps = new Set(); bmCiz(); bmPToast(ids.length + ' sayfa kaldırıldı', true); }
+}
+function bmPGeriAl(di, p) {
+  bmPSnap(); BM.cop = BM.cop.filter(x => !(x.di === di && x.p === p));
+  const L = BM.bol.filter(b => b.di === di); let h = null;
+  L.forEach(b => { if (b.sayfalar.some(x => x < p)) h = b; }); if (!h) h = L[0];
+  if (!h) { const d = BM.dosyalar[di], s = BME.sinifla(BM.H, d.sayfalar[p].metin); h = bmBolumKur(di, { kat: s.en ? { id: s.en.id } : null, guven: s.guven, sayfalar: [p], ipucu: s.en ? s.en.ipucu : [] }); BM.bol.push(h); }
+  else { const art = h.sayfalar.every((x, i) => i === 0 || x > h.sayfalar[i - 1]); if (art) { const j = h.sayfalar.findIndex(x => x > p); h.sayfalar.splice(j < 0 ? h.sayfalar.length : j, 0, p); } else h.sayfalar.push(p); bmPDoldur(h); }
+  bmCiz(); bmPToast('Sayfa ' + (p + 1) + ' geri alındı', true);
+}
+/* önizleme */
+function bmPSiraTum() { const o = []; BM.bol.forEach(b => b.sayfalar.forEach(p => o.push([b.di, p, b]))); return o; }
+async function bmPAc(di, p) {
+  let v = bmEl('bm-pv'); if (!v) { v = document.createElement('div'); v.id = 'bm-pv'; document.body.appendChild(v); v.addEventListener('click', bmPvTik); }
+  const O = bmPSiraTum(), i = O.findIndex(x => x[0] === di && x[1] === p); if (i < 0) return;
+  const b = O[i][2], k = bmKat(b.kat), d = BM.dosyalar[di], tok = Date.now() + Math.random(); BM.pv = { di, p, tok };
+  v.classList.add('on');
+  v.innerHTML = `<div class="h"><button data-v="x" aria-label="Kapat">✕</button><div><b>Sayfa ${p + 1} · ${esc(k ? k.ad : 'Kategori seçilmedi')}</b><small>${i + 1} / ${O.length} · ${esc(d.ad)}</small></div></div><div class="st" id="bm-pvs"><span style="color:#9fb0c3;font-size:12.5px">Sayfa hazırlanıyor…</span></div><div class="f"><button data-v="p"${i === 0 ? ' disabled' : ''} aria-label="Önceki">‹</button><button class="rm" data-v="rm">Bu sayfayı kaldır</button><button data-v="n"${i === O.length - 1 ? ' disabled' : ''} aria-label="Sonraki">›</button></div>`;
+  try {
+    const pg = await d.doc.getPage(p + 1), c = await bmCanvas(pg, 150); if (!BM.pv || BM.pv.tok !== tok) return;
+    const st = bmEl('bm-pvs'); st.innerHTML = ''; st.appendChild(c);
+  } catch (e) { console.error(e); const st = bmEl('bm-pvs'); if (st) st.innerHTML = '<span style="color:#ff9b9b;font-size:12.5px">Sayfa gösterilemedi</span>'; }
+}
+function bmPKapat() { const v = bmEl('bm-pv'); if (v) v.classList.remove('on'); BM.pv = null; }
+function bmPvTik(e) {
+  const t = e.target.closest('button'); if (!t || t.disabled || !BM.pv) return; const a = t.dataset.v, O = bmPSiraTum(), i = O.findIndex(x => x[0] === BM.pv.di && x[1] === BM.pv.p);
+  if (a === 'x') bmPKapat(); else if (a === 'p' && i > 0) bmPAc(O[i - 1][0], O[i - 1][1]); else if (a === 'n' && i < O.length - 1) bmPAc(O[i + 1][0], O[i + 1][1]);
+  else if (a === 'rm') { const di = BM.pv.di, p = BM.pv.p; bmPSnap(); bmPKapat(); bmPCikar(di, [p]); BM.ps = new Set(); bmCiz(); bmPToast('Sayfa ' + (p + 1) + ' kaldırıldı', true); }
+}
+/* basılı tut + sürükle */
+function bmPKur() {
+  const sc = bmEl('bm-scr'); if (!sc || sc._pk) return; sc._pk = 1;
+  let tm = null, P = null, D = null, gh = null; BM.pLP = 0;
+  const iptal = () => { if (tm) { clearTimeout(tm); tm = null; } };
+  const tile = (di, p) => sc.querySelector(`.pt[data-di="${di}"][data-p="${p}"]:not(.tr)`);
+  document.addEventListener('touchmove', e => { if (D || (P && P.lift)) e.preventDefault(); }, { passive: false });
+  sc.addEventListener('contextmenu', e => { if (e.target.closest('.pt')) e.preventDefault(); });
+  sc.addEventListener('pointerdown', e => {
+    const t = e.target.closest('.pt:not(.tr)'); if (!t || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    P = { di: +t.dataset.di, p: +t.dataset.p, x: e.clientX, y: e.clientY, mouse: e.pointerType === 'mouse', lift: false };
+    iptal(); tm = setTimeout(() => { tm = null; if (!P) return; P.lift = true; BM.pLP = Date.now(); const k = bmPK(P.di, P.p); if (!BM.ps.has(k)) BM.ps.add(k); const el = tile(P.di, P.p); if (el) el.classList.add('sel'); bmPBar(); try { navigator.vibrate && navigator.vibrate(15); } catch (er) {} }, 480);
+  });
+  document.addEventListener('pointermove', e => {
+    if (D) { surukle(e); return; } if (!P) return; const d = Math.hypot(e.clientX - P.x, e.clientY - P.y);
+    if (!P.lift) { if (d > 8) { if (P.mouse) basla(e); else { iptal(); P = null; } } return; }
+    if (d > 8) basla(e);
+  });
+  ['pointerup', 'pointercancel'].forEach(n => document.addEventListener(n, () => { iptal(); if (D) bitir(); P = null; }));
+  function basla(e) {
+    iptal(); const di = P.di; let ids = BM.ps.has(bmPK(di, P.p)) ? bmPSirali(di, BM.ps) : [P.p]; if (!ids.length) ids = [P.p];
+    D = { di, ids, tg: null }; BM.pLP = Date.now(); const src = tile(di, P.p); if (!src) { D = null; return; }
+    gh = document.createElement('div'); gh.className = 'bm-gh'; gh.innerHTML = `<img src="${src.querySelector('img').src}" alt="">${ids.length > 1 ? `<span class="cnt">${ids.length}</span>` : ''}`; document.body.appendChild(gh);
+    ids.forEach(p => { const t = tile(di, p); if (t) t.classList.add('dim'); }); surukle(e);
+  }
+  function surukle(e) {
+    gh.style.left = e.clientX + 'px'; gh.style.top = e.clientY + 'px';
+    sc.querySelectorAll('.bi').forEach(x => x.classList.remove('bi')); sc.querySelectorAll('.pg.ins').forEach(x => x.classList.remove('ins'));
+    const el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest('#bm-scr .pt:not(.tr)'), g = el && el.closest('#bm-scr .pg[data-s]'); D.tg = null;
+    if (t && +t.dataset.di === D.di && !D.ids.includes(+t.dataset.p)) {
+      const si = +t.parentNode.dataset.s, b = BM.bol[si], r = t.getBoundingClientRect(), son = e.clientX > r.left + r.width / 2, j = b.sayfalar.indexOf(+t.dataset.p);
+      D.tg = { b, i: j + (son ? 1 : 0) };
+      if (!son) t.classList.add('bi'); else { const nx = t.nextElementSibling; if (nx) nx.classList.add('bi'); else t.parentNode.classList.add('ins'); }
+    } else if (g && !t && BM.bol[+g.dataset.s] && BM.bol[+g.dataset.s].di === D.di) { const b = BM.bol[+g.dataset.s]; D.tg = { b, i: b.sayfalar.length }; g.classList.add('ins'); }
+    const r = sc.getBoundingClientRect(); if (e.clientY < r.top + 70) sc.scrollTop -= 14; else if (e.clientY > r.bottom - 70) sc.scrollTop += 14;
+  }
+  function bitir() {
+    if (gh) { gh.remove(); gh = null; } const d = D; D = null; BM.pLP = Date.now();
+    if (d && d.tg) { bmPSnap(); bmPYerlestir(d.di, d.ids, d.tg.b, d.tg.i); BM.ps = new Set(); bmCiz(); bmPToast(d.ids.length + ' sayfa taşındı', true); } else bmCiz();
+  }
+  sc.addEventListener('click', e => {
+    const t = e.target.closest('.pt'); if (!t || Date.now() - BM.pLP < 700) return; const di = +t.dataset.di, p = +t.dataset.p;
+    if (t.classList.contains('tr')) { bmPGeriAl(di, p); return; }
+    if (BM.ps.size) { const k = bmPK(di, p); if (BM.ps.has(k)) BM.ps.delete(k); else BM.ps.add(k); bmCiz(); } else bmPAc(di, p);
+  });
+  document.addEventListener('keydown', e => { if (!BM.pv) return; const v = bmEl('bm-pv'); if (e.key === 'Escape') bmPKapat(); else if (e.key === 'ArrowRight') v.querySelector('[data-v=n]').click(); else if (e.key === 'ArrowLeft') v.querySelector('[data-v=p]').click(); });
 }
 function bmIleri(nereden) {
   if (nereden === 'esle') {
@@ -26186,7 +26351,7 @@ function bmEkrAlt() {
   return bmHd('Alt kayıt eşleştirme', esc(BM.dosyalar[L[0].di].ad), "bmGeri('alt')") + `<div class="bd">
   <div class="eff">Ana başlık <b>${esc(k0.ad)}</b>. Belgedeki ekipman adı ve numarasına göre alt kayıt bulundu.</div>
   ${L.map(b => { const i = BM.bol.indexOf(b), g = bmGV[b.altG || 'dusuk'], k = bmKat(b.kat); const ad = b.alt ? (b.alt.t === 'yeni' ? 'Yeni: ' + (b.alt.ad || '') : bmAltAd(b)) : 'Alt kayıt seç…';
-    return `<div class="card">${bmThumbs(b)}<button class="sel" onclick="bmSheetAc('alt',${i})"><span>${esc(k.kisa || k.ad)} › ${esc(ad)}</span><span class="pill ${g[1]}" style="flex:none">${b.alt && b.alt.t === 'yeni' ? 'Yeni' : g[0]}</span></button>
+    return `<div class="card">${bmThumbsSerit(b)}<button class="sel" onclick="bmSheetAc('alt',${i})"><span>${esc(k.kisa || k.ad)} › ${esc(ad)}</span><span class="pill ${g[1]}" style="flex:none">${b.alt && b.alt.t === 'yeni' ? 'Yeni' : g[0]}</span></button>
     <div class="one">Okunan: ${esc([b.ekipman || 'ekipman adı yok', b.seri, bmFmt(b.duz)].filter(Boolean).join(' · '))}</div>
     <div class="nt">${b.alt && b.alt.t === 'var' ? 'Mevcut alt kayıtla eşleşti, belge bu kaydın geçmişine eklenir.' : b.alt && b.alt.t === 'yeni' ? 'Onaylarsan alt kayıt otomatik açılır, adı belgeden alınır.' : 'Alt kayıt seçilmezse belge doğrudan satıra eklenir.'}</div></div>`; }).join('')}
   <div class="card"><div class="lb">DOSYA ADI (DÜZENLENEBİLİR)</div>${L.map(b => `<div class="sel wr"><textarea rows="1" onchange="bmAdGir('${b.id}',this.value)">${esc(bmAd(b))}</textarea></div>`).join('')}</div></div>` + bmBtn(['Geri', "bmGeri('alt')"], "bmIleri('alt')", 'Devam');
