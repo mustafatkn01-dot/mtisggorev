@@ -1475,6 +1475,16 @@ html, body { height: 100%; overflow: hidden;
 .add-col-row button:hover { background:var(--surface2); }
 
 /* Fabrika listesi */
+.mf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 0}
+.mf-chip{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr) 20px;align-items:center;gap:9px;min-height:44px;padding:0 12px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:border-color .12s,background .12s}
+.mf-chip.w{grid-column:1/-1}
+.mf-chip input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.mf-dot{width:10px;height:10px;border-radius:50%;background:var(--c,var(--text3))}
+.mf-chip span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mf-ck{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);display:grid;place-items:center;font-size:11px;line-height:1;color:transparent;box-sizing:border-box}
+.mf-chip.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface))}
+.mf-chip.on .mf-ck{background:var(--acc);border-color:var(--acc);color:var(--acc-fg,#fff)}
+.mf-chip:has(input:focus-visible){outline:2px solid var(--acc);outline-offset:2px}
 .fab-list { display:flex; flex-direction:column; gap:4px; }
 .fab-list-item {
   display:flex; align-items:center; gap:8px;
@@ -7639,7 +7649,7 @@ px}
       </div>
       <div class="mfield">
         <label>Fabrika(lar)</label>
-        <div id="m-fab-checks" style="display:flex;flex-wrap:wrap;gap:6px;padding:6px 0"></div>
+        <div id="m-fab-checks" class="mf-grid"></div>
       </div>
       <div class="hse-task-layer">
         <div class="hse-task-layer-head">
@@ -8013,12 +8023,12 @@ function fillTaskModal(t) {
   const sel = t ? (t.fabs && t.fabs.length ? t.fabs
                  : (t.fab ? t.fab.split(',').map(s=>s.trim()).filter(Boolean) : [])) : [];
   const mc = document.getElementById('m-fab-checks');
-  mc.innerHTML = [{ name:'Tüm fabrikalar', color:'#888780' }, ...fabrikalar].map(f => {
-    const on = f.name === 'Tüm fabrikalar' ? (t && sel.length === 0) : sel.includes(f.name);
-    return `<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;">
-      <input type="checkbox" class="mfchk" value="${esc(f.name)}" ${on?'checked':''} style="accent-color:var(--acc)">
-      <span style="width:8px;height:8px;border-radius:50%;background:${f.color};display:inline-block"></span>
-      ${esc(f.name)}
+  const hepsi = sel.length === 0, tek = fabrikalar.length % 2 === 1;
+  mc.innerHTML = [{ name:'Tüm fabrikalar', color:'#888780' }, ...fabrikalar].map((f, i, L) => {
+    const tum = i === 0, on = tum ? hepsi : sel.includes(f.name), son = i === L.length - 1 && tek;
+    return `<label class="mf-chip${tum || son ? ' w' : ''}${on ? ' on' : ''}" style="--c:${f.color}">
+      <input type="checkbox" class="mfchk" value="${esc(f.name)}" ${on ? 'checked' : ''} onchange="mfFabDegis(this)">
+      <i class="mf-dot"></i><span>${esc(f.name)}</span><b class="mf-ck">✓</b>
     </label>`;
   }).join('');
 
@@ -8026,6 +8036,13 @@ function fillTaskModal(t) {
   setTimeout(()=>document.getElementById('m-text').focus(), 80);
 }
 
+// Fabrika çipleri: "Tüm fabrikalar" ile tek tek seçim birbirini dışlar; hiçbiri seçili kalmazsa "Tüm fabrikalar" döner
+function mfFabDegis(el) {
+  const L = Array.from(document.querySelectorAll('.mfchk')), tum = L[0];
+  if (el === tum) { if (tum.checked) L.slice(1).forEach(c => { c.checked = false; }); else tum.checked = true; }
+  else { if (el.checked) tum.checked = false; else if (!L.slice(1).some(c => c.checked)) tum.checked = true; }
+  L.forEach(c => c.closest('.mf-chip').classList.toggle('on', c.checked));
+}
 function openAddModal() {
   _editTaskId = null;
   document.getElementById('add-modal-title').textContent  = 'Yeni Görev Ekle';
