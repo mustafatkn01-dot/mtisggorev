@@ -1480,7 +1480,7 @@ html, body { height: 100%; overflow: hidden;
 .mf-btn .mf-txt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mf-btn svg{width:18px;height:18px;flex:none;color:var(--text2);transition:transform .15s}.mf-btn.open svg{transform:rotate(180deg)}
 .mf-dots{display:flex;flex:none}.mf-dots i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--surface);margin-left:-3px}.mf-dots i:first-child{margin-left:0}
-.mf-panel{margin-top:6px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);overflow:hidden}
+.mf-panel{margin:6px 0 18px;scroll-margin-bottom:90px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);overflow:hidden}
 .mf-panel[hidden]{display:none}
 .mf-list{max-height:196px;overflow-y:auto;overscroll-behavior:contain}
 .mf-chip{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr) 22px;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-top:1px solid var(--border2);cursor:pointer;font-size:13px;font-weight:600;color:var(--text)}
@@ -4750,7 +4750,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif!important;background:var(--glob
 #add-modal h2 button:hover{background:rgba(255,255,255,.12)!important}
 #add-modal .modal-body{
   background:var(--surface)!important;
-  padding:15px 16px!important;
+  padding:15px 16px 28px!important;
   gap:12px!important;
   overflow-y:auto!important;
 }
@@ -8058,11 +8058,23 @@ function mfOzet() {
   t.textContent = !sec.length ? 'Tüm fabrikalar' : sec.length === 1 ? sec[0].value : sec.length + ' fabrika seçildi';
   d.innerHTML = (sec.length ? sec.slice(0, 3) : [L[0]]).map(c => `<i style="background:${renk(c)}"></i>`).join('');
 }
+function mfYenile() {
+  const mc = document.getElementById('m-fab-checks'); if (!mc || !mc.children.length) return;
+  const sel = Array.from(mc.querySelectorAll('.mfchk:checked')).map(c => c.value).filter(v => v !== 'Tüm fabrikalar');
+  mc.innerHTML = [{ name:'Tüm fabrikalar', color:'#888780' }, ...fabrikalar].map((f, i) => {
+    const tum = i === 0, on = tum ? !sel.length : sel.includes(f.name);
+    return `<label class="mf-chip${tum ? ' w' : ''}${on ? ' on' : ''}" style="--c:${f.color}">
+      <input type="checkbox" class="mfchk" value="${esc(f.name)}" ${on ? 'checked' : ''} onchange="mfFabDegis(this)">
+      <i class="mf-dot"></i><span>${esc(f.name)}</span><b class="mf-ck">✓</b>
+    </label>`;
+  }).join('');
+  mfOzet();
+}
 function mfPanel(ac) {
   const pn = document.getElementById('mf-panel'), bt = document.getElementById('mf-btn'); if (!pn) return;
   if (typeof ac !== 'boolean') ac = pn.hidden;
   pn.hidden = !ac; bt.classList.toggle('open', ac); bt.setAttribute('aria-expanded', ac ? 'true' : 'false');
-  if (ac) { const on = pn.querySelector('.mf-chip.on:not(.w)'); if (on) on.scrollIntoView({ block: 'nearest' }); }
+  if (ac) { const on = pn.querySelector('.mf-chip.on:not(.w)'); if (on) on.scrollIntoView({ block: 'nearest' }); setTimeout(() => pn.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 30); }
 }
 function openAddModal() {
   _editTaskId = null;
@@ -20745,6 +20757,8 @@ window.addEventListener('resize', calMobInit);
       doldur(departmanlar, s.departmanlar);
       doldur(notlar, s.notlar);
       if (s.tema && typeof applyTema === 'function') applyTema(s.tema, false);
+      // Bulut ayarı yerel önbelleğe de yazılır: sonraki açılışta bulut gelmeden önce eski/varsayılan ("Fabrika 1") adlar görünmesin
+      try { lsSaveSettings(); localStorage.setItem('yeni_isg_fabrikalar', JSON.stringify(fabrikalar)); } catch (e) {}
     }
 
     if (!yazimBekliyor['archive'] && Array.isArray(d.archive)) doldur(archived, d.archive);
@@ -20816,7 +20830,7 @@ window.addEventListener('resize', calMobInit);
 
   function yenidenCiz() {
     const c = f => { try { if (typeof window[f] === 'function') window[f](); } catch (e) {} };
-    c('buildViews'); c('renderFabDropdown'); c('renderTicker'); c('renderQN'); c('render');
+    c('buildViews'); c('renderFabDropdown'); c('renderTicker'); c('renderQN'); c('render'); c('mfYenile');
     c('perRender'); c('kontrolRender'); c('kazaRender'); c('denetimRender');
     // Özet ekranı açıksa sayaçları da tazele (açılışta 0 kalmasını önler)
     try {
