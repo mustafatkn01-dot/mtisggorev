@@ -1475,16 +1475,22 @@ html, body { height: 100%; overflow: hidden;
 .add-col-row button:hover { background:var(--surface2); }
 
 /* Fabrika listesi */
-.mf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 0}
-.mf-chip{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr) 20px;align-items:center;gap:9px;min-height:44px;padding:0 12px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:border-color .12s,background .12s}
-.mf-chip.w{grid-column:1/-1}
-.mf-chip input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.mf-btn{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;min-height:0;text-align:left;cursor:pointer;background:var(--surface);color:var(--text);border:1px solid color-mix(in srgb,var(--acc) 27%,var(--surface));border-radius:11px;padding:9px 11px;font:inherit;font-size:12px;font-weight:600}
+.mf-btn.open{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 10%,transparent)}
+.mf-btn .mf-txt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mf-btn svg{width:18px;height:18px;flex:none;color:var(--text2);transition:transform .15s}.mf-btn.open svg{transform:rotate(180deg)}
+.mf-dots{display:flex;flex:none}.mf-dots i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--surface);margin-left:-3px}.mf-dots i:first-child{margin-left:0}
+.mf-panel{margin-top:6px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);overflow:hidden}
+.mf-panel[hidden]{display:none}
+.mf-list{max-height:196px;overflow-y:auto;overscroll-behavior:contain}
+.mf-chip{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr) 22px;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-top:1px solid var(--border2);cursor:pointer;font-size:13px;font-weight:600;color:var(--text)}
+.mf-chip.w{border-top:0;position:sticky;top:0;z-index:1;background:var(--surface2,var(--surface))}
+.mf-chip input{position:absolute;opacity:0;pointer-events:none;width:0!important;height:0!important;padding:0!important;border:0!important}
 .mf-dot{width:10px;height:10px;border-radius:50%;background:var(--c,var(--text3))}
 .mf-chip span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mf-ck{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);display:grid;place-items:center;font-size:11px;line-height:1;color:transparent;box-sizing:border-box}
-.mf-chip.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface))}
+.mf-ck{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border2);display:grid;place-items:center;font-size:12px;line-height:1;color:transparent;box-sizing:border-box}
 .mf-chip.on .mf-ck{background:var(--acc);border-color:var(--acc);color:var(--acc-fg,#fff)}
-.mf-chip:has(input:focus-visible){outline:2px solid var(--acc);outline-offset:2px}
+.mf-chip:has(input:focus-visible){outline:2px solid var(--acc);outline-offset:-2px}
 .fab-list { display:flex; flex-direction:column; gap:4px; }
 .fab-list-item {
   display:flex; align-items:center; gap:8px;
@@ -7649,7 +7655,8 @@ px}
       </div>
       <div class="mfield">
         <label>Fabrika(lar)</label>
-        <div id="m-fab-checks" class="mf-grid"></div>
+        <button type="button" class="mf-btn" id="mf-btn" onclick="mfPanel()" aria-expanded="false"><span class="mf-dots" id="mf-dots"></span><span class="mf-txt" id="mf-txt">Tüm fabrikalar</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="mf-panel" id="mf-panel" hidden><div id="m-fab-checks" class="mf-list"></div></div>
       </div>
       <div class="hse-task-layer">
         <div class="hse-task-layer-head">
@@ -8023,25 +8030,39 @@ function fillTaskModal(t) {
   const sel = t ? (t.fabs && t.fabs.length ? t.fabs
                  : (t.fab ? t.fab.split(',').map(s=>s.trim()).filter(Boolean) : [])) : [];
   const mc = document.getElementById('m-fab-checks');
-  const hepsi = sel.length === 0, tek = fabrikalar.length % 2 === 1;
-  mc.innerHTML = [{ name:'Tüm fabrikalar', color:'#888780' }, ...fabrikalar].map((f, i, L) => {
-    const tum = i === 0, on = tum ? hepsi : sel.includes(f.name), son = i === L.length - 1 && tek;
-    return `<label class="mf-chip${tum || son ? ' w' : ''}${on ? ' on' : ''}" style="--c:${f.color}">
+  mc.innerHTML = [{ name:'Tüm fabrikalar', color:'#888780' }, ...fabrikalar].map((f, i) => {
+    const tum = i === 0, on = tum ? sel.length === 0 : sel.includes(f.name);
+    return `<label class="mf-chip${tum ? ' w' : ''}${on ? ' on' : ''}" style="--c:${f.color}">
       <input type="checkbox" class="mfchk" value="${esc(f.name)}" ${on ? 'checked' : ''} onchange="mfFabDegis(this)">
       <i class="mf-dot"></i><span>${esc(f.name)}</span><b class="mf-ck">✓</b>
     </label>`;
   }).join('');
+  mfPanel(false); mfOzet();
 
   document.getElementById('add-modal-bg').classList.add('on');
   setTimeout(()=>document.getElementById('m-text').focus(), 80);
 }
 
-// Fabrika çipleri: "Tüm fabrikalar" ile tek tek seçim birbirini dışlar; hiçbiri seçili kalmazsa "Tüm fabrikalar" döner
+// Fabrika seçimi: açılır panel (çok fabrikada kısa kalır). "Tüm fabrikalar" ile tek tek seçim birbirini dışlar; hiçbiri seçili kalmazsa "Tüm fabrikalar" döner
 function mfFabDegis(el) {
   const L = Array.from(document.querySelectorAll('.mfchk')), tum = L[0];
   if (el === tum) { if (tum.checked) L.slice(1).forEach(c => { c.checked = false; }); else tum.checked = true; }
   else { if (el.checked) tum.checked = false; else if (!L.slice(1).some(c => c.checked)) tum.checked = true; }
   L.forEach(c => c.closest('.mf-chip').classList.toggle('on', c.checked));
+  mfOzet();
+}
+function mfOzet() {
+  const L = Array.from(document.querySelectorAll('.mfchk')); if (!L.length) return;
+  const sec = L.slice(1).filter(c => c.checked), t = document.getElementById('mf-txt'), d = document.getElementById('mf-dots');
+  const renk = c => c.closest('.mf-chip').style.getPropertyValue('--c');
+  t.textContent = !sec.length ? 'Tüm fabrikalar' : sec.length === 1 ? sec[0].value : sec.length + ' fabrika seçildi';
+  d.innerHTML = (sec.length ? sec.slice(0, 3) : [L[0]]).map(c => `<i style="background:${renk(c)}"></i>`).join('');
+}
+function mfPanel(ac) {
+  const pn = document.getElementById('mf-panel'), bt = document.getElementById('mf-btn'); if (!pn) return;
+  if (typeof ac !== 'boolean') ac = pn.hidden;
+  pn.hidden = !ac; bt.classList.toggle('open', ac); bt.setAttribute('aria-expanded', ac ? 'true' : 'false');
+  if (ac) { const on = pn.querySelector('.mf-chip.on:not(.w)'); if (on) on.scrollIntoView({ block: 'nearest' }); }
 }
 function openAddModal() {
   _editTaskId = null;
