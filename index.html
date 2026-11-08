@@ -21536,11 +21536,14 @@ window.addEventListener('resize', calMobInit);
     --bg:#fff !important; --surface:#fff !important; --surface2:#EEF3F7 !important;
     --border:rgba(24,54,77,.12) !important; --border2:rgba(24,54,77,.24) !important;
     --text:#17324A !important; --text2:#5A6B7B !important; --text3:#87939E !important;
-    --acc:#378ADD !important; --acc-dk:#185FA5 !important; --acc-fg:#fff !important;
-    --hd1:#0D2B46 !important; --hd2:#153D5E !important;
     --bad:#C0392B !important; --warn:#D9841E !important; --good:#2F8F5E !important;
-    --acc-tx:#185FA5 !important; --bad-tx:#B02E22 !important; --warn-tx:#9A5B0A !important; --good-tx:#1F7549 !important; --bad-bg:#C0392B !important; --good-bg:#2B7F55 !important;
+    --bad-tx:#B02E22 !important; --warn-tx:#9A5B0A !important; --good-tx:#1F7549 !important; --bad-bg:#C0392B !important; --good-bg:#2B7F55 !important;
     --line:#DFE6EC !important;
+  }
+  /* Vurgu renkleri: Kaza raporu hariç yazdırmada mavi sabit; Kaza raporu uygulama temasının vurgusunu korur (yüzeyler yine beyaz) */
+  html:not(:has(body.kaza-pdf-mode)), html[data-tema]:not(:has(body.kaza-pdf-mode)) {
+    --acc:#378ADD !important; --acc-dk:#185FA5 !important; --acc-fg:#fff !important; --acc-tx:#185FA5 !important;
+    --hd1:#0D2B46 !important; --hd2:#153D5E !important;
   }
   html, body,
   html[data-tema] , html[data-tema] body,           /* her tema id'si için (gökkuşağı dahil) — spesifiklik eşitle */
@@ -24276,6 +24279,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     function svgGrab(el,W,H,y0,h,scale){
       return new Promise(function(ok,no){try{
         var css=printCss().replace(new RegExp('body\\.'+opt.bodyClass.replace(/[-]/g,'\\-'),'g'),'.pr-wrap')+'.pr-wrap #'+opt.rootId+'{display:block!important}';
+        var vs={};css.replace(/var\((--[\w-]+)/g,function(m,n){vs[n]=1;return m});var cs0=el.ownerDocument.defaultView.getComputedStyle(el.ownerDocument.documentElement);css+='.pr-wrap{'+Object.keys(vs).map(function(n){var v=cs0.getPropertyValue(n);return v?n+':'+v.trim():''}).join(';')+'}';
         var c=el.cloneNode(true);c.setAttribute('style','display:block');
         var xml='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+h+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'" transform="translate(0,'+(-y0)+')"><div xmlns="http://www.w3.org/1999/xhtml" class="pr-wrap" style="width:'+W+'px;background:var(--surface);margin:0;padding:0"><style><![CDATA['+css+']]></style>'+new XMLSerializer().serializeToString(c)+'</div></foreignObject></svg>';
         var url='data:image\/svg+xml;charset=utf-8,'+encodeURIComponent(xml),im=new Image();
