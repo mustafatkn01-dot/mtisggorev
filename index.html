@@ -24325,7 +24325,7 @@ window.addEventListener('DOMContentLoaded',()=>{
         src.style.cssText=old;if(!cls)document.body.classList.remove(opt.bodyClass);throw e});
     }
     libs().then(function(){b=build(opt);return new Promise(function(r){setTimeout(r,350)})}).then(function(){
-      var p0=(opt.rootId==='hse-print'||opt.rootId==='denetim-print')?render(b.el,b.doc,'svg').catch(function(e){try{console.warn('PDF svg yolu:',e&&e.message||e)}catch(x){}return null}):Promise.resolve(null);
+      var p0=render(b.el,b.doc,'svg').catch(function(e){try{console.warn('PDF svg yolu:',e&&e.message||e)}catch(x){}return null});
       return p0.then(function(r){if(r&&anyInk(r))return r;return render(b.el,b.doc).then(function(r2){if(anyInk(r2))return r2;return renderInDoc()})});
     }).then(function(r){
       var ori=opt.orientation==='landscape'?'landscape':'portrait';var J=window.jspdf.jsPDF,pdf=new J({unit:'mm',format:'a4',orientation:ori});
