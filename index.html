@@ -10021,6 +10021,7 @@ function applyTema(id, save=true) {
   const root = document.documentElement;
   Object.entries(t.vars).forEach(([k,v]) => root.style.setProperty(k, v));
   root.setAttribute('data-tema', id);
+  root.toggleAttribute('data-koyu', !!t.dark);
   root.style.colorScheme = t.dark ? 'dark' : 'light';   // form alanları, kaydırma çubukları, tarih seçici
   // Not bandı temanın vurgu rengini alır; yazı rengi zemine göre hesaplanır
   const tw = document.getElementById('ticker-wrap');
@@ -21532,7 +21533,7 @@ window.addEventListener('resize', calMobInit);
 <style>
 @media print {
   /* Yazdırma her zaman açık tema renkleriyle (koyu tema çıktıya karışmasın) */
-  html, html[data-tema] {
+  html:not(:has(body.kaza-pdf-mode)), html[data-koyu] {
     --bg:#fff !important; --surface:#fff !important; --surface2:#EEF3F7 !important;
     --border:rgba(24,54,77,.12) !important; --border2:rgba(24,54,77,.24) !important;
     --text:#17324A !important; --text2:#5A6B7B !important; --text3:#87939E !important;
@@ -21541,7 +21542,7 @@ window.addEventListener('resize', calMobInit);
     --line:#DFE6EC !important;
   }
   /* Vurgu renkleri: Kaza raporu hariç yazdırmada mavi sabit; Kaza raporu uygulama temasının vurgusunu korur (yüzeyler yine beyaz) */
-  html:not(:has(body.kaza-pdf-mode)), html[data-tema]:not(:has(body.kaza-pdf-mode)) {
+  html:not(:has(body.kaza-pdf-mode)), html[data-koyu] {
     --acc:#378ADD !important; --acc-dk:#185FA5 !important; --acc-fg:#fff !important; --acc-tx:#185FA5 !important;
     --hd1:#0D2B46 !important; --hd2:#153D5E !important;
   }
@@ -23784,7 +23785,7 @@ function kazaRaporRender(draft,inc){
     zoom:1!important;
     box-shadow:none!important;
     background:#fff!important;
-    color:#26323b!important;
+    color:var(--text,#26323b)!important;
     font-family:Arial,Helvetica,sans-serif!important;
     font-size:10pt!important;
     line-height:1.35!important;
@@ -23824,8 +23825,8 @@ function kazaRaporRender(draft,inc){
   }
   html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 p,
   html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .kaza-report-narrative{orphans:3;widows:3}
-  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .why-root td{background:#eef6fb!important;font-weight:600}
-  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .why-ask{font-size:8pt;color:#52616b;font-weight:400}
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .why-root td{background:color-mix(in srgb,var(--acc) 10%,var(--surface))!important;font-weight:600}
+  html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .why-ask{font-size:8pt;color:var(--text2);font-weight:400}
 
   /* Fotoğraf sadece 1. bölümdeki ayrılmış sağ hücrede kalır; sabit/fixed değildir,
      dolayısıyla sonraki sayfalarda tekrarlanamaz. */
@@ -23846,8 +23847,8 @@ function kazaRaporRender(draft,inc){
     display:flex!important;
     align-items:center!important;
     justify-content:center!important;
-    border:1px solid #cbd0d4!important;
-    background:#fafbfc!important;
+    border:1px solid var(--line)!important;
+    background:var(--surface2)!important;
   }
   html body.kaza-pdf-mode #kaza-pdf-print-root .kaza-a4 .facts .photo img{
     position:static!important;
@@ -24253,6 +24254,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     fr.style.cssText='position:fixed;left:-10000px;top:0;width:'+opt.width+'px;height:1200px;border:0;visibility:hidden';
     document.body.appendChild(fr);
     var d=fr.contentDocument;d.open();d.write('<!doctype html><html><head><meta charset="utf-8"><style>'+printCss()+'</style><style>html,body{margin:0!important;background:var(--surface)!important}#'+opt.rootId+'{display:block!important}</style></head><body class="'+opt.bodyClass+'"></body></html>');d.close();
+    try{var rt=document.documentElement,dr=d.documentElement;dr.style.cssText=rt.style.cssText;['data-tema','data-koyu'].forEach(function(a){if(rt.hasAttribute(a))dr.setAttribute(a,rt.getAttribute(a))})}catch(e){}
     var clone=src.cloneNode(true);
     var sc=src.querySelectorAll('canvas'),cc=clone.querySelectorAll('canvas');
     for(var i=0;i<sc.length;i++){try{var im=d.createElement('img');im.src=sc[i].toDataURL('image/png');im.style.cssText='width:'+(sc[i].style.width||sc[i].clientWidth+'px')+';height:'+(sc[i].style.height||sc[i].clientHeight+'px');cc[i].parentNode.replaceChild(im,cc[i])}catch(e){}}
