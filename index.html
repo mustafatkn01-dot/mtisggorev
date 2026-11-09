@@ -27679,10 +27679,12 @@ function a3_defState(T){
   F:{vardiya:'',ustAmir:'',kidem:'',hasar:'',hasarTanim:'',durus:'',etkilenen:''},
   ekip:{lider:'',uyeler:[]},cs:{cur:T.oneri.slice()},act:{cur:[]}};
 }
-function a3_open(){
+function a3_photoW(T){const r=T.imgR||1.33;return Math.round(Math.min(300,Math.max(100,132*r)))}
+function a3_imgRatio(src){return new Promise(res=>{if(!src)return res(0);const im=new Image();im.onload=()=>res(im.naturalWidth&&im.naturalHeight?im.naturalWidth/im.naturalHeight:1.33);im.onerror=()=>res(1.33);im.src=src})}
+async function a3_open(){
  if(!kazaActiveDraft){alert('A3 raporu için önce rapor taslağını oluşturun.');return}
  a3_mount();
- const b=a3_build();a3_TUR={cur:b.T};a3_CH=b.CH;
+ const b=a3_build();b.T.imgR=await a3_imgRatio(b.T.img);a3_TUR={cur:b.T};a3_CH=b.CH;
  const sv=kazaActiveDraft.a3;
  a3_S=a3_defState(b.T);
  if(sv&&typeof sv==='object'){
@@ -27785,7 +27787,7 @@ function a3_sheetHTML(t){
  const fa=T.fa.map((f,i)=>{const a=A[i];return `<tr><td class="c">${i+1}</td><td>${a3_esc(f[0])}</td><td>${a.sor.length?a3_esc(a.sor.join(', ')):'<span style="color:#b4671a;font-style:italic">Atanmadı</span>'}</td><td class="c">${a.tarih?a3_fd(a.tarih):'—'}</td><td class="c"></td></tr>`}).join('');
  return `<div class="s-top"><div class="s-title">KAZA / OLAY A3 RAPORU<span class="s-tag">${a3_esc(T.ad)}</span><small>${a3_esc(T.fab||'')}<br>${a3_fd(T.olay)}</small></div><div class="s-team"><div><b>Ekip lideri:</b> ${E.lider?a3_esc(E.lider):'<i style="color:#b4671a">Atanmadı</i>'}</div><div><b>Ekip üyeleri:</b> ${E.uyeler.length?a3_esc(E.uyeler.join(', ')):'<i style="color:#b4671a">Atanmadı</i>'}</div></div></div>
  <div class="s-cols"><div class="s-col">
-  <div class="sec" style="flex:none"><h4>PROBLEM TANIMI · ${a3_esc(T.baslik)}</h4><div class="b"><div class="s-prob"><div>${T.bilgi.map(r=>a3_bil(t,r)).join('')}</div>${T.img?`<div class="ph" style="height:128px;min-height:0;padding:0;overflow:hidden;position:relative;border-style:solid"><img src="${T.img}" alt="" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block"></div>`:`<div class="ph" style="height:128px;min-height:0">Olay fotoğrafı yok<br>(olay kaydına eklenirse görünür)</div>`}</div><div class="s-narr"><b>Problem:</b> ${a3_esc(T.prob)}</div></div></div>
+  <div class="sec" style="flex:none"><h4>PROBLEM TANIMI · ${a3_esc(T.baslik)}</h4><div class="b"><div class="s-prob" style="${T.img?`grid-template-columns:minmax(0,1fr) ${a3_photoW(T)}px`:''}"><div>${T.bilgi.map(r=>a3_bil(t,r)).join('')}</div>${T.img?`<div class="ph" style="height:132px;min-height:0;padding:0;overflow:hidden;position:relative;border-style:solid;justify-self:end;width:100%"><img src="${T.img}" alt="" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block"></div>`:`<div class="ph" style="height:132px;min-height:0">Olay fotoğrafı yok<br>(olay kaydına eklenirse görünür)</div>`}</div><div class="s-narr"><b>Problem:</b> ${a3_esc(T.prob)}</div></div></div>
   <div class="sec" style="flex:none"><h4>TEHLİKE ANALİZİ</h4><div class="b"><div class="two"><div><h5>Tehlikeli davranış</h5><ol>${T.davranis.map(x=>`<li>${a3_esc(x)}</li>`).join('')}</ol></div><div><h5>Tehlikeli durum</h5><ol>${T.durum.map(x=>`<li>${a3_esc(x)}</li>`).join('')}</ol></div></div></div></div>
   <div class="s-ch" style="height:158px">${ch}</div>
   <div class="sec" style="flex:1"><h4>NEDEN – SONUÇ ANALİZİ (ISHIKAWA)</h4><div class="b" style="padding:2px">${a3_fishSVG(T.kil)}</div></div>
