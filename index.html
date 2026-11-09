@@ -23150,7 +23150,19 @@ function kazaInjuryDisplay(rows){return (rows||[]).map(x=>{let s=[x.bodyRegion,x
 function kazaPhotoRender(){const p=document.getElementById('kaza-photo-preview');if(!p)return;p.innerHTML=kazaPrimaryImageData?'<img alt="Kaza olay görseli" src="'+kazaPrimaryImageData+'">':'<span>Görsel eklenmedi</span>'}
 function kazaPhotoPick(input){const file=input.files&&input.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);kazaPrimaryImageData=c.toDataURL('image/jpeg',.72);kazaPhotoRender()};img.src=reader.result};reader.readAsDataURL(file)}
 function kazaFormIncident(){if(kazaReportIncidentOverride)return KazaAIRaporMotoru.normalizeIncident(kazaReportIncidentOverride);const injuries=kazaInjuryRead();return KazaAIRaporMotoru.normalizeIncident({incidentId:kazaEditId||kazaReportIncidentId||('new_'+Date.now()),revision:1,tur:kazaMTur,tarih:document.getElementById('kaza-m-tarih').value,saat:document.getElementById('kaza-m-saat').value,kayip:document.getElementById('kaza-m-kayip').value,fab:document.getElementById('kaza-m-fab').value,bolum:document.getElementById('kaza-m-bolum').value,kisi:document.getElementById('kaza-m-kisi').value,calisanGorevi:document.getElementById('kaza-m-gorev').value,aciklama:document.getElementById('kaza-m-aciklama').value,injuries,potansiyelSiddet:document.getElementById('kaza-m-potansiyel').value,kokNeden:document.getElementById('kaza-m-koknedan').value,onlem:document.getElementById('kaza-m-onlem').value,images:kazaPrimaryImageData?[{isPrimary:true,dataUrl:kazaPrimaryImageData}]:[]})}
-function kazaRaporOpen(){kazaReportIncidentOverride=null;const inc=kazaFormIncident();if(!inc.narrative){alert('Rapor oluşturmak için olay anlatımını yazın.');return}document.getElementById('kaza-report-bg').style.display='block';kazaRaporPrecheck(inc);kazaRaporVersions(inc.incidentId)}
+function kazaRaporOpen(){kazaReportIncidentOverride=null;const inc=kazaFormIncident();if(!inc.narrative){alert('Rapor oluşturmak için olay anlatımını yazın.');return}document.getElementById('kaza-report-bg').style.display='block';kazaRaporPrecheck(inc);kazaRaporVersions(inc.incidentId);
+  // Önceki olayın taslağı/önizlemesi yeni kayda taşınmasın: bu kayda ait taslak varsa yükle, yoksa ekranı boşalt
+  let dr=[];try{dr=kazaDraftStore.list(inc.incidentId)||[]}catch(_){}
+  if(dr.length){kazaActiveDraft=dr[dr.length-1];kazaRaporRender(kazaActiveDraft,inc);['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-a3','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=false})}
+  else kazaRaporSifirla()}
+function kazaRaporSifirla(){
+  kazaActiveDraft=null;
+  const pv=document.getElementById('kaza-report-preview');if(pv)pv.innerHTML='<div class="kaza-empty-report"><b>Bu kayıt için rapor bulunmuyor</b><span>Yukarıdaki bilgilerle hızlı veya derin rapor oluşturabilirsiniz.</span></div>';
+  const an=document.getElementById('kaza-report-analysis');if(an)an.innerHTML='';
+  const st=document.getElementById('kaza-report-status');if(st)st.textContent='Henüz rapor oluşturulmadı.';
+  const dv=document.getElementById('kaza-report-directive');if(dv)dv.value='';
+  ['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-a3','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=true});
+}
 function kazaKayitOnizle(id){
   const k=kazaItems.find(x=>String(x.id)===String(id));
   if(!k)return;
@@ -23205,7 +23217,7 @@ function kazaKayitOnizle(id){
     ['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-a3','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=true});
   }
 }
-function kazaRaporClose(){document.getElementById('kaza-report-bg').style.display='none';if(kazaReportIncidentOverride){kazaPrimaryImageData=kazaReportImageBackup;kazaReportIncidentOverride=null}}
+function kazaRaporClose(){document.getElementById('kaza-report-bg').style.display='none';if(typeof a3_close==='function'&&document.getElementById('a3-bg'))a3_close();if(kazaReportIncidentOverride){kazaPrimaryImageData=kazaReportImageBackup;kazaReportIncidentOverride=null}}
 function kazaRaporDepth(btn){document.querySelectorAll('.kaza-report-modes button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.getElementById('kaza-report-depth').value=btn.dataset.depth}
 function kazaRaporChip(btn){const el=document.getElementById('kaza-report-directive'),t=btn.textContent.trim();el.value=el.value.trim()?(el.value.trim()+'. '+t):t}
 function kazaRaporTab(btn){
