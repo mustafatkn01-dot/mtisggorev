@@ -28194,7 +28194,10 @@ function a3_printCss(){
  const base=(document.getElementById('a3-css')||{}).textContent||'';
  return base.replace(/#a3-bg/g,'#a3-print-root')+'#a3-print-root{position:static;overflow:visible;padding:0}#a3-print-root .sheet{position:static;box-shadow:none;transform:none}';
 }
+/* Mobil tarayıcılarda yazdır → PDF, @page boyutunu yok sayıp A4 dikey üretir; bu yüzden mobilde PDF doğrudan A3 yatay olarak oluşturulur */
+function a3_mobil(){const u=navigator.userAgent||'';return /Android|iPhone|iPad|iPod|Mobile/i.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)}
 function a3_pdf(){
+ if(a3_mobil()){a3_pdfIndir();return}
  a3_persist();
  let root=document.getElementById('a3-print-root');
  if(!root){root=document.createElement('div');root.id='a3-print-root';document.body.appendChild(root)}
@@ -28224,7 +28227,7 @@ async function a3_fontEmbed(){
 }
 function a3_loadScript(src,ok){return new Promise((res,rej)=>{if(ok&&ok()){res();return}const s=document.createElement('script');s.src=src;s.onload=()=>res();s.onerror=()=>rej(new Error('Kütüphane yüklenemedi'));document.head.appendChild(s)})}
 async function a3_raster(scale){
- const font=await a3_fontEmbed();
+ const font='';
  const tmp=document.createElement('div');tmp.innerHTML='<div id="a3-print-root" style="width:1190px;height:842px;overflow:hidden;background:#fff"><div class="sheet">'+a3_sheetHTML('cur')+'</div></div>';
  const xml=new XMLSerializer().serializeToString(tmp.firstChild);
  const css=(font||'')+a3_printCss();
@@ -28236,15 +28239,26 @@ async function a3_raster(scale){
  const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.scale(scale,scale);x.drawImage(im,0,0);
  return cv;
 }
+async function a3_pdfBlob(){
+ await a3_loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>window.jspdf&&window.jspdf.jsPDF);
+ const cv=await a3_raster(2.6);
+ const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a3',orientation:'landscape'});
+ pdf.addImage(cv.toDataURL('image/jpeg',.93),'JPEG',0,0,420,297,undefined,'FAST');
+ return pdf.output('blob');
+}
+async function a3_pdfIndir(){
+ a3_persist();a3_toast('A3 PDF hazırlanıyor…');
+ try{
+  const blob=await a3_pdfBlob(),name=a3_fname('.pdf');
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
+  a3_toast('PDF indirildi: A3 yatay');
+ }catch(e){a3_toast('PDF oluşturulamadı: '+(e&&e.message||e))}
+}
 async function a3_paylas(){
  a3_persist();
  a3_toast('PDF hazırlanıyor…');
  try{
-  await a3_loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>window.jspdf&&window.jspdf.jsPDF);
-  const cv=await a3_raster(2.6);
-  const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a3',orientation:'landscape'});
-  pdf.addImage(cv.toDataURL('image/jpeg',.93),'JPEG',0,0,420,297,undefined,'FAST');
-  const blob=pdf.output('blob'),name=a3_fname('.pdf');
+  const blob=await a3_pdfBlob(),name=a3_fname('.pdf');
   const f=new File([blob],name,{type:'application/pdf'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){
    try{await navigator.share({files:[f],title:name});return}catch(e){if(e&&e.name==='AbortError')return}
