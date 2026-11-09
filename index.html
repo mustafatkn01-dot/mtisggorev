@@ -14941,6 +14941,16 @@ function kazaOnlemDurum(id, deger) {
   kazaRender();
 }
 
+// Görev başlığı kısa özet olmalı; aksiyon planının tamamı görev notunda tutulur
+function kazaOnlemOzet(t) {
+  let x = String(t || '').replace(/\s+/g, ' ').trim();
+  x = x.replace(/^\(?\d+[\).]\s*/, '');               // baştaki "1)" numarası
+  x = x.replace(/^[^:.]{3,30}:\s+(?=\S)/, '');          // "Acil / düzeltici:" gibi etiket
+  const m = x.match(/^(.{20,}?[.;!?])(\s|$)/);          // ilk cümle
+  if (m) x = m[1].replace(/[.;]$/, '');
+  if (x.length > 90) { const k = x.slice(0, 90), i = k.lastIndexOf(' '); x = (i > 50 ? k.slice(0, i) : k).trimEnd() + '…'; }
+  return x;
+}
 // Önlemi görev panosuna aktar
 function kazaOnlemGorev(id) {
   const k = kazaItems.find(x => x.id === id);
@@ -14961,13 +14971,13 @@ function kazaOnlemGorev(id) {
   const taskId = Date.now()+'';
   const task = {
     id: taskId,
-    text: `[${tur.ad}] ${k.onlem}`,
+    text: `[${tur.ad}] ${kazaOnlemOzet(k.onlem)}`,
     status: COLS[0]?.id || 'bekliyor',
     prio: k.tur === 'kaza' ? 'high' : 'normal',
     sorumlu: '',
     termin: '',
     talep: '',
-    note: `Olay tarihi: ${k.tarih}${k.fab ? ' — '+k.fab : ''}\nOlay: ${k.aciklama}`,
+    note: `Olay tarihi: ${k.tarih}${k.fab ? ' — '+k.fab : ''}\nOlay: ${k.aciklama}\n\nAksiyon planı:\n${k.onlem}`,
     hseIliski: 'Diğer İSG',
     hseKritik: k.tur === 'kaza' ? 'Yüksek' : 'Orta',
     hseTedbir: 'Diğer',
