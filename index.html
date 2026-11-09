@@ -23747,6 +23747,12 @@ function kazaRaporKeepFix(root){
     if(nxt.matches('.kaza-report-mini-note')&&n2&&n2.tagName==='TABLE'&&n2.classList.contains('kz-short')) wrap.appendChild(n2);
   });
 }
+const KAZA_SIDDET_AD=['Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'];
+function kazaSiddetOlcekHTML(v){
+  const n=parseInt(v);
+  if(!(n>=1&&n<=5))return '<span class="kz-sd-yok">Değerlendirilmedi</span>';
+  return '<span class="kz-sd">'+KAZA_SIDDET_AD.map((a,i)=>'<span class="kz-sd-c'+(i+1===n?' on':'')+'"><i>'+a+'</i><b>'+(i+1===n?'✕':'')+'</b></span>').join('')+'</span>';
+}
 function kazaRaporRender(draft,inc){
   const a=draft&&draft.analysis?draft.analysis:{};
   const whys=Array.isArray(a.whyAnalysisBranches)?a.whyAnalysisBranches:[];
@@ -23831,7 +23837,7 @@ function kazaRaporRender(draft,inc){
         <tr><th>Tarih / Saat</th><td>${safe([inc.date,inc.time].filter(Boolean).join(' '))}</td></tr>
         <tr><th>İş Günü Kaybı</th><td>${Number(inc.lostDays||0)}</td></tr>
         <tr><th>Yaralanma / Hasar</th><td>${safe(inj)}</td></tr>
-        <tr><th>Potansiyel Şiddet</th><td>${safe(inc.potentialSeverity)}</td></tr>
+        <tr><th>Potansiyel Şiddet</th><td>${kazaSiddetOlcekHTML(inc.potentialSeverity)}</td></tr>
       </table>
       <div class="photo">${photo}</div>
     </div>
@@ -23889,6 +23895,15 @@ function kazaRaporRender(draft,inc){
 
 </script>
 
+<style id="kaza-siddet-olcek">
+.kaza-a4 .kz-sd{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%}
+.kaza-a4 .kz-sd-c{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.kaza-a4 .kz-sd-c i{font-style:normal;font-size:.78em;line-height:1.1;text-align:center;color:var(--text2);white-space:nowrap}
+.kaza-a4 .kz-sd-c b{display:flex;align-items:center;justify-content:center;width:100%;height:1.5em;border:1px solid var(--line);border-radius:2px;font-size:.95em;line-height:1;color:#C0392B;font-weight:800}
+.kaza-a4 .kz-sd-c.on i{color:var(--text);font-weight:800}
+.kaza-a4 .kz-sd-c.on b{border-color:#C0392B;background:rgba(192,57,43,.08)}
+.kaza-a4 .kz-sd-yok{color:var(--text2)}
+</style>
 <style id="kaza-pdf-isolated-print-v1">
 #kaza-pdf-print-root{display:none}
 .kaza-a4 .why-root td{background:#eef6fb;font-weight:600}
@@ -27658,7 +27673,7 @@ function a3_build(){
  const tarSaat=a3_fd(olay)+(inc.time?' / '+inc.time:'');
  const fb=inc.factory+(inc.department?' / '+inc.department:'');
  let bilgi;
- if(tid==='ramak')bilgi=[['Bildiren / Görev',kisi],['Fabrika / Bölüm',fb||'—'],['Tarih / Saat',tarSaat],['Olası sonuç',a3_cut(a.directCause||inj||'—',60)||'—'],['Potansiyel şiddet',inc.potentialSeverity||'—'],['Etkilenebilecek','@etkilenen'],['Vardiya','@vardiya'],['Üst amir','@ustAmir']];
+ if(tid==='ramak')bilgi=[['Bildiren / Görev',kisi],['Fabrika / Bölüm',fb||'—'],['Tarih / Saat',tarSaat],['Olası sonuç',a3_cut(a.directCause||inj||'—',60)||'—'],['Potansiyel şiddet',(parseInt(inc.potentialSeverity)>=1&&parseInt(inc.potentialSeverity)<=5)?(['Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'][parseInt(inc.potentialSeverity)-1]+' (5 üzerinden '+parseInt(inc.potentialSeverity)+')'):'Değerlendirilmedi'],['Etkilenebilecek','@etkilenen'],['Vardiya','@vardiya'],['Üst amir','@ustAmir']];
  else if(tid==='maddi')bilgi=[['Bildiren / Görev',kisi],['Fabrika / Bölüm',fb||'—'],['Tarih / Saat',tarSaat],['Hasar','@hasarTanim'],['Duruş süresi','@durus'],['Hasar tutarı','@hasar'],['Vardiya','@vardiya'],['Üst amir','@ustAmir']];
  else bilgi=[['Kazalı / Görev',kisi],['Fabrika / Bölüm',fb||'—'],['Tarih / Saat',tarSaat],['Yaralanma',inj||'—'],['İş günü kaybı',(inc.lostDays||0)+' gün'],['Kıdem','@kidem'],['Vardiya','@vardiya'],['Üst amir','@ustAmir']];
  /* tehlike analizi (heuristik) */
