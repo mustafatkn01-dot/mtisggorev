@@ -7424,6 +7424,7 @@ body.a3-open{overflow:hidden}
         <section class="kaza-report-card"><h4>Yapay zekâya ek yönlendirme <span>(isteğe bağlı)</span></h4><textarea id="kaza-report-directive" placeholder="Örn: Yerleşim ve fiziksel trafik ayrımına ağırlık ver."></textarea><div class="kaza-report-chips"><button type="button" onclick="kazaRaporChip(this)">Yerleşime odaklan</button><button type="button" onclick="kazaRaporChip(this)">İkincil yaralanmayı ayır</button><button type="button" onclick="kazaRaporChip(this)">Davranış yerine sistemi sorgula</button></div></section>
         <button type="button" id="kaza-report-generate" class="kaza-report-generate" onclick="kazaRaporGenerate()">✨ Rapor Taslağı Oluştur</button>
         <div id="kaza-report-status" class="kaza-report-status">Henüz rapor oluşturulmadı.</div>
+        <section class="kaza-report-card kz-notes" id="kaza-notes-card" hidden><button type="button" class="kz-notes-h" onclick="kazaNotlarToggle()"><b>Hazırlık notları</b><span id="kaza-notes-n"></span><i>›</i></button><div id="kaza-notes-body" hidden></div></section>
         <section class="kaza-report-card"><h4>Taslak sürümleri</h4><div id="kaza-report-versions" class="kaza-report-versions"><span>Henüz rapor oluşturulmadı.</span></div></section>
       </aside>
       <main class="kaza-report-main"><nav class="kaza-report-tabs"><button type="button" class="active" data-report-tab="preview" onclick="kazaRaporTab(this)">A4 Ön İzleme</button><button type="button" data-report-tab="analysis" onclick="kazaRaporTab(this)">Analiz Düzenle</button></nav><div id="kaza-report-busy" class="kaza-report-busy" role="status" aria-live="polite" hidden></div><div id="kaza-report-preview" class="kaza-report-preview"><div class="kaza-empty-report"><b>Rapor ön izlemeye hazır değil</b><span>Rapor taslağı oluşturun.</span></div></div><div id="kaza-report-analysis" class="kaza-report-analysis" hidden></div><footer class="kaza-report-bottom"><button type="button" id="kaza-report-save" disabled onclick="kazaRaporKaydet()">Kaydet</button><button type="button" id="kaza-report-regenerate" disabled onclick="kazaRaporGenerate(true)">Yeniden Oluştur</button><button type="button" id="kaza-report-share" disabled onclick="kazaRaporPaylas()">↗ Paylaş</button><button type="button" id="kaza-report-a3" disabled onclick="a3_open()">A3 Raporu</button><button type="button" id="kaza-report-pdf" disabled onclick="kazaRaporPdf()">PDF Oluştur</button></footer></main>
@@ -22361,6 +22362,8 @@ window.addEventListener('resize', calMobInit);
       controlHierarchy: { elimination: [], substitution: [], engineering: [], administrative: [], ppe: [] },
       fishbone: { applicable: false, reason: '', problemStatement: '', categories: [], conclusion: '' },
       correctiveActions: [],
+      executiveSummary: '',
+      reviewNotes: [],
       reportWarnings: [],
       analysisStatus: 'draft_requires_user_validation'
     };
@@ -22384,9 +22387,78 @@ window.addEventListener('resize', calMobInit);
  "controlHierarchy":{"elimination":[],"substitution":[],"engineering":[],"administrative":[],"ppe":[]},
  "fishbone":{"applicable":true,"reason":"string","problemStatement":"Kazayı/olayı 4-10 kelimede somut tanımlayan sonuç ifadesi; OLAY/KAZA gibi genel ifade kullanma","visualCue":{"type":"forklift_pedestrian|hand_crush|cut_laceration|electric_shock|fire_burn|slip_fall|head_impact|eye_foreign_body|chemical_exposure|hot_liquid_steam|vehicle_collision|generic_warning","label":"olayı kısa tanımlayan görsel etiketi","confidence":"high|medium|low","rationale":"görsel tipinin olayla bağını açıklayan kısa gerekçe"},"categories":[{"name":"string","prefix":"string","causes":[{"code":"string","text":"string","evidenceStatus":"string"}]}],"conclusion":"string"},
  "correctiveActions":[{"action":"string","targetsCause":"string","whyStep":1,"hierarchyLevel":"elimination|substitution|engineering|administrative|ppe","priority":"immediate|high|medium|low","effectivenessMeasure":"string"}],
+ "executiveSummary":"tam iki cümle: 1) ne oldu ve sonucu; 2) kök neden ile en kritik önlem ve süresi",
+ "reviewNotes":[],
  "reportWarnings":[],
  "analysisStatus":"draft_requires_user_validation"
 }`;
+  }
+
+  // ── A3 disiplini, olay türü rehberi, geçmiş veri, ön çözümleme ──────────
+  const A3_KURALLARI = `15. A3 DİSİPLİNİ: Rapor gerçek bir A3 problem çözme raporu gibi okunmalı: problem → mevcut durum → kök neden → karşı önlem → uygulama → takip. Bu akışı bozma; her bölüm bir öncekinden mantıkla çıkmalı.
+16. PROBLEM TANIMI: ÖN ÇÖZÜMLEME varsa onun problemStatement çerçevesine sadık kal. Problem tanımı beklenen ile gerçekleşen arasındaki farkı (ne, nerede, ne zaman, ne kadar) anlatır; içinde çözüm, kişi suçlaması veya tahmin olmaz.
+17. "ÇÜNKÜ" TESTİ: Her 5 Neden basamağı bir önceki cevabın nedenidir; "<n. cevap> çünkü <n+1. cevap>" cümlesi mantıklı okunmuyorsa basamağı yeniden yaz. Zincir kişiyi değil sistemi hedefler; "dikkatsizlik", "ihmal", "bilinçsizlik" tek başına kök neden olamaz.
+18. KÖK NEDEN SINAMASI: Ana kök neden için şu iki soruya "evet" diyebilmelisin: (a) Bu neden ortadan kalksaydı olay oluşmaz ya da şiddeti ciddi azalır mıydı? (b) Aynı neden başka yerde/başka işte aynı olayı tekrar üretir mi? Cevap "evet" değilse zinciri derinleştir. GEÇMİŞ VERİ ÖZETİ tekrar iddiasının tek kaynağıdır; veride yoksa "tekrarlıyor" deme.
+19. KARŞI ÖNLEM KALİTESİ: Her faaliyet (a) hangi kök nedene bağlı, (b) emir kipinde tek somut eylem, (c) olaydaki gerçek ekipman/alan/iş adımına atıf, (d) ölçülebilir bitiş veya doğrulama ölçütü, (e) uygulama sırası (acil → kalıcı) taşır. "Dikkat edilsin", "uyarılsın", "bilinçlendirilsin", "gerekli önlemler alınsın", "vb." gibi muğlak ifadeler YASAK.
+20. DİL: Kurumsal, nesnel, net Türkçe yaz. Her metin tam ve bitmiş bir cümle olmalı; "…" ile, "vb." ile veya yarım bırakılmış ifade OLMAZ. Tanımsız kısaltma kullanma; aynı kavram için tek terim kullan.
+21. BELİRSİZLİK: Olay verisinde olmayan sayı, isim, tarih veya ekipman uydurma. Bilinmeyeni ilgili alanda to_verify yap ve missingInformation'a soru olarak ekle. Bu notlar rapor gövdesine değil hazırlık ekranına gider; bu yüzden eşlik eden ana metinlere ("doğrulanamadı", "bilinmiyor" gibi) yazma, metni doğrulanmış ve gözlenmiş bilgiyle kur.
+22. YÖNETİCİ ÖZETİ: executiveSummary alanına TAM İKİ cümle yaz: (1) ne oldu ve sonucu, (2) kök neden ile en kritik önlem ve süresi. Teknik terim ve sayı yığma.`;
+
+  function turRehberi(type) {
+    const t = str(type).toLocaleLowerCase('tr-TR');
+    if (t === 'ramak') return `OLAY TÜRÜ REHBERİ · RAMAK KALA: Yaralanma/hasar OLUŞMADI. "Neden oluşmadı?" sorusunu (son anda çalışan bariyer mi, şans mı?) bariyer analizinde mutlaka yanıtla. Potansiyel şiddet ve olasılığı makul en kötü sonuç üzerinden değerlendir. Faaliyetler önleyicidir; kayıpsız olay olduğu için "kazazede" dili kullanma.`;
+    if (t === 'maddi') return `OLAY TÜRÜ REHBERİ · MADDİ HASAR: Odak ekipman/varlık, hasarın kapsamı ve duruş etkisidir; yaralanma yok. Bakım, periyodik kontrol, tasarım ve değişiklik yönetimi kök nedenlerini öncele. Ekonomik etkiyi (hasar, duruş) sayısal veri varsa belirt, yoksa uydurma.`;
+    if (t === 'ilkyardim') return `OLAY TÜRÜ REHBERİ · İLK YARDIM: Hafif yaralanmanın tehlike kaynağını ve daha ağır sonuca dönme potansiyelini değerlendir; ilk müdahalenin yeterliliğini ayrıca değerlendir.`;
+    return `OLAY TÜRÜ REHBERİ · İŞ KAZASI: Temas mekanizmasını, yaralanmayı ağırlaştıran ikincil etkenleri ve engellenemeyen bariyerleri ayır. Yaralanma şiddetini kök nedenle karıştırma.`;
+  }
+
+  function historyBlock(h) {
+    if (!h || typeof h !== 'object' || !h.kayit) return 'Geçmiş veri özeti sağlanmadı; tekrarlayan kalıp iddiası YAZMA.';
+    return 'GEÇMİŞ VERİ ÖZETİ (aynı fabrika, son 3 yıl, ' + h.kayit + ' kayıt; yalnız bu sayılara dayan):\n' + JSON.stringify(h, null, 1);
+  }
+
+  function buildPreflightPrompt(incident, history, options) {
+    const prepared = prepareIncidentForAI(incident, (options || {}).privacy);
+    return `ROL: İSG kaza araştırma analisti. GÖREV: Olayı analizden ÖNCE ayıkla ve A3 problem tanımını kur. Yorumlama yapma, çözüm önerme.
+KURALLAR:
+- facts: anlatım ve kayıtlarda açıkça yazan olgular (kim/ne/nerede/ne zaman); assumptions: anlatımda olmayıp çıkarım gerektiren noktalar.
+- timeline: olayın sıralı en fazla 7 adımı.
+- problemStatement: beklenen ile gerçekleşen arasındaki fark; ne, nerede, ne zaman, ne kadar. Çözüm ve suçlama içermez; tek bilgi cümlesi.
+- gap: {"expected":"olması gereken durum","actual":"gerçekleşen durum"}.
+- openQuestions: analizin kalitesini artıracak, kayıtta olmayan en fazla 5 saha sorusu (kısa).
+- recurrence: GEÇMİŞ VERİ'ye dayanarak aynı bölüm/neden/bölgede tekrar var mı (tek cümle). Veri yoksa "Veri yok".
+- Veride olmayan bilgiyi uydurma. Her metin tam cümle; "…" kullanma.
+
+${historyBlock(history)}
+
+OLAY VERİSİ:
+${JSON.stringify(prepared.aiIncident, null, 2)}
+
+SADECE JSON:
+{"problemStatement":"","gap":{"expected":"","actual":""},"facts":[],"assumptions":[],"timeline":[],"openQuestions":[],"recurrence":""}`;
+  }
+
+  // Kod tarafı kalite denetimi: yarım cümle, "…", muğlak fiil, olay bağı olmayan öneri
+  const MUGLAK_FIIL = /(dikkat edilsin|dikkat edilmeli|uyarılsın|uyarılmalı|bilinçlendirilsin|bilinçlendirilmeli|gerekli önlem|gerekli tedbir|hassasiyet gösterilsin|\bvb\.?(\s|$)|vs\.)/i;
+  function qualityIssues(analysis) {
+    const a = analysis || {}, issues = [];
+    const check = (where, text) => {
+      const t = str(text);
+      if (!t) return;
+      if (/(…|\.{3})\s*$/.test(t) || /(…|\.{3})/.test(t)) issues.push(where + ': "…" ile bitiyor veya içeriyor');
+      else if (t.length > 40 && !/[.!?)"”]$/.test(t) && /\s(ve|ile|veya|için|olarak|gibi|bir|bu|de|da)$/i.test(t)) issues.push(where + ': yarım cümle');
+      if (MUGLAK_FIIL.test(t)) issues.push(where + ': muğlak ifade');
+    };
+    check('Olay özeti', a.eventSummary);
+    check('Yönetici özeti', a.executiveSummary);
+    check('Doğrudan neden', a.directCause);
+    check('Ana kök neden', a.mainRootCause && a.mainRootCause.text);
+    arr(a.whyAnalysisBranches).forEach((b, bi) => arr(b.items).forEach((x, i) => { check('Neden ' + (bi + 1) + '.' + (i + 1), x.why); check('Neden ' + (bi + 1) + '.' + (i + 1) + ' önerisi', x.recommendation); }));
+    arr(a.correctiveActions).forEach((x, i) => { check('Faaliyet ' + (i + 1), x.action); if (!str(x.effectivenessMeasure)) issues.push('Faaliyet ' + (i + 1) + ': ölçülebilir ölçüt yok'); });
+    arr(a.fishbone && a.fishbone.categories).forEach(c => arr(c.causes).forEach(v => check('Balık kılçığı · ' + c.name, v.text)));
+    check('Balık kılçığı sonucu', a.fishbone && a.fishbone.conclusion);
+    if (!str(a.executiveSummary)) issues.push('Yönetici özeti yok');
+    return uniq(issues);
   }
 
   function buildAnalystPrompt(incident, options) {
@@ -22435,9 +22507,15 @@ ZORUNLU ANALİZ KURALLARI:
 14. OLAY BAĞLANTISI KURALI: Rapordaki her neden, bulgu ve faaliyet olay anlatımındaki somut bir unsura (ekipman, alan, iş adımı, çalışan rolü, malzeme) bağlanmalıdır. Başka her olaya uyabilecek şablon cümleler ("eğitim verilecek", "denetim artırılacak", "prosedür güncellenecek") tek başına YAZILMAZ; yazılacaksa olaya özgü konu belirtilir (hangi prosedür, hangi alanda, ne sıklıkla).
 13. Olay görseli de gönderildiyse yalnız görselde AÇIKÇA görülen fiziksel bulguları "observed" olarak kullan; görselde görünmeyen şeyi uydurma.
 
+${A3_KURALLARI}
+
+${turRehberi(incident.incidentType)}
+
 KULLANICI EK YÖNLENDİRMESİ:
 ${directive || 'Yok - standart sistemsel analiz uygula.'}
 
+${historyBlock(opts.history)}
+${opts.preflight ? '\nÖN ÇÖZÜMLEME (olgular ve problem tanımı; analizini bunun üstüne kur, çelişirsen olay verisini esas al):\n' + JSON.stringify(opts.preflight, null, 1) + '\n' : ''}
 OLAY VERİSİ (kişisel bilgiler maskelenmiştir):
 ${JSON.stringify(prepared.aiIncident, null, 2)}
 
@@ -22586,7 +22664,14 @@ DENETİM LİSTESİ:
 - Kanıt durumu doğru mu? Açıkça bildirilen/gözlenen gerçekler hypothesis olarak etiketlenmişse düzelt; yalnız analitik çıkarımlar hypothesis olsun.
 - Bariyer durumlarını yalnız effective, present, missing, failed, weak veya unknown değerleriyle ve olay bulgusuna uygun biçimde sınıflandır.
 - Kanıt yetersizse confidence düşürülmüş ve to_verify kullanılmış mı?
-Uzun düşünce zinciri yazma. Yalnız düzeltilmiş JSON'u döndür.
+- A3 DİSİPLİNİ: problem tanımı çözüm/suçlama içeriyor mu? "çünkü" testi her 5 Neden basamağında geçiyor mu? Ana kök neden sınaması (ortadan kalksa olay oluşmaz mıydı, başka yerde tekrar eder mi) sağlanıyor mu?
+- Karşı önlemler: kök nedene bağlı, emir kipinde, olaya özgü, ölçülebilir ölçütlü, acil→kalıcı sıralı mı? Muğlak ifade ("dikkat edilsin", "uyarılsın", "vb.") varsa somutlaştır.
+- Tüm metinler tam ve bitmiş cümle mi? "…" ile biten veya yarım kalan hiçbir ifade kalmasın; kalan varsa tamamla.
+- Raporun ana metinlerinde "doğrulanamadı/bilinmiyor" türü ifade kalmış mı? Varsa metni bilinen bilgiyle yeniden kur; belirsizlikleri yalnız missingInformation'a taşı.
+- executiveSummary tam iki cümle mi (ne oldu + sonuç; kök neden + en kritik önlem ve süresi)?
+- Değiştirdiğin her önemli noktayı reviewNotes içine tek kısa cümleyle yaz (rapora girmez, hazırlık ekranında gösterilir).
+- Geçmiş veri özetinde olmayan tekrar iddiasını sil.
+${(options && options.issues && options.issues.length) ? '\nKOD TARAFI KALİTE KONTROLÜNÜN BULDUĞU SORUNLAR (hepsini gider):\n- ' + options.issues.join('\n- ') + '\n' : ''}${options && options.history ? '\n' + historyBlock(options.history) + '\n' : ''}Uzun düşünce zinciri yazma. Yalnız düzeltilmiş JSON'u döndür.
 
 GERÇEK OLAY VERİSİ:
 ${JSON.stringify(prepared.aiIncident, null, 2)}
@@ -22679,6 +22764,8 @@ ${jsonContractText()}`;
     };
     out.fishbone.conclusion = str(out.fishbone.conclusion);
     out.correctiveActions = arr(out.correctiveActions).map(v => ({ action: str(v.action), targetsCause: str(v.targetsCause), whyStep: (Number(v.whyStep) >= 1 && Number(v.whyStep) <= 9) ? Math.round(Number(v.whyStep)) : '', derived: !!v.derived, hierarchyLevel: ['elimination','substitution','engineering','administrative','ppe'].includes(v.hierarchyLevel) ? v.hierarchyLevel : 'administrative', priority: ['immediate','high','medium','low'].includes(v.priority) ? v.priority : 'medium', effectivenessMeasure: str(v.effectivenessMeasure) })).filter(v => v.action);
+    out.executiveSummary = str(out.executiveSummary);
+    out.reviewNotes = uniq(arr(out.reviewNotes).map(v => str(v)).filter(Boolean));
     out.reportWarnings = uniq(out.reportWarnings);
     out.analysisStatus = 'draft_requires_user_validation';
     return out;
@@ -22831,7 +22918,23 @@ SADECE ŞU JSON'U DÖNDÜR:
     if (!incident.narrative) throw new Error('Rapor oluşturmak için olay anlatımı gereklidir.');
     const aiCall = p.aiCall || defaultAiCall;
     const sourceHash = simpleHash(incident);
-    const analystPrompt = buildAnalystPrompt(incident, { userDirective: p.userDirective, previousDraft: p.previousDraft, privacy: p.privacy });
+    // Aşama 0 (yalnız derin rapor): olay ayıklama + A3 problem tanımı. Başarısız olursa analiz bu çerçeve olmadan sürer.
+    let preflight = null;
+    if (p.preflight === true) {
+      try {
+        const pr = extractJson(await aiCall(buildPreflightPrompt(incident, p.history, { privacy: p.privacy }), 4096, { role: 'preflight' }));
+        if (pr && typeof pr === 'object' && str(pr.problemStatement)) {
+          preflight = {
+            problemStatement: str(pr.problemStatement),
+            gap: { expected: str(pr.gap && pr.gap.expected), actual: str(pr.gap && pr.gap.actual) },
+            facts: arr(pr.facts).map(str).filter(Boolean), assumptions: arr(pr.assumptions).map(str).filter(Boolean),
+            timeline: arr(pr.timeline).map(str).filter(Boolean), openQuestions: arr(pr.openQuestions).map(str).filter(Boolean).slice(0, 5),
+            recurrence: str(pr.recurrence)
+          };
+        }
+      } catch (preErr) { /* ön çözümleme olmadan devam */ }
+    }
+    const analystPrompt = buildAnalystPrompt(incident, { userDirective: p.userDirective, previousDraft: p.previousDraft, privacy: p.privacy, history: p.history, preflight });
     const analystRaw = extractJson(await aiCall(analystPrompt, p.maxToken || 24576, { role: 'analyst' }));
     const analystAnalysis = normalizeAnalysis(analystRaw);
     let finalAnalysis = analystAnalysis;
@@ -22840,7 +22943,7 @@ SADECE ŞU JSON'U DÖNDÜR:
     if (p.skipReview !== true) {
       // Bağımsız denetim başarısız olursa (servis yoğunluğu, bozuk JSON) analist taslağı KAYBOLMAZ.
       try {
-        const reviewerPrompt = buildReviewerPrompt(incident, analystAnalysis, { privacy: p.privacy });
+        const reviewerPrompt = buildReviewerPrompt(incident, analystAnalysis, { privacy: p.privacy, history: p.history });
         const reviewerRaw = extractJson(await aiCall(reviewerPrompt, p.maxToken || 24576, { role: 'reviewer' }));
         const reviewed = normalizeAnalysis(reviewerRaw);
         // Denetçi çıktısı anlamlı değilse (özet/kök neden boş) analist taslağı korunur.
@@ -22858,6 +22961,17 @@ SADECE ŞU JSON'U DÖNDÜR:
       }
     }
 
+    // Kod tarafı kalite denetimi: yarım cümle, "…", muğlak ifade, ölçütsüz faaliyet. Derin raporda tek onarım turu yapılır.
+    let issues = qualityIssues(finalAnalysis);
+    if (p.skipReview !== true && issues.length) {
+      try {
+        const fixRaw = extractJson(await aiCall(buildReviewerPrompt(incident, finalAnalysis, { privacy: p.privacy, history: p.history, issues }), p.maxToken || 24576, { role: 'repair' }));
+        const fixed = normalizeAnalysis(fixRaw);
+        if (fixed.eventSummary && (fixed.rootCauses.length || fixed.mainRootCause.text) && qualityIssues(fixed).length <= issues.length) {
+          finalAnalysis = fixed; issues = qualityIssues(fixed);
+        }
+      } catch (fixErr) { /* onarım başarısızsa mevcut taslak korunur */ }
+    }
     // 5 Neden kalite kapısı: ana zincir 5 basamağın altındaysa YALNIZ zinciri küçük bir çağrıyla derinleştir.
     let whyRetried = false;
     try {
@@ -22939,6 +23053,8 @@ SADECE ŞU JSON'U DÖNDÜR:
       reviewError,
       actionsRewritten,
       derivedActions,
+      preflight,
+      qualityIssues: qualityIssues(finalAnalysis),
       visualQA,
       status: 'draft',
       validation: { valid: checked.valid, errors: checked.errors, warnings: checked.warnings },
@@ -23188,7 +23304,7 @@ function kazaRaporOpen(){kazaReportIncidentOverride=null;const inc=kazaFormIncid
   if(dr.length){kazaActiveDraft=dr[dr.length-1];kazaRaporRender(kazaActiveDraft,inc);['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-a3','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=false})}
   else kazaRaporSifirla()}
 function kazaRaporSifirla(){
-  kazaActiveDraft=null;
+  kazaActiveDraft=null;kazaNotlarKapat();
   const pv=document.getElementById('kaza-report-preview');if(pv)pv.innerHTML='<div class="kaza-empty-report"><b>Bu kayıt için rapor bulunmuyor</b><span>Yukarıdaki bilgilerle hızlı veya derin rapor oluşturabilirsiniz.</span></div>';
   const an=document.getElementById('kaza-report-analysis');if(an)an.innerHTML='';
   const st=document.getElementById('kaza-report-status');if(st)st.textContent='Henüz rapor oluşturulmadı.';
@@ -23249,7 +23365,7 @@ function kazaKayitOnizle(id){
     ['kaza-report-save','kaza-report-regenerate','kaza-report-share','kaza-report-a3','kaza-report-pdf'].forEach(x=>{const el=document.getElementById(x);if(el)el.disabled=true});
   }
 }
-function kazaRaporClose(){document.getElementById('kaza-report-bg').style.display='none';if(typeof a3_close==='function'&&document.getElementById('a3-bg'))a3_close();if(kazaReportIncidentOverride){kazaPrimaryImageData=kazaReportImageBackup;kazaReportIncidentOverride=null}}
+function kazaRaporClose(){document.getElementById('kaza-report-bg').style.display='none';kazaNotlarKapat();if(typeof a3_close==='function'&&document.getElementById('a3-bg'))a3_close();if(kazaReportIncidentOverride){kazaPrimaryImageData=kazaReportImageBackup;kazaReportIncidentOverride=null}}
 function kazaRaporDepth(btn){document.querySelectorAll('.kaza-report-modes button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.getElementById('kaza-report-depth').value=btn.dataset.depth}
 function kazaRaporChip(btn){const el=document.getElementById('kaza-report-directive'),t=btn.textContent.trim();el.value=el.value.trim()?(el.value.trim()+'. '+t):t}
 function kazaRaporTab(btn){
@@ -23285,6 +23401,47 @@ function kazaRaporDurum(msg,tip){
   b.hidden=false;
   if(tip==='done'||tip==='err')kazaBusyTimer=setTimeout(()=>{b.hidden=true},tip==='err'?9000:4500);
 }
+/* Geçmiş veri özeti: yalnız toplu sayılar (kişi/fabrika adı yok); yapay zekâ tekrar iddiasını yalnız buna dayandırır */
+function kazaGecmisOzet(inc){
+  try{
+    const liste=(typeof kazaItems!=='undefined'&&Array.isArray(kazaItems)?kazaItems:[]).filter(k=>String(k.id)!==String(inc.incidentId)&&(!inc.factory||k.fab===inc.factory));
+    const ref=inc.date?new Date(inc.date):new Date(),alt=new Date(ref);alt.setFullYear(alt.getFullYear()-3);
+    const son=liste.filter(k=>{const d=new Date(k.tarih);return !isNaN(d)&&d>=alt&&d<=ref});
+    if(!son.length)return null;
+    const say=(arr,f)=>{const m={};arr.forEach(k=>{const v=f(k);if(v)m[v]=(m[v]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([ad,n])=>({ad,sayi:n}))};
+    const norm=x=>String(x||'').toLocaleLowerCase('tr').trim();
+    const ayniBol=son.filter(k=>inc.department&&norm(k.bolum)===norm(inc.department));
+    const ayniKok=son.filter(k=>inc.selectedRootCause&&norm(k.kokNeden)===norm(inc.selectedRootCause));
+    const bolge=(inc.injuries||[]).map(x=>norm(x.bodyRegion)).filter(Boolean);
+    const ayniBolge=son.filter(k=>(k.injuries||[]).some(x=>bolge.includes(norm(x.bodyRegion))));
+    return{kayit:son.length,tur:say(son,k=>k.tur),bolum:say(son,k=>k.bolum),kokNeden:say(son,k=>k.kokNeden),
+      ayniBolumdeKayit:inc.department?ayniBol.length:null,ayniKokNedenliKayit:inc.selectedRootCause?ayniKok.length:null,ayniVucutBolgesiKayit:bolge.length?ayniBolge.length:null};
+  }catch(e){return null}
+}
+function kazaNotlarToggle(){const b=document.getElementById('kaza-notes-body'),c=document.getElementById('kaza-notes-card');if(!b)return;b.hidden=!b.hidden;if(c)c.classList.toggle('open',!b.hidden)}
+function kazaNotlarKapat(){const b=document.getElementById('kaza-notes-body'),c=document.getElementById('kaza-notes-card');if(b)b.hidden=true;if(c){c.classList.remove('open');c.hidden=true}}
+/* Doğrulanamayan / eksik bilgi notları rapora yazılmaz; yalnız hazırlık ekranında gösterilir */
+function kazaRaporNotlar(draft){
+  const card=document.getElementById('kaza-notes-card'),body=document.getElementById('kaza-notes-body'),n=document.getElementById('kaza-notes-n');
+  if(!card||!body)return;
+  const a=(draft&&draft.analysis)||{},pf=draft&&draft.preflight,iss=(draft&&draft.qualityIssues)||[];
+  const arr=v=>Array.isArray(v)?v:[];
+  const dog=[...arr(a.contributingFactors),...arr(a.rootCauses),...arr(a.eventChain).map(x=>({text:x.event,evidenceStatus:x.evidenceStatus}))].filter(x=>x&&['to_verify','hypothesis'].includes(x.evidenceStatus)&&x.text).map(x=>x.text);
+  const bol=[
+    ['Saha doğrulaması gereken bilgiler',arr(a.missingInformation).map(x=>x.question+(x.whyItMatters?' — '+x.whyItMatters:''))],
+    ['Doğrulanması gereken bulgular',[...new Set(dog)].slice(0,8)],
+    ['Ek saha soruları',pf?arr(pf.openQuestions):[]],
+    ['Tekrar durumu (geçmiş veri)',pf&&pf.recurrence&&!/^veri yok/i.test(pf.recurrence)?[pf.recurrence]:[]],
+    ['Denetçinin değiştirdikleri',arr(a.reviewNotes)],
+    ['Kalite denetimi',iss],
+    ['Uyarılar',arr(a.reportWarnings)]
+  ].filter(x=>x[1].length);
+  const top=bol.reduce((t,x)=>t+x[1].length,0);
+  if(!top){card.hidden=true;return}
+  card.hidden=false;body.hidden=true;card.classList.remove('open');
+  n.textContent=top+' not';
+  body.innerHTML=bol.map(x=>'<div class="kz-nt"><h5>'+kazaEsc(x[0])+'</h5><ul>'+x[1].map(t=>'<li>'+kazaEsc(t)+'</li>').join('')+'</ul></div>').join('')+'<p class="kz-nt-i">Bu notlar rapora yazılmaz.</p>';
+}
 async function kazaRaporGenerate(regenerate){
   const btn=document.getElementById('kaza-report-generate'),inc=kazaFormIncident();
   const deep=document.getElementById('kaza-report-depth').value==='deep',directive=document.getElementById('kaza-report-directive').value.trim();
@@ -23298,7 +23455,7 @@ async function kazaRaporGenerate(regenerate){
   if(regBtn&&regenerate)regBtn.textContent='⏳ Hazırlanıyor…';
   const prevEl=document.getElementById('kaza-report-preview');if(prevEl)prevEl.classList.add('kz-working');
   btn.textContent=deep?'🔎 Derin analiz hazırlanıyor…':'⚡ Hızlı rapor hazırlanıyor…';
-  const baslik=(regenerate?'Rapor yeniden oluşturuluyor… ':'')+(deep?'Analist taslağı ve bağımsız gözden geçirme hazırlanıyor…':'Hızlı ön analiz hazırlanıyor…');
+  const baslik=(regenerate?'Rapor yeniden oluşturuluyor… ':'')+(deep?'Derin analiz: olay ayıklama, analist taslağı, denetim ve kalite kontrolü hazırlanıyor…':'Hızlı ön analiz hazırlanıyor…');
   const status={set textContent(v){kazaRaporDurum(v)}};
   status.textContent=baslik;
   // Servis yoğunluğunda otomatik yeniden denemeyi kullanıcıya göster
@@ -23309,11 +23466,13 @@ async function kazaRaporGenerate(regenerate){
     const gorsel=(typeof kazaAnalizGorselParca==='function')?kazaAnalizGorselParca():null;
     let adim=0;
     const draft=await KazaAIRaporMotoru.generateDraft({
-      incident:inc,userDirective:directive,previousDraft:previous,skipReview:!deep,
+      incident:inc,userDirective:directive,previousDraft:previous,skipReview:!deep,preflight:deep,history:kazaGecmisOzet(inc),
       aiCall:(prompt,tokens,meta)=>{
         const rol=meta&&meta.role;
-        if(deep&&rol==='analyst') status.textContent='1/2 Analist taslağı hazırlanıyor…';
-        if(deep&&rol==='reviewer') status.textContent='2/2 Bağımsız gözden geçirme yapılıyor…';
+        if(deep&&rol==='preflight') status.textContent='1/4 Olay ayıklanıyor ve problem tanımı kuruluyor…';
+        if(deep&&rol==='analyst') status.textContent='2/4 Analist taslağı hazırlanıyor…';
+        if(deep&&rol==='reviewer') status.textContent='3/4 Bağımsız gözden geçirme yapılıyor…';
+        if(deep&&rol==='repair') status.textContent='4/4 Kalite denetimi ve düzeltme yapılıyor…';
         if(rol==='visual') status.textContent='Görsel tipi doğrulanıyor…';
         return geminiUret(prompt,tokens,{json:true,temperature:0.2,hizli:true,image:(rol==='analyst'&&gorsel)?gorsel:null});
       }
@@ -23877,6 +24036,7 @@ function kazaRaporRender(draft,inc){
     <div class="kaza-report-narrative"><b>Olayın Anlatımı</b><p>${safe(inc.narrative)}</p></div>
 
     <h2>2. OLAY ÖZETİ VE OLAY ZİNCİRİ</h2>
+    ${a.executiveSummary?`<div class="kaza-report-note"><b>Yönetici Özeti</b>${safe(a.executiveSummary)}</div>`:''}
     <div class="kaza-report-note"><b>Analiz Özeti</b>${safe(eventSummary)}</div>
     ${chainRows?`<table><thead><tr><th>No</th><th>Olay Zinciri</th><th>Kanıt Durumu</th></tr></thead><tbody>${chainRows}</tbody></table>`:
       `<div class="kaza-report-note muted">Olay zinciri için ayrı doğrulanmış adımlar oluşturulmamıştır.</div>`}
@@ -23910,10 +24070,6 @@ function kazaRaporRender(draft,inc){
     ${actRows?`<p class="kaza-fishbone-intro">Her faaliyet, 5 Neden zincirindeki ilgili basamağı hedefler; son basamak kök nedeni çözen kalıcı faaliyettir.</p><table><thead><tr><th>No</th><th>Faaliyet</th><th style="width:19%">Hedef Neden</th><th style="width:12%">Kontrol Seviyesi</th><th style="width:11%">Öncelik / Süre</th><th style="width:19%">Etkinlik Ölçütü</th></tr></thead><tbody>${actRows}</tbody></table>`:
       `<div class="kaza-report-note muted">Doğrulanmış düzeltici / önleyici faaliyet taslağı bulunmamaktadır.</div>`}
 
-    <h2>8. DOĞRULAMA VE AÇIK NOKTALAR</h2>
-    ${missingRows?`<table><thead><tr><th>No</th><th>Doğrulanacak Bilgi</th><th>Neden Önemli?</th></tr></thead><tbody>${missingRows}</tbody></table>`:
-      `<div class="kaza-report-note good"><b>Kontrol</b>Rapor motorunun işaretlediği ek kritik bilgi sorusu bulunmamaktadır.</div>`}
-
   </article>`;
   kazaRaporKeepFix(document.getElementById('kaza-report-preview'));
 
@@ -23921,12 +24077,26 @@ function kazaRaporRender(draft,inc){
     `<section class="kaza-report-card"><h4>Olay özeti</h4><textarea data-analysis-edit="eventSummary">${kazaEsc(a.eventSummary||'')}</textarea></section>
      <section class="kaza-report-card"><h4>Ana kök neden</h4><textarea data-analysis-edit="mainRootCause">${kazaEsc(mainRoot==='—'?'':mainRoot)}</textarea></section>
      <section class="kaza-report-card"><h4>Kullanıcı gerçekleri · değiştirilemez</h4><p>${kazaEsc(inc.narrative)}</p></section>`;
+  kazaRaporNotlar(draft);
   const tab=document.querySelector('[data-report-tab="preview"]');
   if(tab) tab.click();
 }
 
 </script>
 
+<style id="kaza-notes-css">
+.kz-notes{padding:0!important;overflow:hidden}
+.kz-notes-h{display:flex;align-items:center;gap:8px;width:100%;padding:11px 14px;background:none;border:0;color:var(--text);font:inherit;cursor:pointer;text-align:left}
+.kz-notes-h b{font-size:12.5px;flex:1}
+.kz-notes-h span{font-size:11px;color:var(--text2);white-space:nowrap}
+.kz-notes-h i{font-style:normal;font-size:16px;color:var(--text2);transition:transform .15s}
+.kz-notes.open .kz-notes-h i{transform:rotate(90deg)}
+.kz-notes>div{padding:2px 14px 12px;max-height:340px;overflow-y:auto}
+.kz-nt h5{margin:10px 0 4px;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.kz-nt ul{margin:0;padding-left:16px}
+.kz-nt li{font-size:11.5px;line-height:1.45;margin-bottom:3px;color:var(--text)}
+.kz-nt-i{margin:10px 0 0;font-size:10.5px;color:var(--text2)}
+</style>
 <style id="kaza-siddet-olcek">
 .kaza-a4 .kz-sd{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%}
 .kaza-a4 .kz-sd-c{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
