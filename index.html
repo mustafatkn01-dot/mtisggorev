@@ -8375,10 +8375,11 @@ function restoreArchive(i) {
 function deleteArchive(i) {
   const t = archived[i];
   if (!t) return;
-  if (!confirm('Bu görev arşivden kalıcı olarak silinsin mi?')) return;
-  archived.splice(i, 1);
-  saveArchive(); openArchive();
-  toast('Arşivden silindi');
+  isgOnay({ baslik:'Arşivden silinsin mi?', mesaj:'Bu görev arşivden kalıcı olarak silinecek. Geri alınamaz.', evet:'Sil' }, () => {
+    archived.splice(i, 1);
+    saveArchive(); openArchive();
+    toast('Arşivden silindi');
+  });
 }
 
 // Termin renk hesapla
@@ -8439,10 +8440,12 @@ function mv(id, s) {
 }
 
 function del(id) {
-  if (!confirm('Görevi silmek istiyor musunuz?')) return;
-  tasks = tasks.filter(x=>x.id!==id);
-  if (window._fbDelete) window._fbDelete(id);
-  render(); toast('Silindi');
+  const t = tasks.find(x => x.id === id);
+  isgOnay({ baslik:'Görev silinsin mi?', mesaj:(t && t.text ? '"' + String(t.text).slice(0, 80) + '"\n' : '') + 'Görev silinecek. Geri alınamaz.', evet:'Sil' }, () => {
+    tasks = tasks.filter(x=>x.id!==id);
+    if (window._fbDelete) window._fbDelete(id);
+    render(); toast('Silindi');
+  });
 }
 
 function esc(s) {
@@ -9246,10 +9249,11 @@ function addFab() {
 }
 
 function delFab(i) {
-  if (!confirm(fabrikalar[i].name + ' silinsin mi?')) return;
-  fabrikalar.splice(i, 1);
-  saveFabrikalar();
-  renderSettingsPanel();
+  isgOnay({ baslik:'Fabrika silinsin mi?', mesaj:'"' + fabrikalar[i].name + '" listeden silinecek.', evet:'Sil' }, () => {
+    fabrikalar.splice(i, 1);
+    saveFabrikalar();
+    renderSettingsPanel();
+  });
 }
 
 function changeFabColor(i) {
@@ -12042,11 +12046,12 @@ function perToggleCheck(tid, pid, fab) {
   perRender();
 }
 function perDelTask(id) {
-  if (!confirm('Görevi sil?')) return;
-  perTasks = perTasks.filter(t => t.id !== id);
-  perSave();
-  perRender();
-  perToast('Silindi');
+  isgOnay({ baslik:'Görev silinsin mi?', mesaj:'Görev silinecek. Geri alınamaz.', evet:'Sil' }, () => {
+    perTasks = perTasks.filter(t => t.id !== id);
+    perSave();
+    perRender();
+    perToast('Silindi');
+  });
 }
 
 // ── Ayarlar ──────────────────────────────────────────────
@@ -12095,12 +12100,13 @@ function perAddPerson() {
   perRenderSettings();
 }
 function perDelPerson(i) {
-  if (!confirm('Personeli sil? İlgili fabrikalar sahipsiz kalır.')) return;
-  const pid = perPersons[i].id;
-  perPersons.splice(i,1);
-  perFabs.forEach(f => { if (f.owner===pid) f.owner=''; });
-  perSavePersons(); perSaveFabs();
-  perRenderSettings();
+  isgOnay({ baslik:'Personel silinsin mi?', mesaj:'İlgili fabrikalar sahipsiz kalır.', evet:'Sil' }, () => {
+    const pid = perPersons[i].id;
+    perPersons.splice(i,1);
+    perFabs.forEach(f => { if (f.owner===pid) f.owner=''; });
+    perSavePersons(); perSaveFabs();
+    perRenderSettings();
+  });
 }
 // Fabrika ekleme/silme merkezi listeye yazar → tüm modüllere yansır
 function perAddFab() {
@@ -12119,11 +12125,12 @@ function perAddFab() {
 function perDelFab(i) {
   const ad = perFabs[i]?.name;
   if (!ad) return;
-  if (!confirm(`"${ad}" silinsin mi?\nBu fabrika tüm bölümlerden kaldırılacak.`)) return;
-  const j = fabrikalar.findIndex(f => f.name === ad);
-  if (j >= 0) fabrikalar.splice(j, 1);
-  saveFabrikalar(); parametreSenkron();
-  perRenderSettings();
+  isgOnay({ baslik:'Fabrika silinsin mi?', mesaj:`"${ad}" silinecek.\nBu fabrika tüm bölümlerden kaldırılacak.`, evet:'Sil' }, () => {
+    const j = fabrikalar.findIndex(f => f.name === ad);
+    if (j >= 0) fabrikalar.splice(j, 1);
+    saveFabrikalar(); parametreSenkron();
+    perRenderSettings();
+  });
 }
 function perChangeFabOwner(i, pid) {
   perFabs[i].owner = pid;
@@ -12907,7 +12914,7 @@ function kontrolTopluKaydet(){
   if(hedefFabs.length) msg+=`Hedef fabrikalar: ${hedefFabs.join(', ')}\n`;
   else msg+='Hedef fabrika seçilmedi; yalnız mevcut seçili kayıtlar güncellenecek.\n';
   msg+=`Kontrol tarihi: ${new Date(tarih+'T00:00:00').toLocaleDateString('tr-TR')}\nKaynak kayıtlar silinmeyecek. Devam edilsin mi?`;
-  if(!confirm(msg))return;
+  isgOnay({baslik:'Toplu kontrol uygulansın mı?',mesaj:msg,evet:'Uygula',tehlike:false},()=>{
 
   if(!hedefFabs.length){
     kaynaklar.forEach(it=>{
@@ -12946,6 +12953,7 @@ function kontrolTopluKaydet(){
   kontrolRender();
   if(typeof dashRender==='function')dashRender();
   toast(hedefFabs.length?`${yeni} yeni kayıt oluşturuldu, ${guncel} kayıt güncellendi`:`${guncel} kontrol kaydı güncellendi`);
+  });
 }
 
 
@@ -13608,12 +13616,13 @@ function kontrolSubmit() {
 }
 function kontrolEdit(id) { kontrolOpenAdd(id); }
 function kontrolDel(id) {
-  if (!confirm('Kaydı sil?')) return;
-  const bmIt = kontrolItems.find(x=>x.id===id);
-  if (bmIt && typeof bmSatirBlobSil === 'function') bmSatirBlobSil(bmIt);
-  kontrolItems = kontrolItems.filter(x=>x.id!==id);
-  kontrolSave();
-  kontrolRender();
+  isgOnay({ baslik:'Kayıt silinsin mi?', mesaj:'Kayıt silinecek. Geri alınamaz.', evet:'Sil' }, () => {
+    const bmIt = kontrolItems.find(x=>x.id===id);
+    if (bmIt && typeof bmSatirBlobSil === 'function') bmSatirBlobSil(bmIt);
+    kontrolItems = kontrolItems.filter(x=>x.id!==id);
+    kontrolSave();
+    kontrolRender();
+  });
 }
 
 // ── Ayarlar ────────────────────────────────────────────────
@@ -14922,11 +14931,12 @@ function kazaSubmit() {
 }
 function kazaEdit(id) { kazaOpenAdd(id); }
 function kazaDel(id) {
-  if (!confirm('Bu olay kaydı silinsin mi? Geri alınamaz.')) return;
-  kazaItems = kazaItems.filter(x => x.id !== id);
-  if (window._hseDurumPlanla) window._hseDurumPlanla();
-  kazaSave(); kazaRenderFiltreler(); kazaRender();
-  toast('Kayıt silindi');
+  isgOnay({ baslik:'Olay kaydı silinsin mi?', mesaj:'Bu olay kaydı silinecek. Geri alınamaz.', evet:'Sil' }, () => {
+    kazaItems = kazaItems.filter(x => x.id !== id);
+    if (window._hseDurumPlanla) window._hseDurumPlanla();
+    kazaSave(); kazaRenderFiltreler(); kazaRender();
+    toast('Kayıt silindi');
+  });
 }
 
 // Önlem durumu (Açık/Kapalı) — "Kapalı" seçilince Önlem Tamamlandı işaretlenir
@@ -14948,7 +14958,9 @@ function kazaOnlemOzet(t) {
   x = x.replace(/^[^:.]{3,30}:\s+(?=\S)/, '');          // "Acil / düzeltici:" gibi etiket
   const m = x.match(/^(.{20,}?[.;!?])(\s|$)/);          // ilk cümle
   if (m) x = m[1].replace(/[.;]$/, '');
-  if (x.length > 90) { const k = x.slice(0, 90), i = k.lastIndexOf(' '); x = (i > 50 ? k.slice(0, i) : k).trimEnd() + '…'; }
+  // Çok uzunsa "…" ile kesme: son tam virgül/noktalı virgül sınırında bitir, yoksa cümleyi tam bırak
+  if (x.length > 130) { const k = x.slice(0, 130), i = Math.max(k.lastIndexOf(','), k.lastIndexOf(';')); if (i > 50) x = k.slice(0, i); }
+  x = x.replace(/[\s,;:…]+$/, '').replace(/\.{2,}$/, '');
   return x;
 }
 // Önlemi görev panosuna aktar
@@ -15191,8 +15203,9 @@ function kazaGecmisIsle() {
 }
 function kazaGecmisSil(y) {
   const fab = document.getElementById('kaza-s-gfab')?.value; const g = (kazaAyar.gecmis || {})[fab]; if (!g || !g[y]) return;
-  if (!confirm(`${y} yılı geçmiş verisi silinsin mi?`)) return;
-  delete g[y]; kazaSaveAyarLS(); kazaGecmisAyarYukle(true);
+  isgOnay({ baslik:'Geçmiş veri silinsin mi?', mesaj:`${y} yılı geçmiş verisi silinecek. Geri alınamaz.`, evet:'Sil' }, () => {
+    delete g[y]; kazaSaveAyarLS(); kazaGecmisAyarYukle(true);
+  });
 }
 function kazaCloseSettings() { document.getElementById('kaza-settings-bg').style.display = 'none'; }
 function kazaSaveSettings() {
@@ -15589,7 +15602,7 @@ async function kazaIstatistikExcel(inp) {
     if (Object.keys(saatler).length) ozet.push(`${yil} aylık çalışma saati: ${Object.keys(saatler).length} ay` + (Object.keys(calisanlar).length ? ` · çalışan sayısı: ${Object.keys(calisanlar).length} ay` : ''));
     if (uyari.length) ozet.push('Uyarı: ' + uyari.join('; '));
     if (!ozet.length) { alert('Dosyada aktarılacak veri bulunamadı. ESKİ VERİLER, Veri Girişi ve Kaza Oranları sayfalarının bulunduğundan emin olun.'); inp.value = ''; return; }
-    if (!confirm(`“${fab}” için şunlar aktarılacak:\n\n• ${ozet.join('\n• ')}\n\nDevam edilsin mi?`)) { inp.value = ''; return; }
+    if (!(await isgOnayP({ baslik:'Veri aktarılsın mı?', mesaj:`“${fab}” için şunlar aktarılacak:\n\n• ${ozet.join('\n• ')}`, evet:'Aktar', tehlike:false }))) { inp.value = ''; return; }
     kazaAyar.gecmis = kazaAyar.gecmis || {}; kazaAyar.gecmis[fab] = Object.assign({}, kazaAyar.gecmis[fab] || {}, gecmis);
     if (Object.keys(saatler).length) { kazaAyar.fabAylik = kazaAyar.fabAylik || {}; kazaAyar.fabAylik[fab] = Object.assign({}, kazaAyar.fabAylik[fab] || {}, saatler); }
     if (Object.keys(calisanlar).length) { kazaAyar.calisanAylik = kazaAyar.calisanAylik || {}; kazaAyar.calisanAylik[fab] = Object.assign({}, kazaAyar.calisanAylik[fab] || {}, calisanlar); }
@@ -19223,6 +19236,14 @@ function denetimSubmit() {
   toast(dnEditId ? 'Denetim güncellendi' : 'Denetim eklendi');
 }
 /* Tema uyumlu onay kartı (tarayıcının kendi confirm penceresi yerine) */
+function isgOnayP(o) {
+  return new Promise(res => {
+    isgOnay(o, () => res(true));
+    const bg = document.getElementById('isg-onay-bg');
+    const iz = new MutationObserver(() => { if (!document.getElementById('isg-onay-bg')) { iz.disconnect(); setTimeout(() => res(false), 0); } });
+    iz.observe(document.body, { childList:true });
+  });
+}
 function isgOnay(o, onEvet, onDiger) {
   const eski = document.getElementById('isg-onay-bg'); if (eski) eski.remove();
   const bg = document.createElement('div'); bg.id = 'isg-onay-bg'; bg.className = 'isg-onay-bg';
