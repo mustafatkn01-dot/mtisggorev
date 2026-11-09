@@ -6516,6 +6516,7 @@ px}
 #a3-bg .demo{font-size:11px;color:var(--text2);text-align:center;line-height:1.45}
 #a3-bg{position:fixed;inset:0;z-index:95;overflow:auto;-webkit-overflow-scrolling:touch}
 body.a3-open{overflow:hidden}
+#a3-bg .sheet,#a3-print-root .sheet{font-family:Arial,"Liberation Sans",Helvetica,sans-serif}
 #a3-bg .fo{display:grid;grid-template-columns:56px minmax(0,1fr) 84px;gap:10px;align-items:start}
 #a3-bg .fo img{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
 .kaza-report-bottom{display:grid!important;grid-template-columns:repeat(6,1fr)}
@@ -27611,8 +27612,9 @@ const a3_OZET={kidem:'Kıdem',vardiya:'Vardiya',bolge:'Vücut bölgesi',kok:'Kö
 const a3_VL=['08–16','16–24','24–08'];
 function a3_pers(){try{return perPersons.map(p=>p.name).filter(Boolean)}catch(_){return[]}}
 function a3_txt(x){return x==null?'':(typeof x==='string'?x:(x.text||x.action||x.why||''))}
-function a3_cut(s,n){s=String(s||'').trim();return s.length>n?s.slice(0,n-1).trimEnd()+'…':s}
-function a3_cumle(s,n){s=String(s||'').replace(/\s+/g,' ').trim();if(s.length<=n)return s;const k=s.slice(0,n),i=Math.max(k.lastIndexOf('. '),k.lastIndexOf('; '));return i>n*.5?k.slice(0,i+1):a3_cut(s,n)}
+/* Raporlarda "…" ile biten/yarım cümle olmaz: uzun metin, sınıra yakın en son cümle/yan cümle bitişinde kısaltılır; uygun bitiş yoksa metin tam bırakılır */
+function a3_cumle(s,n){s=String(s||'').replace(/\s+/g,' ').trim();if(s.length<=n)return s;const k=s.slice(0,n+1);let b=-1;[/[.!?;](?=\s)/g,/[,:](?=\s)/g].forEach(re=>{if(b>=0)return;let m,last=-1;while((m=re.exec(k)))last=m.index;if(last>n*.5)b=last});return b>=0?k.slice(0,b+1).replace(/[,:;]$/,'').trimEnd():s}
+function a3_cut(s,n){return a3_cumle(s,n)}
 function a3_vard(saat){const h=parseInt(saat);if(isNaN(h))return -1;return h>=8&&h<16?0:h>=16?1:2}
 function a3_norm(s){return String(s||'').toLocaleLowerCase('tr').replace(/\s+/g,' ').trim()}
 /* grafik veri üreticileri */
@@ -27622,7 +27624,7 @@ function a3_mkChart(ad,labels,vals,o){
   const top=o.top||6;let sel=pairs.slice(0,top);
   if(o.hiLabel){const h=pairs.find(p=>a3_norm(p[0])===a3_norm(o.hiLabel));if(h&&!sel.includes(h)){sel=sel.slice(0,top-1).concat([h])}}
   pairs=sel;}
- const L=pairs.map(p=>o.cut?a3_cut(p[0],o.cut):p[0]),V=pairs.map(p=>p[1]);
+ const L=pairs.map(p=>p[0]),V=pairs.map(p=>p[1]);
  let hi=-1;if(o.hiLabel){hi=pairs.findIndex(p=>a3_norm(p[0])===a3_norm(o.hiLabel))}
  const c={ad,L,V,hi};if(o.kind)c.kind=o.kind;return c;
 }
@@ -27643,7 +27645,7 @@ function a3_chartSet(inc,rec,liste){
  /* kök neden · pasta */
  const km={};liste.forEach(k=>{const v=(k.kokNeden||'').trim()||'Belirtilmemiş';km[v]=(km[v]||0)+1});
  let ke=Object.entries(km).sort((a,b)=>b[1]-a[1]);if(ke.length>5){const rest=ke.slice(4).reduce((s,x)=>s+x[1],0);ke=ke.slice(0,4).concat([['Diğer',rest]])}
- CH.kok={ad:'Kök nedene göre',kind:'pie',L:ke.map(x=>a3_cut(x[0],18)),V:ke.map(x=>x[1]),hi:-1};
+ CH.kok={ad:'Kök nedene göre',kind:'pie',L:ke.map(x=>x[0]),V:ke.map(x=>x[1]),hi:-1};
  /* aylık trend · olay yılı */
  const yil=(inc.date||'').slice(0,4)||String(new Date().getFullYear());const ay=new Array(12).fill(0);
  (kazaItems||[]).forEach(k=>{if(k.tarih&&k.tarih.slice(0,4)===yil&&(!inc.factory||k.fab===inc.factory)){const m=+k.tarih.slice(5,7)-1;if(m>=0&&m<12)ay[m]++}});
@@ -27716,20 +27718,20 @@ function a3_build(){
  (Array.isArray(a.barrierAnalysis)?a.barrierAnalysis:[]).forEach(b=>{if(['missing','failed','weak'].includes(b.status)){const t=[b.expectedBarrier||b.barrierType,b.finding].filter(Boolean).join(': ');if(t)dur.push(t)}});
  /* 5 neden */
  const items=(br.items||[]).slice(0,5);
- const n5=items.map((w,i)=>[(i+1)+'. Neden'+(i===items.length-1&&items.length>1?' (Kök)':''),a3_cumle(w.why,150),a3_cumle(w.recommendation,150)]);
+ const n5=items.map((w,i)=>[(i+1)+'. Neden'+(i===items.length-1&&items.length>1?' (Kök)':''),a3_cumle(w.why,220),a3_cumle(w.recommendation,220)]);
  const kok=a3_cumle(br.systemResult||a3_txt(a.mainRootCause)||a3_txt((a.rootCauses||[])[0]),240);
  /* balık kılçığı */
  const cats=Array.isArray(fish.categories)?fish.categories:[];
  const by=ks=>{const c=cats.find(c=>ks.some(k=>a3_norm(c.name).includes(k)));return c?(c.causes||[]).slice(0,2).map(x=>a3_txt(x).replace(/^[-•\s]+/,'')).filter(Boolean).join('; '):''};
  const kil={insan:by(['insan','human']),makine:by(['makine','machine','ekipman']),metot:by(['metot','method','yöntem','prosedür']),malzeme:by(['malzeme','material']),cevre:by(['çevre','ortam','environment']),yonetim:by(['yönetim','management','organizasyon','gözetim'])};
- Object.keys(kil).forEach(k=>kil[k]=a3_cut(kil[k]||'—',100));
- kil.sonuc=a3_cut(fish.conclusion||fish.problemStatement||kok||'—',95);
+ Object.keys(kil).forEach(k=>kil[k]=a3_cumle(kil[k]||'—',120));
+ kil.sonuc=a3_cumle(fish.conclusion||fish.problemStatement||kok||'—',100);
  /* düzeltici faaliyetler */
  const PM={immediate:['Acil','hemen',7],high:['Yüksek','≤30 gün',30],medium:['Orta','≤90 gün',90],low:['Düşük','≤90 gün',90]};
  const fa=(Array.isArray(a.correctiveActions)?a.correctiveActions:[]).slice(0,6).map(c=>{const p=PM[c.priority]||PM.medium;return[a3_cumle(c.action,170),p[0],p[1],p[2]]});
  const img=(typeof kazaPrimaryImageData==='string'&&kazaPrimaryImageData)||(rec&&rec.primaryImageData)||'';
  const baslik=a3_cut(fish.problemStatement||a.eventSummary||inc.narrative||'Olay',110);
- const T={ad:tur.ad,olay,fab:inc.factory||'',baslik,prob:a3_cumle(a.eventSummary||inc.narrative,330),bilgi,davranis:dav.slice(0,3).map(x=>a3_cumle(x,110)),durum:dur.slice(0,4).map(x=>a3_cumle(x,110)),soru:a3_cut(br.question||'',90),n5,kok,kil,fa,oneri:ON.oneri,gerekce:ON.gerekce,hi,img};
+ const T={ad:tur.ad,olay,fab:inc.factory||'',baslik,prob:a3_cumle(a.eventSummary||inc.narrative,330),bilgi,davranis:dav.slice(0,3).map(x=>a3_cumle(x,170)),durum:dur.slice(0,4).map(x=>a3_cumle(x,170)),soru:a3_cut(br.question||'',90),n5,kok,kil,fa,oneri:ON.oneri,gerekce:ON.gerekce,hi,img};
  a3_META={inc,rec,nScope:liste.length,tid};
  return{T,CH};
 }
@@ -27852,27 +27854,43 @@ function a3_chartSVG(id,hi){
   c.L.forEach((l,i)=>{s+=`<rect x="140" y="${14+i*20}" width="9" height="9" fill="${cols[i%5]}"/><text x="154" y="${22+i*20}" font-size="9.5" fill="#1b2430">${a3_esc(l)} · ${Math.round(c.V[i]*100/tot)}%</text>`});
   return s+'</svg>';
  }
- const n=c.V.length,mx=Math.max(...c.V),pl=14,pb=22,pt=14,bw=(W-pl-6)/n,ph=H-pb-pt;
+ const n=c.V.length,mx=Math.max(...c.V),pl=14,pb=28,pt=14,bw=(W-pl-6)/n,ph=H-pb-pt;
  let s=`<svg viewBox="0 0 ${W} ${H}" fill="none"><line x1="${pl}" y1="${H-pb}" x2="${W-4}" y2="${H-pb}" stroke="#b9c3cc" stroke-width="1"/>`;
  c.V.forEach((v,i)=>{const h=v/mx*ph,x=pl+i*bw+bw*.16,w=bw*.68,y=H-pb-h,on=i===hi;
   s+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${on?acc:'#c3ccd5'}" ${on?'stroke="#0F3558" stroke-width="1.2"':''}/>`;
   s+=`<text x="${(x+w/2).toFixed(1)}" y="${(y-3).toFixed(1)}" font-size="9" text-anchor="middle" fill="#1b2430" font-weight="${on?800:600}">${v}</text>`;
-  s+=`<text x="${(x+w/2).toFixed(1)}" y="${H-9}" font-size="${n>8?7.5:8.5}" text-anchor="middle" fill="${on?'#1b2430':'#5a6b7b'}" font-weight="${on?800:500}">${a3_esc(c.L[i])}</text>`});
+  {const fs=n>8?7.5:8.5,per=Math.max(5,Math.floor(bw/(fs*.55))),ls=a3_wrap(String(c.L[i]),per).slice(0,3),y0=H-9-(ls.length-1)*fs*1.1;
+   ls.forEach((t,j)=>{s+=`<text x="${(x+w/2).toFixed(1)}" y="${(y0+j*fs*1.1).toFixed(1)}" font-size="${fs}" text-anchor="middle" fill="${on?'#1b2430':'#5a6b7b'}" font-weight="${on?800:500}">${a3_esc(t)}</text>`})}});
  return s+'</svg>';
 }
 /* balık kılçığı */
-function a3_fishSVG(k){
- const W=590,H=210;let s=`<svg viewBox="0 0 ${W} ${H}" fill="none" style="width:100%;height:100%"><line x1="10" y1="${H/2}" x2="468" y2="${H/2}" stroke="#1b2430" stroke-width="2"/><polygon points="468,${H/2-5} 480,${H/2} 468,${H/2+5}" fill="#1b2430"/>`;
+/* Ishikawa geometrisi: önizleme/PDF (SVG) ve Excel (gerçek şekil + metin kutusu) aynı veriden çizilir */
+const A3FISH={W:590,H:210,INK:'#1b2430',NAVY:'#0F3558',RED:'#a53b2e'};
+function a3_fishGeom(k){
+ const W=A3FISH.W,H=A3FISH.H,mid=H/2,g={W,H,lines:[],rects:[],texts:[],arrow:null};
+ g.lines.push({x1:10,y1:mid,x2:480,y2:mid,w:2,arrow:true});
  const cols=[['İNSAN','insan',0],['MAKİNE','makine',1],['METOT','metot',2],['MALZEME','malzeme',0],['ÇEVRE','cevre',1],['YÖNETİM','yonetim',2]];
- cols.forEach((c,i)=>{const top=i<3,col=c[2],x=24+col*150,bx=x,tr=a3_wrap(k[c[1]],27).slice(0,4);
-  const by=top?6:H-24,jx=x+78,jy=H/2;
-  s+=`<rect x="${bx}" y="${top?4:H-22}" width="108" height="18" fill="#0F3558"/><text x="${bx+54}" y="${top?16.5:H-9.5}" font-size="9.5" font-weight="800" text-anchor="middle" fill="#fff">${c[0]}</text>`;
-  s+=`<line x1="${bx+54}" y1="${top?22:H-22}" x2="${jx+14}" y2="${jy}" stroke="#1b2430" stroke-width="1.2"/>`;
-  tr.forEach((t,j)=>{s+=`<text x="${bx}" y="${top?36+j*10.5:H-34-(tr.length-1-j)*10.5}" font-size="8.3" fill="#1b2430">${a3_esc(t)}</text>`});
+ cols.forEach((c,i)=>{const top=i<3,x=24+c[2]*150,txt=k[c[1]]||'—';
+  /* metin asla kesilmez: sığmazsa yazı boyutu kademeli küçülür */
+  let size=8.3,lh=10.5,tr=a3_wrap(txt,25);
+  [[7.6,9.6,28],[7,9,31],[6.4,8.2,34]].forEach(p=>{if(tr.length>5){size=p[0];lh=p[1];tr=a3_wrap(txt,p[2])}});
+  g.rects.push({x,y:top?4:H-22,w:108,h:18,fill:A3FISH.NAVY,text:c[0],size:9.5,bold:true,color:'#ffffff'});
+  g.lines.push({x1:x+112,y1:top?22:H-22,x2:x+136,y2:mid,w:1.2});
+  const n=tr.length,y0=top?36:H-34-(n-1)*lh;
+  g.texts.push({x,y:y0,lines:tr,size,lh,align:'l',color:A3FISH.INK,bold:false});
  });
- const hl=a3_wrap(k.sonuc,19).slice(0,5);
- s+=`<rect x="484" y="${H/2-38}" width="104" height="76" fill="#fff" stroke="#1b2430" stroke-width="1.2"/><text x="536" y="${H/2-26}" font-size="8" font-weight="800" text-anchor="middle" fill="#a53b2e">SONUÇ</text>`;
- hl.forEach((t,j)=>{s+=`<text x="536" y="${H/2-13+j*10.5}" font-size="8.5" font-weight="700" text-anchor="middle" fill="#1b2430">${a3_esc(t)}</text>`});
+ const hl=a3_wrap(k.sonuc||'—',19);
+ g.res={x:484,y:0,w:104,h:Math.min(196,Math.max(76,hl.length*10.5+26)),lines:hl};g.res.y=mid-g.res.h/2;
+ return g;
+}
+function a3_fishSVG(k){
+ const g=a3_fishGeom(k),W=g.W,H=g.H,I=A3FISH.INK;
+ let s=`<svg viewBox="0 0 ${W} ${H}" fill="none" style="width:100%;height:100%">`;
+ g.lines.forEach(l=>{s+=`<line x1="${l.x1}" y1="${l.y1}" x2="${l.arrow?l.x2-12:l.x2}" y2="${l.y2}" stroke="${I}" stroke-width="${l.w}"/>`;if(l.arrow)s+=`<polygon points="${l.x2-12},${l.y1-5} ${l.x2},${l.y1} ${l.x2-12},${l.y1+5}" fill="${I}"/>`});
+ g.rects.forEach(r=>{s+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${r.fill}"/><text x="${r.x+r.w/2}" y="${r.y+r.h/2+3.4}" font-size="${r.size}" font-weight="800" text-anchor="middle" fill="${r.color}">${a3_esc(r.text)}</text>`});
+ g.texts.forEach(t=>{t.lines.forEach((x,j)=>{s+=`<text x="${t.x}" y="${t.y+j*t.lh}" font-size="${t.size}" fill="${t.color}">${a3_esc(x)}</text>`})});
+ const R=g.res;s+=`<rect x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" fill="#fff" stroke="${I}" stroke-width="1.2"/><text x="${R.x+R.w/2}" y="${R.y+12}" font-size="8" font-weight="800" text-anchor="middle" fill="${A3FISH.RED}">SONUÇ</text>`;
+ R.lines.forEach((t,j)=>{s+=`<text x="${R.x+R.w/2}" y="${R.y+25+j*10.5}" font-size="8.5" font-weight="700" text-anchor="middle" fill="${I}">${a3_esc(t)}</text>`});
  return s+'</svg>';
 }
 function a3_bil(t,r){const v=r[1];if(!v.startsWith('@'))return `<div class="kv"><b>${a3_esc(r[0])}</b><span>${a3_esc(v)}</span></div>`;
@@ -28066,11 +28084,13 @@ async function a3_paylas(){
  }catch(e){a3_toast('Paylaşılamadı: '+(e&&e.message||e))}
 }
 /* ===== A3 Excel (ExcelJS) · gerçek A3 yatay sayfa düzeni, hazır yazdırma ===== */
-const A3XL={COLPX:62,U:4,X0:8,Y0:8,HALF:584,GAP:6,NH:12};
-function a3_xlBounds(){const b=[],w=A3XL.HALF/A3XL.NH;for(let i=0;i<=A3XL.NH;i++)b.push(A3XL.X0+i*w);for(let i=0;i<=A3XL.NH;i++)b.push(A3XL.X0+A3XL.HALF+A3XL.GAP+i*w);return b}
-/* b: 0..12 sol yarı, 13..25 sağ yarı. 12 ile 13 arası boşluk sütunu (M) */
-function a3_xlCol(x,B){let k=0,d=1e9;B.forEach((v,i)=>{const e=Math.abs(v-x);if(e<d){d=e;k=i}});return k}
+const A3XL={COLPX:62,HALFPX:48.667,SNAP:1.7};
+/* sayfadaki tüm kutu kenarlarından sütun/satır ızgarası üretir (önizlemeyle birebir) */
+function a3_xlSnap(vals,thr){vals=vals.slice().sort((a,b)=>a-b);const out=[];let g=[];vals.forEach(v=>{if(g.length&&v-g[g.length-1]>thr){out.push(g.reduce((a,b)=>a+b,0)/g.length);g=[]}g.push(v)});if(g.length)out.push(g.reduce((a,b)=>a+b,0)/g.length);return out}
+function a3_xlNear(E,v){let k=0,d=1e9;E.forEach((e,i)=>{const x=Math.abs(e-v);if(x<d){d=x;k=i}});return k}
+function a3_xlF(E,v){if(v<=E[0])return 0;if(v>=E[E.length-1])return E.length-1;for(let i=0;i<E.length-1;i++)if(v>=E[i]&&v<=E[i+1])return i+(v-E[i])/(E[i+1]-E[i]);return E.length-1}
 function a3_xlLoadLib(){return a3_loadScript('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',()=>window.ExcelJS)}
+function a3_xlLoadZip(){return a3_loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>window.JSZip)}
 function a3_argb(c){const m=String(c||'').match(/rgba?\(([^)]+)\)/);if(!m)return null;const p=m[1].split(',').map(x=>parseFloat(x));if(p.length>3&&p[3]===0)return null;const h=n=>Math.round(n).toString(16).padStart(2,'0');return('FF'+h(p[0])+h(p[1])+h(p[2])).toUpperCase()}
 function a3_svgPng(svg,w,h,sc){
  return new Promise((ok,no)=>{
@@ -28085,7 +28105,7 @@ function a3_coverImg(src,w,h){
   const r=Math.max(cv.width/im.width,cv.height/im.height),dw=im.width*r,dh=im.height*r;x.drawImage(im,(cv.width-dw)/2,(cv.height-dh)/2,dw,dh);ok(cv.toDataURL('image/jpeg',.9).split(',')[1])};im.onerror=()=>no(new Error('Fotoğraf okunamadı'));im.src=src})
 }
 function a3_xlFont(cs,over){
- const pt=Math.round(parseFloat(cs.fontSize)*A3XL.F*0.75*2)/2;
+ const pt=Math.floor(parseFloat(cs.fontSize)*A3XL.F*0.75*2)/2;
  return Object.assign({name:'Arial',size:pt,bold:parseInt(cs.fontWeight)>=700,italic:cs.fontStyle==='italic',color:{argb:a3_argb(cs.color)||'FF17324A'}},over||{});
 }
 function a3_xlRuns(el){
@@ -28105,49 +28125,115 @@ async function a3_excel(){
  a3_persist();a3_toast('Excel hazırlanıyor…');
  try{
   await a3_xlLoadLib();await (document.fonts&&document.fonts.ready);
-  const wb=await a3_xlBuild();
-  const buf=await wb.xlsx.writeBuffer();
+  let Z=null;try{await a3_xlLoadZip();Z=window.JSZip}catch(_){Z=null}
+  let wb=await a3_xlBuild({shapes:!!Z}),buf=await wb.xlsx.writeBuffer();
+  if(Z&&wb._a3shapes&&wb._a3shapes.length){
+   try{buf=await a3_xlInject(Z,buf,wb._a3shapes)}
+   catch(e){console.warn('Ishikawa şekilleri eklenemedi, resim olarak eklenecek',e);wb=await a3_xlBuild({shapes:false});buf=await wb.xlsx.writeBuffer()}
+  }
   const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const name=a3_fname('.xlsx');
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
   a3_toast('Excel indirildi: A3 yatay, yazdırmaya hazır');
  }catch(e){console.error(e);a3_toast('Excel oluşturulamadı: '+(e&&e.message||e))}
 }
-async function a3_xlBuild(){
- const T=a3_TUR.cur,S=a3_S;
- A3XL.F=A3XL.COLPX/(A3XL.HALF/A3XL.NH);
- const F=A3XL.F,U=A3XL.U,B=a3_xlBounds();
+/* Ishikawa şekillerini (metin kutuları + çizgiler) çizim dosyasına ekler */
+async function a3_xlInject(Z,buf,xmls){
+ const zip=await Z.loadAsync(buf);
+ const nm=Object.keys(zip.files).filter(n=>/^xl\/drawings\/drawing\d+\.xml$/.test(n)).sort();
+ if(!nm.length)throw new Error('çizim dosyası yok');
+ let x=await zip.file(nm[0]).async('string');
+ if(x.indexOf('</xdr:wsDr>')<0)throw new Error('çizim biçimi beklenmedik');
+ x=x.replace('</xdr:wsDr>',xmls.join('')+'</xdr:wsDr>');
+ zip.file(nm[0],x);
+ return zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
+}
+const A3NS='xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"';
+function a3_xe(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function a3_xAnc(a,b,inner){const p=q=>`<xdr:col>${q.col}</xdr:col><xdr:colOff>${q.colOff}</xdr:colOff><xdr:row>${q.row}</xdr:row><xdr:rowOff>${q.rowOff}</xdr:rowOff>`;return `<xdr:twoCellAnchor editAs="oneCell" ${A3NS}><xdr:from>${p(a)}</xdr:from><xdr:to>${p(b)}</xdr:to>${inner}<xdr:clientData/></xdr:twoCellAnchor>`}
+function a3_xClr(h){return String(h).replace('#','').toUpperCase()}
+function a3_xSp(id,name,a,b,o){
+ const fill=o.fill?`<a:solidFill><a:srgbClr val="${a3_xClr(o.fill)}"/></a:solidFill>`:'<a:noFill/>';
+ const ln=o.stroke?`<a:ln w="${o.sw}"><a:solidFill><a:srgbClr val="${a3_xClr(o.stroke)}"/></a:solidFill></a:ln>`:'<a:ln><a:noFill/></a:ln>';
+ const paras=o.paras.map(p=>`<a:p><a:pPr algn="${p.algn}"><a:lnSpc><a:spcPts val="${p.ls}"/></a:lnSpc>${p.bef?`<a:spcBef><a:spcPts val="${p.bef}"/></a:spcBef>`:''}</a:pPr><a:r><a:rPr lang="tr-TR" sz="${p.sz}" b="${p.b?1:0}" dirty="0"><a:solidFill><a:srgbClr val="${a3_xClr(p.color)}"/></a:solidFill><a:latin typeface="Arial"/><a:cs typeface="Arial"/></a:rPr><a:t>${a3_xe(p.t)}</a:t></a:r></a:p>`).join('');
+ const ins=o.ins||[0,0,0,0];
+ return a3_xAnc(a,b,`<xdr:sp macro="" textlink=""><xdr:nvSpPr><xdr:cNvPr id="${id}" name="${a3_xe(name)}"/><xdr:cNvSpPr${o.txBox?' txBox="1"':''}/></xdr:nvSpPr><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom>${fill}${ln}</xdr:spPr><xdr:txBody><a:bodyPr vertOverflow="overflow" horzOverflow="overflow" wrap="none" lIns="${ins[0]}" tIns="${ins[1]}" rIns="${ins[2]}" bIns="${ins[3]}" anchor="${o.anchor||'t'}" rtlCol="0"/><a:lstStyle/>${paras}</xdr:txBody></xdr:sp>`);
+}
+function a3_xLine(id,name,a,b,o){
+ return a3_xAnc(a,b,`<xdr:cxnSp macro=""><xdr:nvCxnSpPr><xdr:cNvPr id="${id}" name="${a3_xe(name)}"/><xdr:cNvCxnSpPr/></xdr:nvCxnSpPr><xdr:spPr><a:xfrm${o.flipV?' flipV="1"':''}><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln w="${o.w}" cap="flat"><a:solidFill><a:srgbClr val="${a3_xClr(o.color)}"/></a:solidFill><a:round/>${o.arrow?'<a:tailEnd type="triangle" w="med" len="med"/>':''}</a:ln></xdr:spPr></xdr:cxnSp>`);
+}
+/* Ishikawa: SVG koordinatlarını hücre ızgarasına bağlı şekillere çevirir */
+function a3_xlFishShapes(g,o,Xe,Ye,F){
+ const s=Math.min(o.w/g.W,o.h/g.H),ox=o.x+(o.w-g.W*s)/2,oy=o.y+(o.h-g.H*s)/2;
+ const EMU=9525,pt=s*F*.75,m=Xe.length-1,n=Ye.length-1;
+ const anc=(x,y)=>{const cf=a3_xlF(Xe,ox+x*s),rf=a3_xlF(Ye,oy+y*s);let c=Math.min(Math.floor(cf),m-1),r=Math.min(Math.floor(rf),n-1);return{col:c,colOff:Math.round((ox+x*s-Xe[c])*F*EMU),row:r,rowOff:Math.round((oy+y*s-Ye[r])*F*EMU)}};
+ const out=[];let id=3000;
+ g.lines.forEach((l,i)=>{const a=anc(Math.min(l.x1,l.x2),Math.min(l.y1,l.y2)),b=anc(Math.max(l.x1,l.x2),Math.max(l.y1,l.y2));
+  out.push(a3_xLine(id++,'Ishikawa çizgi '+(i+1),a,b,{w:Math.round(l.w*s*F*EMU),color:A3FISH.INK,flipV:l.y1>l.y2&&l.x1<=l.x2,arrow:!!l.arrow}))});
+ g.rects.forEach(r=>{const a=anc(r.x,r.y),b=anc(r.x+r.w,r.y+r.h);
+  out.push(a3_xSp(id++,'Ishikawa başlık '+r.text,a,b,{fill:r.fill,anchor:'ctr',ins:[0,0,0,0],paras:[{t:r.text,algn:'ctr',sz:Math.round(r.size*pt*100),ls:Math.round(r.size*1.25*pt*100),b:true,color:r.color}]}))});
+ g.texts.forEach((t,i)=>{const w=g.W*0.2,a=anc(t.x,t.y-t.size),b=anc(t.x+112,t.y-t.size+t.lines.length*t.lh+2);
+  out.push(a3_xSp(id++,'Ishikawa neden '+(i+1),a,b,{txBox:true,anchor:'t',paras:t.lines.map(x=>({t:x,algn:'l',sz:Math.round(t.size*pt*100),ls:Math.round(t.lh*pt*100),b:false,color:A3FISH.INK}))}))});
+ const R=g.res,a=anc(R.x,R.y),b=anc(R.x+R.w,R.y+R.h);
+ const paras=[{t:'SONUÇ',algn:'ctr',sz:Math.round(8*pt*100),ls:Math.round(10.5*pt*100),b:true,color:A3FISH.RED}].concat(R.lines.map((x,j)=>({t:x,algn:'ctr',sz:Math.round(8.5*pt*100),ls:Math.round(10.5*pt*100),b:true,color:A3FISH.INK,bef:j===0?Math.round(2.5*pt*100):0})));
+ out.push(a3_xSp(id++,'Ishikawa sonuç',a,b,{fill:'#ffffff',stroke:A3FISH.INK,sw:Math.round(1.2*s*F*EMU),anchor:'t',ins:[Math.round(2*s*F*EMU),Math.round(4*s*F*EMU),Math.round(2*s*F*EMU),0],paras}));
+ return out;
+}
+/* hücre içi metin: kutuya sığmıyorsa yazı boyutu kendiliğinden küçülür (asla kesilmez) */
+function a3_xlMeasure(){return a3_xlMeasure.c||(a3_xlMeasure.c=document.createElement('canvas').getContext('2d'))}
+function a3_domLines(el){const r=document.createRange();r.selectNodeContents(el);const t=[...r.getClientRects()].filter(q=>q.width>0&&q.height>0).map(q=>q.top).sort((a,b)=>a-b);let n=0,last=-99;t.forEach(v=>{if(v-last>4){n++;last=v}});return Math.max(1,n)}
+function a3_xlFit(rs,wpx,hpx,indentPx,nowrap){
+ if(!rs.length)return;const ctx=a3_xlMeasure();
+ const need=()=>{let lines=1,cur=0,mx=0,wide=0;const avail=Math.max(10,wpx-16-indentPx);
+  rs.forEach(r=>{const f=r.font,px=f.size*96/72;ctx.font=(f.italic?'italic ':'')+(f.bold?'bold ':'')+px+'px Arial';mx=Math.max(mx,px);
+   r.text.split('\n').forEach((seg,si)=>{if(si>0){lines++;cur=0}
+    seg.split(/(\s+)/).forEach(w=>{if(!w)return;const ww=ctx.measureText(w).width;if(nowrap){cur+=ww;wide=Math.max(wide,cur)}else if(cur+ww>avail&&cur>0&&!/^\s+$/.test(w)){lines++;cur=ww}else cur+=ww})})});
+  if(nowrap)return wide>avail;
+  return lines*mx*1.22>hpx-2};
+ let g=0;while(need()&&g++<16){let ch=false;rs.forEach(r=>{if(r.font.size>5.5){r.font.size=Math.max(5.5,r.font.size-.5);ch=true}});if(!ch)break}
+}
+async function a3_xlBuild(opt){
+ opt=opt||{};const T=a3_TUR.cur,S=a3_S;
+ const F=A3XL.COLPX/A3XL.HALFPX;A3XL.F=F;
  /* ölçüm: sayfa ekrandaki ile aynı yerleşimde çizilir */
  const host=document.createElement('div');host.id='a3-bg';host.style.cssText='position:absolute;left:-20000px;top:0;right:auto;bottom:auto;width:1190px;height:842px;overflow:visible;padding:0;background:#fff;z-index:-1';
  host.innerHTML='<div class="sheet">'+a3_sheetHTML('cur')+'</div>';document.body.appendChild(host);
- const wb=new ExcelJS.Workbook();wb.creator='İSG Görev Takip';wb.created=new Date();wb.title=a3_fname();
+ const wb=new ExcelJS.Workbook();wb._a3shapes=[];wb.creator='İSG Görev Takip';wb.created=new Date();wb.title=a3_fname();
  const ws=wb.addWorksheet('A3 Raporu',{views:[{showGridLines:false,zoomScale:100}]});
  try{
   const sheet=host.querySelector('.sheet'),SR=sheet.getBoundingClientRect();
   const R=el=>{const a=el.getBoundingClientRect();return{x:a.left-SR.left,y:a.top-SR.top,w:a.width,h:a.height,r:a.right-SR.left,b:a.bottom-SR.top}};
-  const NR=Math.ceil((842-A3XL.Y0*2+4)/U)+1,NC=25;
-  /* sütun ve satır ölçüleri */
-  const wch=px=>Math.max(.3,(px-5)/7);
-  for(let c=1;c<=NC;c++)ws.getColumn(c).width=(c===13)?wch(Math.round(A3XL.GAP*F)+4):wch(A3XL.COLPX);
-  const rowPt=U*F*0.75;for(let r=1;r<=NR;r++)ws.getRow(r).height=rowPt;
+  /* ızgara: sayfadaki tüm kutu kenarları (aynı yerdeki kenarlar tek çizgiye birleşir) */
+  const SEL='.two > div,.s-title,.s-tag,.s-title small,.s-team,.sec,.sec > h4,.kv b,.kv span,.s-prob .ph,.phl,.s-narr,.two h5,.two ol,.cht .ct,.cht .ck,.cht svg,.sec svg[style*="width:100%"],table.t th,table.t td,.kt > *,.s-note,.sec .b > div[style*="font-size:8.5px"],.imza > div';
+  const xs=[0,SR.width],ys=[0,SR.height];
+  host.querySelectorAll(SEL).forEach(el=>{const q=R(el);if(q.w<1||q.h<1)return;xs.push(q.x,q.r);ys.push(q.y,q.b)});
+  {const tg=host.querySelector('.s-tag');if(tg){const q=R(tg);xs.push(q.x-4,q.r+4)}const sm=host.querySelector('.s-title small');if(sm){xs.push(R(sm).x-34)}}
+  const Xe=a3_xlSnap(xs,A3XL.SNAP),Ye=a3_xlSnap(ys,A3XL.SNAP),NC=Xe.length-1,NR=Ye.length-1;
+  const colL=n=>{let t='';while(n>0){const m=(n-1)%26;t=String.fromCharCode(65+m)+t;n=Math.floor((n-1)/26)}return t};
+  const wch=px=>Math.max(.2,(px-5)/7);
+  for(let c=1;c<=NC;c++)ws.getColumn(c).width=wch((Xe[c]-Xe[c-1])*F);
+  for(let r=1;r<=NR;r++)ws.getRow(r).height=Math.max(1,(Ye[r]-Ye[r-1])*F*0.75);
   const occ=new Set();
   const free=(r1,c1,r2,c2)=>{for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(occ.has(r*100+c))return false;return true};
-  const rc=o=>{let c1=a3_xlCol(o.x,B)+1,c2=a3_xlCol(o.r,B);if(c2<c1)c2=c1;
-   /* boşluk sütununa taşma: sol yarı M'de bitmez, sağ yarı M'de başlamaz */
-   const y1=(o.y-A3XL.Y0)/U,y2=(o.b-A3XL.Y0)/U;let r1=Math.round(y1)+1,r2=Math.max(Math.round(y2),r1);
+  const xpos=o=>({tl:{col:a3_xlF(Xe,o.x),row:a3_xlF(Ye,o.y)},br:{col:a3_xlF(Xe,o.r),row:a3_xlF(Ye,o.b)},editAs:'oneCell'});
+  const rc=o=>{let c1=a3_xlNear(Xe,o.x)+1,c2=a3_xlNear(Xe,o.r);if(c2<c1)c2=c1;
+   let r1=a3_xlNear(Ye,o.y)+1,r2=a3_xlNear(Ye,o.b);if(r2<r1)r2=r1;
    return{r1,c1,r2,c2}};
   const place=(o,opt)=>{let{r1,c1,r2,c2}=rc(o);r1=Math.max(1,r1);r2=Math.min(NR,r2);
-   let g=0;while(r1<=r2&&!free(r1,c1,r1,c2)&&g++<6)r1++;g=0;while(r2>=r1&&!free(r2,c1,r2,c2)&&g++<6)r2--;
-   if(r2<r1||!free(r1,c1,r2,c2))return null;
+   if(!free(r1,c1,r2,c2))return null;
    for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)occ.add(r*100+c);return{r1,c1,r2,c2}};
   const bd=cs=>{const o={};[['top','Top'],['right','Right'],['bottom','Bottom'],['left','Left']].forEach(([k,K])=>{const w=parseFloat(cs['border'+K+'Width']),st=cs['border'+K+'Style'],col=a3_argb(cs['border'+K+'Color']);if(w>0&&st!=='none'&&col)o[k]={style:w>=2?'medium':(st==='dashed'?'dashed':'thin'),color:{argb:col}}});return o};
   const cellAt=(p,o)=>{
    const m=ws.getCell(p.r1,p.c1);
+   {let rs=(o.runs&&o.runs.length)?o.runs:(o.text?[{text:o.text,font:o.font}]:[]);
+    rs=rs.filter(r=>r.font).map(r=>({text:r.text,font:Object.assign({},r.font)}));
+    if(rs.length){a3_xlFit(rs,(Xe[p.c2]-Xe[p.c1-1])*F,(Ye[p.r2]-Ye[p.r1-1])*F,(o.indent||0)*9,!!o.one);
+     if(o.runs&&o.runs.length){o=Object.assign({},o,{runs:rs})}else{o=Object.assign({},o,{text:rs[0].text,font:rs[0].font})}}}
    if(o.runs&&o.runs.length>1)m.value={richText:o.runs.map(r=>({text:r.text,font:r.font}))};
    else if(o.runs&&o.runs.length===1){m.value=o.runs[0].text;m.font=o.runs[0].font}
    else if(o.text!=null){m.value=o.text;m.font=o.font}
    if(o.runs&&o.runs.length>1)m.font=o.runs[0].font;
-   m.alignment={horizontal:o.h||'left',vertical:o.v||'middle',wrapText:true,indent:o.indent||0};
+   m.alignment={horizontal:o.h||'left',vertical:o.v||'middle',wrapText:!(o.one&&!/\n/.test(m.value&&m.value.richText?m.value.richText.map(x=>x.text).join(''):String(m.value==null?'':m.value))),indent:o.indent||0};
    if(o.fill)m.fill={type:'pattern',pattern:'solid',fgColor:{argb:o.fill}};
    if(o.border)m.border=o.border;
    if(p.r2>p.r1||p.c2>p.c1)ws.mergeCells(p.r1,p.c1,p.r2,p.c2);
@@ -28157,14 +28243,15 @@ async function a3_xlBuild(){
   };
   const lh=cs=>{const l=parseFloat(cs.lineHeight);return isNaN(l)?parseFloat(cs.fontSize)*1.3:l};
   const txt=(el,extra)=>{
-   const cs=getComputedStyle(el),o=R(el),p=place(o);if(!p)return;
+   const cs=getComputedStyle(el),o=(extra&&extra.rect)||R(el),p=place(o);if(!p)return;
    const runs=a3_xlRuns(el);if(!runs.length&&!(extra&&extra.keepEmpty)){}
    const ta=cs.textAlign,fl=cs.display==='flex'&&cs.justifyContent==='center';
    const h=(fl||ta==='center')?'center':(ta==='right'||ta==='end')?'right':'left';
    const v=o.h<lh(cs)*2.4?'middle':'top';
    let fill=a3_argb(cs.backgroundColor);
    const miss=el.querySelector&&el.querySelector('[style*="b4671a"],.eksik')||el.classList.contains('eksik');
-   cellAt(p,Object.assign({runs,h,v,fill,border:bd(cs),indent:h==='left'?1:0},extra||{}));
+   const segs=runs.reduce((n,r)=>n+(r.text.split('\n').length-1),0)+1,one=a3_domLines(el)<=segs;
+   cellAt(p,Object.assign({runs,h,v,fill,border:bd(cs),indent:h==='left'?1:0,one},extra||{}));
    return p;
   };
   /* --- üst şerit --- */
@@ -28172,11 +28259,11 @@ async function a3_xlBuild(){
   if(title){const tr=R(title),gr=R(tag),sr=R(small),cs=getComputedStyle(title);
    const navy=a3_argb(cs.backgroundColor)||'FF0F3558';
    const f=a3_xlFont(cs,{color:{argb:'FFFFFFFF'},bold:true,size:Math.round(parseFloat(cs.fontSize)*F*.75*2)/2});
-   let p=place({x:tr.x,y:tr.y,r:gr.x-4,b:tr.b,w:0,h:tr.h});if(p)cellAt(p,{text:'KAZA / OLAY A3 RAPORU',font:f,fill:navy,indent:1});
-   const tcs=getComputedStyle(tag);p=place(gr);if(p)cellAt(p,{runs:a3_xlRuns(tag),h:'center',fill:'FFFFFFFF',border:{top:{style:'thin',color:{argb:'FFFFFFFF'}}}});
-   p=place({x:gr.r+4,y:tr.y,r:sr.x-2,b:tr.b,w:0,h:tr.h});if(p)cellAt(p,{text:'',font:f,fill:navy});
-   const scs=getComputedStyle(small);p=place({x:sr.x-2,y:tr.y,r:tr.r,b:tr.b,w:0,h:tr.h});
-   if(p){const lines=small.innerHTML.split(/<br\s*\/?>/i).map(x=>x.replace(/<[^>]+>/g,'').trim()).filter(Boolean);cellAt(p,{text:lines.join('\n'),font:a3_xlFont(scs,{color:{argb:'FFDBE7F3'},bold:true}),h:'right',fill:navy,indent:1})}
+   let p=place({x:tr.x,y:tr.y,r:gr.x-4,b:tr.b,w:0,h:tr.h});if(p)cellAt(p,{text:'KAZA / OLAY A3 RAPORU',font:f,fill:navy,indent:1,one:true});
+   const tcs=getComputedStyle(tag);p=place(gr);if(p)cellAt(p,{runs:a3_xlRuns(tag),h:'center',one:true,fill:'FFFFFFFF',border:{top:{style:'thin',color:{argb:'FFFFFFFF'}}}});
+   p=place({x:gr.r+4,y:tr.y,r:sr.x-34,b:tr.b,w:0,h:tr.h});if(p)cellAt(p,{text:'',font:f,fill:navy});
+   const scs=getComputedStyle(small);p=place({x:sr.x-34,y:tr.y,r:tr.r,b:tr.b,w:0,h:tr.h});
+   if(p){const lines=small.innerHTML.split(/<br\s*\/?>/i).map(x=>x.replace(/<[^>]+>/g,'').trim()).filter(Boolean);cellAt(p,{text:lines.join('\n'),font:a3_xlFont(scs,{color:{argb:'FFDBE7F3'},bold:true}),h:'right',fill:navy,indent:1,one:true})}
   }
   const team=host.querySelector('.s-team');
   if(team){const cs=getComputedStyle(team),p=place(R(team));
@@ -28191,22 +28278,24 @@ async function a3_xlBuild(){
   for(const ph of host.querySelectorAll('.s-prob .ph')){const o=R(ph),im=ph.querySelector('img'),p=place(o);if(!p)continue;
    const cs=getComputedStyle(ph);
    if(im){cellAt(p,{text:'',font:a3_xlFont(cs),border:{top:{style:'thin',color:{argb:'FFB9C3CC'}},left:{style:'thin',color:{argb:'FFB9C3CC'}},bottom:{style:'thin',color:{argb:'FFB9C3CC'}},right:{style:'thin',color:{argb:'FFB9C3CC'}}}});
-    try{const b64=await a3_coverImg(im.src,o.w,o.h);const id=wb.addImage({base64:b64,extension:'jpeg'});ws.addImage(id,a3_xlPos(o,B))}catch(e){console.warn(e)}}
+    try{const b64=await a3_coverImg(im.src,o.w,o.h);const id=wb.addImage({base64:b64,extension:'jpeg'});ws.addImage(id,xpos(o))}catch(e){console.warn(e)}}
    else cellAt(p,{runs:a3_xlRuns(ph),h:'center',fill:'FFF7F9FA',border:{top:{style:'dashed',color:{argb:'FFB9C3CC'}},left:{style:'dashed',color:{argb:'FFB9C3CC'}},bottom:{style:'dashed',color:{argb:'FFB9C3CC'}},right:{style:'dashed',color:{argb:'FFB9C3CC'}}}})}
   host.querySelectorAll('.phl').forEach(el=>txt(el,{h:'center',runs:a3_xlRuns(el)}));
   host.querySelectorAll('.s-narr').forEach(el=>{const cs=getComputedStyle(el);txt(el,{indent:1,fill:a3_argb(cs.backgroundColor),border:{left:{style:'medium',color:{argb:'FF1F5FA8'}}}})});
-  host.querySelectorAll('.two h5').forEach(el=>txt(el,{runs:a3_xlRuns(el).map(r=>({text:r.text,font:Object.assign({},r.font,{bold:true})}))}));
-  host.querySelectorAll('.two ol').forEach(ol=>{const items=[...ol.querySelectorAll('li')];const cs=getComputedStyle(ol),p=place(R(ol));if(!p)return;
-   cellAt(p,{runs:[{text:items.map((li,i)=>(i+1)+'. '+li.textContent.trim()).join('\n'),font:a3_xlFont(cs)}],v:'top'})});
+  const twoRect=el=>{const pr=R(el.parentElement),q=R(el);return{rect:{x:pr.x,r:pr.r,y:q.y,b:q.b,w:pr.w,h:q.h},border:(el.parentElement.previousElementSibling?{left:{style:'thin',color:{argb:'FFE3E8EC'}}}:undefined),indent:1}};
+  host.querySelectorAll('.two h5').forEach(el=>txt(el,Object.assign(twoRect(el),{runs:a3_xlRuns(el).map(r=>({text:r.text,font:Object.assign({},r.font,{bold:true})}))})));
+  host.querySelectorAll('.two ol').forEach(ol=>{const items=[...ol.querySelectorAll('li')];const cs=getComputedStyle(ol),p=place(twoRect(ol).rect);if(!p)return;
+   cellAt(p,Object.assign({runs:[{text:items.map((li,i)=>(i+1)+'. '+li.textContent.trim()).join('\n'),font:a3_xlFont(cs)}],v:'top'},{border:twoRect(ol).border,indent:1}))});
   const charts=[...host.querySelectorAll('.cht')];
   for(const ch of charts){
    const ct=ch.querySelector('.ct'),ck=ch.querySelector('.ck'),sv=ch.querySelector('svg');
    if(ct)txt(ct,{h:'center',runs:a3_xlRuns(ct).map(r=>({text:r.text,font:Object.assign({},r.font,{bold:true})}))});
    if(ck)txt(ck,{h:'center',runs:a3_xlRuns(ck).map(r=>({text:r.text,font:Object.assign({},r.font,{color:{argb:'FF5A6B7B'}})}))});
    if(sv){const o=R(sv),p=place(o);if(p){cellAt(p,{text:'',font:a3_xlFont(getComputedStyle(ch))});
-    try{const b64=await a3_svgPng(sv,Math.round(o.w),Math.round(o.h),3);const id=wb.addImage({base64:b64,extension:'png'});ws.addImage(id,a3_xlPos(o,B))}catch(e){console.warn(e)}}}}
+    try{const b64=await a3_svgPng(sv,Math.round(o.w),Math.round(o.h),3);const id=wb.addImage({base64:b64,extension:'png'});ws.addImage(id,xpos(o))}catch(e){console.warn(e)}}}}
   for(const sv of host.querySelectorAll('.sec svg[style*="width:100%"]')){const o=R(sv),p=place(o);if(!p)continue;cellAt(p,{text:'',font:{name:'Arial',size:8}});
-   try{const b64=await a3_svgPng(sv,Math.round(o.w),Math.round(o.h),3);const id=wb.addImage({base64:b64,extension:'png'});ws.addImage(id,a3_xlPos(o,B))}catch(e){console.warn(e)}}
+   if(opt.shapes&&sv.getAttribute('viewBox')==='0 0 590 210'){wb._a3shapes=a3_xlFishShapes(a3_fishGeom(T.kil),o,Xe,Ye,F);continue}
+   try{const b64=await a3_svgPng(sv,Math.round(o.w),Math.round(o.h),3);const id=wb.addImage({base64:b64,extension:'png'});ws.addImage(id,xpos(o))}catch(e){console.warn(e)}}
   /* tablolar */
   host.querySelectorAll('table.t tr').forEach(tr=>{[...tr.children].forEach(td=>{const cs=getComputedStyle(td),isH=td.tagName==='TH';
    const mis=td.querySelector('[style*="b4671a"]');
@@ -28225,7 +28314,7 @@ async function a3_xlBuild(){
     if(Object.keys(e).length)k.border=Object.assign({},k.border||{},e)}});
   /* sayfa yapısı: A3 yatay, tek sayfaya sığdır, ortalı, yazdırma alanı hazır */
   ws.pageSetup={paperSize:8,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:1,horizontalCentered:true,verticalCentered:true,
-   margins:{left:.35,right:.35,top:.35,bottom:.35,header:.15,footer:.15},printArea:'A1:Y'+NR};
+   margins:{left:.35,right:.35,top:.35,bottom:.35,header:.15,footer:.15},printArea:'A1:'+colL(NC)+NR};
   ws.headerFooter={oddFooter:'&L&8'+a3_fname().replace(/&/g,'&&')+'&R&8&D'};
   /* veri sayfası */
   const wv=wb.addWorksheet('Veri',{views:[{showGridLines:true}]});
@@ -28241,10 +28330,6 @@ async function a3_xlBuild(){
  }finally{host.remove()}
  return wb;
 }
-function a3_xlColF(x,B){/* sürekli sütun konumu */
- for(let i=0;i<B.length-1;i++){if(x>=B[i]&&x<=B[i+1])return i+(x-B[i])/(B[i+1]-B[i])}return x<B[0]?0:B.length-1}
-
-function a3_xlPos(o,B){return{tl:{col:a3_xlColF(o.x,B),row:(o.y-A3XL.Y0)/A3XL.U},br:{col:a3_xlColF(o.r,B),row:(o.b-A3XL.Y0)/A3XL.U},editAs:'oneCell'}}
 
 </script>
 <style id="a3-print-static">
