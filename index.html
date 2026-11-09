@@ -24621,7 +24621,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     // Tarayıcının kendi yerleşim motoruyla çizim (SVG foreignObject): html2canvas'a bağımlı değil, yazdırma düzeniyle aynı sonuç
     function svgGrab(el,W,H,y0,h,scale){
       return new Promise(function(ok,no){try{
-        var css=printCss().replace(new RegExp('body\\.'+opt.bodyClass.replace(/[-]/g,'\\-'),'g'),'.pr-wrap')+'.pr-wrap #'+opt.rootId+'{display:block!important}';
+        var bc=opt.bodyClass.replace(/[-]/g,'\\-'),css=printCss().replace(new RegExp('html\\s+body\\.'+bc,'g'),'.pr-wrap').replace(new RegExp('body\\.'+bc,'g'),'.pr-wrap')+'.pr-wrap #'+opt.rootId+'{display:block!important}';
         var vs={};css.replace(/var\((--[\w-]+)/g,function(m,n){vs[n]=1;return m});var cs0=el.ownerDocument.defaultView.getComputedStyle(el.ownerDocument.documentElement);css+='.pr-wrap{'+Object.keys(vs).map(function(n){var v=cs0.getPropertyValue(n);return v?n+':'+v.trim():''}).join(';')+'}';
         var c=el.cloneNode(true);c.setAttribute('style','display:block');
         var xml='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+h+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'" transform="translate(0,'+(-y0)+')"><div xmlns="http://www.w3.org/1999/xhtml" class="pr-wrap" style="width:'+W+'px;background:var(--surface);margin:0;padding:0"><style><![CDATA['+css+']]></style>'+new XMLSerializer().serializeToString(c)+'</div></foreignObject></svg>';
@@ -24636,8 +24636,16 @@ window.addEventListener('DOMContentLoaded',()=>{
       var W=opt.width,top=el.getBoundingClientRect().top;
       var forced=[],cand=[];
       var keeps=[],heads=[];
-      el.querySelectorAll('.kaza-keep,.kaza-why-block,.kaza-fishbone-diagram,.facts,.kaza-report-note,table.kz-short,tr.dnr-r').forEach(function(n){
+      var pPx=Math.floor(((opt.orientation==='landscape'?210:297)-(opt.top||10)-(opt.bottom||16))/((opt.orientation==='landscape'?297:210)-2*(opt.mx||8))*opt.width);
+      el.querySelectorAll('.kaza-keep,.kaza-why-block,.kaza-fishbone-diagram,.kaza-fishbone-result,.facts,.kaza-report-note,table.kz-short,tr.dnr-r').forEach(function(n){
         var r=n.getBoundingClientRect();keeps.push([r.top-top,r.bottom-top]);});
+      /* sığan her tablo bütün kalır (sayfa yüksekliğinden uzunsa satır arasından bölünür) */
+      el.querySelectorAll('table').forEach(function(n){var r=n.getBoundingClientRect();if(r.height<=pPx*.95)keeps.push([r.top-top,r.bottom-top])});
+      /* başlık + kısa açıklama + ilk asıl blok (tablo/diyagram/not) tek parça */
+      el.querySelectorAll('h2,h3').forEach(function(h){var e=h.parentElement&&h.parentElement.classList.contains('kaza-keep')?h.parentElement:h,t0=e.getBoundingClientRect().top-top,bt=e.getBoundingClientRect().bottom-top,n=e.nextElementSibling,c=0;
+        while(n&&c<4){bt=n.getBoundingClientRect().bottom-top;if(!n.matches('p,h3,.kaza-report-mini-note,.kaza-report-evidence-legend,.kaza-report-sub'))break;n=n.nextElementSibling;c++}
+        if(bt-t0<=pPx*.9)keeps.push([t0,bt])});
+      keeps.forEach(function(k){if(k[0]>4)cand.push(k[0])});
       el.querySelectorAll('h1,h2,h3,h4').forEach(function(n){heads.push(n.getBoundingClientRect().top-top)});
       el.querySelectorAll('tr,h1,h2,h3,h4,img,section,.hse-pr-section,.hse-pr-chart,p,.kaza-keep,.kaza-why-block').forEach(function(n){
         var y=n.getBoundingClientRect().top-top;if(y<=4)return;
@@ -24648,6 +24656,8 @@ window.addEventListener('DOMContentLoaded',()=>{
         // başlıktan hemen sonra (en az ~3 satır içerik gelmeden) kesme koyma
         for(var h=0;h<heads.length;h++){if(y>heads[h]+3&&y<heads[h]+75)return}
         cand.push(y)});
+      /* başka bir bölünmez bloğun içine düşen kesim noktaları elenir */
+      cand=cand.filter(function(v){for(var k=0;k<keeps.length;k++){if(v>keeps[k][0]+3&&v<keeps[k][1]-3)return false}return true});
       // Uzun raporlarda tarayıcı canvas sınırı (özellikle mobil) boş sayfa üretir: yüksek içerik parçalara bölünerek çizilir
       var rp=0;if(opt.repeatSel){var hn=el.querySelector(opt.repeatSel);if(hn)rp=hn.getBoundingClientRect().bottom-top}
       var H=Math.ceil(el.getBoundingClientRect().height),CH=5000,base={scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:W};
@@ -24683,7 +24693,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       while(y<total-2&&guard++<200){
         var end=y+pagePx,f=r.forced.filter(function(v){return v>y+20&&v<end}).sort(function(a,b){return a-b})[0];
         if(f!==undefined)end=f;
-        else if(end<total){var c=r.cand.filter(function(v){return v>y+pagePx*.3&&v<=end}).sort(function(a,b){return b-a})[0];if(c!==undefined)end=c}
+        else if(end<total){var c=r.cand.filter(function(v){return v>y+60&&v<=end}).sort(function(a,b){return b-a})[0];if(c!==undefined)end=c}
         else end=total;
         if(end>total)end=total;
         pages.push([y,end]);y=end}
