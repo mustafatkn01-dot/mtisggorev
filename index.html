@@ -9,6 +9,10 @@
 <meta http-equiv="Expires" content="0">
 
 <meta name="app-version" content="8.6.7">
+<!-- Açılışta eski/varsayılan tema kalıntısı görünmesin: tema + bulut ayarı uygulanana kadar (en çok 2 sn) gövde gizli, zemin kayıtlı tema renginde -->
+<style>html.yukleniyor body{visibility:hidden}</style>
+<script>(function(){var h=document.documentElement;h.classList.add('yukleniyor');try{var b=localStorage.getItem('yeni_isg_tema_bg');if(b)h.style.background=b}catch(e){}
+window.appHazirGoster=function(){h.classList.remove('yukleniyor')};setTimeout(window.appHazirGoster,2000)})();</script>
 <script id="app-version-cache-buster">
 (() => {
   'use strict';
@@ -10138,6 +10142,7 @@ function applyTema(id, save=true) {
   if (!t) return;
   aktifTema = id;
   localStorage.setItem('yeni_isg_tema', id);
+  try { localStorage.setItem('yeni_isg_tema_bg', t.vars['--bg'] || ''); } catch(e) {}
   const root = document.documentElement;
   Object.entries(t.vars).forEach(([k,v]) => root.style.setProperty(k, v));
   root.setAttribute('data-tema', id);
@@ -20621,6 +20626,7 @@ window.addEventListener('resize', calMobInit);
   function authGateGoster(mesaj) {
     const gate = document.getElementById('fb-auth-gate');
     const msg = document.getElementById('fb-auth-msg');
+    try { window.appHazirGoster && window.appHazirGoster(); } catch(e) {}
     if (msg) msg.textContent = mesaj || '';
     if (gate) {
       gate.classList.add('on');
@@ -21017,6 +21023,7 @@ window.addEventListener('resize', calMobInit);
     }
     // Veri uygulanırken herhangi bir hata olsa bile ekranlar (Özet sayaçları dahil) mutlaka tazelenir
     try { yenidenCiz(); } catch(e) { console.error('Ekran tazeleme hatası:', key, e); }
+    if (key === 'settings') requestAnimationFrame(() => { try { window.appHazirGoster && window.appHazirGoster(); } catch(e) {} });
   }
 
   function fbRaporIncidentUygula(snap) {
@@ -21295,6 +21302,7 @@ window.addEventListener('resize', calMobInit);
         }
         hazir=true;
       }
+      try { window.appHazirGoster && window.appHazirGoster(); } catch(e) {}
       ilkOkumaBitti=true;
 
       // Bundan sonrası modül-bazlı canlı senkronizasyon.
