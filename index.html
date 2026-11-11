@@ -176,6 +176,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof renderTicker      === 'function') renderTicker();
   if (typeof renderQN          === 'function') renderQN();
   if (typeof render            === 'function') render();
+  // Özet sayaçları: sayfa çok yavaş yüklenirse ilk Özet çizimi bu veri okunmadan yapılmış olabilir
+  try { if (typeof dashRender === 'function') dashRender(); } catch (e) {}
 
   setSyncDot(true);
 });
@@ -20975,14 +20977,13 @@ window.addEventListener('resize', calMobInit);
   }
 
   function yenidenCiz() {
-    const c = f => { try { if (typeof window[f] === 'function') window[f](); } catch (e) {} };
+    const c = f => { try { if (typeof window[f] === 'function') window[f](); } catch (e) { console.error('yenidenCiz:', f, e); } };
+    // Özet sayaçları ilk iş tazelenir: sonraki ekranlardan biri hata verse de ilk açılışta 0 kalmaz
+    try { if (typeof dashRender === 'function') dashRender(); } catch (e) { console.error('dashRender:', e); }
     c('buildViews'); c('renderFabDropdown'); c('renderTicker'); c('renderQN'); c('render'); c('mfYenile');
     c('perRender'); c('kontrolRender'); c('kazaRender'); c('denetimRender');
-    // Özet ekranı açıksa sayaçları da tazele (açılışta 0 kalmasını önler)
-    try {
-      const dashWrap = document.getElementById('dash-wrap');
-      if (dashWrap && dashWrap.offsetParent !== null && typeof dashRender === 'function') dashRender();
-    } catch (e) {}
+    // Diğer render'lar Özet'i bozmuş olabilir: sonunda bir kez daha tazele
+    try { if (typeof dashRender === 'function') dashRender(); } catch (e) {}
   }
 
   // ── Mevcut yerel veriyi buluta ilk kez yükle ───────────────
@@ -21011,10 +21012,11 @@ window.addEventListener('resize', calMobInit);
     try {
       uygula(d);
       hazir=true;
-      yenidenCiz();
     } catch(e) {
       console.error('Firebase modül uygulama hatası:', key, e);
     }
+    // Veri uygulanırken herhangi bir hata olsa bile ekranlar (Özet sayaçları dahil) mutlaka tazelenir
+    try { yenidenCiz(); } catch(e) { console.error('Ekran tazeleme hatası:', key, e); }
   }
 
   function fbRaporIncidentUygula(snap) {
