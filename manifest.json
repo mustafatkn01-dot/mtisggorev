@@ -4,7 +4,7 @@
   "description": "İş Sağlığı ve Güvenliği görev takip, kaza kayıt ve denetim yönetim uygulaması",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#1a1a2e",
+  "background_color": "#F5F3EE",
   "theme_color": "#378ADD",
   "orientation": "any",
   "lang": "tr",
