@@ -28711,17 +28711,48 @@ async function a3_xlBuild(opt){
 .ysc-rev b{font-variant-numeric:tabular-nums}
 .ysc-rev button{border:0;background:#fff;color:var(--hd1);border-radius:7px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer}
 .ysc-bd{flex:1;overflow:auto;padding:12px 14px 90px;display:flex;flex-direction:column;gap:10px;max-width:1240px;width:100%;margin:0 auto;box-sizing:border-box}
-.ysc-fabs{display:flex;gap:6px;flex-wrap:wrap}
+.ysc-fabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+.ysc-fabs::-webkit-scrollbar{display:none}
+.ysc-fabs button{flex-shrink:0}
 .ysc-fabs button{border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
 .ysc-fabs button.on{background:var(--acc);border-color:var(--acc);color:var(--acc-fg)}
-.ysc-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ysc-bd>*{flex-shrink:0}
+.ysc-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ysc-mini button{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font:inherit;font-size:12px;color:var(--text2);display:flex;justify-content:space-between;align-items:baseline;cursor:pointer}
+.ysc-mini b{color:var(--text);font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.ysc-mini .g b{color:var(--good-tx)}
+.ysc-mini button.on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.ysc-al{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+.ysc-uy{border-radius:12px;overflow:hidden;color:#fff}
+.ysc-uy.bad{background:linear-gradient(135deg,var(--bad),color-mix(in srgb,var(--bad) 70%,#000))}
+.ysc-uy.warn{background:linear-gradient(135deg,var(--warn),color-mix(in srgb,var(--warn) 72%,#000))}
+.ysc-uy.calm{background:color-mix(in srgb,var(--good) 12%,var(--surface));color:var(--good-tx)}
+.ysc-uy .uh{width:100%;border:0;background:none;color:inherit;font:inherit;display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:pointer;text-align:left;min-height:42px}
+.ysc-uy.calm .uh{cursor:default}
+.ysc-uy .ic{width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.22);display:grid;place-items:center;font-size:12px;font-weight:800;flex-shrink:0}
+.ysc-uy.calm .ic{background:var(--surface)}
+.ysc-uy .ad{font-weight:700;font-size:13px;white-space:nowrap}
+.ysc-uy .say{margin-left:auto;font-size:12px;white-space:nowrap;opacity:.95}
+.ysc-uy .say b{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.ysc-uy .ok{font-size:12px;width:12px;text-align:center}
+.ysc-uy .ub{padding:0 11px 11px;display:flex;flex-direction:column;gap:7px}
+.ysc-uy .bar{height:5px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+.ysc-uy .bar i{display:block;height:100%;background:#fff;border-radius:99px}
+.ysc-uy .kr{font-size:12px;white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.ysc-uy .kr::-webkit-scrollbar{display:none}
+.ysc-uy .go{align-self:flex-start;border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:99px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.ysc-uy .pulse{width:8px;height:8px;border-radius:50%;background:#fff;flex-shrink:0;animation:yscPl 1.8s infinite}
+@keyframes yscPl{0%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}70%{box-shadow:0 0 0 8px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@media (prefers-reduced-motion:reduce){.ysc-uy .pulse{animation:none}}
 .ysc-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);text-align:left;font:inherit}
 .ysc-stat .n{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
 .ysc-stat .l{font-size:11px;color:var(--text2)}
 .ysc-stat i{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .ysc-stat.on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
-.ysc-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.ysc-q{flex:1 1 220px;min-width:0;display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0 10px}
+.ysc-bar{display:grid;grid-template-columns:minmax(0,1fr) 190px 190px;gap:8px;align-items:stretch}
+.ysc-bar .ysc-dd>button{width:100%;justify-content:space-between;height:100%;overflow:hidden}
+.ysc-bar .ysc-dd>button span:first-child{overflow:hidden;text-overflow:ellipsis}
+.ysc-q{min-width:0;display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0 10px}
 .ysc-q input{border:0;background:transparent;color:var(--text);font:inherit;font-size:13px;padding:8px 0;width:100%;outline:none}
 .ysc-dd{position:relative}
 .ysc-dd>button,.ysc-btn{border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 12px;font:inherit;font-size:12.5px;font-weight:600;display:inline-flex;gap:6px;align-items:center;white-space:nowrap;cursor:pointer}
@@ -28732,7 +28763,8 @@ async function a3_xlBuild(opt){
 .ysc-dd .mn{position:absolute;z-index:5;top:calc(100% + 4px);left:0;min-width:220px;max-height:280px;overflow:auto;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:4px}
 .ysc-dd .mn button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--text);padding:7px 10px;border-radius:7px;font:inherit;font-size:12.5px;cursor:pointer}
 .ysc-dd .mn button:hover,.ysc-dd .mn button.on{background:color-mix(in srgb,var(--acc) 12%,var(--surface));color:var(--acc-tx)}
-.ysc-rt{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.ysc-rt{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ysc-rt .ysc-btn{justify-content:center}
 .ysc-tw{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .ysc-ts{overflow:auto;max-height:calc(100dvh - 330px);min-height:240px}
 table.ysc-l{width:100%;border-collapse:collapse;font-size:12px;min-width:960px}
@@ -28751,10 +28783,11 @@ table.ysc-l .c{text-align:center}
 .ysc-just td,.ysc-card.ysc-just{animation:yscFl 1.8s ease}
 @keyframes yscFl{0%{background:color-mix(in srgb,var(--good) 22%,var(--surface))}100%{background:transparent}}
 .ysc-cards{display:none;flex-direction:column;gap:7px;padding:8px}
-.ysc-card{border:1px solid var(--border);border-radius:10px;padding:9px 10px;display:grid;grid-template-columns:auto 1fr auto;gap:3px 10px;align-items:center;cursor:pointer}
+.ysc-card{border:1px solid var(--border);border-radius:10px;padding:9px 10px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3px 10px;align-items:center;cursor:pointer}
 .ysc-card .no{font-weight:800;font-size:15px;min-width:28px;text-align:center}
-.ysc-card .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.ysc-card .m{grid-column:2/4;color:var(--text2);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ysc-card .t{font-weight:700;white-space:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0}
+.ysc-card .m{grid-column:2/4;color:var(--text2);font-size:11.5px;white-space:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0}
+.ysc-card .t::-webkit-scrollbar,.ysc-card .m::-webkit-scrollbar{display:none}
 .ysc-card.sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface))}
 .ysc-empty{text-align:center;padding:26px 12px;color:var(--text2)}
 .ysc-selbar{position:sticky;bottom:10px;z-index:3;display:flex;gap:8px;align-items:center;background:var(--hd1);color:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 10px 30px rgba(0,0,0,.25);flex-wrap:wrap}
@@ -28767,7 +28800,7 @@ table.ysc-l .c{text-align:center}
 .ysc-adet{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
 .ysc-adet div{display:flex;justify-content:space-between;background:var(--surface2);border-radius:8px;padding:6px 10px;font-size:12px}
 .ysc-adet b{font-variant-numeric:tabular-nums}
-@media (max-width:760px){.ysc-stats{grid-template-columns:repeat(2,1fr)} table.ysc-l{display:none} .ysc-cards{display:flex} .ysc-ts{max-height:none} .ysc-rt{margin-left:0;width:100%} .ysc-rt .ysc-btn{flex:1;justify-content:center} .ysc-rev span{display:none}}
+@media (max-width:760px){.ysc-al{grid-template-columns:1fr} .ysc-bar{grid-template-columns:1fr 1fr} .ysc-q{grid-column:1/-1} .ysc-rt .ysc-btn{padding:8px 6px;font-size:12px} table.ysc-l{display:none} .ysc-cards{display:flex} .ysc-ts{max-height:none;min-height:0} .ysc-rev span{display:none} .ysc-bd{gap:8px;padding-top:10px}}
 /* alt pencereler */
 #ysc-sh{position:fixed;inset:0;z-index:62;background:rgba(8,16,24,.5);display:flex;align-items:center;justify-content:center;padding:14px}
 .ysc-w{background:var(--surface);color:var(--text);border-radius:16px;width:100%;max-width:520px;max-height:calc(100dvh - 28px);overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column}
@@ -28919,11 +28952,11 @@ table.ysc-l .c{text-align:center}
 
   /* ---------- ana ekran ---------- */
   const OV = () => document.getElementById('ysc-ov'), SH = () => document.getElementById('ysc-sh');
-  const S = { fab: '', q: '', fYer: '', fCins: '', fDur: '', sel: new Set(), son: new Set(), adetAcik: false };
+  const S = { fab: '', q: '', fYer: '', fCins: '', fDur: '', sel: new Set(), son: new Set(), adetAcik: false, uyari: '' };
   window.yscAc = function () {
     const fl = fabListe(), fabF = typeof kontrolFabFilter !== 'undefined' ? kontrolFabFilter : null;
     S.fab = fabF || (D.list.find(f => f.rows.length) || {}).fab || fl[0] || '';
-    S.q = S.fYer = S.fCins = S.fDur = ''; S.sel.clear(); S.adetAcik = false;
+    S.q = S.fYer = S.fCins = S.fDur = S.uyari = ''; S.sel.clear(); S.adetAcik = false;
     OV().hidden = false; ciz();
   };
   function kapat() { OV().hidden = true; SH().hidden = true; S.sel.clear(); }
@@ -28934,11 +28967,22 @@ table.ysc-l .c{text-align:center}
       (!q || [r.no, r.yer, r.kap, r.cins, r.sinif, r.firma, r.acik, ayFmt(r.dolum), ayFmt(r.skt)].join(' ').toLocaleLowerCase('tr').includes(q)));
   }
   function dd(el, lab, vals, cur, set) {
-    el.innerHTML = `<button type="button">${esc(cur || lab)} <span aria-hidden="true">▾</span></button>`;
+    el.innerHTML = `<button type="button"><span>${esc(cur || lab)}</span><span aria-hidden="true">▾</span></button>`;
     el.firstChild.onclick = e => { e.stopPropagation(); const acik = el.querySelector('.mn'); OV().querySelectorAll('.ysc-dd .mn').forEach(m => m.remove()); if (acik) return;
       const m = document.createElement('div'); m.className = 'mn';
       m.innerHTML = [`<button data-v="" class="${!cur ? 'on' : ''}">Tümü</button>`].concat(vals.map(v => `<button data-v="${esc(v)}" class="${v === cur ? 'on' : ''}">${esc(v)}</button>`)).join('');
       m.onclick = ev => { const b = ev.target.closest('button'); if (!b) return; set(b.dataset.v); ciz(); }; el.appendChild(m); };
+  }
+  // İnce, açılır uyarı kartı (süresi geçmiş / 2 ay içinde dolacak)
+  function uyariKart(f, k) {
+    const L = f.rows.filter(r => durum(r).k === k).sort((a, b) => (a.skt || '').localeCompare(b.skt || '') || noSay(a.no) - noSay(b.no));
+    const ad = k === 'bad' ? 'Süresi geçmiş' : '2 ay içinde dolacak';
+    if (!L.length) return `<div class="ysc-uy calm"><div class="uh"><span class="ic">✓</span><span class="ad">${ad}</span><span class="say">${k === 'bad' ? 'Süresi geçen cihaz yok' : 'Yaklaşan dolum yok'}</span></div></div>`;
+    const ac = S.uyari === k, pct = Math.round(L.length / f.rows.length * 100), r = L[0], fk = ayFark(r.skt, ym(new Date()));
+    const zaman = k === 'bad' ? (-fk === 0 ? 'bu ay' : (-fk) + ' ay geçti') : (fk === 0 ? 'bu ay doluyor' : fk + ' ay kaldı');
+    return `<div class="ysc-uy ${k} ${ac ? 'ac' : ''}"><button class="uh" data-uh="${k}" aria-expanded="${ac}"><span class="ic">${k === 'bad' ? '!' : '⏱'}</span><span class="ad">${ad}</span>${k === 'bad' ? '<span class="pulse" aria-hidden="true"></span>' : ''}<span class="say"><b>${L.length}</b> cihaz · %${pct}</span><span class="ok">${ac ? '▾' : '▸'}</span></button>
+      ${ac ? `<div class="ub"><div class="bar"><i style="width:${Math.max(3, pct)}%"></i></div><div class="kr">${k === 'bad' ? 'En eski' : 'İlk'}: YSC ${esc(r.no)} · ${esc(r.yer)} · SKT ${ayFmt(r.skt)} (${zaman})</div>
+        <button class="go" data-ug="${k}">${S.fDur === k ? 'Süzmeyi kaldır' : 'Listede göster ›'}</button></div>` : ''}</div>`;
   }
   function ciz() {
     const ov = OV(), fl = fabListe(), f = kayit(S.fab, false) || { fab: S.fab, baslik: '', rev: '', rows: [], firmalar: [], liste: true };
@@ -28949,8 +28993,8 @@ table.ysc-l .c{text-align:center}
       <div class="ysc-rev"><span>Son gözden geçirme</span><b>${tFmt(f.rev)}</b><button id="ysc-bugun" ${f.rows.length ? '' : 'disabled'}>Bugün</button></div></div>
     <div class="ysc-bd">
       ${fl.length > 1 ? `<div class="ysc-fabs">${fl.map(x => `<button data-fab="${esc(x)}" class="${x === S.fab ? 'on' : ''}">${esc(x)}</button>`).join('')}</div>` : ''}
-      <div class="ysc-stats">${[['', 'Toplam cihaz', f.rows.length, 'var(--text3)'], ['ok', 'Geçerli', say.ok, 'var(--good)'], ['warn', '2 ay içinde dolacak', say.warn, 'var(--warn)'], ['bad', 'Süresi geçmiş', say.bad, 'var(--bad)']]
-        .map(s => `<button class="ysc-stat ${S.fDur === s[0] ? 'on' : ''}" data-d="${s[0]}"><div><div class="l">${s[1]}</div><div class="n">${s[2]}</div></div><i style="background:${s[3]}"></i></button>`).join('')}</div>
+      <div class="ysc-mini"><button class="${!S.fDur ? 'on' : ''}" data-d="">Toplam <b>${f.rows.length}</b></button><button class="g ${S.fDur === 'ok' ? 'on' : ''}" data-d="ok">Geçerli <b>${say.ok}</b></button></div>
+      ${f.rows.length ? `<div class="ysc-al">${uyariKart(f, 'bad')}${uyariKart(f, 'warn')}</div>` : ''}
       <div class="ysc-bar"><label class="ysc-q"><span aria-hidden="true">⌕</span><input id="ysc-q" placeholder="YSC no, bölge, madde, firma ara" value="${esc(S.q)}"></label>
         <div class="ysc-dd" id="ysc-ddy"></div><div class="ysc-dd" id="ysc-ddc"></div>
         <div class="ysc-rt"><button class="ysc-btn" id="ysc-saha" ${f.rows.length ? '' : 'disabled'}>✓ Saha kontrolü</button><button class="ysc-btn" id="ysc-yukle">⇪ Excel'den yükle</button><button class="ysc-btn p" id="ysc-indir" ${f.rows.length ? '' : 'disabled'}>⇩ İndir</button></div></div>
@@ -28972,7 +29016,9 @@ table.ysc-l .c{text-align:center}
     $('ysc-geri').onclick = kapat;
     ov.onclick = e => { if (!e.target.closest('.ysc-dd')) ov.querySelectorAll('.ysc-dd .mn').forEach(m => m.remove()); };
     ov.querySelectorAll('[data-fab]').forEach(b => b.onclick = () => { S.fab = b.dataset.fab; S.sel.clear(); S.fYer = S.fCins = S.fDur = ''; ciz(); });
-    ov.querySelectorAll('.ysc-stat').forEach(b => b.onclick = () => { S.fDur = b.dataset.d; ciz(); });
+    ov.querySelectorAll('.ysc-mini [data-d]').forEach(b => b.onclick = () => { S.fDur = b.dataset.d; ciz(); });
+    ov.querySelectorAll('[data-uh]').forEach(b => b.onclick = () => { const k = b.dataset.uh; S.uyari = S.uyari === k ? '' : k; ciz(); });   // akordeon: biri açılınca diğeri kapanır
+    ov.querySelectorAll('[data-ug]').forEach(b => b.onclick = e => { e.stopPropagation(); const k = b.dataset.ug; S.fDur = S.fDur === k ? '' : k; ciz(); });
     const q = $('ysc-q'); q.oninput = () => { S.q = q.value; const p = q.selectionStart; ciz(); const q2 = $('ysc-q'); q2.focus(); q2.setSelectionRange(p, p); };
     dd($('ysc-ddy'), 'Bölge / yer', [...new Set(f.rows.map(r => r.yer).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr')), S.fYer, v => S.fYer = v);
     dd($('ysc-ddc'), 'Madde cinsi', [...new Set(f.rows.map(r => r.cins).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr')), S.fCins, v => S.fCins = v);
