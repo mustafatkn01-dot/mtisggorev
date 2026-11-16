@@ -20869,7 +20869,7 @@ window.addEventListener('resize', calMobInit);
   window._fbSaveArchive = () => yaz('archive', () => archived);
   window._fbSaveTakvim  = () => yaz('takvim',  () => calReminders);
   window._fbSavePer     = () => yaz('per',     () => ({ tasks: perTasks, persons: perPersons, fabs: perFabs }));
-  window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs, ogren: window.bmOgren || [], ozel: window.bmOzel || [] }));
+  window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs, ogren: window.bmOgren || [], ozel: window.bmOzel || [], ysc: window.yscVeri ? window.yscVeri() : { list: [] } }));
   window._fbSaveKaza    = () => yaz('kaza',    () => { try { kazaGecmisKodla(); } catch (e) {} return { items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }; });
 
   // ── Kaza / Olay raporları — cihazlar arası bulut deposu ─────
@@ -21037,6 +21037,7 @@ window.addEventListener('resize', calMobInit);
       doldur(kontrolFabs,  d.kontrol.fabs);
       if (Array.isArray(d.kontrol.ogren)) window.bmOgren = d.kontrol.ogren;
       if (Array.isArray(d.kontrol.ozel)) { window.bmOzel = d.kontrol.ozel; try { if (typeof ekipOzelUygula === 'function') ekipOzelUygula(); } catch (e) {} }
+      if (d.kontrol.ysc && typeof window.yscUygula === 'function') { try { window.yscUygula(d.kontrol.ysc); } catch (e) { console.error(e); } }
       window._kontrolReady = true;  // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
     // Rapor deposu ana kaza kaydından bağımsızdır; başka cihazda oluşturulan
@@ -28697,5 +28698,609 @@ async function a3_xlBuild(opt){
   html body.a3-pdf-mode,html:has(body.a3-pdf-mode){margin:0!important;padding:0!important;background:#fff!important}
 }
 </style>
+<style id="ysc-styles">
+/* ===== YSC (Yangın Söndürme Cihazları) envanter takibi — Kontroller ===== */
+#ysc-ov{position:fixed;inset:0;z-index:58;background:var(--bg);display:flex;flex-direction:column;color:var(--text)}
+#ysc-ov[hidden],#ysc-sh[hidden],.ysc-selbar[hidden]{display:none!important}
+.ysc-top{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top,0px));background:linear-gradient(135deg,var(--hd1),var(--hd2));color:#fff;flex-shrink:0}
+.ysc-top .bk{border:0;background:rgba(255,255,255,.14);color:#fff;width:34px;height:34px;border-radius:10px;font-size:18px;cursor:pointer;flex-shrink:0}
+.ysc-top .tt{min-width:0;flex:1}
+.ysc-top .tt b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ysc-top .tt small{display:block;font-size:11px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ysc-rev{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:10px;padding:5px 6px 5px 10px;font-size:11.5px;white-space:nowrap}
+.ysc-rev b{font-variant-numeric:tabular-nums}
+.ysc-rev button{border:0;background:#fff;color:var(--hd1);border-radius:7px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer}
+.ysc-bd{flex:1;overflow:auto;padding:12px 14px 90px;display:flex;flex-direction:column;gap:10px;max-width:1240px;width:100%;margin:0 auto;box-sizing:border-box}
+.ysc-fabs{display:flex;gap:6px;flex-wrap:wrap}
+.ysc-fabs button{border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.ysc-fabs button.on{background:var(--acc);border-color:var(--acc);color:var(--acc-fg)}
+.ysc-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ysc-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);text-align:left;font:inherit}
+.ysc-stat .n{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.ysc-stat .l{font-size:11px;color:var(--text2)}
+.ysc-stat i{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.ysc-stat.on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.ysc-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ysc-q{flex:1 1 220px;min-width:0;display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0 10px}
+.ysc-q input{border:0;background:transparent;color:var(--text);font:inherit;font-size:13px;padding:8px 0;width:100%;outline:none}
+.ysc-dd{position:relative}
+.ysc-dd>button,.ysc-btn{border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 12px;font:inherit;font-size:12.5px;font-weight:600;display:inline-flex;gap:6px;align-items:center;white-space:nowrap;cursor:pointer}
+.ysc-btn.p{background:var(--acc);border-color:var(--acc);color:var(--acc-fg)}
+.ysc-btn.d{background:var(--bad);border-color:var(--bad);color:#fff}
+.ysc-btn.s{padding:5px 9px;font-size:11.5px}
+.ysc-btn:disabled{opacity:.45;cursor:default}
+.ysc-dd .mn{position:absolute;z-index:5;top:calc(100% + 4px);left:0;min-width:220px;max-height:280px;overflow:auto;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:4px}
+.ysc-dd .mn button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--text);padding:7px 10px;border-radius:7px;font:inherit;font-size:12.5px;cursor:pointer}
+.ysc-dd .mn button:hover,.ysc-dd .mn button.on{background:color-mix(in srgb,var(--acc) 12%,var(--surface));color:var(--acc-tx)}
+.ysc-rt{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.ysc-tw{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.ysc-ts{overflow:auto;max-height:calc(100dvh - 330px);min-height:240px}
+table.ysc-l{width:100%;border-collapse:collapse;font-size:12px;min-width:960px}
+table.ysc-l th{position:sticky;top:0;background:var(--surface2);color:var(--text2);font-weight:700;font-size:11px;text-align:left;padding:8px;border-bottom:1px solid var(--border);white-space:nowrap;z-index:1}
+table.ysc-l td{padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap;font-variant-numeric:tabular-nums;cursor:pointer}
+table.ysc-l td.y{white-space:normal;min-width:170px}
+table.ysc-l tr:hover td{background:color-mix(in srgb,var(--surface2) 60%,var(--surface))}
+table.ysc-l tr.sel td{background:color-mix(in srgb,var(--acc) 12%,var(--surface))}
+table.ysc-l .c{text-align:center}
+.ysc-cb{width:16px;height:16px;accent-color:var(--acc);pointer-events:none}
+.ysc-pill{display:inline-flex;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.ysc-pill.ok{background:color-mix(in srgb,var(--good) 13%,var(--surface));color:var(--good-tx)}
+.ysc-pill.warn{background:color-mix(in srgb,var(--warn) 15%,var(--surface));color:var(--warn-tx)}
+.ysc-pill.bad{background:color-mix(in srgb,var(--bad) 13%,var(--surface));color:var(--bad-tx)}
+.ysc-ac{color:var(--text2);font-size:11px}
+.ysc-just td,.ysc-card.ysc-just{animation:yscFl 1.8s ease}
+@keyframes yscFl{0%{background:color-mix(in srgb,var(--good) 22%,var(--surface))}100%{background:transparent}}
+.ysc-cards{display:none;flex-direction:column;gap:7px;padding:8px}
+.ysc-card{border:1px solid var(--border);border-radius:10px;padding:9px 10px;display:grid;grid-template-columns:auto 1fr auto;gap:3px 10px;align-items:center;cursor:pointer}
+.ysc-card .no{font-weight:800;font-size:15px;min-width:28px;text-align:center}
+.ysc-card .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ysc-card .m{grid-column:2/4;color:var(--text2);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ysc-card.sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface))}
+.ysc-empty{text-align:center;padding:26px 12px;color:var(--text2)}
+.ysc-selbar{position:sticky;bottom:10px;z-index:3;display:flex;gap:8px;align-items:center;background:var(--hd1);color:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 10px 30px rgba(0,0,0,.25);flex-wrap:wrap}
+.ysc-selbar .ysc-btn{background:rgba(255,255,255,.14);color:#fff;border-color:transparent}
+.ysc-selbar .ysc-btn.p{background:var(--acc);color:var(--acc-fg)}
+.ysc-acc{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.ysc-acc-h{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;font-weight:700;font-size:13px}
+.ysc-acc-h small{color:var(--text2);font-weight:500;font-size:11.5px;margin-left:auto}
+.ysc-acc-b{padding:4px 12px 12px;display:flex;flex-direction:column;gap:10px}
+.ysc-adet{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.ysc-adet div{display:flex;justify-content:space-between;background:var(--surface2);border-radius:8px;padding:6px 10px;font-size:12px}
+.ysc-adet b{font-variant-numeric:tabular-nums}
+@media (max-width:760px){.ysc-stats{grid-template-columns:repeat(2,1fr)} table.ysc-l{display:none} .ysc-cards{display:flex} .ysc-ts{max-height:none} .ysc-rt{margin-left:0;width:100%} .ysc-rt .ysc-btn{flex:1;justify-content:center} .ysc-rev span{display:none}}
+/* alt pencereler */
+#ysc-sh{position:fixed;inset:0;z-index:62;background:rgba(8,16,24,.5);display:flex;align-items:center;justify-content:center;padding:14px}
+.ysc-w{background:var(--surface);color:var(--text);border-radius:16px;width:100%;max-width:520px;max-height:calc(100dvh - 28px);overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column}
+.ysc-w.wide{max-width:980px}
+.ysc-wh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
+.ysc-wh b{font-size:15px}
+.ysc-wh small{display:block;color:var(--text2);font-size:11.5px;font-weight:400}
+.ysc-x{border:0;background:var(--surface2);color:var(--text);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;flex-shrink:0}
+.ysc-wb{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.ysc-wf{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;align-items:center;position:sticky;bottom:0;background:var(--surface)}
+.ysc-lb{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.ysc-seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface2);border-radius:10px;padding:3px;gap:3px}
+.ysc-seg button{border:0;background:none;color:var(--text2);padding:8px;border-radius:8px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer}
+.ysc-seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.ysc-r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ysc-mp{display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:10px;padding:4px}
+.ysc-mp button{border:0;background:var(--surface);color:var(--text);width:30px;height:30px;border-radius:8px;font-size:16px;cursor:pointer}
+.ysc-mp span{flex:1;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.ysc-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ysc-chip{border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:99px;padding:6px 11px;font:inherit;font-size:12px;cursor:pointer}
+.ysc-chip.on{background:var(--acc);border-color:var(--acc);color:var(--acc-fg)}
+.ysc-ed{margin-left:auto;border:1px solid var(--border2);background:var(--surface);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;flex-shrink:0}
+.ysc-ed.on{background:var(--acc);border-color:var(--acc);color:var(--acc-fg)}
+.ysc-frow{display:flex;gap:6px;align-items:center}
+.ysc-frow input{flex:1;min-width:0}
+.ysc-frow small{color:var(--text3);font-size:11px;white-space:nowrap}
+.ysc-del{border:1px solid var(--border2);background:var(--surface);color:var(--bad-tx);width:32px;height:32px;border-radius:8px;cursor:pointer;flex-shrink:0}
+.ysc-hint{font-size:11.5px;color:var(--text2)}
+.ysc-tgt{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:13px;display:flex;align-items:center;gap:8px}
+.ysc-tgt span{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ysc-in{width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 10px;font:inherit;font-size:13px}
+.ysc-cf{background:color-mix(in srgb,var(--bad) 10%,var(--surface));border-radius:10px;padding:10px 12px;font-size:12.5px;display:flex;flex-direction:column;gap:8px}
+.ysc-cf>div{display:flex;gap:8px;justify-content:flex-end}
+.ysc-map{width:100%;border-collapse:collapse;font-size:12px}
+.ysc-map td,.ysc-map th{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left}
+.ysc-map th{color:var(--text2);font-size:11px}
+.ysc-map .ok{color:var(--good-tx);font-weight:700}
+.ysc-map .no{color:var(--bad-tx);font-weight:700}
+.ysc-drop{border:1.5px dashed var(--border2);border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center}
+.ysc-drop .ic{width:40px;height:40px;border-radius:10px;background:color-mix(in srgb,var(--good) 14%,var(--surface));color:var(--good-tx);display:grid;place-items:center;font-weight:800;font-size:11px;flex-shrink:0}
+.ysc-prv{background:#8B969B;padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow:auto;max-height:60dvh}
+.ysc-prv .pdf-sayfa{box-shadow:0 4px 18px rgba(0,0,0,.25);transform-origin:top center}
+.ysc-pw{overflow:hidden;flex-shrink:0}
+.ysc-ok{background:color-mix(in srgb,var(--good) 12%,var(--surface));color:var(--good-tx);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700}
+/* Çıktı sayfası (PDF): Excel formunun ölçüleri, 1 px = Excel %100 */
+#ysc-print{display:none}
+.ysc-pg,#ysc-print .pdf-sayfa{width:900px;background:#fff;color:#000;font-family:Arial,'Liberation Sans',sans-serif;box-sizing:border-box;padding:0}
+.ysc-pg .ph{height:30px;text-align:center;font-family:'Times New Roman',Times,serif;font-weight:700;font-size:14pt;line-height:30px}
+.ysc-ft{border-collapse:collapse;table-layout:fixed;width:900px}
+.ysc-ft td,.ysc-ft th{padding:0 3px;overflow:hidden;white-space:nowrap;box-sizing:border-box}
+.ysc-ft .t1 td{height:41px;background:#376092;color:#fff;font-weight:700;font-size:12pt;text-align:center;border:1px solid #000;border-bottom:3px double #000}
+.ysc-ft .t2 td{height:29px;font-weight:700;font-size:10pt;text-align:center;border-bottom:1px solid #000}
+.ysc-ft .t2 .f{background:#DCE6F2}
+.ysc-ft .t2 .d{font-size:11pt}
+.ysc-ft .h th{height:111px;background:#DCE6F2;font-weight:700;font-size:9pt;text-align:center;vertical-align:middle;white-space:normal;border:1px solid #000;line-height:1.15}
+.ysc-ft .r td{height:22px;font-size:8pt;text-align:center;border:1px dotted #555}
+.ysc-ft .r td.b{text-align:left}
+.ysc-sum{border-collapse:collapse;margin:22px 0 0 41px;font-family:Arial,sans-serif}
+.ysc-sum td{border:1px dotted #555;font-size:10pt;text-align:center;height:21px;padding:0 6px}
+.ysc-sum .st td{border:0;border-bottom:3px double #000;background:#FFFF00;font-weight:700;font-size:12pt;height:25px}
+.ysc-sum .tp td{font-weight:700;font-size:11pt}
+.ysc-sum .tp td.n{background:#FFFF00}
+</style>
+
+<div id="ysc-ov" hidden></div>
+<div id="ysc-sh" hidden></div>
+<div id="ysc-print"></div>
+
+<script id="ysc-modul">
+/* ===== YSC envanter: veri, liste, saha kontrolü, Excel'den yükleme, PDF/Excel çıktı ===== */
+(function () {
+  'use strict';
+  const LS = 'yeni_isg_ysc_v1';
+  const AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  const AC_HAZIR = ['SKT DOLAYI YENİDEN DOLUM', 'BASINÇ DÜŞÜK, YENİDEN DOLUM', 'KULLANIM SONRASI DOLUM', 'YENİ ALIM'];
+  const CINS_SIRA = ['KKT', 'KÖPÜK', 'K2CO3', 'CO2', 'FM200'];
+  // Excel formunun sütunları (genişlik: Excel karakter birimi)
+  const KOL = [['no', 'YSC NO', 5.1640625], ['yer', 'Bulunduğu Bölge / Yer', 27.1640625], ['kap', 'Kapasite', 8.33203125], ['cins', 'Madde Cinsi', 8.33203125],
+    ['sinif', 'Madde Sınıfı', 8.5], ['dolum', 'Satış / Dolum Tarihi', 9.33203125], ['skt', 'Son Kullanma /Tekrar Dolum Tarihi', 9.33203125], ['firma', 'İmalatçı', 10.5], ['acik', 'AÇIKLAMA', 35.5]];
+  const kpx = w => Math.trunc((256 * w + Math.trunc(128 / 7)) / 256 * 7);   // Excel sütun genişliği → px
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const tst = m => { try { (window.toast || alert)(m); } catch (e) {} };
+
+  /* ---------- veri ---------- */
+  let D = { list: [] };
+  try { const o = JSON.parse(localStorage.getItem(LS) || 'null'); if (o && Array.isArray(o.list)) D = o; } catch (e) {}
+  function normal(d) {
+    const o = d && Array.isArray(d.list) ? d : { list: [] };
+    o.list = o.list.filter(Boolean).map(f => ({ fab: f.fab || '', baslik: f.baslik || '', rev: f.rev || '', liste: f.liste !== false,
+      firmalar: Array.isArray(f.firmalar) ? f.firmalar.filter(Boolean) : [], rows: (Array.isArray(f.rows) ? f.rows : Object.values(f.rows || {})).filter(Boolean)
+        .map(r => ({ no: r.no == null ? '' : r.no, yer: r.yer || '', kap: r.kap || '', cins: r.cins || '', sinif: r.sinif || '', dolum: r.dolum || '', skt: r.skt || '', firma: r.firma || '', acik: r.acik || '', kontrol: r.kontrol || '' })) }));
+    return o;
+  }
+  D = normal(D);
+  window.yscVeri = () => D;
+  window.yscUygula = d => { D = normal(d); try { localStorage.setItem(LS, JSON.stringify(D)); } catch (e) {} if (!OV().hidden) ciz(); yscKart(); };
+  function kaydet() { try { localStorage.setItem(LS, JSON.stringify(D)); } catch (e) {} if (window._fbSaveKontrol) { try { window._fbSaveKontrol(); } catch (e) {} } yscKart(); }
+  const fabListe = () => { const a = (typeof kontrolFabs !== 'undefined' && Array.isArray(kontrolFabs)) ? kontrolFabs.slice() : []; D.list.forEach(f => { if (f.fab && !a.includes(f.fab)) a.push(f.fab); }); return a; };
+  function kayit(fab, olustur) { let f = D.list.find(x => x.fab === fab); if (!f && olustur) { f = { fab, baslik: '', rev: '', liste: true, firmalar: [], rows: [] }; D.list.push(f); } return f; }
+  const varsBaslik = fab => (fab ? fab.toLocaleUpperCase('tr') + ' ' : '') + 'YSC LİSTESİ';
+
+  /* ---------- tarih ---------- */
+  const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  const bugun = () => { const d = new Date(); return ym(d) + '-' + String(d.getDate()).padStart(2, '0'); };
+  const ayFmt = s => s ? s.slice(5, 7) + '/' + s.slice(0, 4) : '';
+  const tFmt = s => s ? s.slice(0, 10).split('-').reverse().join('.') : '—';
+  const ayEkle = (s, n) => { const [y, m] = s.split('-').map(Number); return ym(new Date(y, m - 1 + n, 1)); };
+  const ayFark = (a, b) => { const [y1, m1] = a.split('-').map(Number), [y2, m2] = b.split('-').map(Number); return (y1 - y2) * 12 + (m1 - m2); };
+  function durum(r) {
+    if (!r.skt) return { k: 'ok', t: '—' };
+    const f = ayFark(r.skt, ym(new Date()));
+    if (f < 0) return { k: 'bad', t: 'Süresi geçti' };
+    if (f <= 2) return { k: 'warn', t: f === 0 ? 'Bu ay doluyor' : f + ' ay kaldı' };
+    return { k: 'ok', t: 'Geçerli' };
+  }
+  const noSay = v => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 1e9 : n; };
+  const sirala = rows => rows.sort((a, b) => noSay(a.no) - noSay(b.no) || String(a.no).localeCompare(String(b.no), 'tr'));
+  const kapNum = k => String(k || '').replace(/\s*kg\s*$/i, '').trim();
+  function adetler(rows) {
+    const m = new Map();
+    rows.forEach(r => { if (!r.cins) return; const k = kapNum(r.kap) + ' KG ' + r.cins; m.set(k, (m.get(k) || 0) + 1); });
+    const sira = c => { const i = CINS_SIRA.indexOf(c); return i < 0 ? 99 : i; };
+    return [...m.entries()].map(([k, n]) => { const p = k.split(' KG '); return { k, n, kap: p[0], cins: p[1] }; })
+      .sort((a, b) => sira(a.cins) - sira(b.cins) || a.cins.localeCompare(b.cins, 'tr') || parseFloat(a.kap) - parseFloat(b.kap));
+  }
+
+  /* ---------- Kontroller sekmesindeki giriş kartı ---------- */
+  function yscKart() {
+    const body = document.getElementById('kontrol-body'); if (!body) return;
+    let k = document.getElementById('ysc-giris'); if (k) k.remove();
+    if (typeof kontrolAraQ === 'function' && kontrolAraQ()) return;
+    const fabF = typeof kontrolFabFilter !== 'undefined' ? kontrolFabFilter : null;
+    const kay = D.list.filter(f => !fabF || f.fab === fabF), rows = kay.reduce((a, f) => a.concat(f.rows), []);
+    const s = { ok: 0, warn: 0, bad: 0 }; rows.forEach(r => s[durum(r).k]++);
+    const html = `<section class="kontrol-grup" id="ysc-giris"><div class="kontrol-grup-hd" role="button" onclick="yscAc()">
+      <span class="kontrol-grup-ok">›</span><span class="kontrol-grup-icon">🧯</span>
+      <div class="kontrol-grup-copy"><div class="kontrol-grup-ad">Yangın Söndürme Cihazları</div>
+      <div class="kontrol-grup-aciklama">${rows.length ? 'YSC envanteri · saha kontrolü · dolum takibi' : 'Envanteri Excel listesinden yükleyerek başla'}</div>
+      ${rows.length ? `<div class="kontrol-grup-mini"><span class="ok">${s.ok} geçerli</span><span class="warn">${s.warn} yaklaşıyor</span><span class="bad">${s.bad} süresi geçmiş</span></div>` : ''}</div>
+      <span class="kontrol-grup-sayi">${rows.length}</span></div></section>`;
+    const sum = body.querySelector('.kontrol-summary-grid');
+    if (sum) sum.insertAdjacentHTML('afterend', html); else body.insertAdjacentHTML('afterbegin', html);
+  }
+  window.yscKart = yscKart;
+  if (typeof kontrolRender === 'function') {
+    const _kr = kontrolRender;
+    window.kontrolRender = kontrolRender = function () { const r = _kr.apply(this, arguments); try { yscKart(); } catch (e) { console.error(e); } return r; };
+  }
+
+  /* ---------- ana ekran ---------- */
+  const OV = () => document.getElementById('ysc-ov'), SH = () => document.getElementById('ysc-sh');
+  const S = { fab: '', q: '', fYer: '', fCins: '', fDur: '', sel: new Set(), son: new Set(), adetAcik: false };
+  window.yscAc = function () {
+    const fl = fabListe(), fabF = typeof kontrolFabFilter !== 'undefined' ? kontrolFabFilter : null;
+    S.fab = fabF || (D.list.find(f => f.rows.length) || {}).fab || fl[0] || '';
+    S.q = S.fYer = S.fCins = S.fDur = ''; S.sel.clear(); S.adetAcik = false;
+    OV().hidden = false; ciz();
+  };
+  function kapat() { OV().hidden = true; SH().hidden = true; S.sel.clear(); }
+  const satirId = r => String(r.no) + '|' + r.yer;
+  function liste(f) {
+    const q = S.q.toLocaleLowerCase('tr');
+    return f.rows.filter(r => (!S.fYer || r.yer === S.fYer) && (!S.fCins || r.cins === S.fCins) && (!S.fDur || durum(r).k === S.fDur) &&
+      (!q || [r.no, r.yer, r.kap, r.cins, r.sinif, r.firma, r.acik, ayFmt(r.dolum), ayFmt(r.skt)].join(' ').toLocaleLowerCase('tr').includes(q)));
+  }
+  function dd(el, lab, vals, cur, set) {
+    el.innerHTML = `<button type="button">${esc(cur || lab)} <span aria-hidden="true">▾</span></button>`;
+    el.firstChild.onclick = e => { e.stopPropagation(); const acik = el.querySelector('.mn'); OV().querySelectorAll('.ysc-dd .mn').forEach(m => m.remove()); if (acik) return;
+      const m = document.createElement('div'); m.className = 'mn';
+      m.innerHTML = [`<button data-v="" class="${!cur ? 'on' : ''}">Tümü</button>`].concat(vals.map(v => `<button data-v="${esc(v)}" class="${v === cur ? 'on' : ''}">${esc(v)}</button>`)).join('');
+      m.onclick = ev => { const b = ev.target.closest('button'); if (!b) return; set(b.dataset.v); ciz(); }; el.appendChild(m); };
+  }
+  function ciz() {
+    const ov = OV(), fl = fabListe(), f = kayit(S.fab, false) || { fab: S.fab, baslik: '', rev: '', rows: [], firmalar: [], liste: true };
+    const say = { ok: 0, warn: 0, bad: 0 }; f.rows.forEach(r => say[durum(r).k]++);
+    const L = liste(f), ad = adetler(f.rows);
+    ov.innerHTML = `<div class="ysc-top"><button class="bk" id="ysc-geri" aria-label="Geri">‹</button>
+      <div class="tt"><b>Yangın Söndürme Cihazları</b><small>${esc(f.baslik || varsBaslik(S.fab))}</small></div>
+      <div class="ysc-rev"><span>Son gözden geçirme</span><b>${tFmt(f.rev)}</b><button id="ysc-bugun" ${f.rows.length ? '' : 'disabled'}>Bugün</button></div></div>
+    <div class="ysc-bd">
+      ${fl.length > 1 ? `<div class="ysc-fabs">${fl.map(x => `<button data-fab="${esc(x)}" class="${x === S.fab ? 'on' : ''}">${esc(x)}</button>`).join('')}</div>` : ''}
+      <div class="ysc-stats">${[['', 'Toplam cihaz', f.rows.length, 'var(--text3)'], ['ok', 'Geçerli', say.ok, 'var(--good)'], ['warn', '2 ay içinde dolacak', say.warn, 'var(--warn)'], ['bad', 'Süresi geçmiş', say.bad, 'var(--bad)']]
+        .map(s => `<button class="ysc-stat ${S.fDur === s[0] ? 'on' : ''}" data-d="${s[0]}"><div><div class="l">${s[1]}</div><div class="n">${s[2]}</div></div><i style="background:${s[3]}"></i></button>`).join('')}</div>
+      <div class="ysc-bar"><label class="ysc-q"><span aria-hidden="true">⌕</span><input id="ysc-q" placeholder="YSC no, bölge, madde, firma ara" value="${esc(S.q)}"></label>
+        <div class="ysc-dd" id="ysc-ddy"></div><div class="ysc-dd" id="ysc-ddc"></div>
+        <div class="ysc-rt"><button class="ysc-btn" id="ysc-saha" ${f.rows.length ? '' : 'disabled'}>✓ Saha kontrolü</button><button class="ysc-btn" id="ysc-yukle">⇪ Excel'den yükle</button><button class="ysc-btn p" id="ysc-indir" ${f.rows.length ? '' : 'disabled'}>⇩ İndir</button></div></div>
+      <div class="ysc-tw"><div class="ysc-ts">
+        ${f.rows.length ? `<table class="ysc-l"><thead><tr><th class="c"><input type="checkbox" class="ysc-cb" id="ysc-all" ${L.length && L.every(r => S.sel.has(satirId(r))) ? 'checked' : ''} aria-label="Tümünü seç" style="pointer-events:auto"></th><th>YSC No</th><th>Bulunduğu Bölge / Yer</th><th>Kapasite</th><th>Madde Cinsi</th><th>Madde Sınıfı</th><th>Satış / Dolum</th><th>Son Kullanma / Tekrar Dolum</th><th>İmalatçı</th><th>Açıklama</th><th>Durum</th></tr></thead><tbody>
+        ${L.map(r => { const d = durum(r), id = satirId(r); return `<tr data-id="${esc(id)}" class="${S.sel.has(id) ? 'sel' : ''} ${S.son.has(id) ? 'ysc-just' : ''}"><td class="c"><input type="checkbox" class="ysc-cb" ${S.sel.has(id) ? 'checked' : ''} tabindex="-1"></td><td><b>${esc(r.no)}</b></td><td class="y">${esc(r.yer)}</td><td>${esc(r.kap)}</td><td>${esc(r.cins)}</td><td>${esc(r.sinif)}</td><td>${ayFmt(r.dolum)}</td><td>${ayFmt(r.skt)}</td><td>${esc(r.firma)}</td><td class="ysc-ac">${esc(r.acik)}</td><td><span class="ysc-pill ${d.k}">${d.t}</span></td></tr>`; }).join('') || '<tr><td colspan="11" class="ysc-empty">Bu filtreye uyan cihaz yok.</td></tr>'}
+        </tbody></table>
+        <div class="ysc-cards">${L.map(r => { const d = durum(r), id = satirId(r); return `<div class="ysc-card ${S.sel.has(id) ? 'sel' : ''} ${S.son.has(id) ? 'ysc-just' : ''}" data-id="${esc(id)}"><div class="no">${esc(r.no)}</div><div class="t">${esc(r.yer)}</div><span class="ysc-pill ${d.k}">${d.t}</span><div class="m">${esc(r.kap)} · ${esc(r.cins)} ${esc(r.sinif)} · Dolum ${ayFmt(r.dolum) || '—'} · SKT ${ayFmt(r.skt) || '—'} · ${esc(r.firma)}</div></div>`; }).join('') || '<div class="ysc-empty">Bu filtreye uyan cihaz yok.</div>'}</div>`
+        : `<div class="ysc-empty"><b>${esc(S.fab || 'Bu fabrika')} için YSC listesi yok.</b><br>“Excel'den yükle” ile envanter listeni aktar; sütunlar başlık adlarına göre eşleşir.</div>`}
+      </div></div>
+      ${f.rows.length ? `<div class="ysc-acc"><div class="ysc-acc-h" id="ysc-adet-h"><span>${S.adetAcik ? '▾' : '▸'}</span>Cins ve adet<small>${ad.length} çeşit · ${ad.reduce((a, x) => a + x.n, 0)} tüp · rapora ${f.liste ? 'dahil' : 'dahil değil'}</small></div>
+        ${S.adetAcik ? `<div class="ysc-acc-b"><div class="ysc-adet">${ad.map(x => `<div><span>${esc(x.k)}</span><b>${x.n}</b></div>`).join('')}</div>
+        <div><div class="ysc-lb">Rapora dahil edilsin mi?</div><div class="ysc-seg" style="max-width:320px"><button data-l="1" class="${f.liste ? 'on' : ''}">Evet</button><button data-l="0" class="${!f.liste ? 'on' : ''}">Hayır</button></div>
+        <div class="ysc-hint" style="margin-top:6px">Evet: Excel'de ikinci sayfa “Liste” olarak, PDF'te listenin sonunda yer alır.</div></div></div>` : ''}</div>` : ''}
+      <div class="ysc-selbar" id="ysc-selbar" ${S.sel.size ? '' : 'hidden'}><b>${S.sel.size} cihaz seçili</b><span style="flex:1"></span><button class="ysc-btn s" id="ysc-st">Seçimi kaldır</button><button class="ysc-btn s" id="ysc-sk">Kontrol edildi</button><button class="ysc-btn s p" id="ysc-sd">Dolum / firma güncelle</button></div>
+    </div>`;
+    S.son.clear();
+    const $ = id => document.getElementById(id);
+    $('ysc-geri').onclick = kapat;
+    ov.onclick = e => { if (!e.target.closest('.ysc-dd')) ov.querySelectorAll('.ysc-dd .mn').forEach(m => m.remove()); };
+    ov.querySelectorAll('[data-fab]').forEach(b => b.onclick = () => { S.fab = b.dataset.fab; S.sel.clear(); S.fYer = S.fCins = S.fDur = ''; ciz(); });
+    ov.querySelectorAll('.ysc-stat').forEach(b => b.onclick = () => { S.fDur = b.dataset.d; ciz(); });
+    const q = $('ysc-q'); q.oninput = () => { S.q = q.value; const p = q.selectionStart; ciz(); const q2 = $('ysc-q'); q2.focus(); q2.setSelectionRange(p, p); };
+    dd($('ysc-ddy'), 'Bölge / yer', [...new Set(f.rows.map(r => r.yer).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr')), S.fYer, v => S.fYer = v);
+    dd($('ysc-ddc'), 'Madde cinsi', [...new Set(f.rows.map(r => r.cins).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr')), S.fCins, v => S.fCins = v);
+    const sec = el => { const id = el.dataset.id; S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id); ciz(); };
+    ov.querySelectorAll('tr[data-id], .ysc-card[data-id]').forEach(el => el.onclick = () => sec(el));
+    if ($('ysc-all')) $('ysc-all').onclick = e => { e.stopPropagation(); const hep = L.every(r => S.sel.has(satirId(r))); L.forEach(r => hep ? S.sel.delete(satirId(r)) : S.sel.add(satirId(r))); ciz(); };
+    if ($('ysc-bugun')) $('ysc-bugun').onclick = () => { const k = kayit(S.fab, false); if (!k) return; k.rev = bugun(); kaydet(); ciz(); tst('Son gözden geçirme tarihi güncellendi'); };
+    $('ysc-saha').onclick = () => sahaAc([...S.sel], 'dolum');
+    $('ysc-yukle').onclick = yukleAc;
+    $('ysc-indir').onclick = indirAc;
+    if ($('ysc-adet-h')) $('ysc-adet-h').onclick = () => { S.adetAcik = !S.adetAcik; ciz(); };
+    ov.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { const k = kayit(S.fab, false); if (!k) return; k.liste = b.dataset.l === '1'; kaydet(); ciz(); });
+    if ($('ysc-st')) { $('ysc-st').onclick = () => { S.sel.clear(); ciz(); }; $('ysc-sk').onclick = () => sahaAc([...S.sel], 'kontrol'); $('ysc-sd').onclick = () => sahaAc([...S.sel], 'dolum'); }
+  }
+
+  /* ---------- alt pencere ---------- */
+  function pencere(html, wide) {
+    const sh = SH(); sh.hidden = false; sh.innerHTML = `<div class="ysc-w ${wide ? 'wide' : ''}">${html}</div>`;
+    sh.onclick = e => { if (e.target === sh) pKapat(); }; sh.querySelectorAll('[data-x]').forEach(b => b.onclick = pKapat); return sh;
+  }
+  function pKapat() { const sh = SH(); sh.hidden = true; sh.innerHTML = ''; }
+
+  /* ---------- saha kontrolü ---------- */
+  function sahaAc(ids, mod) {
+    const f = kayit(S.fab, false); if (!f) return;
+    const st = { mod: mod || 'dolum', ids: ids.slice(), ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false, firma: '', yeni: false, acik: AC_HAZIR[0], ara: '', duzen: false, sil: null };
+    const bul = id => f.rows.find(r => satirId(r) === id);
+    if (st.ids.length === 1) { const r = bul(st.ids[0]); if (r) st.firma = r.firma; }
+    function render() {
+      const hedef = st.ids.map(bul).filter(Boolean);
+      const aq = st.ara.trim().toLocaleLowerCase('tr');
+      const bulunan = aq ? f.rows.filter(r => String(r.no) === st.ara.trim() || r.yer.toLocaleLowerCase('tr').includes(aq)).slice(0, 8) : [];
+      const kul = n => f.rows.filter(r => r.firma === n).length;
+      const firmaBlok = st.duzen
+        ? `<div style="display:flex;flex-direction:column;gap:6px">${f.firmalar.map((n, i) => `<div class="ysc-frow"><input class="ysc-in" data-fi="${i}" value="${esc(n)}"><small>${kul(n)} cihaz</small><button class="ysc-del" data-fs="${i}" aria-label="${esc(n)} firmasını kaldır">🗑</button></div>
+            ${st.sil === i ? `<div class="ysc-cf"><b>${esc(n)} seçim listesinden kaldırılsın mı?</b>${kul(n) ? `<span>Kayıtlı ${kul(n)} cihazdaki firma adı değişmez.</span>` : ''}<div><button class="ysc-btn s" data-svz>Vazgeç</button><button class="ysc-btn s d" data-sok="${i}">Kaldır</button></div></div>` : ''}`).join('') || '<div class="ysc-hint">Kayıtlı firma yok.</div>'}
+            <div class="ysc-hint">Ad değişikliği, o firmayla kayıtlı cihazlarda da güncellenir.</div></div>`
+        : `<div class="ysc-chips">${f.firmalar.map(n => `<button class="ysc-chip ${st.firma === n && !st.yeni ? 'on' : ''}" data-f="${esc(n)}">${esc(n)}</button>`).join('')}<button class="ysc-chip ${st.yeni ? 'on' : ''}" data-f="__yeni">+ Yeni firma</button></div>
+           ${st.yeni ? `<input class="ysc-in" id="ysc-yf" style="margin-top:8px" placeholder="Firma adı" value="${esc(st.firma)}">` : ''}`;
+      const sh = pencere(`<div class="ysc-wh"><div><b>Saha kontrolü</b><small>Kontrol tarihi ${tFmt(bugun())} · son gözden geçirme tarihi de güncellenir</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
+      <div class="ysc-wb">
+        <div>${hedef.length ? `<div class="ysc-tgt"><span><b>${hedef.length === 1 ? 'YSC ' + esc(hedef[0].no) : hedef.length + ' cihaz'}</b> · ${hedef.length === 1 ? esc(hedef[0].yer) + ' · ' + esc(hedef[0].kap) + ' ' + esc(hedef[0].cins) : 'toplu güncelleme'}</span><button class="ysc-btn s" id="ysc-hd">Değiştir</button></div>`
+          : `<div class="ysc-lb">Cihaz</div><input class="ysc-in" id="ysc-ara" placeholder="YSC no yaz veya bölge ara" value="${esc(st.ara)}">${bulunan.length ? `<div class="ysc-chips" style="margin-top:8px">${bulunan.map(r => `<button class="ysc-chip" data-n="${esc(satirId(r))}">${esc(r.no)} · ${esc(r.yer)}</button>`).join('')}</div>` : (aq ? '<div class="ysc-hint" style="margin-top:6px">Eşleşen cihaz yok.</div>' : '')}`}</div>
+        <div><div class="ysc-lb">İşlem</div><div class="ysc-seg"><button data-m="kontrol" class="${st.mod === 'kontrol' ? 'on' : ''}">Kontrol edildi, uygun</button><button data-m="dolum" class="${st.mod === 'dolum' ? 'on' : ''}">Dolum / firma güncelle</button></div></div>
+        ${st.mod === 'dolum' ? `
+        <div class="ysc-r2"><div><div class="ysc-lb">Satış / dolum tarihi</div><div class="ysc-mp"><button data-a="-1" aria-label="Önceki ay">‹</button><span>${AY[+st.ay.slice(5) - 1]} ${st.ay.slice(0, 4)}</span><button data-a="1" aria-label="Sonraki ay">›</button></div></div>
+          <div><div class="ysc-lb">Son kullanma / tekrar dolum</div><div class="ysc-mp"><button data-s="-1" aria-label="Önceki ay">‹</button><span>${AY[+st.skt.slice(5) - 1]} ${st.skt.slice(0, 4)}</span><button data-s="1" aria-label="Sonraki ay">›</button></div></div></div>
+        <div class="ysc-hint">Son kullanma tarihi dolumdan 2 yıl sonraya kendiliğinden ayarlanır; gerekirse oklarla değiştir.</div>
+        <div><div class="ysc-lb">İmalatçı / dolum firması<button class="ysc-ed ${st.duzen ? 'on' : ''}" id="ysc-fed" title="Firmaları düzenle" aria-label="Firmaları düzenle">✎</button></div>${firmaBlok}</div>
+        <div><div class="ysc-lb">Açıklama</div><div class="ysc-chips">${AC_HAZIR.concat(['']).map(a => `<button class="ysc-chip ${st.acik === a ? 'on' : ''}" data-c="${esc(a)}">${a || 'Boş bırak'}</button>`).join('')}</div></div>`
+        : `<div class="ysc-hint">Cihazın yerinde, mührü ve basınç göstergesi uygun olduğu kaydedilir. Formdaki bilgiler değişmez; son gözden geçirme tarihi bugüne çekilir.</div>`}
+      </div>
+      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="ysc-kay" ${hedef.length && !st.duzen ? '' : 'disabled'}>Kaydet</button></div>`);
+      const $ = id => document.getElementById(id);
+      sh.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { st.mod = b.dataset.m; render(); });
+      sh.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { st.ay = ayEkle(st.ay, +b.dataset.a); if (!st.sktElle) st.skt = ayEkle(st.ay, 24); render(); });
+      sh.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { st.skt = ayEkle(st.skt, +b.dataset.s); st.sktElle = true; render(); });
+      sh.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { if (b.dataset.f === '__yeni') { st.yeni = true; st.firma = ''; } else { st.yeni = false; st.firma = b.dataset.f; } render(); const y = $('ysc-yf'); if (y) y.focus(); });
+      sh.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { st.acik = b.dataset.c; render(); });
+      if ($('ysc-yf')) $('ysc-yf').oninput = e => { st.firma = e.target.value.toLocaleUpperCase('tr').trim(); };
+      if ($('ysc-fed')) $('ysc-fed').onclick = () => { st.duzen = !st.duzen; st.sil = null; render(); };
+      sh.querySelectorAll('[data-fi]').forEach(inp => inp.onchange = () => {
+        const i = +inp.dataset.fi, eski = f.firmalar[i], yeni = inp.value.toLocaleUpperCase('tr').trim();
+        if (!yeni || yeni === eski) { inp.value = eski; return; }
+        if (f.firmalar.includes(yeni)) { tst('Bu firma zaten listede'); inp.value = eski; return; }
+        f.firmalar[i] = yeni; f.rows.forEach(r => { if (r.firma === eski) r.firma = yeni; }); if (st.firma === eski) st.firma = yeni;
+        kaydet(); render(); ciz();
+      });
+      sh.querySelectorAll('[data-fs]').forEach(b => b.onclick = () => { st.sil = +b.dataset.fs; render(); });
+      sh.querySelectorAll('[data-svz]').forEach(b => b.onclick = () => { st.sil = null; render(); });
+      sh.querySelectorAll('[data-sok]').forEach(b => b.onclick = () => { const n = f.firmalar[+b.dataset.sok]; f.firmalar.splice(+b.dataset.sok, 1); if (st.firma === n) st.firma = ''; st.sil = null; kaydet(); render(); tst(n + ' listeden kaldırıldı'); });
+      const ar = $('ysc-ara'); if (ar) ar.oninput = () => { st.ara = ar.value; const p = ar.selectionStart; render(); const a2 = $('ysc-ara'); a2.focus(); a2.setSelectionRange(p, p); };
+      sh.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { st.ids = [b.dataset.n]; const r = bul(b.dataset.n); if (r) st.firma = r.firma; st.ara = ''; render(); });
+      if ($('ysc-hd')) $('ysc-hd').onclick = () => { st.ids = []; render(); };
+      $('ysc-kay').onclick = () => {
+        if (!hedef.length) return;
+        if (st.mod === 'dolum') {
+          if (st.yeni && st.firma && !f.firmalar.includes(st.firma)) f.firmalar.push(st.firma);
+          hedef.forEach(r => { r.dolum = st.ay; r.skt = st.skt; if (st.firma) r.firma = st.firma; r.acik = st.acik; r.kontrol = bugun(); S.son.add(satirId(r)); });
+        } else hedef.forEach(r => { r.kontrol = bugun(); S.son.add(satirId(r)); });
+        f.rev = bugun(); S.sel.clear(); kaydet(); pKapat(); ciz();
+        tst(hedef.length === 1 ? 'YSC ' + hedef[0].no + ' kaydedildi' : hedef.length + ' cihaz kaydedildi');
+      };
+    }
+    render();
+  }
+
+  /* ---------- Excel'den yükle ---------- */
+  const xlLib = () => (typeof a3_xlLoadLib === 'function' ? a3_xlLoadLib() : new Promise((res, rej) => { if (window.ExcelJS) return res(); const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'; s.onload = () => res(); s.onerror = () => rej(new Error('Kütüphane yüklenemedi')); document.head.appendChild(s); }));
+  const nrm = s => String(s == null ? '' : s).toLocaleLowerCase('tr').replace(/\s+/g, ' ').trim();
+  const ALAN = [['skt', /son kullanma|tekrar dolum|\bskt\b/], ['dolum', /satış|satis|dolum/], ['no', /ysc ?no|^no$|sıra ?no|^no\.?$/], ['yer', /bölge|bolge|yer|konum|lokasyon/],
+    ['kap', /kapasite/], ['cins', /cins/], ['sinif', /sınıf|sinif/], ['firma', /imalat|firma|üretici/], ['acik', /açıklama|aciklama|not/]];
+  const ALAN_AD = { no: 'YSC No', yer: 'Bulunduğu bölge / yer', kap: 'Kapasite', cins: 'Madde cinsi', sinif: 'Madde sınıfı', dolum: 'Satış / dolum tarihi', skt: 'Son kullanma / tekrar dolum', firma: 'İmalatçı', acik: 'Açıklama' };
+  function hucre(v) {
+    if (v == null) return '';
+    if (v instanceof Date) return v;
+    if (typeof v === 'object') { if (v.richText) return v.richText.map(t => t.text).join(''); if ('result' in v) return hucre(v.result); if (v.text) return v.text; return ''; }
+    return v;
+  }
+  function ayOku(v) {
+    if (v instanceof Date && !isNaN(v)) return v.getUTCFullYear() + '-' + String(v.getUTCMonth() + 1).padStart(2, '0');
+    if (typeof v === 'number' && v > 20000 && v < 80000) { const d = new Date(Math.round((v - 25569) * 864e5)); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0'); }
+    const s = String(v || '').trim(); let m;
+    if ((m = /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/.exec(s))) return m[3] + '-' + m[2].padStart(2, '0');
+    if ((m = /^(\d{1,2})[./-](\d{4})$/.exec(s))) return m[2] + '-' + m[1].padStart(2, '0');
+    if ((m = /^(\d{4})[./-](\d{1,2})/.exec(s))) return m[1] + '-' + m[2].padStart(2, '0');
+    return '';
+  }
+  function gunOku(v) {
+    if (v instanceof Date && !isNaN(v)) return v.getUTCFullYear() + '-' + String(v.getUTCMonth() + 1).padStart(2, '0') + '-' + String(v.getUTCDate()).padStart(2, '0');
+    const s = String(v || '').trim(), m = /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/.exec(s);
+    return m ? m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0') : '';
+  }
+  async function xlsxOku(file) {
+    await xlLib();
+    const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer());
+    let en = null;
+    wb.worksheets.forEach(ws => {
+      for (let r = 1; r <= Math.min(ws.rowCount, 25); r++) {
+        const map = {}, bas = {}; let n = 0;
+        for (let c = 1; c <= Math.min(ws.columnCount || 30, 30); c++) {
+          const t = nrm(hucre(ws.getRow(r).getCell(c).value)); if (!t || t.length > 60) continue;
+          const a = ALAN.find(([k, re]) => !map[k] && re.test(t)); if (a) { map[a[0]] = c; bas[a[0]] = String(hucre(ws.getRow(r).getCell(c).value)).replace(/\s+/g, ' ').trim(); n++; }
+        }
+        if (n >= 4 && map.no && map.yer && (!en || n > en.n)) en = { ws, r, map, bas, n };
+      }
+    });
+    if (!en) throw new Error('Başlık satırı bulunamadı. Listede en az “YSC NO” ve “Bulunduğu Bölge / Yer” başlıkları olmalı.');
+    const { ws, r: hr, map, bas } = en;
+    let baslik = '', rev = '';
+    for (let r = 1; r < hr; r++) {
+      const row = ws.getRow(r);
+      for (let c = 1; c <= 12; c++) {
+        const v = hucre(row.getCell(c).value); if (v === '' || v == null) continue;
+        if (!baslik && typeof v === 'string' && /ysc|yangın|söndürme|liste/i.test(v)) baslik = v.replace(/\s+/g, ' ').trim();
+        if (typeof v === 'string' && /gözden geçirme/i.test(v)) { for (let k = c + 1; k <= c + 6; k++) { const g = gunOku(hucre(row.getCell(k).value)); if (g) { rev = g; break; } } }
+      }
+    }
+    const kullan = new Set(Object.values(map)), yok = [];
+    for (let c = 1; c <= Math.min(ws.columnCount || 30, 30); c++) { if (kullan.has(c)) continue; const t = String(hucre(ws.getRow(hr).getCell(c).value) || '').trim(); yok.push({ c, t }); }
+    let sat = hr + 1; const m2 = ws.getRow(hr + 1); if ([...kullan].every(c => !String(hucre(m2.getCell(c).value) || '').trim())) sat = hr + 2;  // birleşik 2 satırlık başlık
+    const rows = []; let bos = 0;
+    for (let r = sat; r <= ws.rowCount; r++) {
+      const row = ws.getRow(r), g = k => map[k] ? hucre(row.getCell(map[k]).value) : '';
+      const yer = String(g('yer') || '').trim(), no = g('no');
+      if (!yer) { if (no !== '' && no != null) bos++; continue; }
+      if (nrm(yer) === nrm(bas.yer)) continue;                       // birleşik başlığın ikinci satırı
+      if (/^toplam$|cins ve adet/.test(nrm(yer))) break;              // alttaki adet tablosu
+      rows.push({ no: typeof no === 'number' ? no : String(no || '').trim(), yer, kap: String(g('kap') || '').trim(), cins: String(g('cins') || '').trim(), sinif: String(g('sinif') || '').trim(),
+        dolum: ayOku(g('dolum')), skt: ayOku(g('skt')), firma: String(g('firma') || '').trim(), acik: String(g('acik') || '').trim(), kontrol: '' });
+    }
+    return { sayfa: ws.name, hr, map, bas, yok, rows, bos, baslik, rev, dosya: file.name };
+  }
+  function yukleAc() {
+    const st = { sonuc: null, mod: 'birlestir', onay: false, hata: '', yukl: false };
+    const f0 = () => kayit(S.fab, false);
+    function render() {
+      const R = st.sonuc, mevcut = (f0() || { rows: [] }).rows.length;
+      const sh = pencere(`<div class="ysc-wh"><div><b>Excel'den yükle</b><small>${esc(S.fab)} · sütunlar başlık adlarına göre eşleştirilir</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
+      <div class="ysc-wb">
+        <input type="file" id="ysc-file" accept=".xlsx,.xlsm" hidden>
+        <div class="ysc-drop"><div class="ic">XLSX</div><div style="min-width:0;flex:1">${R ? `<b>${esc(R.dosya)}</b><div class="ysc-hint">Sayfa: ${esc(R.sayfa)} · başlık satırı ${R.hr} · ${R.rows.length} cihaz${R.bos ? ', ' + R.bos + ' boş satır atlandı' : ''}</div>` : st.yukl ? '<b>Okunuyor…</b>' : '<b>Excel dosyasını seç</b><div class="ysc-hint">YSC envanter listesi (.xlsx)</div>'}</div><button class="ysc-btn s" id="ysc-sec">${R ? 'Başka dosya' : 'Dosya seç'}</button></div>
+        ${st.hata ? `<div class="ysc-cf"><b>${esc(st.hata)}</b></div>` : ''}
+        ${R ? `<div><div class="ysc-lb">Bulunan sütunlar</div><table class="ysc-map"><tr><th>Excel</th><th>Başlık</th><th>Programdaki alan</th></tr>
+          ${Object.keys(ALAN_AD).map(k => R.map[k] ? `<tr><td>${colAd(R.map[k])}</td><td>${esc(R.bas[k])}</td><td class="ok">✓ ${ALAN_AD[k]}</td></tr>` : `<tr><td>—</td><td class="ysc-ac">bulunamadı</td><td class="no">${ALAN_AD[k]} boş kalır</td></tr>`).join('')}
+          ${R.yok.filter(y => y.c <= 12).map(y => `<tr><td>${colAd(y.c)}</td><td>${esc(y.t || '(başlıksız)')}</td><td class="ysc-ac">Yok sayılır</td></tr>`).join('')}</table></div>
+          <div class="ysc-hint">Tarihler ay/yıl olarak okunur.${R.rev ? ' “Son Gözden Geçirme Tarihi” de aktarılır: ' + tFmt(R.rev) + '.' : ''}${R.baslik ? ' Liste başlığı: “' + esc(R.baslik) + '”.' : ''}</div>
+          ${mevcut ? `<div><div class="ysc-lb">Mevcut liste (${mevcut} cihaz)</div><div class="ysc-seg"><button data-m="birlestir" class="${st.mod === 'birlestir' ? 'on' : ''}">YSC no'ya göre güncelle</button><button data-m="degistir" class="${st.mod === 'degistir' ? 'on' : ''}">Listeyi tamamen değiştir</button></div>
+          <div class="ysc-hint" style="margin-top:6px">${st.mod === 'birlestir' ? 'Aynı YSC numarası varsa satır güncellenir, yeni numaralar eklenir, dosyada olmayanlar korunur.' : 'Mevcut ' + mevcut + ' kayıt silinir, dosyadaki liste yazılır.'}</div></div>` : ''}
+          ${st.onay ? `<div class="ysc-cf"><b>Mevcut ${mevcut} kayıt silinip yerine dosyadaki liste yazılacak.</b><div><button class="ysc-btn s" id="ysc-vz">Vazgeç</button><button class="ysc-btn s d" id="ysc-ev">Listeyi değiştir</button></div></div>` : ''}` : ''}
+      </div>
+      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="ysc-ak" ${R && R.rows.length ? '' : 'disabled'}>${R ? R.rows.length + ' cihazı aktar' : 'Aktar'}</button></div>`);
+      const $ = id => document.getElementById(id), fi = $('ysc-file');
+      $('ysc-sec').onclick = () => fi.click();
+      fi.onchange = async () => { const file = fi.files && fi.files[0]; if (!file) return; st.yukl = true; st.hata = ''; st.sonuc = null; st.onay = false; render();
+        try { st.sonuc = await xlsxOku(file); if (!st.sonuc.rows.length) st.hata = 'Dosyada cihaz satırı bulunamadı.'; } catch (e) { st.hata = e.message || String(e); }
+        st.yukl = false; render(); };
+      sh.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { st.mod = b.dataset.m; st.onay = false; render(); });
+      $('ysc-ak').onclick = () => { if (!R) return; if (mevcut && st.mod === 'degistir' && !st.onay) { st.onay = true; render(); return; } aktar(); };
+      if ($('ysc-vz')) $('ysc-vz').onclick = () => { st.onay = false; render(); };
+      if ($('ysc-ev')) $('ysc-ev').onclick = aktar;
+    }
+    function aktar() {
+      const R = st.sonuc, f = kayit(S.fab, true);
+      if (!f.rows.length || st.mod === 'degistir') f.rows = R.rows.map(r => Object.assign({}, r));
+      else R.rows.forEach(r => { const i = f.rows.findIndex(x => String(x.no) === String(r.no) && String(r.no) !== ''); if (i >= 0) f.rows[i] = Object.assign({}, f.rows[i], r, { kontrol: f.rows[i].kontrol }); else f.rows.push(Object.assign({}, r)); });
+      sirala(f.rows);
+      R.rows.forEach(r => { if (r.firma && !f.firmalar.includes(r.firma)) f.firmalar.push(r.firma); });
+      f.firmalar.sort((a, b) => a.localeCompare(b, 'tr'));
+      if (R.baslik) f.baslik = R.baslik; if (R.rev) f.rev = R.rev;
+      S.sel.clear(); kaydet(); pKapat(); ciz(); tst(R.rows.length + ' cihaz aktarıldı');
+    }
+    render();
+  }
+  const colAd = c => { let s = ''; while (c > 0) { const m = (c - 1) % 26; s = String.fromCharCode(65 + m) + s; c = Math.floor((c - 1) / 26); } return s; };
+
+  /* ---------- çıktı: sayfa düzeni (PDF) ---------- */
+  const PX = KOL.map(k => kpx(k[2]));
+  const TW = PX.reduce((a, b) => a + b, 0);
+  const PT = pt => Math.round(pt * 96 / 72);
+  // Sayfa ölçüleri: Excel kenar boşlukları (sol/sağ 0,6 cm, üst 0,9 cm, alt 1 cm), A4 dikey, genişliğe sığdır
+  const PDF_MX = 6, PDF_TOP = 9, PDF_BOT = 12;
+  function sayfaHtml(f) {
+    const rows = sirala(f.rows.slice()), W = TW, pPx = Math.floor((Math.floor((297 - PDF_TOP - PDF_BOT) / (210 - 2 * PDF_MX) * W) - 10) / 1.02);  // PDF motorunun çizim payı düşülür: sayfa küçültülmeden tam oturur
+    const H_PH = 30, H_T1 = PT(30.75), H_T2 = PT(21.75), H_H = PT(67.5) + PT(15.75), H_R = PT(16.5);
+    const cg = '<colgroup>' + PX.map((w, i) => `<col style="width:${i === PX.length - 1 ? w - 3 : w}px">`).join('') + '</colgroup>';  // sağ kenar çizgisi sayfa içinde kalsın
+    const hh = `<tr class="h">${KOL.map(k => `<th>${esc(k[1])}</th>`).join('')}</tr>`;
+    // Hücreye sığmayan metin kesilmez: ölçülür, sığana kadar punto küçülür
+    const cx = (sayfaHtml.cv = sayfaHtml.cv || document.createElement('canvas').getContext('2d'));
+    const sigdir = (t, w, pt) => { if (!t) return ''; cx.font = pt + 'pt Arial, "Liberation Sans", sans-serif'; const g = cx.measureText(String(t)).width, av = w - 8;
+      return g > av ? ` style="font-size:${Math.max(5, Math.floor(pt * av / g * 10) / 10)}pt"` : ''; };
+    const satir = r => `<tr class="r"><td>${esc(r.no)}</td><td class="b"${sigdir(r.yer, PX[1], 8)}>${esc(r.yer)}</td><td>${esc(r.kap)}</td><td>${esc(r.cins)}</td><td>${esc(r.sinif)}</td><td>${ayFmt(r.dolum)}</td><td>${ayFmt(r.skt)}</td><td${sigdir(r.firma, PX[7], 8)}>${esc(r.firma)}</td><td${sigdir(r.acik, PX[8], 8)}>${esc(r.acik)}</td></tr>`;
+    const ust = `<tr class="t1"><td colspan="9">${esc(f.baslik || varsBaslik(f.fab))}</td></tr><tr class="t2"><td colspan="2" class="f" style="border-left:1px solid #000">Son Gözden Geçirme Tarihi</td><td colspan="2" class="f d">${tFmt(f.rev)}</td><td colspan="5" class="f" style="border-right:1px solid #000"></td></tr>`;
+    const ad = f.liste ? adetler(rows) : [];
+    const ozet = ad.length ? `<table class="ysc-sum"><colgroup><col style="width:${PX[1]}px"><col style="width:${PX[2]}px"><col style="width:${PX[3]}px"></colgroup><tr class="st"><td colspan="3">YSC TÜP CİNS VE ADET SAYISI</td></tr><tr><td colspan="3" style="border:0;height:8px"></td></tr>${ad.map(x => `<tr><td>${esc(x.k)}</td><td>${x.n}</td><td style="border:0"></td></tr>`).join('')}<tr><td colspan="3" style="border:0;height:21px"></td></tr><tr class="tp"><td>TOPLAM</td><td class="n">${ad.reduce((a, x) => a + x.n, 0)}</td><td style="border:0"></td></tr></table>` : '';
+    const H_OZ = ad.length ? 22 + 25 + 8 + ad.length * 21 + 21 + 21 + 4 : 0;
+    const sayfalar = []; let i = 0, ilk = true;
+    while (i < rows.length || ilk) {
+      let kul = H_PH + (ilk ? H_T1 + H_T2 : 0) + H_H, n = 0;
+      while (i + n < rows.length && kul + H_R <= pPx - 2) { kul += H_R; n++; }
+      if (!n && i < rows.length) n = 1;
+      sayfalar.push({ ilk, rows: rows.slice(i, i + n), kul }); i += n; ilk = false;
+      if (i >= rows.length) break;
+    }
+    let ozetAyri = false;
+    if (ozet) { const son = sayfalar[sayfalar.length - 1]; if (son.kul + H_OZ > pPx - 2) ozetAyri = true; }
+    const html = sayfalar.map((p, k) => `<div class="pdf-sayfa ysc-pg" style="height:${pPx}px;width:${W}px"><div class="ph">YANGIN SÖNDÜRME CİHAZLARI LİSTESİ</div><table class="ysc-ft" style="width:${W - 2}px;margin-left:1px">${cg}${p.ilk ? ust : ''}${hh}${p.rows.map(satir).join('')}</table>${k === sayfalar.length - 1 && ozet && !ozetAyri ? ozet : ''}</div>`).join('')
+      + (ozetAyri ? `<div class="pdf-sayfa ysc-pg" style="height:${pPx}px;width:${W}px"><div class="ph">YANGIN SÖNDÜRME CİHAZLARI LİSTESİ</div>${ozet}</div>` : '');
+    return { html, n: sayfalar.length + (ozetAyri ? 1 : 0), W, pPx };
+  }
+  const dosyaAd = f => ('YSC Envanter Listesi - ' + (f.fab || '') + ' ' + new Date().toLocaleDateString('tr-TR')).replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+  function pdfIndir(f) {
+    const el = document.getElementById('ysc-print'), P = sayfaHtml(f);
+    el.innerHTML = P.html;
+    window.isgSharePdf({ rootId: 'ysc-print', bodyClass: 'print-ysc', name: dosyaAd(f), width: P.W, mx: PDF_MX, top: PDF_TOP, bottom: PDF_BOT,
+      orientation: 'portrait', pager: root => Array.from(root.querySelectorAll('.pdf-sayfa')) });
+  }
+
+  /* ---------- çıktı: Excel (formun birebir kopyası) ---------- */
+  async function excelIndir(f) {
+    await xlLib();
+    const rows = sirala(f.rows.slice()), ad = f.liste ? adetler(rows) : [];
+    const wb = new ExcelJS.Workbook(); wb.creator = 'İSG Görev Takip'; wb.created = new Date();
+    const sad = ('YSC ENVANTER ' + (f.fab || '').toLocaleUpperCase('tr')).replace(/[\\/?*[\]:]/g, ' ').slice(0, 31).trim();
+    const last = 4 + rows.length;
+    const ws = wb.addWorksheet(sad, {
+      views: [{ state: 'frozen', ySplit: 4, showGridLines: false, zoomScale: 100 }],
+      properties: { defaultRowHeight: 13 },
+      pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0,
+        margins: { left: 0.23622047244094491, right: 0.23622047244094491, top: 0.35433070866141736, bottom: 0.39370078740157483, header: 0.19685039370078741, footer: 0.15748031496062992 },
+        printTitlesRow: '3:4', printArea: 'A1:I' + last },
+      headerFooter: { oddHeader: '&C&"Times New Roman,Bold"&14YANGIN SÖNDÜRME CİHAZLARI LİSTESİ', oddFooter: '&CSayfa &P / &N' }
+    });
+    ws.columns = KOL.map(k => ({ width: k[2] })).concat([{ width: 14, hidden: true }]);
+    const NAVY = 'FF376092', HEAD = 'FFDCE6F2', ince = { style: 'thin', color: { argb: 'FF000000' } }, kil = { style: 'hair', color: { argb: 'FF000000' } }, cift = { style: 'double', color: { argb: 'FF000000' } };
+    const dolgu = c => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: c } });
+    // 1. satır: başlık
+    ws.mergeCells('A1:I1'); ws.getRow(1).height = 30.75;
+    const a1 = ws.getCell('A1'); a1.value = f.baslik || varsBaslik(f.fab);
+    a1.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } }; a1.fill = dolgu(NAVY); a1.alignment = { horizontal: 'center', vertical: 'middle' };
+    for (let c = 1; c <= 9; c++) ws.getCell(1, c).border = { top: ince, bottom: cift, left: c === 1 ? ince : undefined, right: c === 9 ? ince : undefined };
+    // 2. satır: son gözden geçirme
+    ws.getRow(2).height = 21.75; ws.mergeCells('A2:B2'); ws.mergeCells('C2:D2');
+    const a2 = ws.getCell('A2'); a2.value = 'Son Gözden Geçirme Tarihi'; a2.font = { name: 'Arial', size: 10, bold: true }; a2.alignment = { horizontal: 'center', vertical: 'middle' };
+    const c2 = ws.getCell('C2'); if (f.rev) { const [y, m, d] = f.rev.split('-').map(Number); c2.value = new Date(Date.UTC(y, m - 1, d)); } c2.numFmt = 'mm-dd-yy'; c2.font = { name: 'Arial', size: 11, bold: true }; c2.alignment = { horizontal: 'center', vertical: 'middle' };
+    for (let c = 1; c <= 9; c++) { const h = ws.getCell(2, c); if (c !== 2 && c !== 4) h.fill = dolgu(HEAD); if (c === 2 || c === 4) h.fill = dolgu(HEAD); h.border = { bottom: ince, left: c === 1 ? ince : undefined, right: c === 9 ? ince : undefined }; }
+    // 3-4. satır: sütun başlıkları
+    ws.getRow(3).height = 67.5; ws.getRow(4).height = 15.75;
+    const yt = ['Arial TUR', 'AvantGarde Md BT', 'AvantGarde Md BT', 'AvantGarde Md BT', 'AvantGarde Md BT', 'Arial TUR', 'Arial TUR', 'Arial TUR', 'Arial'];
+    KOL.forEach((k, i) => { const c = i + 1; ws.mergeCells(3, c, 4, c); const h = ws.getCell(3, c); h.value = k[1];
+      h.font = { name: yt[i], size: c === 9 ? 10 : 9, bold: true }; h.fill = dolgu(HEAD); h.alignment = { horizontal: 'center', vertical: 'middle', wrapText: c !== 3 && c !== 9 };
+      [3, 4].forEach(r => { ws.getCell(r, c).border = { top: ince, left: ince, right: ince, bottom: c === 9 ? cift : ince }; }); });
+    // veri satırları
+    const ayTarih = s => { if (!s) return null; const [y, m] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, 1)); };
+    rows.forEach((r, i) => {
+      const rr = 5 + i, row = ws.getRow(rr); row.height = 16.5;
+      const v = [typeof r.no === 'number' ? r.no : (r.no === '' ? null : (/^\d+$/.test(String(r.no)) ? Number(r.no) : String(r.no))), r.yer, r.kap, r.cins, r.sinif, ayTarih(r.dolum), ayTarih(r.skt), r.firma, r.acik || null];
+      v.forEach((x, j) => { const h = row.getCell(j + 1); h.value = x === '' ? null : x;
+        h.font = { name: j === 0 ? 'Arial TUR' : 'Arial', size: 8 }; h.alignment = { horizontal: j === 1 ? 'left' : 'center', vertical: 'middle' };
+        if (j === 5 || j === 6) h.numFmt = 'mm/yyyy'; else if (j === 1 || j === 4 || j === 7) h.numFmt = '@';
+        if (j >= 1) h.fill = dolgu('FFFFFFFF');
+        h.border = { top: kil, left: kil, right: kil, bottom: kil }; });
+      const jx = row.getCell(10); jx.value = r.cins ? r.cins + ' ' + kapNum(r.kap) + ' Kg' : null; jx.font = { name: 'Arial', size: 9 };
+    });
+    // ikinci sayfa: Liste (cins ve adet)
+    if (ad.length) {
+      const wl = wb.addWorksheet('Liste', { views: [{ showGridLines: false }], pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+      wl.columns = [{ width: 5.1640625 }, { width: 27.1640625 }, { width: 8.33203125 }, { width: 8.33203125 }];
+      wl.mergeCells('B2:D2'); wl.getRow(2).height = 18.75; wl.getRow(3).height = 6;
+      const t = wl.getCell('B2'); t.value = 'YSC TÜP CİNS VE ADET SAYISI'; t.font = { name: 'Arial', size: 12, bold: true }; t.fill = dolgu('FFFFFF00'); t.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      ['B2', 'C2', 'D2'].forEach(a => { wl.getCell(a).border = { bottom: cift }; });
+      const ref = "'" + sad.replace(/'/g, "''") + "'!J:J";
+      ad.forEach((x, i) => { const r = 4 + i; wl.getRow(r).height = 16;
+        const b = wl.getCell(r, 2), c = wl.getCell(r, 3); b.value = x.k; c.value = { formula: `COUNTIF(${ref},"${x.cins} ${x.kap} Kg")`, result: x.n };
+        [b, c].forEach(h => { h.font = { name: 'Arial', size: 10 }; h.alignment = { horizontal: 'center', vertical: 'middle' }; h.border = { top: kil, left: kil, right: kil, bottom: kil }; }); });
+      const tr = 4 + ad.length + 1; wl.getRow(tr).height = 18;
+      const tb = wl.getCell(tr, 2), tc = wl.getCell(tr, 3); tb.value = 'TOPLAM'; tc.value = { formula: `SUM(C4:C${3 + ad.length})`, result: ad.reduce((a, x) => a + x.n, 0) };
+      [tb, tc].forEach(h => { h.font = { name: 'Arial', size: 11, bold: true }; h.alignment = { horizontal: 'center', vertical: 'middle' }; h.border = { top: kil, left: kil, right: kil, bottom: kil }; });
+      tc.fill = dolgu('FFFFFF00');
+    }
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    window.isgShowFileDialog(blob, dosyaAd(f) + '.xlsx', blob.type);
+  }
+
+  /* ---------- İndir penceresi (önizleme) ---------- */
+  function indirAc() {
+    const f = kayit(S.fab, false); if (!f || !f.rows.length) return;
+    function render() {
+      const P = sayfaHtml(f), olc = Math.min(1, (Math.min(window.innerWidth, 980) - 70) / P.W);
+      const sh = pencere(`<div class="ysc-wh"><div><b>İndir · form önizleme</b><small>${P.n} sayfa · A4 dikey · başlık satırları her sayfada · altta “Sayfa X / Y”</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
+        <div class="ysc-wb" style="padding-bottom:10px"><div><div class="ysc-lb">Cins ve adet listesi rapora dahil edilsin mi?</div><div class="ysc-seg" style="max-width:320px"><button data-l="1" class="${f.liste ? 'on' : ''}">Evet</button><button data-l="0" class="${!f.liste ? 'on' : ''}">Hayır</button></div>
+        <div class="ysc-hint" style="margin-top:6px">${f.liste ? 'Excel\'de ikinci sayfa “Liste” olarak yazılır; PDF\'te listenin sonunda yer alır.' : 'Adet listesi çıktıya eklenmez.'}</div></div></div>
+        <div class="ysc-prv" id="ysc-prv"></div>
+        <div class="ysc-wf"><button class="ysc-btn" data-x>Kapat</button><button class="ysc-btn" id="ysc-xl">⇩ Excel</button><button class="ysc-btn p" id="ysc-pdf">⇩ PDF</button></div>`, true);
+      const prv = document.getElementById('ysc-prv'), tmp = document.createElement('div'); tmp.innerHTML = P.html;
+      [...tmp.children].forEach(pg => { const w = document.createElement('div'); w.className = 'ysc-pw'; w.style.width = Math.round(P.W * olc) + 'px'; w.style.height = Math.round(P.pPx * olc) + 'px'; pg.style.transform = `scale(${olc})`; pg.style.transformOrigin = 'top left'; w.appendChild(pg); prv.appendChild(w); });
+      sh.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { f.liste = b.dataset.l === '1'; kaydet(); render(); });
+      document.getElementById('ysc-pdf').onclick = () => { pKapat(); pdfIndir(f); };
+      document.getElementById('ysc-xl').onclick = async () => { const b = document.getElementById('ysc-xl'); b.disabled = true; b.textContent = 'Hazırlanıyor…'; try { await excelIndir(f); pKapat(); } catch (e) { tst('Excel hazırlanamadı: ' + (e.message || e)); b.disabled = false; b.textContent = '⇩ Excel'; } };
+    }
+    render();
+  }
+  window.yscTest = { sayfaHtml, adetler, xlsxOku, excelIndir, kayit, durum, sec: fab => { S.fab = fab; } };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!SH().hidden) pKapat(); else if (!OV().hidden) kapat(); } });
+  try { yscKart(); } catch (e) {}
+})();
+</script>
+
 </body>
 </html>
