@@ -28889,6 +28889,7 @@ table.ysc-l .c{text-align:center}
   try { const o = JSON.parse(localStorage.getItem(LS) || 'null'); if (o && Array.isArray(o.list)) D = o; } catch (e) {}
   function normal(d) {
     const o = d && Array.isArray(d.list) ? d : { list: [] };
+    o.unvan = typeof o.unvan === 'string' ? o.unvan : '';
     o.list = o.list.filter(Boolean).map(f => ({ fab: f.fab || '', baslik: f.baslik || '', rev: f.rev || '', liste: f.liste !== false,
       firmalar: Array.isArray(f.firmalar) ? f.firmalar.filter(Boolean) : [], rows: (Array.isArray(f.rows) ? f.rows : Object.values(f.rows || {})).filter(Boolean)
         .map(r => ({ no: r.no == null ? '' : r.no, yer: r.yer || '', kap: r.kap || '', cins: r.cins || '', sinif: r.sinif || '', dolum: r.dolum || '', skt: r.skt || '', firma: r.firma || '', acik: r.acik || '', kontrol: r.kontrol || '' })) }));
@@ -28900,7 +28901,14 @@ table.ysc-l .c{text-align:center}
   function kaydet() { try { localStorage.setItem(LS, JSON.stringify(D)); } catch (e) {} if (window._fbSaveKontrol) { try { window._fbSaveKontrol(); } catch (e) {} } yscKart(); }
   const fabListe = () => { const a = (typeof kontrolFabs !== 'undefined' && Array.isArray(kontrolFabs)) ? kontrolFabs.slice() : []; D.list.forEach(f => { if (f.fab && !a.includes(f.fab)) a.push(f.fab); }); return a; };
   function kayit(fab, olustur) { let f = D.list.find(x => x.fab === fab); if (!f && olustur) { f = { fab, baslik: '', rev: '', liste: true, firmalar: [], rows: [] }; D.list.push(f); } return f; }
-  const varsBaslik = fab => (fab ? fab.toLocaleUpperCase('tr') + ' ' : '') + 'YSC LİSTESİ';
+  // Liste başlığı: kayıtlı firma ünvanı + seçili fabrikanın adı + "YSC LİSTESİ".
+  // Ünvan büyük harfle yazıldıysa fabrika adı da büyük harfe çevrilir; aksi hâlde yazıldığı gibi kalır.
+  function baslikYap(fab, unvan) {
+    const u = String(unvan == null ? D.unvan : unvan).replace(/\s+/g, ' ').trim(), fb = String(fab || '').trim();
+    const buyuk = !u || u === u.toLocaleUpperCase('tr');
+    return [u, buyuk ? fb.toLocaleUpperCase('tr') : fb, 'YSC LİSTESİ'].filter(Boolean).join(' ');
+  }
+  const varsBaslik = fab => baslikYap(fab);
 
   /* ---------- tarih ---------- */
   const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
@@ -28989,7 +28997,7 @@ table.ysc-l .c{text-align:center}
     const say = { ok: 0, warn: 0, bad: 0 }; f.rows.forEach(r => say[durum(r).k]++);
     const L = liste(f), ad = adetler(f.rows);
     ov.innerHTML = `<div class="ysc-top"><button class="bk" id="ysc-geri" aria-label="Geri">‹</button>
-      <div class="tt"><b>Yangın Söndürme Cihazları</b><small>${esc(f.baslik || varsBaslik(S.fab))}</small></div>
+      <div class="tt"><b>Yangın Söndürme Cihazları</b><small>${esc(baslikYap(S.fab))}</small></div>
       <div class="ysc-rev"><span>Son gözden geçirme</span><b>${tFmt(f.rev)}</b><button id="ysc-bugun" ${f.rows.length ? '' : 'disabled'}>Bugün</button></div></div>
     <div class="ysc-bd">
       ${fl.length > 1 ? `<div class="ysc-fabs">${fl.map(x => `<button data-fab="${esc(x)}" class="${x === S.fab ? 'on' : ''}">${esc(x)}</button>`).join('')}</div>` : ''}
@@ -29185,7 +29193,7 @@ table.ysc-l .c{text-align:center}
         ${R ? `<div><div class="ysc-lb">Bulunan sütunlar</div><table class="ysc-map"><tr><th>Excel</th><th>Başlık</th><th>Programdaki alan</th></tr>
           ${Object.keys(ALAN_AD).map(k => R.map[k] ? `<tr><td>${colAd(R.map[k])}</td><td>${esc(R.bas[k])}</td><td class="ok">✓ ${ALAN_AD[k]}</td></tr>` : `<tr><td>—</td><td class="ysc-ac">bulunamadı</td><td class="no">${ALAN_AD[k]} boş kalır</td></tr>`).join('')}
           ${R.yok.filter(y => y.c <= 12).map(y => `<tr><td>${colAd(y.c)}</td><td>${esc(y.t || '(başlıksız)')}</td><td class="ysc-ac">Yok sayılır</td></tr>`).join('')}</table></div>
-          <div class="ysc-hint">Tarihler ay/yıl olarak okunur.${R.rev ? ' “Son Gözden Geçirme Tarihi” de aktarılır: ' + tFmt(R.rev) + '.' : ''}${R.baslik ? ' Liste başlığı: “' + esc(R.baslik) + '”.' : ''}</div>
+          <div class="ysc-hint">Tarihler ay/yıl olarak okunur.${R.rev ? ' “Son Gözden Geçirme Tarihi” de aktarılır: ' + tFmt(R.rev) + '.' : ''}</div>
           ${mevcut ? `<div><div class="ysc-lb">Mevcut liste (${mevcut} cihaz)</div><div class="ysc-seg"><button data-m="birlestir" class="${st.mod === 'birlestir' ? 'on' : ''}">YSC no'ya göre güncelle</button><button data-m="degistir" class="${st.mod === 'degistir' ? 'on' : ''}">Listeyi tamamen değiştir</button></div>
           <div class="ysc-hint" style="margin-top:6px">${st.mod === 'birlestir' ? 'Aynı YSC numarası varsa satır güncellenir, yeni numaralar eklenir, dosyada olmayanlar korunur.' : 'Mevcut ' + mevcut + ' kayıt silinir, dosyadaki liste yazılır.'}</div></div>` : ''}
           ${st.onay ? `<div class="ysc-cf"><b>Mevcut ${mevcut} kayıt silinip yerine dosyadaki liste yazılacak.</b><div><button class="ysc-btn s" id="ysc-vz">Vazgeç</button><button class="ysc-btn s d" id="ysc-ev">Listeyi değiştir</button></div></div>` : ''}` : ''}
@@ -29208,7 +29216,8 @@ table.ysc-l .c{text-align:center}
       sirala(f.rows);
       R.rows.forEach(r => { if (r.firma && !f.firmalar.includes(r.firma)) f.firmalar.push(r.firma); });
       f.firmalar.sort((a, b) => a.localeCompare(b, 'tr'));
-      if (R.baslik) f.baslik = R.baslik; if (R.rev) f.rev = R.rev;
+      if (!D.unvan && R.baslik) { const m = /^(.*?A\.\s?Ş\.)/i.exec(R.baslik); if (m) D.unvan = m[1].trim(); }   // ünvan boşsa dosyadaki başlıktan önerilir
+      if (R.rev) f.rev = R.rev;
       S.sel.clear(); kaydet(); pKapat(); ciz(); tst(R.rows.length + ' cihaz aktarıldı');
     }
     render();
@@ -29231,7 +29240,7 @@ table.ysc-l .c{text-align:center}
     const sigdir = (t, w, pt) => { if (!t) return ''; cx.font = pt + 'pt Arial, "Liberation Sans", sans-serif'; const g = cx.measureText(String(t)).width, av = w - 8;
       return g > av ? ` style="font-size:${Math.max(5, Math.floor(pt * av / g * 10) / 10)}pt"` : ''; };
     const satir = r => `<tr class="r"><td>${esc(r.no)}</td><td class="b"${sigdir(r.yer, PX[1], 8)}>${esc(r.yer)}</td><td>${esc(r.kap)}</td><td>${esc(r.cins)}</td><td>${esc(r.sinif)}</td><td>${ayFmt(r.dolum)}</td><td>${ayFmt(r.skt)}</td><td${sigdir(r.firma, PX[7], 8)}>${esc(r.firma)}</td><td${sigdir(r.acik, PX[8], 8)}>${esc(r.acik)}</td></tr>`;
-    const ust = `<tr class="t1"><td colspan="9">${esc(f.baslik || varsBaslik(f.fab))}</td></tr><tr class="t2"><td colspan="2" class="f" style="border-left:1px solid #000">Son Gözden Geçirme Tarihi</td><td colspan="2" class="f d">${tFmt(f.rev)}</td><td colspan="5" class="f" style="border-right:1px solid #000"></td></tr>`;
+    const ust = `<tr class="t1"><td colspan="9">${esc(baslikYap(f.fab))}</td></tr><tr class="t2"><td colspan="2" class="f" style="border-left:1px solid #000">Son Gözden Geçirme Tarihi</td><td colspan="2" class="f d">${tFmt(f.rev)}</td><td colspan="5" class="f" style="border-right:1px solid #000"></td></tr>`;
     const ad = f.liste ? adetler(rows) : [];
     const ozet = ad.length ? `<table class="ysc-sum"><colgroup><col style="width:${PX[1]}px"><col style="width:${PX[2]}px"><col style="width:${PX[3]}px"></colgroup><tr class="st"><td colspan="3">YSC TÜP CİNS VE ADET SAYISI</td></tr><tr><td colspan="3" style="border:0;height:8px"></td></tr>${ad.map(x => `<tr><td>${esc(x.k)}</td><td>${x.n}</td><td style="border:0"></td></tr>`).join('')}<tr><td colspan="3" style="border:0;height:21px"></td></tr><tr class="tp"><td>TOPLAM</td><td class="n">${ad.reduce((a, x) => a + x.n, 0)}</td><td style="border:0"></td></tr></table>` : '';
     const H_OZ = ad.length ? 22 + 25 + 8 + ad.length * 21 + 21 + 21 + 4 : 0;
@@ -29277,7 +29286,7 @@ table.ysc-l .c{text-align:center}
     const dolgu = c => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: c } });
     // 1. satır: başlık
     ws.mergeCells('A1:I1'); ws.getRow(1).height = 30.75;
-    const a1 = ws.getCell('A1'); a1.value = f.baslik || varsBaslik(f.fab);
+    const a1 = ws.getCell('A1'); a1.value = baslikYap(f.fab);
     a1.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } }; a1.fill = dolgu(NAVY); a1.alignment = { horizontal: 'center', vertical: 'middle' };
     for (let c = 1; c <= 9; c++) ws.getCell(1, c).border = { top: ince, bottom: cift, left: c === 1 ? ince : undefined, right: c === 9 ? ince : undefined };
     // 2. satır: son gözden geçirme
@@ -29330,13 +29339,20 @@ table.ysc-l .c{text-align:center}
     function render() {
       const P = sayfaHtml(f), olc = Math.min(1, (Math.min(window.innerWidth, 980) - 70) / P.W);
       const sh = pencere(`<div class="ysc-wh"><div><b>İndir · form önizleme</b><small>${P.n} sayfa · A4 dikey · başlık satırları her sayfada · altta “Sayfa X / Y”</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
-        <div class="ysc-wb" style="padding-bottom:10px"><div><div class="ysc-lb">Cins ve adet listesi rapora dahil edilsin mi?</div><div class="ysc-seg" style="max-width:320px"><button data-l="1" class="${f.liste ? 'on' : ''}">Evet</button><button data-l="0" class="${!f.liste ? 'on' : ''}">Hayır</button></div>
+        <div class="ysc-wb" style="padding-bottom:10px"><div><div class="ysc-lb">Liste başlığı · firma ünvanı</div>
+          <div class="ysc-frow"><input class="ysc-in" id="ysc-unvan" placeholder="Ör. SARTEN AMBALAJ SAN. VE TİC. A.Ş." value="${esc(D.unvan)}"><button class="ysc-btn p s" id="ysc-unvan-k" style="padding:8px 14px">Kaydet</button></div>
+          <div class="ysc-hint" style="margin-top:6px">Başlık: <b id="ysc-bas-on">${esc(baslikYap(f.fab))}</b></div></div>
+        <div><div class="ysc-lb">Cins ve adet listesi rapora dahil edilsin mi?</div><div class="ysc-seg" style="max-width:320px"><button data-l="1" class="${f.liste ? 'on' : ''}">Evet</button><button data-l="0" class="${!f.liste ? 'on' : ''}">Hayır</button></div>
         <div class="ysc-hint" style="margin-top:6px">${f.liste ? 'Excel\'de ikinci sayfa “Liste” olarak yazılır; PDF\'te listenin sonunda yer alır.' : 'Adet listesi çıktıya eklenmez.'}</div></div></div>
         <div class="ysc-prv" id="ysc-prv"></div>
         <div class="ysc-wf"><button class="ysc-btn" data-x>Kapat</button><button class="ysc-btn" id="ysc-xl">⇩ Excel</button><button class="ysc-btn p" id="ysc-pdf">⇩ PDF</button></div>`, true);
       const prv = document.getElementById('ysc-prv'), tmp = document.createElement('div'); tmp.innerHTML = P.html;
       [...tmp.children].forEach(pg => { const w = document.createElement('div'); w.className = 'ysc-pw'; w.style.width = Math.round(P.W * olc) + 'px'; w.style.height = Math.round(P.pPx * olc) + 'px'; pg.style.transform = `scale(${olc})`; pg.style.transformOrigin = 'top left'; w.appendChild(pg); prv.appendChild(w); });
       sh.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { f.liste = b.dataset.l === '1'; kaydet(); render(); });
+      const un = document.getElementById('ysc-unvan'), unK = document.getElementById('ysc-unvan-k');
+      un.oninput = () => { document.getElementById('ysc-bas-on').textContent = baslikYap(f.fab, un.value); unK.disabled = un.value.replace(/\s+/g, ' ').trim() === D.unvan; };
+      unK.disabled = true;
+      unK.onclick = () => { D.unvan = un.value.replace(/\s+/g, ' ').trim(); kaydet(); tst('Firma ünvanı kaydedildi'); render(); ciz(); };
       document.getElementById('ysc-pdf').onclick = () => { pKapat(); pdfIndir(f); };
       document.getElementById('ysc-xl').onclick = async () => { const b = document.getElementById('ysc-xl'); b.disabled = true; b.textContent = 'Hazırlanıyor…'; try { await excelIndir(f); pKapat(); } catch (e) { tst('Excel hazırlanamadı: ' + (e.message || e)); b.disabled = false; b.textContent = '⇩ Excel'; } };
     }
