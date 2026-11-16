@@ -20098,10 +20098,26 @@ function dnrBilgi() {
 }
 
 // ── HTML (yazdırma + PDF paylaş) ──
+// Sorumlu hücresi: en uzun sözcük sütuna sığana kadar punto küçülür (sözcük ortadan bölünmez)
+let _dnrCv = null;
+function dnrSigStil(ad, wMm) {
+  try {
+    if (!wMm || !ad) return '';
+    _dnrCv = _dnrCv || document.createElement('canvas').getContext('2d');
+    _dnrCv.font = '10.667px Arial, Helvetica, sans-serif';   // 8pt
+    const avail = (wMm - 3.2) * 96 / 25.4;                    // hücre iç genişliği (px)
+    let en = 0; String(ad).split(/[\s,;\/]+/).forEach(w => { if (w) en = Math.max(en, _dnrCv.measureText(w).width); });
+    if (!en || en <= avail) return '';
+    const pt = Math.floor(8 * avail / en * 10) / 10;
+    if (pt < 5) return ' style="font-size:5pt;overflow-wrap:anywhere"';   // aşırı uzun tek sözcük: son çare
+    return ` style="font-size:${pt}pt;word-break:keep-all;overflow-wrap:normal"`;
+  } catch (e) { return ''; }
+}
 function dnrHtml(v, ek) {
   const L = v.L, ncol = L.cols.length;
   const colg = '<colgroup>' + L.cols.map(c => `<col style="width:${c[1]}mm">`).join('') + '</colgroup>';
   const hr = '<tr class="dnr-hr">' + L.cols.map(c => `<th>${c[0]}</th>`).join('') + '</tr>';
+  const sorW = (L.cols.find(c => c[0] === 'Sorumlu') || [0, 0])[1];
   const oz = v.ozet.map(o => `<td><div class="n">${o[1]}</div><div class="l">${o[0]}</div></td>`).join('');
   const tablolar = v.gruplar.map((g, gi) => {
     const bar = v.coklu ? `<tr class="dnr-bar"><th colspan="${ncol}"><b>${esc(g.ad)}</b> <span>${esc(g.meta)}</span></th></tr>` : '';
@@ -20112,7 +20128,7 @@ function dnrHtml(v, ek) {
         (L.foto ? `<td class="c">${r.foto ? `<img src="${r.foto}" alt="" style="width:${L.fw}mm;height:${L.fh}mm">` : '<span class="g">—</span>'}</td>` : '') +
         `<td><p>${esc(r.tespit)}</p>${r.dnAd ? `<p class="g sm">Denetim: ${esc(r.dnAd)}</p>` : ''}</td><td>${oneri}</td>` +
         `<td class="c"><p><span style="color:#${r.onem.renk}">●</span> ${esc(r.onem.ad)}</p></td>` +
-        `<td><p>${esc(r.sorumlu)}</p></td>` +
+        `<td><p${dnrSigStil(r.sorumlu, sorW)}>${esc(r.sorumlu)}</p></td>` +
         `<td class="c"><p>${esc(r.termin)}</p></td>` +
         `<td class="c"><p><b style="color:#${r.durum.renk}">${esc(r.durum.ad)}</b></p></td></tr>`;
     }).join('');
