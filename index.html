@@ -20128,6 +20128,7 @@ function dnrSayfaStili(v) {
   document.body.appendChild(s);   // sayfa sonunda olmalı: diğer @page kurallarını ezsin
   const L = v.L;
   s.textContent = `@media print{@page{size:A4 ${v.yon === 'yatay' ? 'landscape' : 'portrait'};margin:${L.mt}mm ${L.mx - 0.4}mm ${L.mb}mm ${L.mx}mm;` +
+    `@top-left{content:""}@top-center{content:""}@top-right{content:""}` +
     `@bottom-center{content:""}` +
     `@bottom-right{content:"Sayfa " counter(page) " / " counter(pages);font-family:Arial,sans-serif;font-size:7pt;color:#60717F}}}`;
   const temizle = () => { s.remove(); window.removeEventListener('afterprint', temizle); };
