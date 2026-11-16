@@ -28803,6 +28803,29 @@ table.ysc-l .c{text-align:center}
 .ysc-adet b{font-variant-numeric:tabular-nums}
 @media (max-width:760px){.ysc-rt{grid-template-columns:1fr 1fr} .ysc-al{grid-template-columns:1fr} .ysc-bar{grid-template-columns:1fr 1fr} .ysc-q{grid-column:1/-1} .ysc-rt .ysc-btn{padding:8px 6px;font-size:12px} table.ysc-l{display:none} .ysc-cards{display:flex} .ysc-ts{max-height:none;min-height:0} .ysc-rev span{display:none} .ysc-bd{gap:8px;padding-top:10px}}
 /* alt pencereler */
+.ysc-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;align-items:start}
+.ysc-g2.ysc-g-no{grid-template-columns:92px minmax(0,1fr)}
+.ysc-ff{min-width:0}
+.ysc-lb{height:18px;white-space:nowrap;overflow:hidden}
+.ysc-lb .ysc-ed{width:24px;height:18px;font-size:11px;border-radius:6px;line-height:1}
+.ysc-in{height:40px}
+.ysc-mp{height:40px;padding:3px}
+.ysc-mp button{width:32px;height:32px}
+.ysc-fd{position:relative}
+.ysc-fb{width:100%;height:40px;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:10px;padding:0 10px;font:inherit;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;text-align:left}
+.ysc-fb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ysc-fb span.ph{color:var(--text3)}
+.ysc-fb i{font-style:normal;font-size:11px;color:var(--text2);flex-shrink:0}
+.ysc-fd.ac .ysc-fb{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.ysc-fd .mn{position:absolute;z-index:6;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:min(320px,calc(100vw - 60px));max-height:230px;overflow:auto;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:4px}
+.ysc-g2>.ysc-ff:nth-child(2) .mn{left:auto;right:0}
+.ysc-fd .mn.up{top:auto;bottom:calc(100% + 4px)}
+.ysc-fd .mn button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--text);padding:9px 10px;border-radius:7px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.ysc-fd .mn button:hover,.ysc-fd .mn button.on{background:color-mix(in srgb,var(--acc) 12%,var(--surface));color:var(--acc-tx)}
+.ysc-fd .mn button.yn{color:var(--acc-tx);font-weight:700;border-top:1px solid var(--border);border-radius:0 0 7px 7px}
+.ysc-oner{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:-6px}
+.ysc-oner::-webkit-scrollbar{display:none}
+.ysc-oner button{flex-shrink:0;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 #ysc-sh{position:fixed;inset:0;z-index:62;background:rgba(8,16,24,.5);display:flex;align-items:center;justify-content:center;padding:14px}
 .ysc-w{background:var(--surface);color:var(--text);border-radius:16px;width:100%;max-width:520px;max-height:calc(100dvh - 28px);overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column}
 .ysc-w.wide{max-width:980px}
@@ -29051,10 +29074,27 @@ table.ysc-l .c{text-align:center}
   }
   function pKapat() { const sh = SH(); sh.hidden = true; sh.innerHTML = ''; }
 
+  /* ---------- form yardımcıları: temaya uygun açılır liste + ay seçici ---------- */
+  function secHtml(st, key, val, ops, o = {}) {
+    const ac = st.dd === key, gor = o.goster != null ? o.goster : val;
+    return `<div class="ysc-fd${ac ? ' ac' : ''}"><button type="button" class="ysc-fb" data-dd="${key}" aria-expanded="${ac}"><span class="${gor ? '' : 'ph'}">${esc(gor || o.bos || 'Seç')}</span><i aria-hidden="true">▾</i></button>${ac ? `<div class="mn">${ops.map(v => `<button type="button" data-ddv="${key}" data-v="${esc(v)}" class="${v === val ? 'on' : ''}">${esc(v || o.bosAd || 'Boş bırak')}</button>`).join('')}${o.yeni ? `<button type="button" data-ddv="${key}" data-v="__yeni" class="yn">+ ${esc(o.yeni)}</button>` : ''}</div>` : ''}</div>`;
+  }
+  function secBagla(sh, st, render, set) {
+    sh.querySelectorAll('[data-dd]').forEach(b => b.onclick = e => { e.stopPropagation(); st.dd = st.dd === b.dataset.dd ? '' : b.dataset.dd; render(); });
+    sh.querySelectorAll('[data-ddv]').forEach(b => b.onclick = e => { e.stopPropagation(); const k = b.dataset.ddv; st.dd = ''; set[k](b.dataset.v); render(); });
+    const w = sh.querySelector('.ysc-w'); if (w) w.onclick = e => { if (st.dd && !e.target.closest('.ysc-fd')) { st.dd = ''; render(); } };
+    // Liste pencerenin altına taşacaksa yukarı doğru açılır
+    const mn = sh.querySelector('.ysc-fd.ac .mn');
+    if (mn && w) { const ft = w.querySelector('.ysc-wf'), alt = (ft ? ft.getBoundingClientRect().top : w.getBoundingClientRect().bottom) - 4;
+      if (mn.getBoundingClientRect().bottom > alt) mn.classList.add('up'); else mn.scrollIntoView({ block: 'nearest' }); }
+  }
+  const ayHtml = (v, att) => `<div class="ysc-mp"><button type="button" ${att}="-1" aria-label="Önceki ay">‹</button><span>${AY[+v.slice(5) - 1]} ${v.slice(0, 4)}</span><button type="button" ${att}="1" aria-label="Sonraki ay">›</button></div>`;
+  const ff = (lab, inner) => `<div class="ysc-ff"><div class="ysc-lb">${lab}</div>${inner}</div>`;
+
   /* ---------- saha kontrolü ---------- */
   function sahaAc(ids, mod) {
     const f = kayit(S.fab, false); if (!f) return;
-    const st = { mod: mod || 'dolum', ids: ids.slice(), ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false, firma: '', yeni: false, acik: AC_HAZIR[0], ara: '', duzen: false, sil: null };
+    const st = { dd: '', mod: mod || 'dolum', ids: ids.slice(), ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false, firma: '', yeni: false, acik: AC_HAZIR[0], ara: '', duzen: false, sil: null };
     const bul = id => f.rows.find(r => satirId(r) === id);
     if (st.ids.length === 1) { const r = bul(st.ids[0]); if (r) st.firma = r.firma; }
     function render() {
@@ -29066,19 +29106,18 @@ table.ysc-l .c{text-align:center}
         ? `<div style="display:flex;flex-direction:column;gap:6px">${f.firmalar.map((n, i) => `<div class="ysc-frow"><input class="ysc-in" data-fi="${i}" value="${esc(n)}"><small>${kul(n)} cihaz</small><button class="ysc-del" data-fs="${i}" aria-label="${esc(n)} firmasını kaldır">🗑</button></div>
             ${st.sil === i ? `<div class="ysc-cf"><b>${esc(n)} seçim listesinden kaldırılsın mı?</b>${kul(n) ? `<span>Kayıtlı ${kul(n)} cihazdaki firma adı değişmez.</span>` : ''}<div><button class="ysc-btn s" data-svz>Vazgeç</button><button class="ysc-btn s d" data-sok="${i}">Kaldır</button></div></div>` : ''}`).join('') || '<div class="ysc-hint">Kayıtlı firma yok.</div>'}
             <div class="ysc-hint">Ad değişikliği, o firmayla kayıtlı cihazlarda da güncellenir.</div></div>`
-        : `<div class="ysc-chips">${f.firmalar.map(n => `<button class="ysc-chip ${st.firma === n && !st.yeni ? 'on' : ''}" data-f="${esc(n)}">${esc(n)}</button>`).join('')}<button class="ysc-chip ${st.yeni ? 'on' : ''}" data-f="__yeni">+ Yeni firma</button></div>
-           ${st.yeni ? `<input class="ysc-in" id="ysc-yf" style="margin-top:8px" placeholder="Firma adı" value="${esc(st.firma)}">` : ''}`;
+        : secHtml(st, 'firma', st.yeni ? '' : st.firma, f.firmalar, { yeni: 'Yeni firma', goster: st.yeni ? 'Yeni firma' : st.firma, bos: 'Firma seç' })
+           + (st.yeni ? `<input class="ysc-in" id="ysc-yf" style="margin-top:8px" placeholder="Firma adı" value="${esc(st.firma)}">` : '');
       const sh = pencere(`<div class="ysc-wh"><div><b>Saha kontrolü</b><small>Kontrol tarihi ${tFmt(bugun())} · son gözden geçirme tarihi de güncellenir</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
       <div class="ysc-wb">
         <div>${hedef.length ? `<div class="ysc-tgt"><span><b>${hedef.length === 1 ? 'YSC ' + esc(hedef[0].no) : hedef.length + ' cihaz'}</b> · ${hedef.length === 1 ? esc(hedef[0].yer) + ' · ' + esc(hedef[0].kap) + ' ' + esc(hedef[0].cins) : 'toplu güncelleme'}</span><button class="ysc-btn s" id="ysc-hd">Değiştir</button></div>`
           : `<div class="ysc-lb">Cihaz</div><input class="ysc-in" id="ysc-ara" placeholder="YSC no yaz veya bölge ara" value="${esc(st.ara)}">${bulunan.length ? `<div class="ysc-chips" style="margin-top:8px">${bulunan.map(r => `<button class="ysc-chip" data-n="${esc(satirId(r))}">${esc(r.no)} · ${esc(r.yer)}</button>`).join('')}</div>` : (aq ? '<div class="ysc-hint" style="margin-top:6px">Eşleşen cihaz yok.</div>' : '')}`}</div>
         <div><div class="ysc-lb">İşlem</div><div class="ysc-seg"><button data-m="kontrol" class="${st.mod === 'kontrol' ? 'on' : ''}">Kontrol edildi, uygun</button><button data-m="dolum" class="${st.mod === 'dolum' ? 'on' : ''}">Dolum / firma güncelle</button></div></div>
         ${st.mod === 'dolum' ? `
-        <div class="ysc-r2"><div><div class="ysc-lb">Satış / dolum tarihi</div><div class="ysc-mp"><button data-a="-1" aria-label="Önceki ay">‹</button><span>${AY[+st.ay.slice(5) - 1]} ${st.ay.slice(0, 4)}</span><button data-a="1" aria-label="Sonraki ay">›</button></div></div>
-          <div><div class="ysc-lb">Son kullanma / tekrar dolum</div><div class="ysc-mp"><button data-s="-1" aria-label="Önceki ay">‹</button><span>${AY[+st.skt.slice(5) - 1]} ${st.skt.slice(0, 4)}</span><button data-s="1" aria-label="Sonraki ay">›</button></div></div></div>
-        <div class="ysc-hint">Son kullanma tarihi dolumdan 2 yıl sonraya kendiliğinden ayarlanır; gerekirse oklarla değiştir.</div>
-        <div><div class="ysc-lb">İmalatçı / dolum firması<button class="ysc-ed ${st.duzen ? 'on' : ''}" id="ysc-fed" title="Firmaları düzenle" aria-label="Firmaları düzenle">✎</button></div>${firmaBlok}</div>
-        <div><div class="ysc-lb">Açıklama</div><div class="ysc-chips">${AC_HAZIR.concat(['']).map(a => `<button class="ysc-chip ${st.acik === a ? 'on' : ''}" data-c="${esc(a)}">${a || 'Boş bırak'}</button>`).join('')}</div></div>`
+        <div class="ysc-g2">${ff('Dolum tarihi', ayHtml(st.ay, 'data-a'))}${ff('Son kullanma tarihi', ayHtml(st.skt, 'data-s'))}</div>
+        <div class="ysc-hint" style="margin-top:-6px">Son kullanma tarihi dolumdan 2 yıl sonraya kendiliğinden ayarlanır; gerekirse oklarla değiştir.</div>
+        ${st.duzen ? `<div><div class="ysc-lb">Dolum firmaları<button class="ysc-ed on" id="ysc-fed" title="Düzenlemeyi bitir" aria-label="Düzenlemeyi bitir">✎</button></div>${firmaBlok}</div>`
+          : `<div class="ysc-g2"><div class="ysc-ff"><div class="ysc-lb">Dolum firması<button class="ysc-ed" id="ysc-fed" title="Firmaları düzenle" aria-label="Firmaları düzenle">✎</button></div>${firmaBlok}</div>${ff('Açıklama', secHtml(st, 'acik', st.acik, AC_HAZIR.concat(['']), { bos: '— boş —', bosAd: 'Boş bırak' }))}</div>`}`
         : `<div class="ysc-hint">Cihazın yerinde, mührü ve basınç göstergesi uygun olduğu kaydedilir. Formdaki bilgiler değişmez; son gözden geçirme tarihi bugüne çekilir.</div>`}
       </div>
       <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="ysc-kay" ${hedef.length && !st.duzen ? '' : 'disabled'}>Kaydet</button></div>`);
@@ -29086,8 +29125,9 @@ table.ysc-l .c{text-align:center}
       sh.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { st.mod = b.dataset.m; render(); });
       sh.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { st.ay = ayEkle(st.ay, +b.dataset.a); if (!st.sktElle) st.skt = ayEkle(st.ay, 24); render(); });
       sh.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { st.skt = ayEkle(st.skt, +b.dataset.s); st.sktElle = true; render(); });
-      sh.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { if (b.dataset.f === '__yeni') { st.yeni = true; st.firma = ''; } else { st.yeni = false; st.firma = b.dataset.f; } render(); const y = $('ysc-yf'); if (y) y.focus(); });
-      sh.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { st.acik = b.dataset.c; render(); });
+      secBagla(sh, st, render, {
+        firma: v => { if (v === '__yeni') { st.yeni = true; st.firma = ''; setTimeout(() => { const y = $('ysc-yf'); if (y) y.focus(); }, 0); } else { st.yeni = false; st.firma = v; } },
+        acik: v => { st.acik = v; } });
       if ($('ysc-yf')) $('ysc-yf').oninput = e => { st.firma = e.target.value.toLocaleUpperCase('tr').trim(); };
       if ($('ysc-fed')) $('ysc-fed').onclick = () => { st.duzen = !st.duzen; st.sil = null; render(); };
       sh.querySelectorAll('[data-fi]').forEach(inp => inp.onchange = () => {
@@ -29203,24 +29243,21 @@ table.ysc-l .c{text-align:center}
     const kaplar = uniq(['5Kg', '6Kg', '12Kg', '30Kg', '50Kg'].concat(f.rows.map(r => r.kap))).sort((a, b) => parseFloat(a) - parseFloat(b));
     const cinsler = uniq(['KKT', 'KÖPÜK', 'CO2', 'FM200', 'K2CO3'].concat(f.rows.map(r => r.cins)));
     const siniflar = uniq(['ABC', 'AB', 'BC', 'F'].concat(f.rows.map(r => r.sinif)));
-    const st = { no: String(enb + 1), yer: '', kap: '6Kg', cins: 'KKT', sinif: 'ABC', sinifElle: false, ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false, firma: f.firmalar[0] || '', yeniF: false, acik: 'YENİ ALIM', hata: '' };
+    const st = { dd: '', no: String(enb + 1), yer: '', kap: '6Kg', cins: 'KKT', sinif: 'ABC', sinifElle: false, ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false,
+      firma: f.firmalar[0] || '', yeniF: false, acik: 'YENİ ALIM', diger: '', hata: '' };
+    const ACK = ['YENİ ALIM'].concat(AC_HAZIR.filter(a => a !== 'YENİ ALIM'), ['']);
     function render() {
       const q = st.yer.trim().toLocaleLowerCase('tr');
       const oner = q ? uniq(f.rows.map(r => r.yer)).filter(y => y.toLocaleLowerCase('tr').includes(q) && y !== st.yer).slice(0, 6) : [];
-      const ch = (lst, cur, attr) => lst.map(v => `<button class="ysc-chip ${v === cur ? 'on' : ''}" ${attr}="${esc(v)}">${esc(v)}</button>`).join('');
-      const sh = pencere(`<div class="ysc-wh"><div><b>Yeni cihaz ekle</b><small>${esc(S.fab)} · formdaki sütunlarla aynı bilgiler</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
+      const dig = k => st.diger === k ? `<input class="ysc-in" id="yn-dg" style="margin-top:6px" placeholder="Yaz" value="${esc(st[k])}">` : '';
+      const sh = pencere(`<div class="ysc-wh"><div><b>Yeni cihaz ekle</b><small>${esc(S.fab)}</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
       <div class="ysc-wb">
-        <div class="ysc-r2" style="grid-template-columns:110px 1fr"><div><div class="ysc-lb">YSC No</div><input class="ysc-in" id="yn-no" inputmode="numeric" value="${esc(st.no)}"></div>
-          <div style="min-width:0"><div class="ysc-lb">Bulunduğu bölge / yer</div><input class="ysc-in" id="yn-yer" placeholder="Ör. Laklama-2 Davlumbaz" value="${esc(st.yer)}"></div></div>
-        ${oner.length ? `<div class="ysc-chips" style="margin-top:-6px">${oner.map(y => `<button class="ysc-chip" data-yer="${esc(y)}">${esc(y)}</button>`).join('')}</div>` : ''}
-        <div><div class="ysc-lb">Kapasite</div><div class="ysc-chips">${ch(kaplar, st.kap, 'data-kap')}</div></div>
-        <div><div class="ysc-lb">Madde cinsi</div><div class="ysc-chips">${ch(cinsler, st.cins, 'data-cins')}</div></div>
-        <div><div class="ysc-lb">Madde sınıfı</div><div class="ysc-chips">${ch(siniflar, st.sinif, 'data-sinif')}</div></div>
-        <div class="ysc-r2"><div><div class="ysc-lb">Satış / dolum tarihi</div><div class="ysc-mp"><button data-a="-1" aria-label="Önceki ay">‹</button><span>${AY[+st.ay.slice(5) - 1]} ${st.ay.slice(0, 4)}</span><button data-a="1" aria-label="Sonraki ay">›</button></div></div>
-          <div><div class="ysc-lb">Son kullanma / tekrar dolum</div><div class="ysc-mp"><button data-s="-1" aria-label="Önceki ay">‹</button><span>${AY[+st.skt.slice(5) - 1]} ${st.skt.slice(0, 4)}</span><button data-s="1" aria-label="Sonraki ay">›</button></div></div></div>
-        <div><div class="ysc-lb">İmalatçı / dolum firması</div><div class="ysc-chips">${ch(f.firmalar, st.yeniF ? '' : st.firma, 'data-f')}<button class="ysc-chip ${st.yeniF ? 'on' : ''}" data-f="__yeni">+ Yeni firma</button></div>
-          ${st.yeniF ? `<input class="ysc-in" id="yn-yf" style="margin-top:8px" placeholder="Firma adı" value="${esc(st.firma)}">` : ''}</div>
-        <div><div class="ysc-lb">Açıklama</div><div class="ysc-chips">${['YENİ ALIM'].concat(AC_HAZIR.filter(a => a !== 'YENİ ALIM'), ['']).map(a => `<button class="ysc-chip ${st.acik === a ? 'on' : ''}" data-c="${esc(a)}">${a || 'Boş bırak'}</button>`).join('')}</div></div>
+        <div class="ysc-g2 ysc-g-no">${ff('YSC No', `<input class="ysc-in" id="yn-no" inputmode="numeric" value="${esc(st.no)}">`)}${ff('Bulunduğu bölge / yer', `<input class="ysc-in" id="yn-yer" placeholder="Ör. Laklama-2 Davlumbaz" value="${esc(st.yer)}">`)}</div>
+        ${oner.length ? `<div class="ysc-oner">${oner.map(y => `<button type="button" data-yer="${esc(y)}">${esc(y)}</button>`).join('')}</div>` : ''}
+        <div class="ysc-g2">${ff('Kapasite', secHtml(st, 'kap', st.kap, kaplar, { yeni: 'Diğer' }) + dig('kap'))}${ff('Madde cinsi', secHtml(st, 'cins', st.cins, cinsler, { yeni: 'Diğer' }) + dig('cins'))}</div>
+        <div class="ysc-g2">${ff('Madde sınıfı', secHtml(st, 'sinif', st.sinif, siniflar, { yeni: 'Diğer' }) + dig('sinif'))}${ff('Dolum firması', secHtml(st, 'firma', st.yeniF ? '' : st.firma, f.firmalar, { yeni: 'Yeni firma', goster: st.yeniF ? 'Yeni firma' : st.firma, bos: 'Firma seç' }) + (st.yeniF ? `<input class="ysc-in" id="yn-yf" style="margin-top:6px" placeholder="Firma adı" value="${esc(st.firma)}">` : ''))}</div>
+        <div class="ysc-g2">${ff('Dolum tarihi', ayHtml(st.ay, 'data-a'))}${ff('Son kullanma tarihi', ayHtml(st.skt, 'data-s'))}</div>
+        ${ff('Açıklama', secHtml(st, 'acik', st.acik, ACK, { bos: '— boş —', bosAd: 'Boş bırak' }))}
         ${st.hata ? `<div class="ysc-cf"><b>${esc(st.hata)}</b></div>` : ''}
       </div>
       <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="yn-kay">Ekle</button></div>`);
@@ -29228,14 +29265,15 @@ table.ysc-l .c{text-align:center}
       $('yn-no').oninput = e => { st.no = e.target.value.trim(); };
       const yer = $('yn-yer'); yer.oninput = () => { st.yer = yer.value; const p = yer.selectionStart; render(); const y2 = $('yn-yer'); y2.focus(); y2.setSelectionRange(p, p); };
       sh.querySelectorAll('[data-yer]').forEach(b => b.onclick = () => { st.yer = b.dataset.yer; render(); });
-      sh.querySelectorAll('[data-kap]').forEach(b => b.onclick = () => { st.kap = b.dataset.kap; render(); });
-      sh.querySelectorAll('[data-cins]').forEach(b => b.onclick = () => { st.cins = b.dataset.cins; if (!st.sinifElle && SINIF[st.cins]) st.sinif = SINIF[st.cins]; render(); });
-      sh.querySelectorAll('[data-sinif]').forEach(b => b.onclick = () => { st.sinif = b.dataset.sinif; st.sinifElle = true; render(); });
       sh.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { st.ay = ayEkle(st.ay, +b.dataset.a); if (!st.sktElle) st.skt = ayEkle(st.ay, 24); render(); });
       sh.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { st.skt = ayEkle(st.skt, +b.dataset.s); st.sktElle = true; render(); });
-      sh.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { if (b.dataset.f === '__yeni') { st.yeniF = true; st.firma = ''; } else { st.yeniF = false; st.firma = b.dataset.f; } render(); const y = $('yn-yf'); if (y) y.focus(); });
+      const odak = id => setTimeout(() => { const y = $(id); if (y) y.focus(); }, 0);
+      const secD = k => v => { if (v === '__yeni') { st.diger = k; st[k] = ''; odak('yn-dg'); } else { if (st.diger === k) st.diger = ''; st[k] = v; if (k === 'cins' && !st.sinifElle && SINIF[v]) st.sinif = SINIF[v]; if (k === 'sinif') st.sinifElle = true; } };
+      secBagla(sh, st, render, { kap: secD('kap'), cins: secD('cins'), sinif: secD('sinif'),
+        firma: v => { if (v === '__yeni') { st.yeniF = true; st.firma = ''; odak('yn-yf'); } else { st.yeniF = false; st.firma = v; } },
+        acik: v => { st.acik = v; } });
+      if ($('yn-dg')) $('yn-dg').oninput = e => { st[st.diger] = e.target.value.trim(); };
       if ($('yn-yf')) $('yn-yf').oninput = e => { st.firma = e.target.value.toLocaleUpperCase('tr').trim(); };
-      sh.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { st.acik = b.dataset.c; render(); });
       $('yn-kay').onclick = () => {
         const no = st.no.trim(), yr = st.yer.replace(/\s+/g, ' ').trim();
         if (!no) { st.hata = 'YSC numarası yaz.'; render(); return; }
