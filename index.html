@@ -29322,7 +29322,6 @@ table.ysc-l .c{text-align:center}
       sirala(f.rows);
       R.rows.forEach(r => { if (r.firma && !f.firmalar.includes(r.firma)) f.firmalar.push(r.firma); });
       f.firmalar.sort((a, b) => a.localeCompare(b, 'tr'));
-      if (!D.unvan && R.baslik) { const m = /^(.*?A\.\s?Ş\.)/i.exec(R.baslik); if (m) D.unvan = m[1].trim(); }   // ünvan boşsa dosyadaki başlıktan önerilir
       if (R.rev) f.rev = R.rev;
       S.sel.clear(); kaydet(); pKapat(); ciz(); tst(R.rows.length + ' cihaz aktarıldı');
     }
@@ -29445,8 +29444,8 @@ table.ysc-l .c{text-align:center}
     function render() {
       const P = sayfaHtml(f), olc = Math.min(1, (Math.min(window.innerWidth, 980) - 70) / P.W);
       const sh = pencere(`<div class="ysc-wh"><div><b>İndir · form önizleme</b><small>${P.n} sayfa · A4 dikey · başlık satırları her sayfada · altta “Sayfa X / Y”</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
-        <div class="ysc-wb" style="padding-bottom:10px"><div><div class="ysc-lb">Liste başlığı · firma ünvanı</div>
-          <div class="ysc-frow"><input class="ysc-in" id="ysc-unvan" placeholder="Ör. SARTEN AMBALAJ SAN. VE TİC. A.Ş." value="${esc(D.unvan)}"><button class="ysc-btn p s" id="ysc-unvan-k" style="padding:8px 14px">Kaydet</button></div>
+        <div class="ysc-wb" style="padding-bottom:10px"><div><div class="ysc-lb">Firma adı (liste başlığı)</div>
+          <div class="ysc-frow"><input class="ysc-in" id="ysc-unvan" placeholder="Firma adını yazınız" value="${esc(D.unvan)}"><button class="ysc-btn p s" id="ysc-unvan-k" style="padding:8px 14px">Kaydet</button></div>
           <div class="ysc-hint" style="margin-top:6px">Başlık: <b id="ysc-bas-on">${esc(baslikYap(f.fab))}</b></div></div>
         <div><div class="ysc-lb">Cins ve adet listesi rapora dahil edilsin mi?</div><div class="ysc-seg" style="max-width:320px"><button data-l="1" class="${f.liste ? 'on' : ''}">Evet</button><button data-l="0" class="${!f.liste ? 'on' : ''}">Hayır</button></div>
         <div class="ysc-hint" style="margin-top:6px">${f.liste ? 'Excel\'de ikinci sayfa “Liste” olarak yazılır; PDF\'te listenin sonunda yer alır.' : 'Adet listesi çıktıya eklenmez.'}</div></div></div>
