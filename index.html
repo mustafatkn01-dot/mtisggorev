@@ -20129,8 +20129,8 @@ function dnrSayfaStili(v) {
   const L = v.L;
   s.textContent = `@media print{@page{size:A4 ${v.yon === 'yatay' ? 'landscape' : 'portrait'};margin:${L.mt}mm ${L.mx - 0.4}mm ${L.mb}mm ${L.mx}mm;` +
     `@top-left{content:""}@top-center{content:""}@top-right{content:""}` +
-    `@bottom-center{content:""}` +
-    `@bottom-right{content:"Sayfa " counter(page) " / " counter(pages);font-family:Arial,sans-serif;font-size:7pt;color:#60717F}}}`;
+    `@bottom-right{content:""}` +
+    `@bottom-center{content:"Sayfa " counter(page) " / " counter(pages);font-family:Arial,sans-serif;font-size:7pt;color:#60717F}}}`;
   const temizle = () => { s.remove(); window.removeEventListener('afterprint', temizle); };
   window.addEventListener('afterprint', temizle);
 }
@@ -20153,7 +20153,7 @@ async function dnrCikti(tur) {
   }
   let el = document.getElementById('denetim-print');
   if (!el) { el = document.createElement('div'); el.id = 'denetim-print'; document.body.appendChild(el); }
-  const pdfOpt = pv => ({ rootId:'denetim-print', bodyClass:'print-denetim', name:pv.dosya, width:Math.round(pv.L.cw / 25.4 * 96), mx:pv.L.mx, top:pv.L.mt, bottom:pv.L.mb + 2, repeatSel:'.dnr-runw', footRight:true, orientation: pv.yon === 'yatay' ? 'landscape' : 'portrait' });
+  const pdfOpt = pv => ({ rootId:'denetim-print', bodyClass:'print-denetim', name:pv.dosya, width:Math.round(pv.L.cw / 25.4 * 96), mx:pv.L.mx, top:pv.L.mt, bottom:pv.L.mb + 2, repeatSel:'.dnr-runw', orientation: pv.yon === 'yatay' ? 'landscape' : 'portrait' });
   if (tur === 'paylas') {
     dnrClose();
     if (!parca) { el.innerHTML = dnrHtml(v, { paylas: true }); isgSharePdf(pdfOpt(v)); return; }
