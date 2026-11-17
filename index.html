@@ -29143,6 +29143,17 @@ table.ysc-l .c{text-align:center}
 .ysc-wb{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
 .ysc-wf{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;align-items:center;position:sticky;bottom:0;background:var(--surface)}
 .ysc-lb{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.ysc-seg:has(button[data-m=us]){grid-template-columns:1fr 1.25fr 1fr}
+.ysc-seg button.g.on{background:var(--good);color:#fff}.ysc-seg button.b.on{background:var(--acc);color:#fff}.ysc-seg button.r.on{background:var(--bad);color:#fff}
+.ysc-seg button[data-m]{line-height:1.15;min-height:44px}
+.ysc-us{display:flex;flex-direction:column;gap:6px}
+.ysc-us button{border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:10px;text-align:left;font:inherit;cursor:pointer}
+.ysc-us button.on{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 9%,var(--surface))}
+.ysc-us .ic{font-size:20px}.ysc-us .tx{flex:1;min-width:0}.ysc-us b{font-size:14px;display:block}.ysc-us small{font-size:11.5px;color:var(--text2)}
+.ysc-btn.p.r{background:var(--bad);border-color:var(--bad)}
+.ysc-pill.us{background:var(--bad);color:#fff}
+table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad)}
+.ysc-mini:has(.u){grid-template-columns:1fr 1fr 1fr}.ysc-mini .u b{color:var(--bad-tx)}
 .ysc-seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface2);border-radius:10px;padding:3px;gap:3px}
 .ysc-seg button{border:0;background:none;color:var(--text2);padding:8px;border-radius:8px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer}
 .ysc-seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -29206,6 +29217,14 @@ table.ysc-l .c{text-align:center}
   'use strict';
   const LS = 'yeni_isg_ysc_v1';
   const AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  const US = [
+    { k: 'bas', ad: 'Basıncı düşük', alt: 'Manometre kırmızı bölgede', ic: '🔴', ch: 'Basınç düşük', oner: 'Dolum / bakım için firmaya gönder' },
+    { k: 'yok', ad: 'Yerinde yok', alt: 'Bulunamadı veya yeri değişmiş', ic: '❓', ch: 'Yerinde yok', oner: 'Aranır; bulunamazsa yenisi tanımlanır' },
+    { k: 'kul', ad: 'Kullanılmış', alt: 'Deşarj olmuş, boşalmış', ic: '💨', ch: 'Kullanıldı', oner: 'Dolum gerekli' },
+    { k: 'ari', ad: 'Arıza / hasar', alt: 'Kullanımı engelleyen bir kusur', ic: '🛠️', ch: 'Arızalı', oner: 'Bakım veya değişim' }];
+  const US_PARCA = ['Hortum / lans', 'Emniyet pimi / mühür', 'Gövde hasarı / korozyon', 'Manometre arızalı', 'Askı / erişim engelli'];
+  const usBul = r => US.find(x => x.k === r.us);
+  const usYazi = r => { const u = usBul(r); return u ? (u.k === 'ari' && r.usParca ? 'Arızalı · ' + r.usParca : u.ch) : ''; };
   const AC_HAZIR = ['SKT DOLAYI YENİDEN DOLUM', 'BASINÇ DÜŞÜK, YENİDEN DOLUM', 'KULLANIM SONRASI DOLUM', 'YENİ ALIM'];
   const CINS_SIRA = ['KKT', 'KÖPÜK', 'K2CO3', 'CO2', 'FM200'];
   // Excel formunun sütunları (genişlik: Excel karakter birimi)
@@ -29223,7 +29242,7 @@ table.ysc-l .c{text-align:center}
     o.unvan = typeof o.unvan === 'string' ? o.unvan : '';
     o.list = o.list.filter(Boolean).map(f => ({ fab: f.fab || '', baslik: f.baslik || '', rev: f.rev || '', liste: f.liste !== false,
       firmalar: Array.isArray(f.firmalar) ? f.firmalar.filter(Boolean) : [], rows: (Array.isArray(f.rows) ? f.rows : Object.values(f.rows || {})).filter(Boolean)
-        .map(r => ({ no: r.no == null ? '' : r.no, yer: r.yer || '', kap: r.kap || '', cins: r.cins || '', sinif: r.sinif || '', dolum: r.dolum || '', skt: r.skt || '', firma: r.firma || '', acik: r.acik || '', kontrol: r.kontrol || '' })) }));
+        .map(r => ({ no: r.no == null ? '' : r.no, yer: r.yer || '', kap: r.kap || '', cins: r.cins || '', sinif: r.sinif || '', dolum: r.dolum || '', skt: r.skt || '', firma: r.firma || '', acik: r.acik || '', kontrol: r.kontrol || '', us: r.us || '', usParca: r.usParca || '', usNot: r.usNot || '', usTarih: r.usTarih || '' })) }));
     return o;
   }
   D = normal(D);
@@ -29273,12 +29292,12 @@ table.ysc-l .c{text-align:center}
     if (typeof kontrolAraQ === 'function' && kontrolAraQ()) return;
     const fabF = typeof kontrolFabFilter !== 'undefined' ? kontrolFabFilter : null;
     const kay = D.list.filter(f => !fabF || f.fab === fabF), rows = kay.reduce((a, f) => a.concat(f.rows), []);
-    const s = { ok: 0, warn: 0, bad: 0 }; rows.forEach(r => s[durum(r).k]++);
+    const s = { ok: 0, warn: 0, bad: 0 }; rows.forEach(r => s[durum(r).k]++); const usN = rows.filter(r => r.us).length;
     const html = `<section class="kontrol-grup" id="ysc-giris"><div class="kontrol-grup-hd" role="button" onclick="yscAc()">
       <span class="kontrol-grup-ok">›</span><span class="kontrol-grup-icon">🧯</span>
       <div class="kontrol-grup-copy"><div class="kontrol-grup-ad">Yangın Söndürme Cihazları</div>
       <div class="kontrol-grup-aciklama">${rows.length ? 'YSC envanteri · saha kontrolü · dolum takibi' : 'Envanteri Excel listesinden yükleyerek başla'}</div>
-      ${rows.length ? `<div class="kontrol-grup-mini"><span class="ok">${s.ok} geçerli</span><span class="warn">${s.warn} yaklaşıyor</span><span class="bad">${s.bad} süresi geçmiş</span></div>` : ''}</div>
+      ${rows.length ? `<div class="kontrol-grup-mini"><span class="ok">${s.ok} geçerli</span><span class="warn">${s.warn} yaklaşıyor</span><span class="bad">${s.bad} süresi geçmiş</span>${usN ? `<span class="bad">${usN} uygunsuz</span>` : ''}</div>` : ''}</div>
       <span class="kontrol-grup-sayi">${rows.length}</span></div></section>`;
     const sum = body.querySelector('.kontrol-summary-grid');
     if (sum) sum.insertAdjacentHTML('afterend', html); else body.insertAdjacentHTML('afterbegin', html);
@@ -29302,7 +29321,7 @@ table.ysc-l .c{text-align:center}
   const satirId = r => String(r.no) + '|' + r.yer;
   function liste(f) {
     const q = S.q.toLocaleLowerCase('tr');
-    return f.rows.filter(r => (!S.fYer || r.yer === S.fYer) && (!S.fCins || r.cins === S.fCins) && (!S.fDur || durum(r).k === S.fDur) &&
+    return f.rows.filter(r => (!S.fYer || r.yer === S.fYer) && (!S.fCins || r.cins === S.fCins) && (!S.fDur || (S.fDur === 'us' ? !!r.us : durum(r).k === S.fDur)) &&
       (!q || [r.no, r.yer, r.kap, r.cins, r.sinif, r.firma, r.acik, ayFmt(r.dolum), ayFmt(r.skt)].join(' ').toLocaleLowerCase('tr').includes(q)));
   }
   function dd(el, lab, vals, cur, set) {
@@ -29328,22 +29347,22 @@ table.ysc-l .c{text-align:center}
     const _bd = OV().querySelector('.ysc-bd'), _ts = OV().querySelector('.ysc-ts'), _sy = [_bd ? _bd.scrollTop : 0, _ts ? _ts.scrollTop : 0, _ts ? _ts.scrollLeft : 0];
     const ov = OV(), fl = fabListe(), f = kayit(S.fab, false) || { fab: S.fab, baslik: '', rev: '', rows: [], firmalar: [], liste: true };
     const say = { ok: 0, warn: 0, bad: 0 }; f.rows.forEach(r => say[durum(r).k]++);
-    const L = liste(f), ad = adetler(f.rows);
+    const L = liste(f), ad = adetler(f.rows), us_n = f.rows.filter(r => r.us).length;
     ov.innerHTML = `<div class="ysc-top"><button class="bk" id="ysc-geri" aria-label="Geri">‹</button>
       <div class="tt"><b>Yangın Söndürme Cihazları</b><small>${esc(baslikYap(S.fab))}</small></div>
       <div class="ysc-rev"><span>Son gözden geçirme</span><b>${tFmt(f.rev)}</b><button id="ysc-bugun" ${f.rows.length ? '' : 'disabled'}>Bugün</button></div></div>
     <div class="ysc-bd">
       ${fl.length > 1 ? `<div class="ysc-fabs">${fl.map(x => `<button data-fab="${esc(x)}" class="${x === S.fab ? 'on' : ''}">${esc(x)}</button>`).join('')}</div>` : ''}
-      <div class="ysc-mini"><button class="${!S.fDur ? 'on' : ''}" data-d="">Toplam <b>${f.rows.length}</b></button><button class="g ${S.fDur === 'ok' ? 'on' : ''}" data-d="ok">Geçerli <b>${say.ok}</b></button></div>
+      <div class="ysc-mini"><button class="${!S.fDur ? 'on' : ''}" data-d="">Toplam <b>${f.rows.length}</b></button><button class="g ${S.fDur === 'ok' ? 'on' : ''}" data-d="ok">Geçerli <b>${say.ok}</b></button>${us_n ? `<button class="u ${S.fDur === 'us' ? 'on' : ''}" data-d="us">Uygunsuz <b>${us_n}</b></button>` : ''}</div>
       ${f.rows.length ? `<div class="ysc-al">${uyariKart(f, 'bad')}${uyariKart(f, 'warn')}</div>` : ''}
       <div class="ysc-bar"><label class="ysc-q"><span aria-hidden="true">⌕</span><input id="ysc-q" placeholder="YSC no, bölge, madde, firma ara" value="${esc(S.q)}"></label>
         <div class="ysc-dd" id="ysc-ddy"></div><div class="ysc-dd" id="ysc-ddc"></div>
         <div class="ysc-rt"><button class="ysc-btn" id="ysc-saha" ${f.rows.length ? '' : 'disabled'}>✓ Saha kontrolü</button><button class="ysc-btn" id="ysc-yukle">⇪ Excel'den yükle</button><button class="ysc-btn" id="ysc-yeni">＋ Yeni ekle</button><button class="ysc-btn p" id="ysc-indir" ${f.rows.length ? '' : 'disabled'}>⇩ İndir</button></div></div>
       <div class="ysc-tw"><div class="ysc-ts">
         ${f.rows.length ? `<table class="ysc-l"><thead><tr><th class="c"><input type="checkbox" class="ysc-cb" id="ysc-all" ${L.length && L.every(r => S.sel.has(satirId(r))) ? 'checked' : ''} aria-label="Tümünü seç" style="pointer-events:auto"></th><th>YSC No</th><th>Bulunduğu Bölge / Yer</th><th>Kapasite</th><th>Madde Cinsi</th><th>Madde Sınıfı</th><th>Satış / Dolum</th><th>Son Kullanma / Tekrar Dolum</th><th>İmalatçı</th><th>Açıklama</th><th>Durum</th></tr></thead><tbody>
-        ${L.map(r => { const d = durum(r), id = satirId(r); return `<tr data-id="${esc(id)}" class="${S.sel.has(id) ? 'sel' : ''} ${S.son.has(id) ? 'ysc-just' : ''}"><td class="c"><input type="checkbox" class="ysc-cb" ${S.sel.has(id) ? 'checked' : ''} tabindex="-1"></td><td><b>${esc(r.no)}</b></td><td class="y">${esc(r.yer)}</td><td>${esc(r.kap)}</td><td>${esc(r.cins)}</td><td>${esc(r.sinif)}</td><td>${ayFmt(r.dolum)}</td><td>${ayFmt(r.skt)}</td><td>${esc(r.firma)}</td><td class="ysc-ac">${esc(r.acik)}</td><td><span class="ysc-pill ${d.k}">${d.t}</span></td></tr>`; }).join('') || '<tr><td colspan="11" class="ysc-empty">Bu filtreye uyan cihaz yok.</td></tr>'}
+        ${L.map(r => { const d = durum(r), id = satirId(r); return `<tr data-id="${esc(id)}" class="${S.sel.has(id) ? 'sel' : ''} ${S.son.has(id) ? 'ysc-just' : ''} ${r.us ? 'us' : ''}"><td class="c"><input type="checkbox" class="ysc-cb" ${S.sel.has(id) ? 'checked' : ''} tabindex="-1"></td><td><b>${esc(r.no)}</b></td><td class="y">${esc(r.yer)}</td><td>${esc(r.kap)}</td><td>${esc(r.cins)}</td><td>${esc(r.sinif)}</td><td>${ayFmt(r.dolum)}</td><td>${ayFmt(r.skt)}</td><td>${esc(r.firma)}</td><td class="ysc-ac">${esc(r.acik)}</td><td>${r.us ? `<span class="ysc-pill us">${esc(usYazi(r))}</span>` : `<span class="ysc-pill ${d.k}">${d.t}</span>`}</td></tr>`; }).join('') || '<tr><td colspan="11" class="ysc-empty">Bu filtreye uyan cihaz yok.</td></tr>'}
         </tbody></table>
-        <div class="ysc-cards">${L.map(r => { const d = durum(r), id = satirId(r); return `<div class="ysc-card ${S.sel.has(id) ? 'sel' : ''} ${S.son.has(id) ? 'ysc-just' : ''}" data-id="${esc(id)}"><div class="no">${esc(r.no)}</div><div class="t">${esc(r.yer)}</div><span class="ysc-pill ${d.k}">${d.t}</span><div class="m">${esc(r.kap)} · ${esc(r.cins)} ${esc(r.sinif)} · Dolum ${ayFmt(r.dolum) || '—'} · SKT ${ayFmt(r.skt) || '—'} · ${esc(r.firma)}</div></div>`; }).join('') || '<div class="ysc-empty">Bu filtreye uyan cihaz yok.</div>'}</div>`
+        <div class="ysc-cards">${L.map(r => { const d = durum(r), id = satirId(r); return `<div class="ysc-card ${S.sel.has(id) ? 'sel' : ''} ${S.son.has(id) ? 'ysc-just' : ''} ${r.us ? 'us' : ''}" data-id="${esc(id)}"><div class="no">${esc(r.no)}</div><div class="t">${esc(r.yer)}</div><span class="ysc-pill ${r.us ? 'us' : d.k}">${r.us ? esc(usYazi(r)) : d.t}</span><div class="m">${esc(r.kap)} · ${esc(r.cins)} ${esc(r.sinif)} · Dolum ${ayFmt(r.dolum) || '—'} · SKT ${ayFmt(r.skt) || '—'} · ${esc(r.firma)}</div></div>`; }).join('') || '<div class="ysc-empty">Bu filtreye uyan cihaz yok.</div>'}</div>`
         : `<div class="ysc-empty"><b>${esc(S.fab || 'Bu fabrika')} için YSC listesi yok.</b><br>“Excel'den yükle” ile envanter listeni aktar; sütunlar başlık adlarına göre eşleşir.</div>`}
       </div></div>
       ${f.rows.length ? `<div class="ysc-acc"><div class="ysc-acc-h" id="ysc-adet-h"><span>${S.adetAcik ? '▾' : '▸'}</span>Cins ve adet<small>${ad.length} çeşit · ${ad.reduce((a, x) => a + x.n, 0)} tüp · rapora ${f.liste ? 'dahil' : 'dahil değil'}</small></div>
@@ -29439,7 +29458,7 @@ table.ysc-l .c{text-align:center}
   /* ---------- saha kontrolü ---------- */
   function sahaAc(ids, mod) {
     const f = kayit(S.fab, false); if (!f) return;
-    const st = { dd: '', mod: mod || 'dolum', ids: ids.slice(), ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false, firma: '', yeni: false, acik: AC_HAZIR[0], ara: '', duzen: false, sil: null };
+    const st = { neden: 'bas', parca: US_PARCA[0], unot: '', dd: '', mod: mod || 'dolum', ids: ids.slice(), ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false, firma: '', yeni: false, acik: AC_HAZIR[0], ara: '', duzen: false, sil: null };
     const bul = id => f.rows.find(r => satirId(r) === id);
     if (st.ids.length === 1) { const r = bul(st.ids[0]); if (r) st.firma = r.firma; }
     function render() {
@@ -29457,21 +29476,27 @@ table.ysc-l .c{text-align:center}
       <div class="ysc-wb">
         <div>${hedef.length ? `<div class="ysc-tgt"><span><b>${hedef.length === 1 ? 'YSC ' + esc(hedef[0].no) : hedef.length + ' cihaz'}</b> · ${hedef.length === 1 ? esc(hedef[0].yer) + ' · ' + esc(hedef[0].kap) + ' ' + esc(hedef[0].cins) : 'toplu güncelleme'}</span><button class="ysc-btn s" id="ysc-hd">Değiştir</button></div>`
           : `<div class="ysc-lb">Cihaz</div><input class="ysc-in" id="ysc-ara" placeholder="YSC no yaz veya bölge ara" value="${esc(st.ara)}">${bulunan.length ? `<div class="ysc-chips" style="margin-top:8px">${bulunan.map(r => `<button class="ysc-chip" data-n="${esc(satirId(r))}">${esc(r.no)} · ${esc(r.yer)}</button>`).join('')}</div>` : (aq ? '<div class="ysc-hint" style="margin-top:6px">Eşleşen cihaz yok.</div>' : '')}`}</div>
-        <div><div class="ysc-lb">İşlem</div><div class="ysc-seg"><button data-m="kontrol" class="${st.mod === 'kontrol' ? 'on' : ''}">Kontrol edildi, uygun</button><button data-m="dolum" class="${st.mod === 'dolum' ? 'on' : ''}">Dolum / firma güncelle</button></div></div>
-        ${st.mod === 'dolum' ? `
+        <div><div class="ysc-lb">İşlem</div><div class="ysc-seg"><button data-m="kontrol" class="g ${st.mod === 'kontrol' ? 'on' : ''}">Uygun</button><button data-m="dolum" class="b ${st.mod === 'dolum' ? 'on' : ''}">Dolum / firma güncelle</button><button data-m="us" class="r ${st.mod === 'us' ? 'on' : ''}">Uygunsuz</button></div></div>
+        ${st.mod === 'us' ? `<div><div class="ysc-lb">Neden</div><div class="ysc-us">${US.map(x => `<button type="button" data-un="${x.k}" class="${st.neden === x.k ? 'on' : ''}"><span class="ic">${x.ic}</span><span class="tx"><b>${x.ad}</b><small>${x.alt}</small></span><span class="rd">${st.neden === x.k ? '●' : '○'}</span></button>`).join('')}</div></div>
+        ${st.neden === 'ari' ? `<div>${ff('Hangi parça', secHtml(st, 'parca', st.parca, US_PARCA, { bos: 'Seç' }))}</div>` : ''}
+        <div><div class="ysc-lb">Açıklama (isteğe bağlı)</div><input class="ysc-in" id="ysc-un" placeholder="Kısa not…" value="${esc(st.unot)}"></div>
+        <div class="ysc-hint">Önerilen işlem: <b>${esc(US.find(x => x.k === st.neden).oner)}</b>. Dolum ve son kullanma tarihleri değişmez.</div>`
+        : st.mod === 'dolum' ? `
         <div class="ysc-g2">${ff('Dolum tarihi', tarHtml(st, 'ay', st.ay))}${ff('Son kullanma tarihi', tarHtml(st, 'skt', st.skt, true))}</div>
         ${tarUyari(st) || '<div class="ysc-hint" style="margin-top:-6px">Son kullanma tarihi dolumdan 2 yıl sonraya kendiliğinden ayarlanır.</div>'}
         ${st.duzen ? `<div><div class="ysc-lb">Dolum firmaları<button class="ysc-ed on" id="ysc-fed" title="Düzenlemeyi bitir" aria-label="Düzenlemeyi bitir">✎</button></div>${firmaBlok}</div>`
           : `<div class="ysc-g2"><div class="ysc-ff"><div class="ysc-lb">Dolum firması<button class="ysc-ed" id="ysc-fed" title="Firmaları düzenle" aria-label="Firmaları düzenle">✎</button></div>${firmaBlok}</div>${ff('Açıklama', secHtml(st, 'acik', st.acik, AC_HAZIR.concat(['']), { bos: '— boş —', bosAd: 'Boş bırak' }))}</div>`}`
-        : `<div class="ysc-hint">Cihazın yerinde, mührü ve basınç göstergesi uygun olduğu kaydedilir. Formdaki bilgiler değişmez; son gözden geçirme tarihi bugüne çekilir.</div>`}
+        : `<div class="ysc-hint">Cihazın yerinde, mührü ve basınç göstergesi uygun olduğu kaydedilir. Formdaki bilgiler değişmez; son gözden geçirme tarihi bugüne çekilir. Açık bir uygunsuzluk varsa kapanır.</div>`}
       </div>
-      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="ysc-kay" ${hedef.length && !st.duzen && !(st.mod === 'dolum' && st.skt < st.ay) ? '' : 'disabled'}>Kaydet</button></div>`);
+      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p${st.mod === 'us' ? ' r' : ''}" id="ysc-kay" ${hedef.length && !st.duzen && !(st.mod === 'dolum' && st.skt < st.ay) ? '' : 'disabled'}>${st.mod === 'us' ? 'Uygunsuz kaydet' : 'Kaydet'}</button></div>`);
       const $ = id => document.getElementById(id);
+      sh.querySelectorAll('[data-un]').forEach(b => b.onclick = () => { st.neden = b.dataset.un; render(); });
+      if ($('ysc-un')) $('ysc-un').oninput = e => { st.unot = e.target.value; };
       sh.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { st.mod = b.dataset.m; render(); });
       tarBagla(sh, st, render);
       secBagla(sh, st, render, {
         firma: v => { if (v === '__yeni') { st.yeni = true; st.firma = ''; setTimeout(() => { const y = $('ysc-yf'); if (y) y.focus(); }, 0); } else { st.yeni = false; st.firma = v; } },
-        acik: v => { st.acik = v; } });
+        acik: v => { st.acik = v; }, parca: v => { st.parca = v; } });
       if ($('ysc-yf')) $('ysc-yf').oninput = e => { st.firma = e.target.value.toLocaleUpperCase('tr').trim(); };
       if ($('ysc-fed')) $('ysc-fed').onclick = () => { st.duzen = !st.duzen; st.sil = null; render(); };
       sh.querySelectorAll('[data-fi]').forEach(inp => inp.onchange = () => {
@@ -29489,10 +29514,12 @@ table.ysc-l .c{text-align:center}
       if ($('ysc-hd')) $('ysc-hd').onclick = () => { st.ids = []; render(); };
       $('ysc-kay').onclick = () => {
         if (!hedef.length) return;
-        if (st.mod === 'dolum') {
+        if (st.mod === 'us') {
+          hedef.forEach(r => { r.us = st.neden; r.usParca = st.neden === 'ari' ? st.parca : ''; r.usNot = st.unot.trim(); r.usTarih = bugun(); r.kontrol = bugun(); S.son.add(satirId(r)); });
+        } else if (st.mod === 'dolum') {
           if (st.yeni && st.firma && !f.firmalar.includes(st.firma)) f.firmalar.push(st.firma);
-          hedef.forEach(r => { r.dolum = st.ay; r.skt = st.skt; if (st.firma) r.firma = st.firma; r.acik = st.acik; r.kontrol = bugun(); S.son.add(satirId(r)); });
-        } else hedef.forEach(r => { r.kontrol = bugun(); S.son.add(satirId(r)); });
+          hedef.forEach(r => { r.dolum = st.ay; r.skt = st.skt; if (st.firma) r.firma = st.firma; r.acik = st.acik; r.kontrol = bugun(); r.us = r.usParca = r.usNot = r.usTarih = ''; S.son.add(satirId(r)); });
+        } else hedef.forEach(r => { r.kontrol = bugun(); r.us = r.usParca = r.usNot = r.usTarih = ''; S.son.add(satirId(r)); });
         f.rev = bugun(); S.sel.clear(); kaydet(); pKapat(); ciz();
         tst(hedef.length === 1 ? 'YSC ' + hedef[0].no + ' kaydedildi' : hedef.length + ' cihaz kaydedildi');
       };
@@ -29705,7 +29732,21 @@ table.ysc-l .c{text-align:center}
     if (ozet) { const son = sayfalar[sayfalar.length - 1]; if (son.kul + H_OZ > pPx - 2) ozetAyri = true; }
     const html = sayfalar.map((p, k) => `<div class="pdf-sayfa ysc-pg" style="height:${pPx}px;width:${W}px"><div class="ph">YANGIN SÖNDÜRME CİHAZLARI LİSTESİ</div><table class="ysc-ft" style="width:${W - 2}px;margin-left:1px">${cg}${p.ilk ? ust : ''}${hh}${p.rows.map(satir).join('')}</table>${k === sayfalar.length - 1 && ozet && !ozetAyri ? ozet : ''}</div>`).join('')
       + (ozetAyri ? `<div class="pdf-sayfa ysc-pg" style="height:${pPx}px;width:${W}px"><div class="ph">YANGIN SÖNDÜRME CİHAZLARI LİSTESİ</div>${ozet}</div>` : '');
-    return { html, n: sayfalar.length + (ozetAyri ? 1 : 0), W, pPx };
+    // Uygunsuz cihazlar: ayrı sayfa(lar); başlık ve sütun başlıkları her sayfada
+    const usR = rows.filter(r => r.us);
+    let usHtml = '', usN = 0;
+    if (usR.length) {
+      const oran = [8, 24, 9, 13, 20, 11, 15], pw = oran.map(o => Math.floor((W - 2) * o / 100)); pw[6] = W - 2 - pw.slice(0, 6).reduce((a, b) => a + b, 0) - 3;
+      const cg2 = '<colgroup>' + pw.map(w => `<col style="width:${w}px">`).join('') + '</colgroup>';
+      const hh2 = `<tr class="h">${['YSC No', 'Bulunduğu Bölge / Yer', 'Kapasite', 'Madde Cinsi', 'Uygunsuzluk', 'Kontrol Tarihi', 'Açıklama'].map(x => `<th>${x}</th>`).join('')}</tr>`;
+      const sat2 = r => `<tr class="r"><td>${esc(r.no)}</td><td class="b"${sigdir(r.yer, pw[1], 8)}>${esc(r.yer)}</td><td>${esc(r.kap)}</td><td>${esc(r.cins)}</td><td${sigdir(usYazi(r), pw[4], 8)}>${esc(usYazi(r))}</td><td>${tFmt(r.usTarih)}</td><td${sigdir(r.usNot, pw[6], 8)}>${esc(r.usNot)}</td></tr>`;
+      const kap = Math.max(1, Math.floor((pPx - H_PH - H_T1 - H_H - 2) / H_R));
+      for (let i = 0; i < usR.length; i += kap) {
+        const ilkS = i === 0; usN++;
+        usHtml += `<div class="pdf-sayfa ysc-pg" style="height:${pPx}px;width:${W}px"><div class="ph">YANGIN SÖNDÜRME CİHAZLARI LİSTESİ</div><table class="ysc-ft" style="width:${W - 2}px;margin-left:1px">${cg2}<tr class="t1"><td colspan="7">${esc(baslikYap(f.fab).replace(/YSC LİSTESİ$/, '').trim())} · UYGUNSUZ CİHAZLAR${ilkS ? ' (' + usR.length + ')' : ' (devam)'}</td></tr>${hh2}${usR.slice(i, i + kap).map(sat2).join('')}</table></div>`;
+      }
+    }
+    return { html: html + usHtml, n: sayfalar.length + (ozetAyri ? 1 : 0) + usN, W, pPx };
   }
   const dosyaAd = f => ('YSC Envanter Listesi - ' + (f.fab || '') + ' ' + new Date().toLocaleDateString('tr-TR')).replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
   function pdfIndir(f) {
@@ -29776,6 +29817,22 @@ table.ysc-l .c{text-align:center}
       const tb = wl.getCell(tr, 2), tc = wl.getCell(tr, 3); tb.value = 'TOPLAM'; tc.value = { formula: `SUM(C4:C${3 + ad.length})`, result: ad.reduce((a, x) => a + x.n, 0) };
       [tb, tc].forEach(h => { h.font = { name: 'Arial', size: 11, bold: true }; h.alignment = { horizontal: 'center', vertical: 'middle' }; h.border = { top: kil, left: kil, right: kil, bottom: kil }; });
       tc.fill = dolgu('FFFFFF00');
+    }
+    // üçüncü sayfa: Uygunsuz cihazlar
+    const usR = rows.filter(r => r.us);
+    if (usR.length) {
+      const wu = wb.addWorksheet('Uygunsuz', { views: [{ state: 'frozen', ySplit: 2, showGridLines: false }], pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '2:2' } });
+      wu.columns = [{ width: 9 }, { width: 38 }, { width: 11 }, { width: 14 }, { width: 28 }, { width: 14 }, { width: 34 }];
+      wu.mergeCells('A1:G1'); wu.getRow(1).height = 26;
+      const u1 = wu.getCell('A1'); u1.value = baslikYap(f.fab).replace(/YSC LİSTESİ$/, '').trim() + ' · UYGUNSUZ CİHAZLAR';
+      u1.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } }; u1.fill = dolgu(NAVY); u1.alignment = { horizontal: 'center', vertical: 'middle' };
+      ['YSC No', 'Bulunduğu Bölge / Yer', 'Kapasite', 'Madde Cinsi', 'Uygunsuzluk', 'Kontrol Tarihi', 'Açıklama'].forEach((t, i) => { const h = wu.getCell(2, i + 1); h.value = t; h.font = { name: 'Arial', size: 9, bold: true }; h.fill = dolgu(HEAD); h.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; h.border = { top: ince, left: ince, right: ince, bottom: ince }; });
+      wu.getRow(2).height = 24;
+      usR.forEach((r, i) => { const row = wu.getRow(3 + i); row.height = 16.5;
+        const d = r.usTarih ? (() => { const [y, m, g] = r.usTarih.split('-').map(Number); return new Date(Date.UTC(y, m - 1, g)); })() : null;
+        [typeof r.no === 'number' ? r.no : (/^\d+$/.test(String(r.no)) ? Number(r.no) : String(r.no)), r.yer, r.kap, r.cins, usYazi(r), d, r.usNot || null].forEach((x, j) => { const h = row.getCell(j + 1); h.value = x === '' ? null : x;
+          h.font = { name: 'Arial', size: 9 }; h.alignment = { horizontal: j === 1 || j === 6 ? 'left' : 'center', vertical: 'middle' }; if (j === 5) h.numFmt = 'dd.mm.yyyy';
+          h.border = { top: kil, left: kil, right: kil, bottom: kil }; }); });
     }
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
