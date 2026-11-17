@@ -13469,7 +13469,7 @@ function kontrolSatirToggle(id, btn) {
 function kontrolKartHtml(it) {
   const dl = it.daysLeft;
   const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
-  const periodStr = `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
+  const periodStr = it.takip === 'olay' ? 'Olay bazlı' : it.takip === 'tekil' ? 'Tek sefer' : `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
   const sonuc = kontrolSonucBilgi(it.result || 'bekliyor');
   const firma = (it.firm || '').trim();
   const takipsiz = !!it.takip;
@@ -13484,7 +13484,7 @@ function kontrolKartHtml(it) {
     else { dgB = dl; dgS = 'gün kaldı'; }
   }
   const fmt = d => d.toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
-  const nextStr = tarihli ? fmt(it.nextDate) : (takipsiz ? (it.takip === 'olay' ? 'Her teslimde' : 'Takip gerekmez') : '—');
+  const nextStr = tarihli ? fmt(it.nextDate) : (takipsiz ? (it.takip === 'olay' ? (it.grup === 'tmgd' ? 'Olay oldukça' : 'Her teslimde') : 'Takip gerekmez') : '—');
   const lastStr = (tarihli || (takipsiz && it.lastDate)) ? fmt(new Date(it.lastDate+'T00:00:00')) : 'Tarih girilmedi';
   if (takipsiz) { dgB = '—'; dgS = 'takipsiz'; }
   const acik = kontrolSatirAcik.has(it.id);
@@ -13721,7 +13721,98 @@ function kontrolSubmit() {
   kontrolCloseAdd();
   kontrolRender();
 }
-function kontrolEdit(id) { kontrolOpenAdd(id); }
+
+/* ===== TMGD evrak düzenleme: evraka özel form ===== */
+const KT_TIP = {
+  sureli:    { tar: 'Düzenleme tarihi', bit: true },
+  periyodik: { tar: 'Son yapılma tarihi', bit: false },
+  beyan:     { tar: 'Düzenleme tarihi', bit: false },
+  olay:      { tar: 'Olay tarihi', bit: false, per: false },
+  tekil:     { tar: 'Düzenleme tarihi', bit: false, per: false }
+};
+const KT_OZEL = {
+  'tmgd-adr-egitim': { tar: 'Eğitim tarihi', kurum: 'Eğitim kuruluşu', no: 'Katılım / sertifika no' },
+  'tmgd-src5': { tar: 'Belge tarihi', kurum: 'Veren kurum', no: 'Belge no' },
+  'tmgd-arac': { tar: 'Muayene tarihi', kurum: 'Muayene kuruluşu', no: 'Belge no' },
+  'tmgd-tank': { tar: 'Muayene tarihi', kurum: 'Muayene kuruluşu', no: 'Rapor no' },
+  'tmgd-ibc': { tar: 'Muayene tarihi', kurum: 'Muayene kuruluşu', no: 'Rapor no' },
+  'tmgd-kaza': { tar: 'Olay tarihi', kurum: 'Raporu hazırlayan', no: 'Rapor no' },
+  'tmgd-aylik': { tar: 'Rapor tarihi', kurum: 'Danışman / firma', no: 'Rapor no' },
+  'tmgd-yillik': { tar: 'Rapor tarihi', kurum: 'Danışman / firma', no: 'Rapor no' },
+  'tmgd-sigorta': { tar: 'Poliçe başlangıcı', kurum: 'Sigorta şirketi', no: 'Poliçe no' },
+  'tmgd-sozlesme': { tar: 'Sözleşme tarihi', kurum: 'TMGD firması', no: 'Sözleşme no' },
+  'tmgd-tmfb': { tar: 'Düzenleme tarihi', kurum: 'Veren kurum', no: 'Belge no' },
+  'tmgd-sertifika': { tar: 'Düzenleme tarihi', kurum: 'Veren kurum', no: 'Sertifika no' }
+};
+const KT_SONUC = {
+  sureli: ['Geçerli', 'Takip gerekli', 'Süresi doldu'], periyodik: ['Uygun', 'Takip gerekli', 'Uygunsuz'],
+  beyan: ['Tamamlandı', 'Takip gerekli', 'Eksik'], olay: ['Tamamlandı', 'Takip gerekli', 'Açık'], tekil: ['Tamamlandı', 'Takip gerekli', 'Eksik']
+};
+let KT = null;
+function ktKat(it) { return (it.environmentKey && BM_KAT_TMGD.find(x => x.id === it.environmentKey)) || null; }
+function ktTip(it) { const k = ktKat(it); return k ? k.tip : (it.takip || 'periyodik'); }
+function ktYoklaOku() {
+  const g = id => document.getElementById(id); if (!KT || !g('kt-tar')) return;
+  KT.lastDate = g('kt-tar').value; KT.bitis = g('kt-bit') ? g('kt-bit').value : KT.bitis;
+  if (g('kt-pv')) KT.pv = g('kt-pv').value; KT.firm = g('kt-firm').value; KT.no = g('kt-no').value; KT.note = g('kt-note').value;
+}
+function ktEditAc(id) {
+  const it = kontrolItems.find(x => x.id === id); if (!it) return;
+  KT = { id, fab: kontrolItFab(it), lastDate: it.lastDate || '', bitis: it.bitis || '', pv: String(it.periodVal || '1'), pu: it.periodUnit || 'year',
+    firm: it.firm || '', no: it.belgeNo || '', note: it.note || '', sonuc: it.result || 'bekliyor', dd: '' };
+  let bg = document.getElementById('kt-modal'); if (!bg) { bg = document.createElement('div'); bg.id = 'kt-modal'; bg.onclick = e => { if (e.target === bg) ktKapat(); }; document.body.appendChild(bg); }
+  bg.style.display = 'flex'; document.body.style.overflow = 'hidden'; ktCiz();
+}
+function ktKapat() { const bg = document.getElementById('kt-modal'); if (bg) bg.style.display = 'none'; document.body.style.overflow = ''; KT = null; }
+function ktDd(tur) { ktYoklaOku(); KT.dd = KT.dd === tur ? '' : tur; ktCiz(); }
+function ktSec(tur, v) { ktYoklaOku(); KT[tur] = v; KT.dd = ''; ktCiz(); }
+function ktCiz() {
+  const bg = document.getElementById('kt-modal'); if (!bg || !KT) return;
+  const it = kontrolItems.find(x => x.id === KT.id); if (!it) { ktKapat(); return; }
+  const k = ktKat(it), tip = ktTip(it), T = KT_TIP[tip] || KT_TIP.periyodik, O = KT_OZEL[it.environmentKey] || {};
+  const per = T.per !== false, altT = bmAltTur(it), idJs = String(it.id).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const sn = KT_SONUC[tip] || KT_SONUC.periyodik, sv = ['uygun', 'sartli', 'uygun-degil'];
+  const snAd = v => v === 'bekliyor' ? 'Bekliyor' : sn[sv.indexOf(v)] || 'Bekliyor';
+  const perYazi = tip === 'olay' ? 'Olay bazlı' : tip === 'tekil' ? 'Tek sefer' : (k ? k.periyot : '');
+  const menu = (tur, list, cur) => KT.dd === tur ? `<div class="kt-mn">${list.map(([v, ad]) => `<button type="button" class="${v === cur ? 'on' : ''}" onclick="ktSec('${tur}','${String(v).replace(/'/g, "\\'")}')">${esc(ad)}</button>`).join('')}</div>` : '';
+  const dd = (tur, ad, list, cur) => `<div class="kt-fd" style="margin:0"><button type="button" class="kt-fb" onclick="ktDd('${tur}')"><span>${esc(ad)}</span><i>▾</i></button>${menu(tur, list, cur)}</div>`;
+  const fabList = (kontrolFabs || []).map(f => [f, f]);
+  const sonuclar = [['bekliyor', 'Bekliyor']].concat(sv.map((v, i) => [v, sn[i]]));
+  let nx = '';
+  if (tip === 'olay') nx = `<div class="kt-nx t"><span>Takip</span><b>Olay oldukça yeni kayıt</b></div>`;
+  else if (tip === 'tekil') nx = `<div class="kt-nx t"><span>Takip</span><b>Tek sefer, tekrar süresi yok</b></div>`;
+  else { const dt = T.bit && KT.bitis ? new Date(KT.bitis + 'T00:00:00') : (KT.lastDate ? kontrolNextDate(KT.lastDate, T.bit ? it.periodVal : KT.pv, T.bit ? it.periodUnit : KT.pu) : null);
+    nx = `<div class="kt-nx"><span>${T.bit ? 'Geçerlilik bitişi' : 'Sonraki kontrol'}</span><b>${dt && !isNaN(dt) ? dt.toLocaleDateString('tr-TR') : 'tarih girince hesaplanır'}</b></div>`; }
+  const perAlan = per ? (T.bit
+    ? `<div><label class="kx-lb">Geçerlilik bitişi</label><input type="date" id="kt-bit" class="kx-in" value="${esc(KT.bitis)}" onchange="ktYoklaOku();ktCiz()"></div>`
+    : `<div><label class="kx-lb">Periyot</label><div style="display:grid;grid-template-columns:.8fr 1.2fr;gap:6px"><input type="number" id="kt-pv" class="kx-in" min="1" max="99" value="${esc(KT.pv)}" style="text-align:center;padding:0 4px" onchange="ktYoklaOku();ktCiz()">${dd('pu', KT.pu === 'year' ? 'Yıl' : 'Ay', [['year', 'Yıl'], ['month', 'Ay']], KT.pu)}</div></div>`)
+    : `<div><label class="kx-lb">Periyot</label><div class="kx-in" style="display:flex;align-items:center;color:var(--text2)">Yok · ${perYazi}</div></div>`;
+  bg.innerHTML = `<div class="kx-card"><div class="kx-hd"><div><h3>TMGD Evrakını Düzenle</h3><small>TMGD Süreçleri${k ? ' · ' + esc(k.kisa) : ''}</small></div><button type="button" class="kx-x" onclick="ktKapat()" title="Kapat">×</button></div>
+  <div class="kx-bd">
+   <div><label class="kx-lb">Evrak</label><div class="kt-ev"><b>${esc(it.name)}</b><span class="kt-tg2">${esc(perYazi)}</span></div></div>
+   <div><label class="kx-lb">Fabrika</label>${dd('fab', KT.fab || 'Seç', fabList, KT.fab)}</div>
+   <div class="kt-g2"><div><label class="kx-lb">${esc(O.tar || T.tar)} *</label><input type="date" id="kt-tar" class="kx-in" value="${esc(KT.lastDate)}" onchange="ktYoklaOku();ktCiz()"></div>${perAlan}</div>
+   ${nx}
+   <div class="kt-g2"><div><label class="kx-lb">${esc(O.kurum || 'Kurum / firma')}</label><input id="kt-firm" class="kx-in" value="${esc(KT.firm)}" placeholder="—"></div><div><label class="kx-lb">${esc(O.no || 'Belge no')}</label><input id="kt-no" class="kx-in" value="${esc(KT.no)}" placeholder="—"></div></div>
+   <div><label class="kx-lb">Sonuç</label>${dd('sonuc', snAd(KT.sonuc), sonuclar, KT.sonuc)}</div>
+   ${altT ? `<div class="kt-alt"><span>${esc(altT.ad)} bazlı takip${(it.altlar || []).length ? ' · ' + it.altlar.length + ' kayıt' : ''}</span><button type="button" onclick="ktAlt('${idJs}')">＋ ${esc(altT.ad)} ekle</button></div>` : ''}
+   <div><label class="kx-lb">Not</label><input id="kt-note" class="kx-in" value="${esc(KT.note)}" placeholder="İsteğe bağlı"></div>
+  </div><div class="kx-ft"><button type="button" class="kx-btn" onclick="ktKapat()">Vazgeç</button><span class="cnt"></span><button type="button" class="kx-btn pri" onclick="ktKaydet()">Kaydet</button></div></div>`;
+}
+function ktAlt(idJs) { ktYoklaOku(); bmAltEkle(idJs); }
+function ktKaydet() {
+  ktYoklaOku(); const it = kontrolItems.find(x => x.id === KT.id); if (!it) { ktKapat(); return; }
+  if (!KT.lastDate) { toast('Tarih zorunlu'); return; }
+  if (!KT.fab) { toast('Fabrika seç'); return; }
+  const tip = ktTip(it), T = KT_TIP[tip] || KT_TIP.periyodik;
+  if (it.lastDate !== KT.lastDate && !T.bit) it.bitis = '';
+  it.lastDate = KT.lastDate; it.fab = KT.fab; it.fabs = [KT.fab];
+  if (T.per !== false) { if (T.bit) it.bitis = KT.bitis || ''; else { it.periodVal = KT.pv || '1'; it.periodUnit = KT.pu; } }
+  it.firm = KT.firm.trim(); it.belgeNo = KT.no.trim(); it.note = KT.note.trim(); it.result = KT.sonuc;
+  kontrolGrupSadeceAc('tmgd'); kontrolSave(); ktKapat(); kontrolRender();
+}
+
+function kontrolEdit(id) { const it = kontrolItems.find(x => x.id === id); if (it && kontrolGrupId(it) === 'tmgd') ktEditAc(id); else kontrolOpenAdd(id); }
 function kontrolDel(id) {
   isgOnay({ baslik:'Kayıt silinsin mi?', mesaj:'Kayıt silinecek. Geri alınamaz.', evet:'Sil' }, () => {
     const bmIt = kontrolItems.find(x=>x.id===id);
@@ -24482,8 +24573,8 @@ function kazaRaporRender(draft,inc){
 .kx-btn.out{border-color:var(--kx-acc);color:var(--acc-tx)}
 .kx-btn.del{color:var(--kx-red)}
 /* ortada yüzen kartlar (Ekle / Ekipman / Toplu) */
-html #denetim-modal-bg,html #kontrol-modal-bg,html #kontrol-ekipman-bg,html #kontrol-toplu-bg,html #kontrol-cevre-bg{align-items:center !important;justify-content:center;padding:16px;background:rgba(10,22,34,.6);overflow:hidden}
-html #denetim-modal-bg > .kx-card,html #kontrol-modal-bg > .kx-card,html #kontrol-ekipman-modal,html #kontrol-toplu-modal,html #kontrol-cevre-modal{width:100% !important;max-width:440px !important;height:auto !important;max-height:calc(100dvh - 32px) !important;border-radius:18px !important;box-shadow:0 18px 48px rgba(0,0,0,.4);background:var(--surface) !important;padding:0 !important;gap:0 !important;display:flex;flex-direction:column;overflow:hidden !important}
+html #denetim-modal-bg,html #kontrol-modal-bg,html #kt-modal,html #kontrol-ekipman-bg,html #kontrol-toplu-bg,html #kontrol-cevre-bg{align-items:center !important;justify-content:center;padding:16px;background:rgba(10,22,34,.6);overflow:hidden}
+html #denetim-modal-bg > .kx-card,html #kontrol-modal-bg > .kx-card,html #kt-modal > .kx-card,html #kontrol-ekipman-modal,html #kontrol-toplu-modal,html #kontrol-cevre-modal{width:100% !important;max-width:440px !important;height:auto !important;max-height:calc(100dvh - 32px) !important;border-radius:18px !important;box-shadow:0 18px 48px rgba(0,0,0,.4);background:var(--surface) !important;padding:0 !important;gap:0 !important;display:flex;flex-direction:column;overflow:hidden !important}
 .kx-hd,html .kem-head,html .ktp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px !important;background:linear-gradient(135deg,var(--hd1),var(--hd1)) !important;color:#fff !important;flex:none;border:0 !important}
 .kx-hd h3,.kem-head h3,.ktp-head h3{font-size:16px !important;margin:0;color:#fff !important}
 .kx-hd small,.kem-head > div > div,.ktp-head-sub{font-size:11.5px !important;opacity:.78;color:#fff !important;margin:2px 0 0 !important;line-height:1.35}
@@ -27279,16 +27370,28 @@ function bmKayda(b, k, doc) {
 }
 
 /* ===== Kontrol satırı: belgeler, alt kayıtlar, sürükle-bırak ===== */
+const BM_TMGD_ALT = {
+  'tmgd-adr-egitim': { ad: 'Kişi', no: 'Sicil / T.C. son 4 hane', ph: 'Ad soyad', ornek: 'Örn. Ali Yılmaz. Her kişinin eğitim tarihi ayrı izlenir.' },
+  'tmgd-src5': { ad: 'Sürücü', no: 'Belge no', ph: 'Ad soyad', ornek: 'Örn. Ali Yılmaz. Her sürücünün SRC5 geçerliliği ayrı izlenir.' },
+  'tmgd-arac': { ad: 'Araç', no: 'Şasi / ruhsat no', ph: 'Plaka', ornek: 'Örn. 01 ABC 123. Her aracın ADR belgesi ayrı izlenir.' },
+  'tmgd-tank': { ad: 'Tank', no: 'Seri no', ph: 'Tank no / plaka', ornek: 'Örn. Tank no 55. Her tankın muayenesi ayrı izlenir.' },
+  'tmgd-ibc': { ad: 'IBC', no: 'Seri no', ph: 'IBC no', ornek: 'Örn. IBC-0412. Her IBC’nin muayenesi ayrı izlenir.' },
+  'tmgd-ambalaj': { ad: 'Ambalaj tipi', no: 'UN onay no', ph: 'Ambalaj tipi', ornek: 'Örn. 1A1 çelik varil. Her ambalaj tipinin onayı ayrı izlenir.' }
+};
+function bmAltTur(it) {
+  if (it && kontrolGrupId(it) === 'tmgd') return BM_TMGD_ALT[it.environmentKey] || null;
+  return { ad: 'Alt kayıt', no: 'Seri / numara (isteğe bağlı)', ph: 'Alt kayıt adı', ornek: 'Örn. Hava Tankı, seri no HT-0412. Her alt kaydın belgeleri ve tarihi ayrı izlenir.' };
+}
 function bmSatirBelgeHtml(it, idJs) {
-  const L = it.belgeler || [], A = it.altlar || [];
+  const L = it.belgeler || [], A = it.altlar || [], altT = bmAltTur(it);
   const aq = typeof kontrolAraQ === 'function' ? kontrolAraQ() : '';
   const th = (x, aid) => `<button type="button" class="bm-t${BMS.has(x.id) ? ' sel' : ''}${aq && kontrolAraDoc(x, aq) ? ' hit' : ''}" data-bd="${esc(x.id)}" onclick="bmTikla('${idJs}','${x.id}')" title="${esc(x.ad)} · PC'de klasöre sürükleyip indirebilirsin">${x.th ? `<img src="${x.th}" alt="" draggable="false">` : '<span class="nb">PDF</span>'}<span>${x.tarih ? esc(bmFmt(x.tarih).slice(0, 6) + bmFmt(x.tarih).slice(8)) : 'PDF'}</span></button>`;
   const eslesen = aq ? bmTumBelgeler(it).filter(x => x.kaynak && kontrolAraDoc(x, aq)).map(x => x.kaynak).filter((v, i, a) => a.indexOf(v) === i).slice(0, 2) : [];
   return `<div class="bm-dc">
     ${eslesen.length ? `<div class="bm-src">📄 ${eslesen.map(esc).join(' · ')}</div>` : ''}
     ${L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : ''}
-    ${A.map(a => `<div class="bm-alt"><div class="kv"><span>▸ ${esc(a.ad)}${a.no ? ' · ' + esc(a.no) : ''}</span><b>${a.lastDate ? esc(bmFmt(a.lastDate)) : '—'}</b></div>${(a.belgeler || []).length ? `<div class="bm-th">${a.belgeler.map(x => th(x)).join('')}</div>` : ''}<div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}','${bmJ(a.id)}')">＋ Belge</button><button type="button" class="bm-ch" onclick="bmAltSil('${idJs}','${bmJ(a.id)}')">Alt kaydı sil</button></div></div>`).join('')}
-    <div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}')">📄 Belge ekle</button><button type="button" class="bm-ch" onclick="bmAltEkle('${idJs}')">＋ Alt kayıt</button></div>
+    ${A.map(a => `<div class="bm-alt"><div class="kv"><span>▸ ${esc(a.ad)}${a.no ? ' · ' + esc(a.no) : ''}</span><b>${a.lastDate ? esc(bmFmt(a.lastDate)) : '—'}</b></div>${(a.belgeler || []).length ? `<div class="bm-th">${a.belgeler.map(x => th(x)).join('')}</div>` : ''}<div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}','${bmJ(a.id)}')">＋ Belge</button><button type="button" class="bm-ch" onclick="bmAltSil('${idJs}','${bmJ(a.id)}')">${esc(altT ? altT.ad : 'Alt kayıt')} sil</button></div></div>`).join('')}
+    <div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}')">📄 Belge ekle</button>${altT ? `<button type="button" class="bm-ch" onclick="bmAltEkle('${idJs}')">＋ ${esc(altT.ad)}</button>` : ''}</div>
     ${!L.length && !A.length ? '<div class="nt" style="font-size:11.5px;color:var(--text2);font-style:italic">PDF ekleyince küçük resmi burada görünür.</div>' : ''}</div>`;
 }
 function bmSatirDosya(id, altId) { bmHtml(); BM.pg = null; BM.ph = id; BM.pa = altId || null; const it = kontrolItems.find(x => String(x.id) === String(id)); BM.pg = it ? kontrolGrupId(it) : 'cevre'; bmEl('bm-fi').click(); }
@@ -27297,7 +27400,8 @@ function bmGrupYukle(g) { bmHtml(); BM.pg = g; BM.ph = null; BM.pa = null; bmAc(
 function bmAltEkle(id) {
   const eski = bmEl('bm-mini'); if (eski) eski.remove();
   const bg = document.createElement('div'); bg.id = 'bm-mini'; bg.className = 'isg-onay-bg';
-  bg.innerHTML = `<div class="isg-onay-card" role="dialog" aria-modal="true"><div class="isg-onay-b">Alt kayıt ekle</div><div class="isg-onay-m">Örn. Hava Tankı, seri no HT-0412. Her alt kaydın belgeleri ve tarihi ayrı izlenir.</div><div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px"><input class="kx-in" id="bm-ad" placeholder="Alt kayıt adı"><input class="kx-in" id="bm-no" placeholder="Seri / numara (isteğe bağlı)"></div><div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">Vazgeç</button><button class="isg-onay-btn ok" data-k="evet">Ekle</button></div></div>`;
+  const T = bmAltTur(kontrolItems.find(x => String(x.id) === String(id))) || bmAltTur(null);
+  bg.innerHTML = `<div class="isg-onay-card" role="dialog" aria-modal="true"><div class="isg-onay-b">${esc(T.ad)} ekle</div><div class="isg-onay-m">${esc(T.ornek)}</div><div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px"><input class="kx-in" id="bm-ad" placeholder="${esc(T.ph)}"><input class="kx-in" id="bm-no" placeholder="${esc(T.no)} (isteğe bağlı)"></div><div class="isg-onay-a"><button class="isg-onay-btn" data-k="iptal">Vazgeç</button><button class="isg-onay-btn ok" data-k="evet">Ekle</button></div></div>`;
   bg.addEventListener('click', e => {
     if (e.target === bg) { bg.remove(); return; }
     const k = e.target.closest('[data-k]'); if (!k) return;
@@ -27315,9 +27419,9 @@ function bmAltEkle(id) {
 function bmAltSil(id, altId) {
   const it = kontrolItems.find(x => String(x.id) === String(id)), a = it && (it.altlar || []).find(x => x.id === altId); if (!a) return;
   const n = (a.belgeler || []).length;
-  isgOnay({ baslik: 'Alt kayıt silinsin mi?', mesaj: `"${a.ad}" alt kaydı${n ? ` ve içindeki ${n} belge` : ''} silinecek. Geri alınamaz.`, evet: 'Sil' }, async () => {
+  isgOnay({ baslik: `${(bmAltTur(it) || { ad: 'Alt kayıt' }).ad} silinsin mi?`, mesaj: `"${a.ad}" kaydı${n ? ` ve içindeki ${n} belge` : ''} silinecek. Geri alınamaz.`, evet: 'Sil' }, async () => {
     for (const x of (a.belgeler || [])) await bmBlobSil(x.id);
-    it.altlar = it.altlar.filter(x => x.id !== altId); kontrolSave(); kontrolRender(); toast('Alt kayıt silindi');
+    it.altlar = it.altlar.filter(x => x.id !== altId); kontrolSave(); kontrolRender(); toast('Silindi');
   });
 }
 // Satır silinirken PDF'lerini de buluttan kaldır
@@ -28851,6 +28955,17 @@ async function a3_xlBuild(opt){
 .kt-off{font-size:12px;color:var(--text2);background:var(--surface2);border-radius:10px;padding:9px 11px;line-height:1.45;margin-bottom:8px}
 .kt-off b{color:var(--text)}
 .kt-add{width:100%;border:1px dashed var(--border2);background:none;color:var(--acc-tx);border-radius:10px;padding:10px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;margin-top:6px}
+#kt-modal{display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(10,18,32,.55);padding:12px}
+.kt-modal-fix{}
+#kt-modal .kt-fb{height:44px;border-radius:12px;background:var(--surface2);padding-top:0!important;padding-bottom:0!important}
+.kt-g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kt-ev{background:var(--surface2);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kt-ev b{font-size:14px;min-width:0}
+.kt-tg2{font-size:11.5px;font-weight:700;color:var(--acc-tx);background:color-mix(in srgb,var(--acc) 14%,var(--surface));border-radius:99px;padding:3px 9px;white-space:nowrap;flex:none}
+.kt-nx{border-radius:12px;padding:10px 12px;background:color-mix(in srgb,var(--good) 12%,var(--surface));font-size:13px;display:flex;justify-content:space-between;gap:8px}
+.kt-nx.t{background:var(--surface2);color:var(--text2)}
+.kt-alt{border:1px dashed var(--border2);border-radius:12px;padding:8px 12px;font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kt-alt button{border:0;background:none;color:var(--acc-tx);font:inherit;font-weight:700;cursor:pointer}
 .kt-ad2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kt-ad2 .kt-add{margin-top:6px}
 #ysc-ov{position:fixed;inset:0;z-index:58;background:var(--bg);display:flex;flex-direction:column;color:var(--text)}
 #ysc-ov[hidden],#ysc-sh[hidden],.ysc-selbar[hidden]{display:none!important}
