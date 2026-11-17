@@ -29047,7 +29047,7 @@ table.ysc-l .c{text-align:center}
         ${S.adetAcik ? `<div class="ysc-acc-b"><div class="ysc-adet">${ad.map(x => `<div><span>${esc(x.k)}</span><b>${x.n}</b></div>`).join('')}</div>
         <div><div class="ysc-lb">Rapora dahil edilsin mi?</div><div class="ysc-seg" style="max-width:320px"><button data-l="1" class="${f.liste ? 'on' : ''}">Evet</button><button data-l="0" class="${!f.liste ? 'on' : ''}">Hayır</button></div>
         <div class="ysc-hint" style="margin-top:6px">Evet: Excel'de ikinci sayfa “Liste” olarak, PDF'te listenin sonunda yer alır.</div></div></div>` : ''}</div>` : ''}
-      <div class="ysc-selbar" id="ysc-selbar" ${S.sel.size ? '' : 'hidden'}><button class="ysc-selx" id="ysc-st" aria-label="Seçimi iptal et" title="Seçimi iptal et">×</button><b class="ys-t">${S.sel.size} cihaz seçili</b><button class="ysc-btn s" id="ysc-sk">✓ Kontrol edildi</button><button class="ysc-btn s p" id="ysc-sd">Dolum / firma</button><button class="ysc-btn s d" id="ysc-sil">🗑 Sil</button></div>
+      <div class="ysc-selbar" id="ysc-selbar" ${S.sel.size ? '' : 'hidden'}><button class="ysc-selx" id="ysc-st" aria-label="Seçimi iptal et" title="Seçimi iptal et">×</button><b class="ys-t">${S.sel.size} cihaz seçili</b><button class="ysc-btn s" id="ysc-sk">✓ Kontrol edildi</button><button class="ysc-btn s p" id="ysc-sd">✎ Güncelle</button><button class="ysc-btn s d" id="ysc-sil">🗑 Sil</button></div>
     </div>`;
     S.son.clear();
     const $ = id => document.getElementById(id);
