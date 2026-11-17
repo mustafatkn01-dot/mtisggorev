@@ -28790,11 +28790,14 @@ table.ysc-l .c{text-align:center}
 .ysc-card .t::-webkit-scrollbar,.ysc-card .m::-webkit-scrollbar{display:none}
 .ysc-card.sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface))}
 .ysc-empty{text-align:center;padding:26px 12px;color:var(--text2)}
-.ysc-selbar{position:sticky;bottom:10px;z-index:3;display:flex;gap:8px;align-items:center;background:var(--hd1);color:#fff;border-radius:12px;padding:9px 12px 9px 16px;box-shadow:0 10px 30px rgba(0,0,0,.25);flex-wrap:wrap}
+.ysc-selbar{position:sticky;bottom:10px;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) repeat(3,minmax(0,150px));gap:8px;align-items:center;background:var(--hd1);color:#fff;border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.25);margin-top:6px}
+.ysc-selbar .ys-t{padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ysc-selbar .ysc-btn{justify-content:center;height:34px}
+@media (max-width:760px){.ysc-selbar{grid-template-columns:repeat(3,minmax(0,1fr))}.ysc-selbar .ys-t{grid-column:1/-1;text-align:center;padding:0}}
 .ysc-selbar .ysc-btn{background:rgba(255,255,255,.14);color:#fff;border-color:transparent}
 .ysc-selbar .ysc-btn.p{background:var(--acc);color:var(--acc-fg)}
 .ysc-selbar .ysc-btn.d{background:var(--bad);color:#fff}
-.ysc-selx{position:absolute;top:-12px;left:-9px;width:38px;height:24px;border-radius:12px;border:2px solid var(--bg);background:var(--bad);color:#fff;font-size:17px;font-weight:700;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);padding:0}
+.ysc-selx{position:absolute;top:-15px;left:-12px;width:30px;height:20px;border-radius:10px;border:2px solid var(--bg);background:var(--bad);color:#fff;font-size:14px;font-weight:700;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);padding:0}
 .ysc-selx:active{transform:scale(.94)}
 .ysc-l tr[data-id],.ysc-card{touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .ysc-acc{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
@@ -29044,7 +29047,7 @@ table.ysc-l .c{text-align:center}
         ${S.adetAcik ? `<div class="ysc-acc-b"><div class="ysc-adet">${ad.map(x => `<div><span>${esc(x.k)}</span><b>${x.n}</b></div>`).join('')}</div>
         <div><div class="ysc-lb">Rapora dahil edilsin mi?</div><div class="ysc-seg" style="max-width:320px"><button data-l="1" class="${f.liste ? 'on' : ''}">Evet</button><button data-l="0" class="${!f.liste ? 'on' : ''}">Hayır</button></div>
         <div class="ysc-hint" style="margin-top:6px">Evet: Excel'de ikinci sayfa “Liste” olarak, PDF'te listenin sonunda yer alır.</div></div></div>` : ''}</div>` : ''}
-      <div class="ysc-selbar" id="ysc-selbar" ${S.sel.size ? '' : 'hidden'}><button class="ysc-selx" id="ysc-st" aria-label="Seçimi iptal et" title="Seçimi iptal et">×</button><b>${S.sel.size} cihaz seçili</b><span style="flex:1"></span><button class="ysc-btn s" id="ysc-sk">Kontrol edildi</button><button class="ysc-btn s p" id="ysc-sd">Dolum / firma güncelle</button><button class="ysc-btn s d" id="ysc-sil">🗑 Sil</button></div>
+      <div class="ysc-selbar" id="ysc-selbar" ${S.sel.size ? '' : 'hidden'}><button class="ysc-selx" id="ysc-st" aria-label="Seçimi iptal et" title="Seçimi iptal et">×</button><b class="ys-t">${S.sel.size} cihaz seçili</b><button class="ysc-btn s" id="ysc-sk">✓ Kontrol edildi</button><button class="ysc-btn s p" id="ysc-sd">Dolum / firma</button><button class="ysc-btn s d" id="ysc-sil">🗑 Sil</button></div>
     </div>`;
     S.son.clear();
     const $ = id => document.getElementById(id);
