@@ -6729,7 +6729,7 @@ body.a3-open{overflow:hidden}
   <div class="module-hero module-hero-compact">
     <div class="module-hero-title">
       <span class="module-hero-icon">🔬</span>
-      <div><b>Periyodik Kontroller</b><small>Su analizi · makine/ekipman · çevre süreçleri</small></div>
+      <div><b>Periyodik Kontroller</b><small>Su analizi · makine/ekipman · çevre süreçleri · TMGD</small></div>
     </div>
     <div class="module-hero-actions">
       <button onclick="kontrolOpenAdd()" class="ui-btn ui-btn-light">+ Ekle</button>
@@ -6766,6 +6766,7 @@ body.a3-open{overflow:hidden}
           <option value="su">Su Analiz Kontrolleri</option>
           <option value="makine">Makine Ekipman Kontrolleri</option>
           <option value="cevre">Çevre Süreçleri</option>
+          <option value="tmgd">TMGD Süreçleri</option>
         </select>
       </div>
       <div>
@@ -12190,6 +12191,10 @@ const KONTROL_GRUPLAR = {
   cevre: {
     ad:'Çevre Süreçleri', ikon:'🌿',
     aciklama:'Çevre ölçüm, analiz, izin ve periyodik takip süreçleri'
+  },
+  tmgd: {
+    ad:'TMGD Süreçleri', ikon:'⚠️',
+    aciklama:'Tehlikeli madde güvenlik danışmanlığı belge ve rapor takibi'
   }
 };
 
@@ -13031,32 +13036,121 @@ const KONTROL_CEVRE_KATALOG = [
 ];
 
 let kontrolCevreYeniSecim = new Set();
+// ── TMGD: katalog [anahtar, ad, periyot, açıklama]  periyot: '5y' '1y' '2y' '3y' '30m' '1m' | 'tekil' | 'olay'
+const KONTROL_TMGD_KATALOG = [
+  {id:'tmgd-belge', ad:'Görevlendirme ve Belgeler', ikon:'📑', items:[
+    ['tmgd-tmfb','Tehlikeli Madde Faaliyet Belgesi (TMFB)','5y','5 yıl geçerli; yenileme bitimden 90 gün önce'],
+    ['tmgd-tespit','Faaliyet tespit raporu (TMFB eki)','5y','TMFB başvurusu / yenilemesiyle'],
+    ['tmgd-sozlesme','TMGD hizmet sözleşmesi','1y','Her TMFB için yazılı sözleşme'],
+    ['tmgd-atama','TMGD istihdam ve TMFB atama bildirimi (e-Devlet)','tekil','TMFB alındıktan sonra 30 gün içinde'],
+    ['tmgd-sertifika','TMGD sertifikası (danışman)','5y','Danışmanın sertifika geçerliliği'],
+    ['tmgd-sigorta','Tehlikeli Maddeler Zorunlu Mali Sorumluluk Sigortası','1y','Yıllık poliçe']]},
+  {id:'tmgd-rapor', ad:'Raporlar', ikon:'📊', items:[
+    ['tmgd-yillik','TMGD yıllık faaliyet raporu','1y','Her yıl hazırlanır'],
+    ['tmgd-aylik','TMGD aylık hizmet ve tespit raporu (e-Devlet)','1m','Her TMFB için aylık en az 18 saat hizmet'],
+    ['tmgd-kaza','Tehlikeli madde kaza / olay raporu','olay','Olay olduğunda hazırlanır']]},
+  {id:'tmgd-egitim', ad:'Eğitim ve Personel', ikon:'🎓', items:[
+    ['tmgd-adr-egitim','Tehlikeli madde çalışan eğitimi (ADR 1.3)','2y','Göreve başlamadan önce ve 2 yılda bir'],
+    ['tmgd-src5','Sürücü SRC5 belgesi','5y','Sürücü belgelerinin geçerliliği']]},
+  {id:'tmgd-tasima', ad:'Taşıma, Ambalaj ve Güvenlik', ikon:'🚚', items:[
+    ['tmgd-arac','Taşıt uygunluk (ADR) belgesi','1y','En fazla 1 yıl geçerli'],
+    ['tmgd-tank','Tank periyodik / ara muayenesi','3y','Tank plakasındaki tarihe göre'],
+    ['tmgd-ibc','IBC periyodik muayenesi','30m','2,5 yılda bir'],
+    ['tmgd-ambalaj','Ambalaj tip onay belgeleri','tekil','UN onaylı ambalaj kullanımı'],
+    ['tmgd-guvenlik','Güvenlik planı (ADR 1.10)','1y','Yüksek riskli maddeler için; yıllık gözden geçirme'],
+    ['tmgd-talimat','Yazılı talimatlar (ADR 5.4.3)','tekil','Araçta bulunan acil durum talimatı'],
+    ['tmgd-evrak','Taşıma evrakı ve U-ETDS bildirim kontrolü','1m','Sevk evrakı, etiket ve bildirimler'],
+    ['tmgd-sds','Tehlikeli madde envanteri ve SDS','1y','Güvenlik bilgi formları güncelliği']]}
+];
+const TMGD_GEREKCE = ['Tehlikeli madde göndermiyor, taşımıyor, doldurmuyor','Muafiyet sınırı altında (ADR 1.1.3.6)','Yalnızca son kullanıcı (alıcı)','Diğer'];
+const LS_TMGD_KAPSAM = 'yeni_isg_tmgd_kapsam_v1';
+let kontrolTmgdKapsam = {};
+try { kontrolTmgdKapsam = JSON.parse(localStorage.getItem(LS_TMGD_KAPSAM) || '{}') || {}; } catch (e) { kontrolTmgdKapsam = {}; }
+const kontrolTmgdUi = { onay: false, dd: false };
+function kontrolTmgdDisi(fab) { const k = fab && kontrolTmgdKapsam[fab]; return !!(k && k.disi); }
+function kontrolItFab(it) { return (Array.isArray(it.fabs) ? it.fabs : [it.fab]).filter(Boolean)[0] || ''; }
+function kontrolTmgdPasif(it) { return kontrolGrupId(it) === 'tmgd' && kontrolTmgdDisi(kontrolItFab(it)); }
+function kontrolTmgdKaydet() { try { localStorage.setItem(LS_TMGD_KAPSAM, JSON.stringify(kontrolTmgdKapsam)); } catch (e) {} if (window._fbSaveKontrol) window._fbSaveKontrol(); }
+window.kontrolTmgdUygula = d => { kontrolTmgdKapsam = d && typeof d === 'object' ? d : {}; try { localStorage.setItem(LS_TMGD_KAPSAM, JSON.stringify(kontrolTmgdKapsam)); } catch (e) {} };
+function kontrolTmgdKapsamTik() {
+  const fab = kontrolFabFilter; if (!fab) return;
+  if (kontrolTmgdDisi(fab)) { delete kontrolTmgdKapsam[fab]; kontrolTmgdUi.onay = false; kontrolTmgdUi.dd = false; kontrolTmgdKaydet(); kontrolRender(); return; }
+  if (kontrolTmgdUi.onay) { kontrolTmgdUi.onay = false; kontrolTmgdUi.dd = false; kontrolRender(); return; }
+  const n = kontrolItems.filter(it => kontrolGrupId(it) === 'tmgd' && kontrolItFab(it) === fab).length;
+  if (n) { kontrolTmgdUi.onay = true; kontrolTmgdUi.gerekce = TMGD_GEREKCE[0]; kontrolRender(); return; }
+  kontrolTmgdKapsam[fab] = { disi: true, gerekce: TMGD_GEREKCE[0] }; kontrolTmgdKaydet(); kontrolRender();
+}
+function kontrolTmgdOnayla() {
+  const fab = kontrolFabFilter; if (!fab) return;
+  kontrolTmgdKapsam[fab] = { disi: true, gerekce: kontrolTmgdUi.gerekce || TMGD_GEREKCE[0] };
+  kontrolTmgdUi.onay = false; kontrolTmgdUi.dd = false; kontrolTmgdKaydet(); kontrolRender();
+}
+function kontrolTmgdGerekce(i) {
+  const g = TMGD_GEREKCE[i]; kontrolTmgdUi.dd = false;
+  if (kontrolFabFilter && kontrolTmgdDisi(kontrolFabFilter)) { kontrolTmgdKapsam[kontrolFabFilter].gerekce = g; kontrolTmgdKaydet(); }
+  else kontrolTmgdUi.gerekce = g;
+  kontrolRender();
+}
+function kontrolTmgdPeriyot(kod) {
+  const m = /^(\d+)([ym])$/.exec(kod || ''); if (!m) return null;
+  return { val: m[1], unit: m[2] === 'y' ? 'year' : 'month' };
+}
+const kontrolTmgdPerYazi = kod => kod === 'tekil' ? 'Tek sefer' : kod === 'olay' ? 'Olay bazlı' : (/^(\d+)y$/.test(kod) ? kod.slice(0, -1) + ' yıl' : /^(\d+)m$/.test(kod) ? kod.slice(0, -1) + ' ay' : '');
+// Takip listesi seçme penceresi iki grup için ortak: çevre / TMGD
+let kcvMod = 'cevre';
+const kcvKat = () => kcvMod === 'tmgd' ? KONTROL_TMGD_KATALOG : KONTROL_CEVRE_KATALOG;
+function kontrolTmgdBodyHtml(grupItems) {
+  const fab = kontrolFabFilter, disi = kontrolTmgdDisi(fab), ui = kontrolTmgdUi;
+  const pasifN = fab ? kontrolItems.filter(it => kontrolGrupId(it) === 'tmgd' && kontrolItFab(it) === fab).length : 0;
+  let h = '';
+  if (fab) {
+    const gerekce = disi ? kontrolTmgdKapsam[fab].gerekce : (ui.gerekce || TMGD_GEREKCE[0]);
+    h += `<div class="kt-ks"><div class="t"><b>Kapsam dışı</b><small>${disi ? 'Bu fabrikada TMGD takibi yapılmıyor' : 'Fabrika TMGD kapsamında değilse işaretle'}</small></div>
+      <button type="button" class="kt-tg${disi || ui.onay ? ' on' : ''}" aria-pressed="${disi}" aria-label="Kapsam dışı" onclick="event.stopPropagation();kontrolTmgdKapsamTik()"><i></i></button></div>`;
+    if (ui.onay && !disi) h += `<div class="kt-cf"><b>${pasifN} takip kaydı pasif olacak.</b><span>Kayıtlar silinmez; kapsam içine alınca geri gelir.</span><div><button type="button" onclick="event.stopPropagation();kontrolTmgdKapsamTik()">Vazgeç</button><button type="button" class="d" onclick="event.stopPropagation();kontrolTmgdOnayla()">Kapsam dışı yap</button></div></div>`;
+    if (disi || ui.onay) h += `<div><div class="kt-lb">Gerekçe</div><div class="kt-fd"><button type="button" class="kt-fb" onclick="event.stopPropagation();kontrolTmgdUi.dd=!kontrolTmgdUi.dd;kontrolRender()"><span>${esc(gerekce)}</span><i>▾</i></button>
+      ${ui.dd ? `<div class="kt-mn">${TMGD_GEREKCE.map((g, i) => `<button type="button" class="${g === gerekce ? 'on' : ''}" onclick="event.stopPropagation();kontrolTmgdGerekce(${i})">${esc(g)}</button>`).join('')}</div>` : ''}</div></div>`;
+    if (disi) h += `<div class="kt-off"><b>Kapsam dışı.</b> ${pasifN} kayıt pasif bekliyor; özet sayılarına ve raporlara katılmaz. Kapsam içine almak için anahtarı kapat.</div>`;
+  } else {
+    const disiF = Object.keys(kontrolTmgdKapsam).filter(f => kontrolTmgdDisi(f));
+    h += `<div class="kt-off">${disiF.length ? `<b>${disiF.length} fabrikada kapsam dışı:</b> ${disiF.map(esc).join(', ')}. ` : ''}Kapsam dışı durumunu ayarlamak için üstten fabrika seç.</div>`;
+  }
+  if (disi || ui.onay) return h;
+  h += grupItems.length ? grupItems.map(kontrolKartHtml).join('') : '<div style="text-align:center;padding:12px 8px;font-size:12px;color:var(--text3);">Henüz TMGD evrakı eklenmedi.</div>';
+  h += `<button type="button" class="kt-add" onclick="event.stopPropagation();kontrolCevreOpen('tmgd')">+ TMGD evrakı ekle</button>`;
+  return h;
+}
 let kontrolCevreKatAcik = {};
 let kontrolCevreHedefFabs = new Set();
 
 function kontrolCevreBul(key) {
-  for (const kat of KONTROL_CEVRE_KATALOG) {
+  for (const [grup, liste] of [['cevre', KONTROL_CEVRE_KATALOG], ['tmgd', KONTROL_TMGD_KATALOG]]) for (const kat of liste) {
     const x = kat.items.find(i => i[0] === key);
-    if (x) return { key:x[0], ad:x[1], katId:kat.id, katAd:kat.ad };
+    if (x) return { key:x[0], ad:x[1], katId:kat.id, katAd:kat.ad, grup, per:x[2] || '' };
   }
   return null;
 }
 function kontrolCevreTakipte(key, ad, fab) {
   if (!fab) return false;
   return kontrolItems.some(it =>
-    kontrolGrupId(it)==='cevre' &&
+    kontrolGrupId(it)===kcvMod &&
     kontrolKayitHedefFabrikadaMi(it, fab) &&
     (it.environmentKey === key ||
       (!it.environmentKey && (it.name||'').toLocaleLowerCase('tr-TR') === ad.toLocaleLowerCase('tr-TR')))
   );
 }
-function kontrolCevreOpen() {
+function kontrolCevreOpen(mod) {
+  kcvMod = mod === 'tmgd' ? 'tmgd' : 'cevre';
   kontrolCevreYeniSecim.clear();
+  { const m = document.getElementById('kontrol-cevre-modal'), ic = m && m.querySelector('.kem-head > div'), h3 = m && m.querySelector('.kem-head h3'), alt = h3 && h3.nextElementSibling;
+    if (ic) ic.textContent = kcvMod === 'tmgd' ? '⚠️' : '🌿';
+    if (h3) h3.textContent = kcvMod === 'tmgd' ? 'TMGD Takip Listesini Belirle' : 'Çevre Süreçleri Takip Listesini Belirle';
+    if (alt) alt.textContent = kcvMod === 'tmgd' ? 'Fabrikada takip edilecek tehlikeli madde güvenlik danışmanlığı evraklarını seçin. Her evrak listeye bir kez eklenir.' : 'İşyerinizde takip ettiğiniz çevre izin, belge, atık, atıksu, emisyon ve raporlama süreçlerini seçin.'; }
 
   if (kontrolEkipmanMobilMi()) {
-    KONTROL_CEVRE_KATALOG.forEach(k => { kontrolCevreKatAcik[k.id] = false; });
+    kcvKat().forEach(k => { kontrolCevreKatAcik[k.id] = false; });
   } else {
-    KONTROL_CEVRE_KATALOG.forEach(k => {
+    kcvKat().forEach(k => {
       if (kontrolCevreKatAcik[k.id] === undefined) kontrolCevreKatAcik[k.id] = true;
     });
   }
@@ -13066,7 +13160,7 @@ function kontrolCevreOpen() {
   kontrolKatalogFabSecimRender('kcv-fab-list','kcv-fab-hint',kontrolCevreHedefFabs,'kontrolCevreFabToggle');
 
   const s = document.getElementById('kcv-search');
-  if (s) s.value = '';
+  if (s) { s.value = ''; s.placeholder = kcvMod === 'tmgd' ? 'TMGD evrakı ara... örn. TMFB, sözleşme, SRC5' : 'Çevre süreci ara... örn. kapasite raporu, atıksu, emisyon'; }
   document.getElementById('kontrol-cevre-bg').classList.add('on');
   kontrolCevreRender();
 
@@ -13090,7 +13184,7 @@ function kontrolCevreToggleKat(id) {
   const yeni = !kontrolCevreKatAcik[id];
 
   if (kontrolEkipmanMobilMi() && yeni) {
-    KONTROL_CEVRE_KATALOG.forEach(k => { kontrolCevreKatAcik[k.id] = false; });
+    kcvKat().forEach(k => { kontrolCevreKatAcik[k.id] = false; });
   }
   kontrolCevreKatAcik[id] = yeni;
   kontrolCevreRender();
@@ -13114,7 +13208,7 @@ function kontrolCevreSecimDurum() {
   const n = kontrolCevreYeniSecim.size;
   const c = document.getElementById('kcv-selected-count');
   const b = document.getElementById('kcv-add-btn');
-  if (c) c.textContent = n ? `${n} yeni çevre süreci seçildi` : 'Yeni seçim yok';
+  if (c) c.textContent = n ? `${n} yeni ${kcvMod === 'tmgd' ? 'TMGD evrakı' : 'çevre süreci'} seçildi` : 'Yeni seçim yok';
   if (b) b.disabled = n === 0;
 }
 function kontrolCevreRender() {
@@ -13123,7 +13217,7 @@ function kontrolCevreRender() {
 
   const q = (document.getElementById('kcv-search')?.value || '').trim().toLocaleLowerCase('tr-TR');
 
-  body.innerHTML = KONTROL_CEVRE_KATALOG.map(kat => {
+  body.innerHTML = kcvKat().map(kat => {
     const eslesen = kat.items.filter(i =>
       !q ||
       i[1].toLocaleLowerCase('tr-TR').includes(q) ||
@@ -13153,12 +13247,12 @@ function kontrolCevreRender() {
         return `<label class="kem-item${varMi?' track':''}">
           <input type="checkbox" ${varMi?'checked disabled':(secili?'checked':'')}
             onchange="kontrolCevreToggle('${i[0]}',this.checked)">
-          <span>${esc(i[1])}</span>
-          ${varMi?'<span class="kem-status">TAKİPTE</span>':(kismenVar?'<span class="kem-status" style="color:var(--warn-tx);">KISMEN TAKİPTE</span>':'')}
+          <span>${esc(i[1])}${kcvMod==='tmgd'&&i[3]?`<small style="display:block;color:var(--text3);font-size:10.5px;font-weight:400;">${esc(i[3])}</small>`:''}</span>
+          ${varMi?'<span class="kem-status">TAKİPTE</span>':(kismenVar?'<span class="kem-status" style="color:var(--warn-tx);">KISMEN TAKİPTE</span>':(kcvMod==='tmgd'?`<span class="kem-status" style="color:var(--text3);">${kontrolTmgdPerYazi(i[2])}</span>`:''))}
         </label>`;
       }).join('')}</div>` : ''}
     </section>`;
-  }).join('') || '<div style="text-align:center;padding:28px 10px;color:var(--text3);font-size:12px;">Aramayla eşleşen çevre süreci bulunamadı.</div>';
+  }).join('') || `<div style="text-align:center;padding:28px 10px;color:var(--text3);font-size:12px;">Aramayla eşleşen ${kcvMod === 'tmgd' ? 'TMGD evrakı' : 'çevre süreci'} bulunamadı.</div>`;
 
   kontrolCevreSecimDurum();
 }
@@ -13179,38 +13273,39 @@ function kontrolCevreAddSelected() {
     hedefFabs.forEach(fab => {
       if (kontrolCevreTakipte(e.key,e.ad,fab)) return;
 
+      const tp = kcvMod === 'tmgd' ? kontrolTmgdPeriyot(e.per) : null;
       kontrolItems.push({
         id:Date.now() + '-' + Math.random().toString(36).slice(2,8),
-        grup:'cevre',
+        grup:kcvMod,
         environmentKey:e.key,
         environmentCategory:e.katId,
         name:e.ad,
         fabs:[fab],
         fab:fab,
         lastDate:'',
-        periodVal:'1',
-        periodUnit:'year',
+        periodVal:tp ? tp.val : '1',
+        periodUnit:tp ? tp.unit : 'year',
         firm:'',
         result:'bekliyor',
         note:'',
-        ...(typeof bmCevreTakip === 'function' ? bmCevreTakip(e.key) : {})
+        ...(kcvMod === 'tmgd' ? ((e.per === 'tekil' || e.per === 'olay') ? { takip: e.per } : {}) : (typeof bmCevreTakip === 'function' ? bmCevreTakip(e.key) : {}))
       });
       eklendi++;
     });
   });
 
   if (eklendi) {
-    kontrolGrupSadeceAc('cevre');
+    kontrolGrupSadeceAc(kcvMod);
     kontrolSave();
     kontrolRender();
     if (typeof dashRender === 'function') dashRender();
-    toast(eklendi + ' fabrika-çevre süreci kaydı takip listesine eklendi');
+    toast(eklendi + (kcvMod === 'tmgd' ? ' TMGD evrakı takip listesine eklendi' : ' fabrika-çevre süreci kaydı takip listesine eklendi'));
   }
   kontrolCevreClose();
 }
 function kontrolCevreAnaGrupAdi(it) {
   if (it && it.environmentCategory) {
-    const kat = KONTROL_CEVRE_KATALOG.find(k => k.id === it.environmentCategory);
+    const kat = KONTROL_CEVRE_KATALOG.concat(KONTROL_TMGD_KATALOG).find(k => k.id === it.environmentCategory);
     if (kat) return kat.ad;
   }
   if (it && it.environmentKey) {
@@ -13226,7 +13321,7 @@ let kontrolFabs  = [
 ];
 let kontrolEditId   = null;
 let kontrolFabFilter = null; // null = tümü
-let kontrolGrupAcik = { su:false, makine:false, cevre:false };
+let kontrolGrupAcik = { su:false, makine:false, cevre:false, tmgd:false };
 
 function kontrolLoad() {
   try { kontrolItems = JSON.parse(localStorage.getItem(LS_KONTROL_ITEMS)||'[]'); } catch(e){kontrolItems=[];}
@@ -13254,6 +13349,7 @@ function kontrolGrupSadeceAc(id) {
 }
 function kontrolToggleGrup(id) {
   if (!KONTROL_GRUPLAR[id]) return;
+  kontrolTmgdUi.onay = false; kontrolTmgdUi.dd = false;
   if (kontrolGrupAcik[id]) { kontrolGrupAcik[id] = false; kontrolSatirAcik.clear(); }
   else { kontrolSatirAcik.clear(); kontrolGrupSadeceAc(id); }
   kontrolRender();
@@ -13466,6 +13562,7 @@ function kontrolRender() {
   let items = kontrolFabFilter
     ? kontrolItems.filter(it => (Array.isArray(it.fabs) ? it.fabs : [it.fab]).filter(Boolean).includes(kontrolFabFilter))
     : [...kontrolItems];
+  items = items.filter(it => !kontrolTmgdPasif(it));   // kapsam dışı fabrikaların TMGD kayıtları pasif
 
   // Sonraki tarih hesapla + sırala (en yakın önce)
   items = items.map(it => {
@@ -13496,6 +13593,13 @@ function kontrolRender() {
     const gYak = grupItems.filter(it => it.daysLeft !== null && it.daysLeft >= 0 && it.daysLeft <= 90).length;
     const gGun = grupItems.filter(it => it.daysLeft !== null && it.daysLeft > 90).length;
     const acik = aq ? true : kontrolGrupAcik[id] !== false;
+    const tOff = id === 'tmgd' && kontrolFabFilter && kontrolTmgdDisi(kontrolFabFilter);
+    if (id === 'tmgd' && tOff) return `<section class="kontrol-grup kt-pasif${acik?' acik':''}" data-grup="tmgd">
+      <div class="kontrol-grup-hd" onclick="kontrolToggleGrup('tmgd')" role="button" aria-expanded="${acik?'true':'false'}">
+        <span class="kontrol-grup-ok">${acik?'▾':'▸'}</span><span class="kontrol-grup-icon">${g.ikon}</span>
+        <div class="kontrol-grup-copy"><div class="kontrol-grup-ad">${g.ad} <span class="kt-kd">KAPSAM DIŞI</span></div><div class="kontrol-grup-aciklama">${esc(kontrolTmgdKapsam[kontrolFabFilter].gerekce || '')}</div></div>
+        <span class="kontrol-grup-sayi">—</span></div>
+      <div class="kontrol-grup-body">${kontrolTmgdBodyHtml([])}</div></section>`;
     return `<section class="kontrol-grup${acik?' acik':''}" data-grup="${id}">
       <div class="kontrol-grup-hd" onclick="kontrolToggleGrup('${id}')" role="button" aria-expanded="${acik?'true':'false'}">
         <span class="kontrol-grup-ok">${acik?'▾':'▸'}</span>
@@ -13531,7 +13635,7 @@ function kontrolRender() {
           <button onclick="event.stopPropagation();bmGrupYukle('cevre')">📄 Toplu belge yükle</button>
           <span>Hazır listeden çevre izin, belge, atık, atıksu, emisyon ve raporlama süreçlerini takip listesine ekleyebilirsiniz.</span>
         </div>` : ''}
-        ${grupItems.length ? (typeof ekipListeHtml === 'function' && id === 'makine' ? ekipListeHtml(grupItems) : grupItems.map(kontrolKartHtml).join('')) : '<div style="text-align:center;padding:18px 8px;font-size:12px;color:var(--text3);">Bu grupta kayıt yok.</div>'}
+        ${id === 'tmgd' ? kontrolTmgdBodyHtml(grupItems) : grupItems.length ? (typeof ekipListeHtml === 'function' && id === 'makine' ? ekipListeHtml(grupItems) : grupItems.map(kontrolKartHtml).join('')) : '<div style="text-align:center;padding:18px 8px;font-size:12px;color:var(--text3);">Bu grupta kayıt yok.</div>'}
       </div>
     </section>`;
   }).join('');
@@ -13719,7 +13823,7 @@ function kontrolRaporFiltreliItems() {
         (Array.isArray(it.fabs) ? it.fabs : [it.fab]).filter(Boolean).includes(kontrolFabFilter))
     : [...kontrolItems];
 
-  return items.map(it => {
+  return items.filter(it => !kontrolTmgdPasif(it)).map(it => {
     const nextDate = kontrolSonraki(it);
     return {
       ...it,
@@ -13736,7 +13840,8 @@ function kontrolRaporOpen() {
   const counts = {
     su:items.filter(x=>x.grup==='su').length,
     makine:items.filter(x=>x.grup==='makine').length,
-    cevre:items.filter(x=>x.grup==='cevre').length
+    cevre:items.filter(x=>x.grup==='cevre').length,
+    tmgd:items.filter(x=>x.grup==='tmgd').length
   };
 
   // Hiç kayıt olmayan grupları otomatik seçimden çıkar.
@@ -13753,6 +13858,7 @@ function kontrolRaporOpen() {
     const aciklama =
       id==='su' ? 'Su analiz kayıtları' :
       id==='makine' ? 'Makine, ekipman ve tesisat periyodik kontrolleri' :
+      id==='tmgd' ? 'Tehlikeli madde güvenlik danışmanlığı belge ve raporları' :
       'Çevre izin, belge, atık, atıksu ve emisyon süreçleri';
 
     return `<label class="krp-option${n===0?' disabled':''}">
@@ -13872,7 +13978,7 @@ function kontrolRaporSu(items) {
   </section>`;
 }
 
-function kontrolRaporCevre(items) {
+function kontrolRaporCevre(items, baslik, kolGrup, kolAd) {
   items = items.slice().sort((a,b) => {
     const ga = kontrolCevreAnaGrupAdi(a);
     const gb = kontrolCevreAnaGrupAdi(b);
@@ -13881,13 +13987,13 @@ function kontrolRaporCevre(items) {
   });
 
   return `<section class="mp-section">
-    <h2>🌿 Çevre Süreçleri</h2>
+    <h2>${baslik || '🌿 Çevre Süreçleri'}</h2>
     <div class="mp-section-meta">${items.length} kayıt</div>
     <table>
       <thead><tr>
         <th style="width:24px">#</th>
-        <th style="width:17%">Çevre Süreç Grubu</th>
-        <th style="width:19%">Süreç / Belge Adı</th>
+        <th style="width:17%">${kolGrup || 'Çevre Süreç Grubu'}</th>
+        <th style="width:19%">${kolAd || 'Süreç / Belge Adı'}</th>
         <th style="width:8%">Takip Periyodu</th>
         <th style="width:11%">Son İşlem / Kontrol</th>
         <th style="width:11%">Sonraki Takip / Yenileme</th>
@@ -13939,6 +14045,9 @@ function kontrolPrintRun() {
   }
   if (kontrolRaporSecim.includes('cevre')) {
     parcalar.push(kontrolRaporCevre(items.filter(x=>x.grup==='cevre')));
+  }
+  if (kontrolRaporSecim.includes('tmgd')) {
+    parcalar.push(kontrolRaporCevre(items.filter(x=>x.grup==='tmgd'), '⚠️ TMGD Süreçleri', 'TMGD Evrak Grubu', 'Evrak / Rapor Adı'));
   }
 
   let el = document.getElementById('modul-print');
@@ -20869,7 +20978,7 @@ window.addEventListener('resize', calMobInit);
   window._fbSaveArchive = () => yaz('archive', () => archived);
   window._fbSaveTakvim  = () => yaz('takvim',  () => calReminders);
   window._fbSavePer     = () => yaz('per',     () => ({ tasks: perTasks, persons: perPersons, fabs: perFabs }));
-  window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs, ogren: window.bmOgren || [], ozel: window.bmOzel || [], ysc: window.yscVeri ? window.yscVeri() : { list: [] } }));
+  window._fbSaveKontrol = () => yaz('kontrol', () => ({ items: kontrolItems, fabs: kontrolFabs, ogren: window.bmOgren || [], ozel: window.bmOzel || [], tmgdKapsam: typeof kontrolTmgdKapsam !== 'undefined' ? kontrolTmgdKapsam : {}, ysc: window.yscVeri ? window.yscVeri() : { list: [] } }));
   window._fbSaveKaza    = () => yaz('kaza',    () => { try { kazaGecmisKodla(); } catch (e) {} return { items: kazaItems, ayar: kazaAyar, yaralanmaListesi: kazaYaralanmaListesi, kokNedenListesi: kazaKokNedenListesi }; });
 
   // ── Kaza / Olay raporları — cihazlar arası bulut deposu ─────
@@ -21037,6 +21146,7 @@ window.addEventListener('resize', calMobInit);
       doldur(kontrolFabs,  d.kontrol.fabs);
       if (Array.isArray(d.kontrol.ogren)) window.bmOgren = d.kontrol.ogren;
       if (Array.isArray(d.kontrol.ozel)) { window.bmOzel = d.kontrol.ozel; try { if (typeof ekipOzelUygula === 'function') ekipOzelUygula(); } catch (e) {} }
+      if (d.kontrol.tmgdKapsam && typeof window.kontrolTmgdUygula === 'function') { try { window.kontrolTmgdUygula(d.kontrol.tmgdKapsam); } catch (e) {} }
       if (d.kontrol.ysc && typeof window.yscUygula === 'function') { try { window.yscUygula(d.kontrol.ysc); } catch (e) { console.error(e); } }
       window._kontrolReady = true;  // bulut verisi yüklendi → lazy Load() artık ezmesin
     }
@@ -28700,6 +28810,32 @@ async function a3_xlBuild(opt){
 </style>
 <style id="ysc-styles">
 /* ===== YSC (Yangın Söndürme Cihazları) envanter takibi — Kontroller ===== */
+.kontrol-grup.kt-pasif{opacity:.62}
+.kontrol-grup.kt-pasif .kontrol-grup-icon{filter:grayscale(1)}
+.kontrol-grup.kt-pasif .kontrol-grup-ad{color:var(--text2)}
+.kt-kd{font-size:10px;font-weight:800;color:var(--text2);background:var(--surface2);border:1px solid var(--border2);padding:1px 7px;border-radius:99px;letter-spacing:.02em;vertical-align:middle;margin-left:4px}
+.kt-ks{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:10px;padding:9px 11px;margin-bottom:8px}
+.kt-ks .t{flex:1;min-width:0}
+.kt-ks .t b{font-size:13px;display:block}
+.kt-ks .t small{font-size:11.5px;color:var(--text2);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kt-tg{width:44px;height:26px;border-radius:99px;background:var(--border2);border:0;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s;padding:0}
+.kt-tg i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+.kt-tg.on{background:var(--text2)} .kt-tg.on i{left:21px}
+.kt-cf{background:color-mix(in srgb,var(--bad) 10%,var(--surface));border-radius:10px;padding:10px 11px;font-size:12.5px;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.kt-cf>div{display:flex;gap:8px;justify-content:flex-end}
+.kt-cf button{border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 12px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer}
+.kt-cf button.d{background:var(--text2);border-color:var(--text2);color:var(--surface)}
+.kt-lb{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.kt-fd{position:relative;margin-bottom:8px}
+.kt-fb{width:100%;height:40px;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:10px;padding:0 10px;font:inherit;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:6px;cursor:pointer;text-align:left}
+.kt-fb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kt-fb i{font-style:normal;font-size:11px;color:var(--text2)}
+.kt-mn{position:absolute;z-index:6;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,.18);padding:4px}
+.kt-mn button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--text);padding:9px 10px;border-radius:7px;font:inherit;font-size:13px;cursor:pointer}
+.kt-mn button.on,.kt-mn button:hover{background:color-mix(in srgb,var(--acc) 12%,var(--surface));color:var(--acc-tx)}
+.kt-off{font-size:12px;color:var(--text2);background:var(--surface2);border-radius:10px;padding:9px 11px;line-height:1.45;margin-bottom:8px}
+.kt-off b{color:var(--text)}
+.kt-add{width:100%;border:1px dashed var(--border2);background:none;color:var(--acc-tx);border-radius:10px;padding:10px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;margin-top:6px}
 #ysc-ov{position:fixed;inset:0;z-index:58;background:var(--bg);display:flex;flex-direction:column;color:var(--text)}
 #ysc-ov[hidden],#ysc-sh[hidden],.ysc-selbar[hidden]{display:none!important}
 .ysc-top{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top,0px));background:linear-gradient(135deg,var(--hd1),var(--hd2));color:#fff;flex-shrink:0}
