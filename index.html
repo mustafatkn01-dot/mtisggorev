@@ -28826,7 +28826,22 @@ table.ysc-l .c{text-align:center}
 .ysc-fd.ac .ysc-fb{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
 .ysc-fd .mn{position:absolute;z-index:6;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:min(320px,calc(100vw - 60px));max-height:230px;overflow:auto;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:4px}
 .ysc-g2>.ysc-ff:nth-child(2) .mn{left:auto;right:0}
-.ysc-fd .mn.up{top:auto;bottom:calc(100% + 4px)}
+.ysc-fd .mn.up,.ysc-fd .ysc-tp.up{top:auto;bottom:calc(100% + 4px)}
+.ysc-tb span{font-weight:700;font-variant-numeric:tabular-nums}
+.ysc-tp{position:absolute;z-index:6;top:calc(100% + 6px);left:0;width:268px;max-width:calc(100vw - 48px);background:var(--surface);border:1px solid var(--border2);border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.22);padding:10px;display:flex;flex-direction:column;gap:8px}
+.ysc-tp.sag{left:auto;right:0}
+.ysc-tp .yr{display:flex;align-items:center;gap:6px}
+.ysc-tp .yr button{border:0;background:var(--surface2);color:var(--text);width:30px;height:30px;border-radius:8px;font-size:15px;cursor:pointer}
+.ysc-tp .yr span{flex:1;text-align:center;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.ysc-tp .ys{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.ysc-tp .ms{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ysc-tp .ys button,.ysc-tp .ms button{border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:8px;height:30px;font:inherit;font-size:12px;cursor:pointer;font-variant-numeric:tabular-nums;padding:0}
+.ysc-tp .ms button{height:34px;font-size:13px}
+.ysc-tp .ys button.on,.ysc-tp .ms button.on{background:var(--acc);border-color:var(--acc);color:var(--acc-fg);font-weight:700}
+.ysc-tp .ms button.now:not(.on){box-shadow:inset 0 0 0 1.5px var(--acc)}
+.ysc-tp .ms button:disabled{opacity:.35;cursor:default}
+.ysc-tp .pf{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--text2)}
+.ysc-tp .pf button{border:0;background:none;color:var(--acc-tx);font:inherit;font-weight:700;cursor:pointer;padding:4px}
 .ysc-fd .mn button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--text);padding:9px 10px;border-radius:7px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
 .ysc-fd .mn button:hover,.ysc-fd .mn button.on{background:color-mix(in srgb,var(--acc) 12%,var(--surface));color:var(--acc-tx)}
 .ysc-fd .mn button.yn{color:var(--acc-tx);font-weight:700;border-top:1px solid var(--border);border-radius:0 0 7px 7px}
@@ -29100,10 +29115,39 @@ table.ysc-l .c{text-align:center}
     sh.querySelectorAll('[data-ddv]').forEach(b => b.onclick = e => { e.stopPropagation(); const k = b.dataset.ddv; st.dd = ''; set[k](b.dataset.v); render(); });
     const w = sh.querySelector('.ysc-w'); if (w) w.onclick = e => { if (st.dd && !e.target.closest('.ysc-fd')) { st.dd = ''; render(); } };
     // Liste pencerenin altına taşacaksa yukarı doğru açılır
-    const mn = sh.querySelector('.ysc-fd.ac .mn');
+    const mn = sh.querySelector('.ysc-fd.ac .mn, .ysc-fd.ac .ysc-tp');
     if (mn && w) { const ft = w.querySelector('.ysc-wf'), alt = (ft ? ft.getBoundingClientRect().top : w.getBoundingClientRect().bottom) - 4;
-      if (mn.getBoundingClientRect().bottom > alt) mn.classList.add('up'); else mn.scrollIntoView({ block: 'nearest' }); }
+      if (mn.classList.contains('ysc-tp')) {
+        // Tarih seçici her zaman aşağı açılır; sığmazsa pencerenin içeriği uzatılıp seçici görünür alana kaydırılır
+        const fazla = mn.getBoundingClientRect().bottom - alt, wb = w.querySelector('.ysc-wb');
+        if (fazla > 0 && wb) { wb.style.paddingBottom = (14 + fazla + 8) + 'px'; mn.scrollIntoView({ block: 'nearest' }); }
+      } else if (mn.getBoundingClientRect().bottom > alt) mn.classList.add('up'); else mn.scrollIntoView({ block: 'nearest' }); }
   }
+  // Tarih seçici: alana dokun → yıl → ay (onaylanan A tasarımı)
+  function tarHtml(st, key, val, sag) {
+    const ac = st.dd === 't-' + key, sy = new Date().getFullYear(), bu = ym(new Date());
+    let pop = '';
+    if (ac) {
+      const y = st.yil || +val.slice(0, 4), yrs = key === 'ay' ? [sy - 4, sy - 3, sy - 2, sy - 1, sy] : [sy - 1, sy, sy + 1, sy + 2, sy + 3];
+      pop = `<div class="ysc-tp${sag ? ' sag' : ''}"><div class="yr"><button type="button" data-ty="-1" aria-label="Önceki yıl">‹</button><span>${y}</span><button type="button" data-ty="1" aria-label="Sonraki yıl">›</button></div>
+        <div class="ys">${yrs.map(x => `<button type="button" data-tyy="${x}" class="${x === y ? 'on' : ''}">${x}</button>`).join('')}</div>
+        <div class="ms">${AY.map((a, i) => { const k = y + '-' + String(i + 1).padStart(2, '0'), kapali = key === 'ay' && k > bu;
+          return `<button type="button" data-tm="${i + 1}" class="${k === val ? 'on' : ''}${k === bu ? ' now' : ''}" ${kapali ? 'disabled' : ''}>${a}</button>`; }).join('')}</div>
+        <div class="pf"><span>${key === 'ay' ? 'Dolum tarihi' : 'Son kullanma'}</span><button type="button" data-tbu>Bu ay</button></div></div>`;
+    }
+    return `<div class="ysc-fd${ac ? ' ac' : ''}"><button type="button" class="ysc-fb ysc-tb" data-td="${key}" aria-expanded="${ac}"><span>${ayFmt(val)}</span><i aria-hidden="true">▾</i></button>${pop}</div>`;
+  }
+  function tarBagla(sh, st, render) {
+    const k = st.dd && st.dd.startsWith('t-') ? st.dd.slice(2) : '';
+    sh.querySelectorAll('[data-td]').forEach(b => b.onclick = e => { e.stopPropagation(); const key = b.dataset.td; if (st.dd === 't-' + key) st.dd = ''; else { st.dd = 't-' + key; st.yil = +st[key].slice(0, 4); } render(); });
+    if (!k) return;
+    const sec = v => { if (k === 'ay') { st.ay = v; if (!st.sktElle) st.skt = ayEkle(v, 24); } else { st.skt = v; st.sktElle = true; } st.dd = ''; render(); };
+    sh.querySelectorAll('[data-ty]').forEach(b => b.onclick = e => { e.stopPropagation(); st.yil += +b.dataset.ty; render(); });
+    sh.querySelectorAll('[data-tyy]').forEach(b => b.onclick = e => { e.stopPropagation(); st.yil = +b.dataset.tyy; render(); });
+    sh.querySelectorAll('[data-tm]').forEach(b => b.onclick = e => { e.stopPropagation(); sec(st.yil + '-' + String(+b.dataset.tm).padStart(2, '0')); });
+    sh.querySelectorAll('[data-tbu]').forEach(b => b.onclick = e => { e.stopPropagation(); if (k === 'ay') sec(ym(new Date())); else { st.sktElle = false; st.skt = ayEkle(st.ay, 24); st.dd = ''; render(); } });
+  }
+  const tarUyari = st => st.skt < st.ay ? '<div class="ysc-cf" style="padding:7px 10px"><b>Son kullanma tarihi dolum tarihinden önce olamaz.</b></div>' : '';
   const ayHtml = (v, att) => `<div class="ysc-mp"><button type="button" ${att}="-1" aria-label="Önceki ay">‹</button><span>${AY[+v.slice(5) - 1]} ${v.slice(0, 4)}</span><button type="button" ${att}="1" aria-label="Sonraki ay">›</button></div>`;
   const ff = (lab, inner) => `<div class="ysc-ff"><div class="ysc-lb">${lab}</div>${inner}</div>`;
 
@@ -29130,17 +29174,16 @@ table.ysc-l .c{text-align:center}
           : `<div class="ysc-lb">Cihaz</div><input class="ysc-in" id="ysc-ara" placeholder="YSC no yaz veya bölge ara" value="${esc(st.ara)}">${bulunan.length ? `<div class="ysc-chips" style="margin-top:8px">${bulunan.map(r => `<button class="ysc-chip" data-n="${esc(satirId(r))}">${esc(r.no)} · ${esc(r.yer)}</button>`).join('')}</div>` : (aq ? '<div class="ysc-hint" style="margin-top:6px">Eşleşen cihaz yok.</div>' : '')}`}</div>
         <div><div class="ysc-lb">İşlem</div><div class="ysc-seg"><button data-m="kontrol" class="${st.mod === 'kontrol' ? 'on' : ''}">Kontrol edildi, uygun</button><button data-m="dolum" class="${st.mod === 'dolum' ? 'on' : ''}">Dolum / firma güncelle</button></div></div>
         ${st.mod === 'dolum' ? `
-        <div class="ysc-g2">${ff('Dolum tarihi', ayHtml(st.ay, 'data-a'))}${ff('Son kullanma tarihi', ayHtml(st.skt, 'data-s'))}</div>
-        <div class="ysc-hint" style="margin-top:-6px">Son kullanma tarihi dolumdan 2 yıl sonraya kendiliğinden ayarlanır; gerekirse oklarla değiştir.</div>
+        <div class="ysc-g2">${ff('Dolum tarihi', tarHtml(st, 'ay', st.ay))}${ff('Son kullanma tarihi', tarHtml(st, 'skt', st.skt, true))}</div>
+        ${tarUyari(st) || '<div class="ysc-hint" style="margin-top:-6px">Son kullanma tarihi dolumdan 2 yıl sonraya kendiliğinden ayarlanır.</div>'}
         ${st.duzen ? `<div><div class="ysc-lb">Dolum firmaları<button class="ysc-ed on" id="ysc-fed" title="Düzenlemeyi bitir" aria-label="Düzenlemeyi bitir">✎</button></div>${firmaBlok}</div>`
           : `<div class="ysc-g2"><div class="ysc-ff"><div class="ysc-lb">Dolum firması<button class="ysc-ed" id="ysc-fed" title="Firmaları düzenle" aria-label="Firmaları düzenle">✎</button></div>${firmaBlok}</div>${ff('Açıklama', secHtml(st, 'acik', st.acik, AC_HAZIR.concat(['']), { bos: '— boş —', bosAd: 'Boş bırak' }))}</div>`}`
         : `<div class="ysc-hint">Cihazın yerinde, mührü ve basınç göstergesi uygun olduğu kaydedilir. Formdaki bilgiler değişmez; son gözden geçirme tarihi bugüne çekilir.</div>`}
       </div>
-      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="ysc-kay" ${hedef.length && !st.duzen ? '' : 'disabled'}>Kaydet</button></div>`);
+      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="ysc-kay" ${hedef.length && !st.duzen && !(st.mod === 'dolum' && st.skt < st.ay) ? '' : 'disabled'}>Kaydet</button></div>`);
       const $ = id => document.getElementById(id);
       sh.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { st.mod = b.dataset.m; render(); });
-      sh.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { st.ay = ayEkle(st.ay, +b.dataset.a); if (!st.sktElle) st.skt = ayEkle(st.ay, 24); render(); });
-      sh.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { st.skt = ayEkle(st.skt, +b.dataset.s); st.sktElle = true; render(); });
+      tarBagla(sh, st, render);
       secBagla(sh, st, render, {
         firma: v => { if (v === '__yeni') { st.yeni = true; st.firma = ''; setTimeout(() => { const y = $('ysc-yf'); if (y) y.focus(); }, 0); } else { st.yeni = false; st.firma = v; } },
         acik: v => { st.acik = v; } });
@@ -29272,17 +29315,17 @@ table.ysc-l .c{text-align:center}
         ${oner.length ? `<div class="ysc-oner">${oner.map(y => `<button type="button" data-yer="${esc(y)}">${esc(y)}</button>`).join('')}</div>` : ''}
         <div class="ysc-g2">${ff('Kapasite', secHtml(st, 'kap', st.kap, kaplar, { yeni: 'Diğer' }) + dig('kap'))}${ff('Madde cinsi', secHtml(st, 'cins', st.cins, cinsler, { yeni: 'Diğer' }) + dig('cins'))}</div>
         <div class="ysc-g2">${ff('Madde sınıfı', secHtml(st, 'sinif', st.sinif, siniflar, { yeni: 'Diğer' }) + dig('sinif'))}${ff('Dolum firması', secHtml(st, 'firma', st.yeniF ? '' : st.firma, f.firmalar, { yeni: 'Yeni firma', goster: st.yeniF ? 'Yeni firma' : st.firma, bos: 'Firma seç' }) + (st.yeniF ? `<input class="ysc-in" id="yn-yf" style="margin-top:6px" placeholder="Firma adı" value="${esc(st.firma)}">` : ''))}</div>
-        <div class="ysc-g2">${ff('Dolum tarihi', ayHtml(st.ay, 'data-a'))}${ff('Son kullanma tarihi', ayHtml(st.skt, 'data-s'))}</div>
+        <div class="ysc-g2">${ff('Dolum tarihi', tarHtml(st, 'ay', st.ay))}${ff('Son kullanma tarihi', tarHtml(st, 'skt', st.skt, true))}</div>
+        ${tarUyari(st)}
         ${ff('Açıklama', secHtml(st, 'acik', st.acik, ACK, { bos: '— boş —', bosAd: 'Boş bırak' }))}
         ${st.hata ? `<div class="ysc-cf"><b>${esc(st.hata)}</b></div>` : ''}
       </div>
-      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="yn-kay">Ekle</button></div>`);
+      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p" id="yn-kay" ${st.skt < st.ay ? 'disabled' : ''}>Ekle</button></div>`);
       const $ = id => document.getElementById(id);
       $('yn-no').oninput = e => { st.no = e.target.value.trim(); };
       const yer = $('yn-yer'); yer.oninput = () => { st.yer = yer.value; const p = yer.selectionStart; render(); const y2 = $('yn-yer'); y2.focus(); y2.setSelectionRange(p, p); };
       sh.querySelectorAll('[data-yer]').forEach(b => b.onclick = () => { st.yer = b.dataset.yer; render(); });
-      sh.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { st.ay = ayEkle(st.ay, +b.dataset.a); if (!st.sktElle) st.skt = ayEkle(st.ay, 24); render(); });
-      sh.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { st.skt = ayEkle(st.skt, +b.dataset.s); st.sktElle = true; render(); });
+      tarBagla(sh, st, render);
       const odak = id => setTimeout(() => { const y = $(id); if (y) y.focus(); }, 0);
       const secD = k => v => { if (v === '__yeni') { st.diger = k; st[k] = ''; odak('yn-dg'); } else { if (st.diger === k) st.diger = ''; st[k] = v; if (k === 'cins' && !st.sinifElle && SINIF[v]) st.sinif = SINIF[v]; if (k === 'sinif') st.sinifElle = true; } };
       secBagla(sh, st, render, { kap: secD('kap'), cins: secD('cins'), sinif: secD('sinif'),
