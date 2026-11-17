@@ -28790,10 +28790,13 @@ table.ysc-l .c{text-align:center}
 .ysc-card .t::-webkit-scrollbar,.ysc-card .m::-webkit-scrollbar{display:none}
 .ysc-card.sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface))}
 .ysc-empty{text-align:center;padding:26px 12px;color:var(--text2)}
-.ysc-selbar{position:sticky;bottom:10px;z-index:3;display:flex;gap:8px;align-items:center;background:var(--hd1);color:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 10px 30px rgba(0,0,0,.25);flex-wrap:wrap}
+.ysc-selbar{position:sticky;bottom:10px;z-index:3;display:flex;gap:8px;align-items:center;background:var(--hd1);color:#fff;border-radius:12px;padding:9px 12px 9px 16px;box-shadow:0 10px 30px rgba(0,0,0,.25);flex-wrap:wrap}
 .ysc-selbar .ysc-btn{background:rgba(255,255,255,.14);color:#fff;border-color:transparent}
 .ysc-selbar .ysc-btn.p{background:var(--acc);color:var(--acc-fg)}
 .ysc-selbar .ysc-btn.d{background:var(--bad);color:#fff}
+.ysc-selx{position:absolute;top:-12px;left:-9px;width:38px;height:24px;border-radius:12px;border:2px solid var(--bg);background:var(--bad);color:#fff;font-size:17px;font-weight:700;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);padding:0}
+.ysc-selx:active{transform:scale(.94)}
+.ysc-l tr[data-id],.ysc-card{touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .ysc-acc{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .ysc-acc-h{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;font-weight:700;font-size:13px}
 .ysc-acc-h small{color:var(--text2);font-weight:500;font-size:11.5px;margin-left:auto}
@@ -29041,7 +29044,7 @@ table.ysc-l .c{text-align:center}
         ${S.adetAcik ? `<div class="ysc-acc-b"><div class="ysc-adet">${ad.map(x => `<div><span>${esc(x.k)}</span><b>${x.n}</b></div>`).join('')}</div>
         <div><div class="ysc-lb">Rapora dahil edilsin mi?</div><div class="ysc-seg" style="max-width:320px"><button data-l="1" class="${f.liste ? 'on' : ''}">Evet</button><button data-l="0" class="${!f.liste ? 'on' : ''}">Hayır</button></div>
         <div class="ysc-hint" style="margin-top:6px">Evet: Excel'de ikinci sayfa “Liste” olarak, PDF'te listenin sonunda yer alır.</div></div></div>` : ''}</div>` : ''}
-      <div class="ysc-selbar" id="ysc-selbar" ${S.sel.size ? '' : 'hidden'}><b>${S.sel.size} cihaz seçili</b><span style="flex:1"></span><button class="ysc-btn s" id="ysc-st">Seçimi kaldır</button><button class="ysc-btn s" id="ysc-sk">Kontrol edildi</button><button class="ysc-btn s p" id="ysc-sd">Dolum / firma güncelle</button><button class="ysc-btn s d" id="ysc-sil">🗑 Sil</button></div>
+      <div class="ysc-selbar" id="ysc-selbar" ${S.sel.size ? '' : 'hidden'}><button class="ysc-selx" id="ysc-st" aria-label="Seçimi iptal et" title="Seçimi iptal et">×</button><b>${S.sel.size} cihaz seçili</b><span style="flex:1"></span><button class="ysc-btn s" id="ysc-sk">Kontrol edildi</button><button class="ysc-btn s p" id="ysc-sd">Dolum / firma güncelle</button><button class="ysc-btn s d" id="ysc-sil">🗑 Sil</button></div>
     </div>`;
     S.son.clear();
     const $ = id => document.getElementById(id);
@@ -29054,8 +29057,14 @@ table.ysc-l .c{text-align:center}
     const q = $('ysc-q'); q.oninput = () => { S.q = q.value; const p = q.selectionStart; ciz(); const q2 = $('ysc-q'); q2.focus(); q2.setSelectionRange(p, p); };
     dd($('ysc-ddy'), 'Bölge / yer', [...new Set(f.rows.map(r => r.yer).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr')), S.fYer, v => S.fYer = v);
     dd($('ysc-ddc'), 'Madde cinsi', [...new Set(f.rows.map(r => r.cins).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr')), S.fCins, v => S.fCins = v);
-    const sec = el => { const id = el.dataset.id; S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id); ciz(); };
-    ov.querySelectorAll('tr[data-id], .ysc-card[data-id]').forEach(el => el.onclick = () => sec(el));
+    // Tek dokunuş: seç / bırak. Çift dokunuş (telefon ve bilgisayar): ilk dokunuşun seçimi geri alınır, o cihaz için saha kontrolü açılır.
+    const sec = el => {
+      const id = el.dataset.id, t = Date.now(), cift = S.son1 && S.son1.id === id && t - S.son1.t < 350;
+      S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id);
+      if (cift) { S.son1 = null; ciz(); sahaAc([id], 'dolum'); return; }
+      S.son1 = { id, t }; ciz();
+    };
+    ov.querySelectorAll('tr[data-id], .ysc-card[data-id]').forEach(el => { el.onclick = () => sec(el); el.ondblclick = e => e.preventDefault(); });
     if ($('ysc-all')) $('ysc-all').onclick = e => { e.stopPropagation(); const hep = L.every(r => S.sel.has(satirId(r))); L.forEach(r => hep ? S.sel.delete(satirId(r)) : S.sel.add(satirId(r))); ciz(); };
     if ($('ysc-bugun')) $('ysc-bugun').onclick = () => { const k = kayit(S.fab, false); if (!k) return; k.rev = bugun(); kaydet(); ciz(); tst('Son gözden geçirme tarihi güncellendi'); };
     $('ysc-saha').onclick = () => sahaAc([...S.sel], 'dolum');
