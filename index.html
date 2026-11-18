@@ -19381,8 +19381,7 @@ function denetimRender() {
         </div>
         <div class="bgs-det">
           <div class="bgs-full">${esc(b.metin)}</div>
-          ${b.oneri ? `<div class="bgs-oneri"><b>Öneri / Düzeltici faaliyet</b>${esc(b.oneri)}</div>` : ''}
-          ${b.kokAnaliz ? `<div class="bgs-oneri"><b>Kök neden analizi</b>${esc(b.kokAnaliz).replace(/\n/g,'<br>')}</div>` : ''}
+          <div class="bgs-oneri"><b>Kök neden analizi</b>${b.kokAnaliz ? esc(b.kokAnaliz).replace(/\n/g,'<br>') : '-'}${b.oneri ? `<b style="margin-top:8px">Öneri / Düzeltici faaliyet</b>${esc(b.oneri)}` : ''}</div>
           ${fotolar}
           <div class="bgs-tags"><span class="bgs-tag">${tur.ad}</span><span class="bgs-tag" style="background:${onem.renk};color:#fff">${onem.ad} önem</span>${b.bolum ? `<span class="bgs-tag">Bölüm: ${esc(b.bolum)}</span>` : ''}${terminStr ? `<span class="bgs-tag ${gecikmis?'gec':''}">📅 ${terminStr}${gecikmis?' · Termini geçti':''}</span>` : ''}
             ${b.linkedTaskId
