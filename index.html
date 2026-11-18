@@ -29236,6 +29236,7 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
     { k: 'kul', ad: 'Kullanılmış', alt: 'Deşarj olmuş, boşalmış', ic: '💨', ch: 'Kullanıldı', oner: 'Dolum gerekli' },
     { k: 'ari', ad: 'Arıza / hasar', alt: 'Kullanımı engelleyen bir kusur', ic: '🛠️', ch: 'Arızalı', oner: 'Bakım veya değişim' }];
   const US_PARCA = ['Hortum / lans', 'Emniyet pimi / mühür', 'Gövde hasarı / korozyon', 'Manometre arızalı', 'Askı / erişim engelli'];
+  const bugunUs = r => (r && r.usTarih) || bugun();
   const usBul = r => US.find(x => x.k === r.us);
   const usYazi = r => { const u = usBul(r); return u ? (u.k === 'ari' && r.usParca ? 'Arızalı · ' + r.usParca : u.ch) : ''; };
   // Açıklama listesi fabrikaya özeldir: hazır metinler + daha önce yazılanlar; eklenebilir, düzenlenebilir, silinebilir
@@ -29473,9 +29474,11 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
   /* ---------- saha kontrolü ---------- */
   function sahaAc(ids, mod) {
     const f = kayit(S.fab, false); if (!f) return;
-    const st = { yeniA: false, duzenA: false, silA: null, neden: 'bas', parca: US_PARCA[0], unot: '', dd: '', mod: mod || 'dolum', ids: ids.slice(), ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false, firma: '', yeni: false, acik: acikListe(f)[0] || '', ara: '', duzen: false, sil: null };
+    const st = { duz: false, yeniA: false, duzenA: false, silA: null, neden: 'bas', parca: US_PARCA[0], unot: '', dd: '', mod: mod || 'dolum', ids: ids.slice(), ay: ym(new Date()), skt: ayEkle(ym(new Date()), 24), sktElle: false, firma: '', yeni: false, acik: acikListe(f)[0] || '', ara: '', duzen: false, sil: null };
     const bul = id => f.rows.find(r => satirId(r) === id);
-    if (st.ids.length === 1) { const r = bul(st.ids[0]); if (r) st.firma = r.firma; }
+    if (st.ids.length === 1) { const r = bul(st.ids[0]); if (r) { st.firma = r.firma;
+      // Açık uygunsuzluk kaydı varsa form o kayıtla dolu açılır (yeniden yazmak gerekmez)
+      if (r.us) { st.mod = 'us'; st.neden = r.us; st.parca = r.usParca || US_PARCA[0]; st.unot = r.usNot || ''; st.duz = true; } } }
     function render() {
       const hedef = st.ids.map(bul).filter(Boolean);
       const aq = st.ara.trim().toLocaleLowerCase('tr');
@@ -29494,7 +29497,7 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
             <div class="ysc-hint">Ad değişikliği, o firmayla kayıtlı cihazlarda da güncellenir.</div></div>`
         : secHtml(st, 'firma', st.yeni ? '' : st.firma, f.firmalar, { yeni: 'Yeni firma', goster: st.yeni ? 'Yeni firma' : st.firma, bos: 'Firma seç' })
            + (st.yeni ? `<input class="ysc-in" id="ysc-yf" style="margin-top:8px" placeholder="Firma adı" value="${esc(st.firma)}">` : '');
-      const sh = pencere(`<div class="ysc-wh"><div><b>Saha kontrolü</b><small>Kontrol tarihi ${tFmt(bugun())} · son gözden geçirme tarihi de güncellenir</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
+      const sh = pencere(`<div class="ysc-wh"><div><b>${st.duz && st.mod === 'us' ? 'Uygunsuzluk kaydı' : 'Saha kontrolü'}</b><small>${st.duz && st.mod === 'us' ? 'Kayıt ' + tFmt(bugunUs(hedef[0])) + ' tarihinde açıldı · düzenlemede kontrol tarihi değişmez' : 'Kontrol tarihi ' + tFmt(bugun()) + ' · son gözden geçirme tarihi de güncellenir'}</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
       <div class="ysc-wb">
         <div>${hedef.length ? `<div class="ysc-tgt"><span><b>${hedef.length === 1 ? 'YSC ' + esc(hedef[0].no) : hedef.length + ' cihaz'}</b> · ${hedef.length === 1 ? esc(hedef[0].yer) + ' · ' + esc(hedef[0].kap) + ' ' + esc(hedef[0].cins) : 'toplu güncelleme'}</span><button class="ysc-btn s" id="ysc-hd">Değiştir</button></div>`
           : `<div class="ysc-lb">Cihaz</div><input class="ysc-in" id="ysc-ara" placeholder="YSC no yaz veya bölge ara" value="${esc(st.ara)}">${bulunan.length ? `<div class="ysc-chips" style="margin-top:8px">${bulunan.map(r => `<button class="ysc-chip" data-n="${esc(satirId(r))}">${esc(r.no)} · ${esc(r.yer)}</button>`).join('')}</div>` : (aq ? '<div class="ysc-hint" style="margin-top:6px">Eşleşen cihaz yok.</div>' : '')}`}</div>
@@ -29511,7 +29514,7 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
           : `<div class="ysc-g2"><div class="ysc-ff"><div class="ysc-lb">Dolum firması<button class="ysc-ed" id="ysc-fed" title="Firmaları düzenle" aria-label="Firmaları düzenle">✎</button></div>${firmaBlok}</div><div class="ysc-ff"><div class="ysc-lb">Açıklama<button class="ysc-ed" id="ysc-aed" title="Açıklamaları düzenle" aria-label="Açıklamaları düzenle">✎</button></div>${acikBlok}</div></div>`}`
         : `<div class="ysc-hint">Cihazın yerinde, mührü ve basınç göstergesi uygun olduğu kaydedilir. Formdaki bilgiler değişmez; son gözden geçirme tarihi bugüne çekilir. Açık bir uygunsuzluk varsa kapanır.</div>`}
       </div>
-      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p${st.mod === 'us' ? ' r' : ''}" id="ysc-kay" ${hedef.length && !st.duzen && !st.duzenA && !(st.mod === 'dolum' && st.skt < st.ay) ? '' : 'disabled'}>${st.mod === 'us' ? 'Uygunsuz kaydet' : 'Kaydet'}</button></div>`);
+      <div class="ysc-wf"><button class="ysc-btn" data-x>Vazgeç</button><button class="ysc-btn p${st.mod === 'us' ? ' r' : ''}" id="ysc-kay" ${hedef.length && !st.duzen && !st.duzenA && !(st.mod === 'dolum' && st.skt < st.ay) ? '' : 'disabled'}>${st.mod === 'us' ? (st.duz ? 'Güncelle' : 'Uygunsuz kaydet') : 'Kaydet'}</button></div>`);
       const $ = id => document.getElementById(id);
       sh.querySelectorAll('[data-un]').forEach(b => b.onclick = () => { st.neden = b.dataset.un; render(); });
       if ($('ysc-un')) $('ysc-un').oninput = e => { st.unot = e.target.value; };
@@ -29550,7 +29553,7 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
       $('ysc-kay').onclick = () => {
         if (!hedef.length) return;
         if (st.mod === 'us') {
-          hedef.forEach(r => { r.us = st.neden; r.usParca = st.neden === 'ari' ? st.parca : ''; r.usNot = st.unot.trim(); r.usTarih = bugun(); r.kontrol = bugun(); S.son.add(satirId(r)); });
+          hedef.forEach(r => { const yeniKayit = !(st.duz && r.us); r.us = st.neden; r.usParca = st.neden === 'ari' ? st.parca : ''; r.usNot = st.unot.trim(); if (yeniKayit) { r.usTarih = bugun(); r.kontrol = bugun(); } S.son.add(satirId(r)); });
         } else if (st.mod === 'dolum') {
           if (st.yeni && st.firma && !f.firmalar.includes(st.firma)) f.firmalar.push(st.firma);
           if (st.acik && !AL.includes(st.acik)) AL.push(st.acik);
