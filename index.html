@@ -7137,6 +7137,17 @@ body.a3-open{overflow:hidden}
       <textarea id="bg-m-oneri" placeholder="Hızlı aksiyon, kalıcı önlem, izleme ve kontrol…" style="min-height:96px"></textarea>
       <button type="button" id="bg-oneri-undo" onclick="bulguOneriGeriAl()" style="display:none;align-self:flex-start;margin-top:4px;background:none;border:0;color:var(--acc-tx);font-size:11px;font-weight:600;cursor:pointer;padding:2px 0;">↶ Önceki metne dön</button>
     </div>
+    <div class="mfield" style="border-left:3px solid #e6a23c;padding-left:10px;">
+      <label style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Kök Neden Analizi
+        <span id="bg-kok-seg" style="display:inline-flex;margin-left:auto;border:1px solid var(--border);border-radius:9px;overflow:hidden;">
+          <button type="button" data-m="sistemsel" onclick="bulguKokMod('sistemsel')" style="background:none;border:0;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text3)">Sistemsel</button>
+          <button type="button" data-m="teknik" onclick="bulguKokMod('teknik')" style="background:none;border:0;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text3)">Teknik (5 Neden)</button>
+        </span>
+      </label>
+      <textarea id="bg-m-kok" placeholder="“Öneri Oluştur” ile birlikte dolar; elle de yazabilirsiniz." style="min-height:96px"></textarea>
+      <small id="bg-kok-ipucu" style="color:var(--text3);font-size:11px;margin-top:4px;"></small>
+      <button type="button" id="bg-kok-undo" onclick="bulguKokGeriAl()" style="display:none;align-self:flex-start;margin-top:4px;background:none;border:0;color:var(--acc-tx);font-size:11px;font-weight:600;cursor:pointer;padding:2px 0;">↶ Önceki metne dön</button>
+    </div>
     <div class="mrow3">
       <div class="mfield"><label>Tür</label>
         <select id="bg-m-tur">
@@ -8874,7 +8885,7 @@ function bulguAiBaglam() {
   const g = id => (document.getElementById(id)?.value || '').trim();
   const d = denetimler.find(x => x.id === g('bg-m-denetim'));
   return {
-    tespit: g('bg-m-metin'), oneri: g('bg-m-oneri'),
+    tespit: g('bg-m-metin'), oneri: g('bg-m-oneri'), kok: g('bg-m-kok'),
     tur: BG_TUR_AD[g('bg-m-tur')] || '', onem: BG_ONEM_AD[g('bg-m-onem')] || '',
     bolum: g('bg-m-bolum'),
     fabrika: d ? dnFabListesi(d).join(', ') : '',
@@ -8913,6 +8924,43 @@ async function bulguGeminiIstek(prompt, resimler, maxToken, json) {
   return r.metin;
 }
 
+// ── Kök Neden Analizi (Öneri Oluştur ile birlikte üretilir) ──
+const BG_KOK_AYRAC = '###KOK###';
+let bgKokOnceki = null;
+function bgKokModu() { try { return localStorage.getItem('bgKokMod') === 'teknik' ? 'teknik' : 'sistemsel'; } catch (e) { return 'sistemsel'; } }
+function bulguKokMod(m, sadeceGoster) {
+  if (!sadeceGoster) { try { localStorage.setItem('bgKokMod', m); } catch (e) {} }
+  document.querySelectorAll('#bg-kok-seg button').forEach(b => {
+    const on = b.dataset.m === m;
+    b.style.background = on ? 'var(--accent, #4f8cff)' : 'none'; b.style.color = on ? '#fff' : 'var(--text3)';
+  });
+  const h = document.getElementById('bg-kok-ipucu');
+  if (h) h.textContent = m === 'teknik' ? 'Neden-sonuç zinciri: doğrudan neden → 3 neden → kök neden.' : 'Bulgunun arkasındaki sistem eksikliği (yönetim sistemi bakışı).';
+}
+function bulguKokGeriAl() {
+  document.getElementById('bg-m-kok').value = bgKokOnceki || '';
+  bgKokOnceki = null;
+  const u = document.getElementById('bg-kok-undo'); if (u) u.style.display = 'none';
+  toast('Kök neden metni geri alındı');
+}
+function bulguKokKurali(mod) {
+  const ortak =
+    'KÖK NEDEN ANALİZİ KURALLARI (çok önemli, en az öneri kadar özenle yaz):\n' +
+    '1) Doğrudan neden ile kök nedeni ayır. Doğrudan neden "ne oldu / ne eksik" olgusudur (bulgunun kendisi); kök neden "sistem buna neden izin verdi" sorusunun cevabıdır. Bulguyu yeniden ifade etmek kök neden değildir.\n' +
+    '2) Kök nedeni ASLA kişiye bağlama: "dikkatsizlik", "ihmal", "çalışan hatası", "bilinçsizlik" tek başına kök neden sayılmaz. Bunun arkasındaki sistemi ara: prosedür/talimat eksikliği, yetersiz eğitim veya yetkinlik doğrulaması, yerleşim/ekipman/altyapı yetersizliği, bakım ve periyodik kontrol eksikliği, sorumluluk atanmaması, denetim ve gözetim yetersizliği, değişiklik yönetimi, kaynak (alan, süre, bütçe) yetersizliği.\n' +
+    '3) Kanıta bağlı kal: tespitte ve fotoğrafta desteği olmayan nedeni kesinmiş gibi yazma; makul ama doğrulanmamış olanı "muhtemel" diyerek belirt. Olmayan olay, kişi, tarih, sayı, yönetmelik/madde numarası uydurma.\n' +
+    '4) Kök neden, önerideki Kalıcı önlem ile birebir örtüşmeli: kalıcı önlem bu kök nedeni kapatmalı. Çelişme veya kopukluk olmasın.\n' +
+    '5) Bulgu türü uygunsuzluk değilse (gözlem/öneri) neden-sonuç yerine "iyileştirme fırsatının dayanağı" gibi kısa ve temkinli yaz.\n' +
+    '6) Fabrika ve bölüm adlarını yazma; her cümle -dır/-dir/-malıdır gibi rapor diliyle bitsin; genel geçer ("gerekli dikkat gösterilmemesi") ifadeler yasak, spesifik ol.\n';
+  if (mod === 'teknik')
+    return ortak + 'BİÇİM (Teknik, 5 Neden): Her satır etiketle başlayan şu 5 satır, başka metin yok:\n' +
+      'Doğrudan neden: (bulgunun doğrudan teknik/saha nedeni, 1 cümle)\n' +
+      'Neden 1: (doğrudan nedenin nedeni)\nNeden 2: (bir önceki nedenin nedeni)\nNeden 3: (yönetilebilir sistem eksikliğine yaklaşan neden)\n' +
+      'Kök neden: (yönetim sistemi düzeyinde nihai neden; ISO 45001 ilgili maddesi uygunsa parantez içinde 8.1, 7.2, 9.1, 5.3 gibi gerçek madde belirt, emin değilsen madde yazma)\n' +
+      'Zincir her adımda önceki adımın doğrudan sonucu olmalı; son halka bir sorumlu atanıp kapatılabilen sistem eksikliği olmalı. Her satır en fazla 2 cümle.';
+  return ortak + 'BİÇİM (Sistemsel): Etiket veya madde olmadan, tek paragraf, en fazla 2 cümle: bulgunun arkasındaki sistem eksikliğini (kural, süreç, alışkanlık, gözetim, kaynak) açıkça söyle. ' +
+    'Örnek üslup (konu: yangın ekipmanı önüne malzeme konulması): "Yangın ekipmanları ve acil müdahale istasyonlarının çevresinde emniyet mesafesi kuralına ilişkin saha bilincinin ve sürekli denetim alışkanlığının zayıf olması; geçici depolama disiplininin tam oturtulamamış olmasıdır." Bu örneğin içeriğini kopyalama, yalnız üslubunu al.';
+}
 // ── "✨ Öneri Oluştur": hızlı aksiyon / kalıcı önlem / izleme ve kontrol ──
 async function aiDenetimOneri(btn) {
   const c = bulguAiBaglam();
@@ -8924,11 +8972,13 @@ async function aiDenetimOneri(btn) {
     'YÖNTEM (çıktıya yazma, sadece düşün): (1) Tehlike nedir, kim/ne etkilenir, olası sonuç ne? (2) Muhtemel kök neden hangi alanda: ekipman/yerleşim, ' +
     'prosedür, eğitim/yetkinlik, bakım/denetim, yönetim/sorumluluk? Tespitte desteklenmeyen kök nedeni kesinmiş gibi yazma. ' +
     '(3) Önlemleri kontrol hiyerarşisine göre kur: ortadan kaldırma > ikame > mühendislik kontrolü > idari kontrol > KKD.\n\n' +
-    'ÇIKTI BİÇİMİ: Türkçe, düz metin, başlık/markdown/yıldız/madde işareti yok. Tam olarak şu 3 satır:\n' +
+    'ÇIKTI BİÇİMİ: Türkçe, düz metin, başlık/markdown/yıldız/madde işareti yok. Önce şu 3 satır:\n' +
     'Hızlı aksiyon: (bulgu kapanana kadar riski hemen düşüren ilk müdahale)\n' +
     'Kalıcı önlem: (kök nedene yönelik kalıcı çözüm; mümkünse ortadan kaldırma veya mühendislik kontrolü öne çıksın; yalnız eğitim/uyarı/KKD ile yetinme)\n' +
     'İzleme ve kontrol: (önlemin etkinliği nasıl doğrulanacak; hangi kontrol/gösterge, ne sıklıkla, hangi birim)\n' +
-    'Her satır en fazla 2 cümle.\n\n' +
+    'Her satır en fazla 2 cümle.\n' +
+    'Sonra tek başına bir satırda ' + BG_KOK_AYRAC + ' yaz ve altına KÖK NEDEN ANALİZİ bölümünü ekle (kurallar aşağıda).\n\n' +
+    bulguKokKurali(bgKokModu()) + '\n\n' +
     'DİL KURALI (çok önemli): Denetim raporu dili kullan. Her cümle gereklilik kipinde bitmeli: "-malıdır / -melidir" (örn. "kaldırılmalıdır", "işaretlenmelidir", ' +
     '"yaptırılmalıdır", "kontrol edilmelidir"). Gelecek zaman ("-ecektir / -acaktır"), "-ınız / -yın" emir kipi ve "yapılabilir" gibi çekingen ifadeler kullanılmamalı. ' +
     'Fabrika ve bölüm adlarını metne tekrar yazma. "Dikkat edilmelidir" gibi genel ifadeler yasak; ne, nerede, hangi ekipmanda belirt. ' +
@@ -8945,14 +8995,25 @@ async function aiDenetimOneri(btn) {
     (c.tur.indexOf('Gözlem') === 0 || c.tur.indexOf('Öneri') === 0 ? 'Bu bir uygunsuzluk değil; iyileştirme fırsatı dilini kullan, hızlı aksiyon yerine kısa bir ilk adım yaz. ' : '') + '\n\n' +
     (resimler.length ? BG_AI_FOTO_KURAL : '') +
     bulguAiBaglamMetni(c) +
+    (c.kok ? '\nKULLANICININ YAZDIĞI MEVCUT KÖK NEDEN (çelişme, tutarlıysa koru ve geliştir; desteksizse düzelt):\n' + c.kok + '\n' : '') +
     (c.oneri ? '\nKULLANICININ YAZDIĞI MEVCUT ÖNERİ (yazdığı gerçek eylemleri SİLME ve çelişme; koru, eksik kalan kalıcı önlem ve izleme adımını tamamlayarak 3 satıra oturt):\n' + c.oneri + '\n' : '');
   aiBtnDurum(btn, true);
   try {
-    let oneri = await bulguGeminiIstek(prompt, resimler, 4096, false);
+    let oneri = await bulguGeminiIstek(prompt, resimler, 6144, false);
     oneri = String(oneri || '').replace(/\*\*/g, '').replace(/^\s*[-•*]\s+/gm, '').trim();
+    let kok = '';
+    const ai = oneri.indexOf(BG_KOK_AYRAC);
+    if (ai >= 0) { kok = oneri.slice(ai + BG_KOK_AYRAC.length).trim(); oneri = oneri.slice(0, ai).trim(); }
+    kok = kok.replace(/^\s*(KÖK NEDEN ANALİZİ|Kök neden analizi)\s*:?\s*\n?/i, '').trim();
     if (!oneri) { alert('Öneri üretilemedi, tekrar deneyin.'); return; }
     bgOneriOnceki = c.oneri;
     document.getElementById('bg-m-oneri').value = oneri;
+    if (kok) {
+      bgKokOnceki = c.kok;
+      document.getElementById('bg-m-kok').value = kok;
+      const ku = document.getElementById('bg-kok-undo');
+      if (ku) { ku.style.display = 'inline-block'; ku.textContent = c.kok ? '↶ Önceki metne dön' : '↶ Üretimi kaldır'; }
+    }
     const u = document.getElementById('bg-oneri-undo');
     if (u) { u.style.display = 'inline-block'; u.textContent = c.oneri ? '↶ Önceki metne dön' : '↶ Üretimi kaldır'; }
     toast(c.oneri ? 'Öneri geliştirildi' : 'Öneri oluşturuldu');
@@ -19318,6 +19379,7 @@ function denetimRender() {
         <div class="bgs-det">
           <div class="bgs-full">${esc(b.metin)}</div>
           ${b.oneri ? `<div class="bgs-oneri"><b>Öneri / Düzeltici faaliyet</b>${esc(b.oneri)}</div>` : ''}
+          ${b.kokAnaliz ? `<div class="bgs-oneri"><b>Kök neden analizi</b>${esc(b.kokAnaliz).replace(/\n/g,'<br>')}</div>` : ''}
           ${fotolar}
           <div class="bgs-tags"><span class="bgs-tag">${tur.ad}</span><span class="bgs-tag" style="background:${onem.renk};color:#fff">${onem.ad} önem</span>${b.bolum ? `<span class="bgs-tag">Bölüm: ${esc(b.bolum)}</span>` : ''}${terminStr ? `<span class="bgs-tag ${gecikmis?'gec':''}">📅 ${terminStr}${gecikmis?' · Termini geçti':''}</span>` : ''}
             ${b.linkedTaskId
@@ -19508,6 +19570,9 @@ function bulguOpen(editId, denetimId) {
   ds.value = b ? b.denetimId : (denetimId || denetimler[0]?.id || '');
   document.getElementById('bg-m-metin').value   = b ? b.metin : '';
   document.getElementById('bg-m-oneri').value   = b ? (b.oneri||'') : '';
+  document.getElementById('bg-m-kok').value     = b ? (b.kokAnaliz||'') : '';
+  bgKokOnceki = null; { const u = document.getElementById('bg-kok-undo'); if (u) u.style.display = 'none'; }
+  bulguKokMod(bgKokModu(), true);
   document.getElementById('bg-m-tur').value     = b ? (b.tur||'uygunsuzluk') : 'uygunsuzluk';
   document.getElementById('bg-m-onem').value    = b ? (b.onem||'orta') : 'orta';
   document.getElementById('bg-m-durum').value   = b ? (b.durum||'acik') : 'acik';
@@ -19631,6 +19696,7 @@ function bulguSubmit() {
   const veri = {
     denetimId, metin,
     oneri:   document.getElementById('bg-m-oneri').value.trim(),
+    kokAnaliz: document.getElementById('bg-m-kok').value.trim(),
     tur:     document.getElementById('bg-m-tur').value,
     onem:    document.getElementById('bg-m-onem').value,
     durum:   document.getElementById('bg-m-durum').value,
@@ -20114,12 +20180,22 @@ function dnrAlfaFoto(b) {
   const i = Number.isInteger(b.alfa) && b.alfa >= 0 && b.alfa < f.length ? b.alfa : 0;
   return f[i] || '';
 }
-function dnrOneriSatirlar(t) {
+function dnrOneriSatirlar(t, kok) {
   const out = [];
+  const kokEkle = () => {
+    const ks = String(kok || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    ks.forEach((x, i) => {
+      const m = /^(Doğrudan neden|Neden \d|Kök neden)\s*:\s*(.*)$/i.exec(x);
+      if (m) out.push({ lab: m[1] + ':', txt: m[2], kok: i === 0 });
+      else out.push({ lab: i === 0 ? 'Kök neden analizi:' : '', txt: x, kok: i === 0 });
+    });
+    if (ks.length && out.length && /^(Doğrudan neden|Neden \d|Kök neden)/i.test(ks[0])) { const j = out.length - ks.length; out.splice(j, 0, { lab: 'Kök neden analizi:', txt: '', kok: true }); }
+  };
   String(t || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean).forEach(s => {
     const m = /^(Hızlı aksiyon|Kalıcı önlem|İzleme ve kontrol|Acil \/ düzeltici|Kalıcı \/ önleyici|Doğrulama \/ izleme)\s*:\s*(.*)$/i.exec(s);
     out.push(m ? { lab: m[1] + ':', txt: m[2] } : { lab: '', txt: s });
   });
+  if (kok) kokEkle();
   return out.length ? out : [{ lab: '', txt: '—' }];
 }
 // Fotoğrafı 4:3 oranına ortadan kırp (PDF ve Word'de aynı görüntü)
@@ -20259,7 +20335,7 @@ function dnrModel(opt) {
     const satirlar = bl.map((b, i) => {
       const on = DNR_ONEM[b.onem] || { ad: '—', renk: DNR_GRAY }, du = DNR_DURUM[b.durum] || { ad: '—', renk: DNR_GRAY };
       const dn = denetimler.find(x => x.id === b.denetimId);
-      return { no: i + 1, bolum: b.bolum || '—', tespit: b.metin || '', oneri: dnrOneriSatirlar(b.oneri), onem: on, sorumlu: b.sorumlu || '—',
+      return { no: i + 1, bolum: b.bolum || '—', tespit: b.metin || '', oneri: dnrOneriSatirlar(b.oneri, b.kokAnaliz), onem: on, sorumlu: b.sorumlu || '—',
         termin: dnrTarih(b.termin) || '—', durum: du, foto: '', fotoSrc: fotoli ? dnrAlfaFoto(b) : '', kapali: b.durum === 'kapali', yuksek: b.onem === 'yuksek',
         terminsiz: !b.termin, did: b.denetimId, dnAd: gosterDenetim && dn ? dnrDnBilgi(dn, true, Math.floor(L.cw / 4)) : '' };
     });
