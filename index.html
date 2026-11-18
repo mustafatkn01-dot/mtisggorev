@@ -9002,8 +9002,11 @@ async function aiDenetimOneri(btn) {
     let oneri = await bulguGeminiIstek(prompt, resimler, 6144, false);
     oneri = String(oneri || '').replace(/\*\*/g, '').replace(/^\s*[-•*]\s+/gm, '').trim();
     let kok = '';
-    const ai = oneri.indexOf(BG_KOK_AYRAC);
-    if (ai >= 0) { kok = oneri.slice(ai + BG_KOK_AYRAC.length).trim(); oneri = oneri.slice(0, ai).trim(); }
+    // Ayraç model tarafından biçim değiştirilebilir (###KOK, ### KÖK ###, KÖK NEDEN ANALİZİ başlığı...) → toleranslı ayır
+    const am = /^[ \t#*_-]*(?:KÖK|KOK)[^\n]*?(?:###)?[ \t#*_-]*$|^[ \t]*(?:KÖK NEDEN ANALİZİ|Kök neden analizi)\s*:?\s*$|^[ \t#*_-]*(?:KÖK|KOK)\s*#+.*$/m.exec(oneri);
+    if (am) { kok = oneri.slice(am.index + am[0].length).trim(); oneri = oneri.slice(0, am.index).trim(); }
+    else { const km = /^(?:Doğrudan neden|Kök neden analizi)\s*:/mi.exec(oneri); if (km) { kok = oneri.slice(km.index).trim(); oneri = oneri.slice(0, km.index).trim(); } }
+    kok = kok.replace(/^[ \t#*_-]*(?:KÖK|KOK)[^\n]*\n/i, '').trim();
     kok = kok.replace(/^\s*(KÖK NEDEN ANALİZİ|Kök neden analizi)\s*:?\s*\n?/i, '').trim();
     if (!oneri) { alert('Öneri üretilemedi, tekrar deneyin.'); return; }
     bgOneriOnceki = c.oneri;
