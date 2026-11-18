@@ -29824,7 +29824,7 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
   // Sayfa ölçüleri: Excel kenar boşlukları (sol/sağ 0,6 cm, üst 0,9 cm, alt 1 cm), A4 dikey, genişliğe sığdır
   const PDF_MX = 6, PDF_TOP = 9, PDF_BOT = 12;
   function sayfaHtml(f, o = {}) {
-    const rows = sirala(f.rows.slice()), W = TW, pPx = Math.floor((Math.floor((297 - PDF_TOP - PDF_BOT) / (210 - 2 * PDF_MX) * W) - 10) / 1.02);  // PDF motorunun çizim payı düşülür: sayfa küçültülmeden tam oturur
+    const rows = sirala((o.rows || f.rows).slice()), W = TW, pPx = Math.floor((Math.floor((297 - PDF_TOP - PDF_BOT) / (210 - 2 * PDF_MX) * W) - 10) / 1.02);  // PDF motorunun çizim payı düşülür: sayfa küçültülmeden tam oturur
     const H_PH = 30, H_T1 = PT(30.75), H_T2 = PT(21.75), H_H = PT(67.5) + PT(15.75), H_R = PT(16.5);
     const cg = '<colgroup>' + PX.map((w, i) => `<col style="width:${i === PX.length - 1 ? w - 3 : w}px">`).join('') + '</colgroup>';  // sağ kenar çizgisi sayfa içinde kalsın
     const hh = `<tr class="h">${KOL.map(k => `<th>${esc(k[1])}</th>`).join('')}</tr>`;
@@ -29865,18 +29865,18 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
     }
     return { html: html + usHtml, n: sayfalar.length + (ozetAyri ? 1 : 0) + usN, W, pPx };
   }
-  const dosyaAd = f => ('YSC Envanter Listesi - ' + (f.fab || '') + ' ' + new Date().toLocaleDateString('tr-TR')).replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const dosyaAd = (f, o = {}) => ('YSC Envanter Listesi - ' + (f.fab || '') + (o.etiket ? ' - ' + o.etiket : '') + ' ' + new Date().toLocaleDateString('tr-TR')).replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
   function pdfIndir(f, o) {
     const el = document.getElementById('ysc-print'), P = sayfaHtml(f, o);
     el.innerHTML = P.html;
-    window.isgSharePdf({ rootId: 'ysc-print', bodyClass: 'print-ysc', name: dosyaAd(f), width: P.W, mx: PDF_MX, top: PDF_TOP, bottom: PDF_BOT,
+    window.isgSharePdf({ rootId: 'ysc-print', bodyClass: 'print-ysc', name: dosyaAd(f, o), width: P.W, mx: PDF_MX, top: PDF_TOP, bottom: PDF_BOT,
       orientation: 'portrait', pager: root => Array.from(root.querySelectorAll('.pdf-sayfa')) });
   }
 
   /* ---------- çıktı: Excel (formun birebir kopyası) ---------- */
   async function excelIndir(f, o = {}) {
     await xlLib();
-    const rows = sirala(f.rows.slice()), ad = f.liste ? adetler(rows) : [];
+    const rows = sirala((o.rows || f.rows).slice()), ad = f.liste ? adetler(rows) : [];
     const wb = new ExcelJS.Workbook(); wb.creator = 'İSG Görev Takip'; wb.created = new Date();
     const sad = ('YSC ENVANTER ' + (f.fab || '').toLocaleUpperCase('tr')).replace(/[\\/?*[\]:]/g, ' ').slice(0, 31).trim();
     const last = 4 + rows.length;
@@ -29953,20 +29953,26 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
     }
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    window.isgShowFileDialog(blob, dosyaAd(f) + '.xlsx', blob.type);
+    window.isgShowFileDialog(blob, dosyaAd(f, o) + '.xlsx', blob.type);
   }
 
   /* ---------- İndir penceresi (önizleme) ---------- */
   function indirAc() {
     const f = kayit(S.fab, false); if (!f || !f.rows.length) return;
-    S.icAc = false; S.indUs = false;   // uygunsuz cihazlar varsayılan olarak çıktıya eklenmez
+    S.icAc = false; S.kapAc = false; S.indKap = 'gor'; S.indUs = false;   // uygunsuz cihazlar varsayılan olarak çıktıya eklenmez
     function render() {
-      const usSay = f.rows.filter(r => r.us).length, O = { us: usSay > 0 && !!S.indUs };
+      const gor = liste(f), flt = gor.length !== f.rows.length || !!(S.fDur || S.fYer || S.fCins || S.q), dar = flt && S.indKap !== 'tum';
+      const etk = [S.fDur === 'ok' ? 'Geçerli' : S.fDur === 'us' ? 'Uygunsuz' : S.fDur === 'bad' ? 'Süresi geçmiş' : S.fDur === 'warn' ? 'Yaklaşan' : '', S.fYer, S.fCins, S.q ? '“' + S.q + '”' : ''].filter(Boolean).join(' · ');
+      const kapRows = dar ? gor : f.rows, usSay = kapRows.filter(r => r.us).length, O = { us: usSay > 0 && !!S.indUs, rows: dar ? gor : null, etiket: dar ? etk.replace(/[“”]/g, '') : '' };
       const P = sayfaHtml(f, O), olc = Math.min(1, (Math.min(window.innerWidth, 980) - 70) / P.W);
       const sh = pencere(`<div class="ysc-wh"><div><b>İndir · form önizleme</b><small>${P.n} sayfa · A4 dikey · başlık satırları her sayfada · altta “Sayfa X / Y”</small></div><button class="ysc-x" data-x aria-label="Kapat">×</button></div>
         <div class="ysc-wb" style="padding-bottom:10px"><div><div class="ysc-lb">Firma adı (liste başlığı)</div>
           <div class="ysc-frow"><input class="ysc-in" id="ysc-unvan" placeholder="Firma adını yazınız" value="${esc(D.unvan)}"><button class="ysc-btn p s" id="ysc-unvan-k" style="padding:8px 14px">Kaydet</button></div>
           <div class="ysc-hint" style="margin-top:6px">Başlık: <b id="ysc-bas-on">${esc(baslikYap(f.fab))}</b></div></div>
+        ${flt ? `<div><div class="ysc-lb">Liste kapsamı</div>
+          <div class="ysc-fd${S.kapAc ? ' ac' : ''}"><button type="button" class="ysc-fb" id="ysc-kapb" aria-expanded="${!!S.kapAc}"><span>${dar ? esc((etk || 'Süzülmüş liste') + ' · ' + gor.length + ' cihaz') : 'Tüm liste · ' + f.rows.length + ' cihaz'}</span><span aria-hidden="true">▾</span></button>
+          ${S.kapAc ? `<div class="mn ysc-icm"><button type="button" class="ysc-icr" data-kap="gor"><span class="bx ${dar ? 'on' : ''}">${dar ? '✓' : ''}</span><span class="tx"><b>Görünen liste · ${gor.length} cihaz</b><small>${esc(etk || 'Süzülmüş liste')}</small></span></button>
+            <button type="button" class="ysc-icr" data-kap="tum"><span class="bx ${!dar ? 'on' : ''}">${!dar ? '✓' : ''}</span><span class="tx"><b>Tüm liste · ${f.rows.length} cihaz</b><small>Süzme uygulanmaz</small></span></button></div>` : ''}</div></div>` : ''}
         <div><div class="ysc-lb">Çıktıya dahil olanlar</div>
           <div class="ysc-fd${S.icAc ? ' ac' : ''}"><button type="button" class="ysc-fb" id="ysc-icb" aria-expanded="${!!S.icAc}"><span>${['Envanter', f.liste ? 'Cins / adet' : '', O.us ? 'Uygunsuz (' + usSay + ')' : ''].filter(Boolean).join(' · ')}</span><i aria-hidden="true">▾</i></button>
           ${S.icAc ? `<div class="mn ysc-icm"><div class="ysc-icr lock"><span class="bx on">✓</span><span class="tx"><b>Envanter listesi</b><small>Excel ilk sayfa · PDF ana liste</small></span></div>
@@ -29976,8 +29982,10 @@ table.ysc-l tr.us td:first-child,.ysc-card.us{box-shadow:inset 4px 0 0 var(--bad
         <div class="ysc-wf"><button class="ysc-btn" data-x>Kapat</button><button class="ysc-btn" id="ysc-xl">⇩ Excel</button><button class="ysc-btn p" id="ysc-pdf">⇩ PDF</button></div>`, true);
       const prv = document.getElementById('ysc-prv'), tmp = document.createElement('div'); tmp.innerHTML = P.html;
       [...tmp.children].forEach(pg => { const w = document.createElement('div'); w.className = 'ysc-pw'; w.style.width = Math.round(P.W * olc) + 'px'; w.style.height = Math.round(P.pPx * olc) + 'px'; pg.style.transform = `scale(${olc})`; pg.style.transformOrigin = 'top left'; w.appendChild(pg); prv.appendChild(w); });
-      document.getElementById('ysc-icb').onclick = e => { e.stopPropagation(); S.icAc = !S.icAc; render(); };
-      sh.querySelector('.ysc-w').addEventListener('click', e => { if (S.icAc && !e.target.closest('.ysc-fd')) { S.icAc = false; render(); } });
+      document.getElementById('ysc-icb').onclick = e => { e.stopPropagation(); S.icAc = !S.icAc; S.kapAc = false; render(); };
+      if (document.getElementById('ysc-kapb')) document.getElementById('ysc-kapb').onclick = e => { e.stopPropagation(); S.kapAc = !S.kapAc; S.icAc = false; render(); };
+      sh.querySelectorAll('[data-kap]').forEach(b => b.onclick = e => { e.stopPropagation(); S.indKap = b.dataset.kap; S.kapAc = false; render(); });
+      sh.querySelector('.ysc-w').addEventListener('click', e => { if ((S.icAc || S.kapAc) && !e.target.closest('.ysc-fd')) { S.icAc = false; S.kapAc = false; render(); } });
       sh.querySelectorAll('[data-ic]').forEach(b => b.onclick = () => { if (b.dataset.ic === 'liste') { f.liste = !f.liste; kaydet(); } else S.indUs = !S.indUs; render(); });
       const un = document.getElementById('ysc-unvan'), unK = document.getElementById('ysc-unvan-k');
       un.oninput = () => { document.getElementById('ysc-bas-on').textContent = baslikYap(f.fab, un.value); unK.disabled = un.value.replace(/\s+/g, ' ').trim() === D.unvan; };
