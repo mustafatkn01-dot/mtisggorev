@@ -22015,6 +22015,26 @@ window.addEventListener('resize', calMobInit);
 /* Kontrol satırı içi */
 .kx-nt{font-size:11.5px;color:var(--text2);font-style:italic;line-height:1.35;margin-top:2px;white-space:normal}
 .bm-dc{display:flex;flex-direction:column;gap:6px}
+.bm-ab{display:flex;align-items:center;gap:8px;margin:4px 0}
+.bm-as{margin-left:auto;font-size:12px;color:var(--text2)}.bm-as b{color:var(--text)}.bm-ak{font-style:normal;font-weight:700;color:#b3392d}
+.bm-add{position:relative}.bm-add>button{display:flex;gap:8px;align-items:center;height:34px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2,#f1f3f8);color:var(--text);font:600 13px inherit;font-family:inherit;cursor:pointer}
+.bm-add>button:disabled{cursor:default}
+.bm-add .mn{position:absolute;top:38px;left:0;z-index:6;min-width:150px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(20,30,60,.18);padding:4px}
+.bm-add .mn button{display:flex;justify-content:space-between;gap:12px;width:100%;border:0;background:none;padding:9px 10px;border-radius:8px;font:13px inherit;font-family:inherit;color:var(--text);cursor:pointer}
+.bm-add .mn button.on{background:var(--surface2,#f1f3f8);font-weight:700}.bm-add .mn button span{color:var(--text2)}
+.bm-ag{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bm-am{border:1px solid var(--line);border-radius:12px;padding:8px;min-height:96px;display:flex;flex-direction:column;gap:6px;background:var(--surface,#fff);font:inherit;color:var(--text);text-align:center;align-items:center;justify-content:center;min-width:0}
+.bm-am .ay{align-self:stretch;display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px}
+.bm-am .pl{font-size:20px;line-height:1}
+.bm-am.dolu{border-color:#bfe0cd;justify-content:flex-start}.bm-am.dolu .ay span:last-child{color:#2e7d4f}
+.bm-am.dolu .bm-th{flex-wrap:wrap;justify-content:center}.bm-am.dolu .bm-t img{height:52px}
+.bm-am.gel{opacity:.5;font-size:12px;color:var(--text2)}
+.bm-am.eksik{background:#fbeceb;border-color:#efc3bf;color:#b3392d;font-size:12px;cursor:pointer}.bm-am.eksik .ay{justify-content:center;color:#b3392d}
+.bm-am.bekle{background:#fff3c4;border:1px solid #e9cf74;color:#4d3a00;font-weight:600;font-size:12px;cursor:pointer}.bm-am.bekle .ay,.bm-am.bekle .pl{color:#6b5100;justify-content:center}
+.bm-ay{display:flex;flex-direction:column;gap:6px}
+.bm-ayr{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font:inherit;color:var(--text);background:var(--surface,#fff);text-align:left}
+.bm-ayr .t{width:44px;font-weight:700;flex:none}.bm-ayr.bos{border-style:dashed;color:var(--text2);cursor:pointer}.bm-ayr .pl{margin-left:auto;font-size:18px}
+.bm-ayr .bm-th{flex:1;min-width:0}.bm-ayr .bm-t img{height:48px}
 .bm-dc .lb{font-size:11px;font-weight:800;color:var(--text2);letter-spacing:.04em}
 .bm-th{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
 .bm-t{flex:none;display:flex;flex-direction:column;gap:3px;align-items:center;border:0;background:transparent;padding:0;cursor:pointer;color:var(--text2);font-size:10.5px;min-height:0;font-family:inherit}
@@ -27317,7 +27337,7 @@ function bmEskiOnizle(L) {
     let c = it;
     if (b.alt) { if (b.alt.t === 'var') c = (it.altlar || []).find(x => x.id === b.alt.id) || null; else c = null; }
     if (!c) return;
-    const t = bmBolumTarih(b), o = kap.get(c) || { c, min: '', yok: false, kay: new Set(), tar: new Set() };
+    const t = bmBolumTarih(b), o = kap.get(c) || { c, min: '', yok: false, kay: new Set(), tar: new Set(), aylik: bmArsivAy(k) === 1 && !!bmArsivKat(it) };
     if (!t) o.yok = true; else { if (!o.min || t < o.min) o.min = t; o.tar.add(t); }
     const dk = BM.dosyalar[b.di]; if (dk) o.kay.add(dk.ad);
     kap.set(c, o);
@@ -27326,10 +27346,14 @@ function bmEskiOnizle(L) {
   kap.forEach(o => {
     if (o.yok || !o.min) return;
     // Daha eski tarihliler + aynı dosyanın aynı tarihli eski kopyası (belge yeniden yüklendiğinde)
-    const docs = (o.c.belgeler || []).filter(x => !x.tarih || x.tarih < o.min || (x.kaynak && o.kay.has(x.kaynak) && o.tar.has(x.tarih)));
+    const ayl = o.aylik ? new Set(Array.from(o.tar).map(t => String(t).slice(0, 7))) : null;
+    const docs = o.aylik ? (o.c.belgeler || []).filter(x => x.tarih && ayl.has(String(x.tarih).slice(0, 7))) : (o.c.belgeler || []).filter(x => !x.tarih || x.tarih < o.min || (x.kaynak && o.kay.has(x.kaynak) && o.tar.has(x.tarih)));
     if (docs.length) { liste.push({ c: o.c, docs }); n += docs.length; }
   });
   return { n, liste };
+}
+function bmAylikHepsi(L) {
+  return !!L.length && L.every(b => { const k = bmKat(b.kat); return !!k && !!b.fab && bmArsivAy(k) === 1; });
 }
 function bmEkrOnay() {
   const L = bmHazirlar(), atla = BM.bol.length - L.length;
@@ -27339,7 +27363,7 @@ function bmEkrOnay() {
   ${L.map(b => { const k = bmKat(b.kat); const alt = bmAltAd(b); return `<div class="kv"><span>${esc((k.kisa || k.ad).replace(' Takibi', '').replace(' Kontrolü', ''))}${alt ? ' › ' + esc(alt) : ''}</span><b>${bmFmt(bmBolumTarih(b))}</b></div>`; }).join('')}</div>
   ${atla ? `<div class="warn">${bos} sayfa (${atla} belge) için kategori seçilmedi, kayda işlenmeyecek.</div>` : ''}
   <div class="eff">Her belge ilgili satıra eklenir, tarihler kayıt tipine göre güncellenir. Sonuç alanına dokunulmaz.</div>
-  <label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.eskiSil ? 'checked' : ''} onchange="BM.eskiSil=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">Aynı satırdaki eski belgeleri sil</b><small style="color:var(--text2);font-size:11.5px">${BM.eskiSil ? (bmEskiOnizle(L).n ? bmEskiOnizle(L).n + ' eski belge kalıcı silinecek' : 'Silinecek eski belge yok') : 'Yeni belgeden önceki tarihli PDF\'ler ve aynı dosyanın eski kopyası silinir'}</small></span></label>
+  <label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.eskiSil ? 'checked' : ''} onchange="BM.eskiSil=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">${bmAylikHepsi(L) ? 'Aynı aydaki mevcut belgeyi değiştir' : 'Aynı satırdaki eski belgeleri sil'}</b><small style="color:var(--text2);font-size:11.5px">${BM.eskiSil ? (bmEskiOnizle(L).n ? bmEskiOnizle(L).n + ' eski belge kalıcı silinecek' : 'Silinecek eski belge yok') : (bmAylikHepsi(L) ? 'İşaretlemezseniz ikisi de kalır; diğer aylar her durumda korunur' : 'Yeni belgeden önceki tarihli PDF\'ler ve aynı dosyanın eski kopyası silinir')}</small></span></label>
   ${bmBirlesAday(L).length ? `<label class="card" style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" ${BM.birles ? 'checked' : ''} onchange="BM.birles=this.checked;bmCiz()" style="width:18px;height:18px;flex:none"><span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:13px;color:var(--text)">Aynı ekipmanın belgelerini tek PDF’te birleştir</b><small style="color:var(--text2);font-size:11.5px">${bmBirlesAday(L).map(g => esc(bmKat(g[0].kat).kisa || bmKat(g[0].kat).ad) + ' · ' + g.length + ' belge').slice(0, 3).join(' | ')}${bmBirlesAday(L).length > 3 ? ' …' : ''}</small></span></label>` : ''}
   ${sb ? `<div class="card"><div class="kv"><span>Dosya boyutu (tahmini)</span><b>${bmMB(sb.once)} → ${bmMB(sb.sonra)} MB</b></div></div>` : ''}</div>` + bmBtn(['Geri', "bmGeri('onay')"], 'bmOnayAc()', 'Kayda işle', !L.length);
 }
@@ -27484,6 +27508,55 @@ function bmAltTur(it) {
   if (it && kontrolGrupId(it) === 'cevre' && ktKat(it)) return BM_CEVRE_ALT[it.environmentKey] || null;
   return { ad: 'Alt kayıt', no: 'Seri / numara (isteğe bağlı)', ph: 'Alt kayıt adı', ornek: 'Örn. Hava Tankı, seri no HT-0412. Her alt kaydın belgeleri ve tarihi ayrı izlenir.' };
 }
+/* ===== Periyodik satırlar için ay / yıl arşivi ===== */
+const BM_AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+const bmArsivYil = {}; let bmArsivMenu = null;
+function bmArsivKat(it) {
+  const k = it && it.environmentKey ? bmEnvKat(it.environmentKey) : null;
+  return k && k.periyot && k.periyot !== '—' && k.tip !== 'olay' && k.tip !== 'tekil' ? k : null;
+}
+function bmArsivAy(k) { const m = /(\d+)\s*(Ay|Yıl)/i.exec(k.periyot || ''); return m ? (/yıl/i.test(m[2]) ? +m[1] * 12 : +m[1]) : 12; }
+function bmArsivYilSec(id, y) { bmArsivYil[id] = y; bmArsivMenu = null; kontrolRender(); }
+function bmArsivMenuAc(id) { bmArsivMenu = bmArsivMenu === id ? null : id; kontrolRender(); }
+function bmArsivHtml(it, idJs, th) {
+  const k = bmArsivKat(it); if (!k) return '';
+  const tum = it.belgeler || [], tarihli = tum.filter(x => /^\d{4}-\d{2}/.test(x.tarih || '')), tarihsiz = tum.filter(x => !/^\d{4}-\d{2}/.test(x.tarih || ''));
+  const bu = new Date(), by = bu.getFullYear(), bm = bu.getMonth(), bugunYm = by * 12 + bm;
+  const ym = x => +x.tarih.slice(0, 4) * 12 + (+x.tarih.slice(5, 7) - 1);
+  const ilk = tarihli.length ? Math.min.apply(null, tarihli.map(ym)) : null, ilkY = ilk == null ? by : Math.floor(ilk / 12);
+  const per = bmArsivAy(k), aylik = per === 1;
+  const yMap = {}; tarihli.forEach(x => { const y = +x.tarih.slice(0, 4); (yMap[y] = yMap[y] || []).push(x); });
+  const bar = (sol, sag) => `<div class="bm-ab">${sol}<span class="bm-as">${sag}</span></div>`;
+  let h = '';
+  if (aylik) {
+    const yillar = Array.from(new Set(Object.keys(yMap).map(Number).concat([by]))).sort((a, b) => b - a);
+    const Y = yillar.includes(bmArsivYil[it.id]) ? bmArsivYil[it.id] : (yMap[by] ? by : (yillar.find(y => yMap[y]) || by));
+    const dolu = y => { const s2 = new Set(); (yMap[y] || []).forEach(x => s2.add(+x.tarih.slice(5, 7) - 1)); return s2.size; };
+    let eksik = 0; if (ilk != null) for (let a = ilk; a < bugunYm; a++) if (!tarihli.some(x => ym(x) === a)) eksik++;
+    const dd = yillar.length > 1
+      ? `<div class="bm-add"><button type="button" onclick="bmArsivMenuAc('${idJs}')"><span>${Y}</span><span aria-hidden="true">▾</span></button>${bmArsivMenu === String(it.id) ? `<div class="mn">${yillar.map(y => `<button type="button" class="${y === Y ? 'on' : ''}" onclick="bmArsivYilSec('${idJs}',${y})">${y}<span>${dolu(y)} / 12</span></button>`).join('')}</div>` : ''}</div>`
+      : `<div class="bm-add"><button type="button" disabled><span>${Y}</span></button></div>`;
+    h += bar(dd, `<b>${dolu(Y)}</b> / 12 ay${eksik ? ` · <i class="bm-ak">${eksik} ay eksik</i>` : ''}`);
+    h += '<div class="bm-ag">' + BM_AY.map((ad, i) => {
+      const L = (yMap[Y] || []).filter(x => +x.tarih.slice(5, 7) - 1 === i), a = Y * 12 + i;
+      if (L.length) return `<div class="bm-am dolu"><span class="ay">${ad}<span>${L.length > 1 ? '×' + L.length : '✓'}</span></span><div class="bm-th">${L.map(x => th(x)).join('')}</div></div>`;
+      if (a === bugunYm) return `<button type="button" class="bm-am bekle" onclick="bmSatirDosya('${idJs}')"><span class="ay">${ad}</span><span class="pl">＋</span>Belge bekleniyor</button>`;
+      if (a > bugunYm || ilk == null || a < ilk) return `<div class="bm-am gel"><span class="ay">${ad}</span>—</div>`;
+      return `<button type="button" class="bm-am eksik" onclick="bmSatirDosya('${idJs}')"><span class="ay">${ad}</span><span class="pl">＋</span>Belge yok</button>`;
+    }).join('') + '</div>';
+  } else {
+    const yy = []; const alt = ilk == null ? by : ilkY;
+    for (let y = by; y >= Math.min(alt, by); y--) if (yMap[y] || per <= 12) yy.push(y);
+    Object.keys(yMap).map(Number).forEach(y => { if (!yy.includes(y)) yy.push(y); });
+    yy.sort((a, b) => b - a);
+    h += bar(`<div class="lb" style="margin:0">YIL YIL ARŞİV</div>`, `<b>${Object.keys(yMap).length}</b> yıl dolu`);
+    h += '<div class="bm-ay">' + yy.map(y => yMap[y]
+      ? `<div class="bm-ayr"><span class="t">${y}</span><div class="bm-th">${yMap[y].slice().sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')).map(x => th(x)).join('')}</div></div>`
+      : `<button type="button" class="bm-ayr bos" onclick="bmSatirDosya('${idJs}')"><span class="t">${y}</span><span>Belge yok</span><span class="pl">＋</span></button>`).join('') + '</div>';
+  }
+  if (tarihsiz.length) h += `<div class="lb">TARİHSİZ · ${tarihsiz.length}</div><div class="bm-th">${tarihsiz.map(x => th(x)).join('')}</div>`;
+  return h;
+}
 function bmSatirBelgeHtml(it, idJs) {
   const L = it.belgeler || [], A = it.altlar || [], altT = bmAltTur(it);
   const aq = typeof kontrolAraQ === 'function' ? kontrolAraQ() : '';
@@ -27491,7 +27564,7 @@ function bmSatirBelgeHtml(it, idJs) {
   const eslesen = aq ? bmTumBelgeler(it).filter(x => x.kaynak && kontrolAraDoc(x, aq)).map(x => x.kaynak).filter((v, i, a) => a.indexOf(v) === i).slice(0, 2) : [];
   return `<div class="bm-dc">
     ${eslesen.length ? `<div class="bm-src">📄 ${eslesen.map(esc).join(' · ')}</div>` : ''}
-    ${L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : ''}
+    ${bmArsivKat(it) ? bmArsivHtml(it, idJs, th) : (L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : '')}
     ${A.map(a => `<div class="bm-alt"><div class="kv"><span>▸ ${esc(a.ad)}${a.no ? ' · ' + esc(a.no) : ''}</span><b>${a.lastDate ? esc(bmFmt(a.lastDate)) : '—'}</b></div>${(a.belgeler || []).length ? `<div class="bm-th">${a.belgeler.map(x => th(x)).join('')}</div>` : ''}<div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}','${bmJ(a.id)}')">＋ Belge</button><button type="button" class="bm-ch" onclick="bmAltSil('${idJs}','${bmJ(a.id)}')">${esc(altT ? altT.ad : 'Alt kayıt')} sil</button></div></div>`).join('')}
     <div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}')">📄 Belge ekle</button>${altT ? `<button type="button" class="bm-ch" onclick="bmAltEkle('${idJs}')">＋ ${esc(altT.ad)}</button>` : ''}</div>
     ${!L.length && !A.length ? '<div class="nt" style="font-size:11.5px;color:var(--text2);font-style:italic">PDF ekleyince küçük resmi burada görünür.</div>' : ''}</div>`;
