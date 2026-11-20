@@ -7931,7 +7931,7 @@ body.a3-open{overflow:hidden}
     <div class="st-pg" id="st-p-depo"><div class="st-bd" id="depo-ic"></div></div>
 
     <div class="st-pg" id="st-p-hesap"><div class="st-bd" id="settings-pwa-section">
-      <div class="st-kv">Sürüm <span><script>document.write(window.APP_VERSION||'')</script></span></div>
+      <div class="st-kv">Sürüm <span><script>document.write((window.APP_VERSION||'')+' · yapı 20.11.2026-17:00')</script></span></div>
       <div id="pwa-install-area">
         <button id="pwa-install-btn" type="button" class="st-btn out w" onclick="pwaCihazaKur()" style="display:none">Ana ekrana / masaüstüne kur</button>
         <div id="pwa-install-status" class="st-info"></div>
@@ -13640,6 +13640,12 @@ function kontrolRender() {
     if (it.environmentKey && !it.takip && typeof bmCevreTakip === 'function') { const t = bmCevreTakip(it.environmentKey); if (t.takip) { it.takip = t.takip; adDegisti = true; } }
   });
   if (typeof ekipGocEt === 'function' && ekipGocEt()) adDegisti = true;
+  // Sözleşme/poliçe: belge yoksa eski otomatik başlangıç/süre kalıntılarını temizle (kullanıcı sonlandırmadıysa)
+  kontrolItems.forEach(it => {
+    if (typeof bmSozKat === 'function' && bmSozKat(it) && !bmTumBelgeler(it).length && it.surTur !== 'sona' && (it.lastDate || it.bitis || it.surTur || it.surTurElle)) {
+      it.lastDate = ''; it.bitis = ''; delete it.surTur; delete it.surTurElle; delete it.fesih; adDegisti = true;
+    }
+  });
   if (adDegisti) kontrolSave();
 
   let items = kontrolFabFilter
