@@ -21988,6 +21988,7 @@ window.addEventListener('resize', calMobInit);
 #bm-sh .sel input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:inherit;font-weight:700;outline:none;padding:8px 0}
 #bm-sh .one{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #bm-sh .nt{font-size:11.5px;color:var(--text2);font-style:italic}
+#bm-sh .chip.on{background:color-mix(in srgb,var(--acc) 22%,var(--surface2));color:var(--acc)}
 #bm-sh .chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:10px;background:var(--surface2);color:var(--text);cursor:pointer;border:0;font-family:inherit;min-height:0}
 #bm-sh .chips{display:flex;gap:6px;flex-wrap:wrap}
 #bm-sh .abx{background:var(--surface2);border-radius:10px;padding:8px 10px;min-width:0}
@@ -26321,8 +26322,20 @@ function sinifla(H,metin){
     baslik:satir.slice(0,3).join(' · '),sayfaNo:sayfaNo(metin)};
 }
 function sayfaNo(m){
-  const x=String(m||'');const r=x.match(/(?:sayfa|page)\s*:?\s*(\d+)\s*[\/\-]\s*(\d+)/i)||x.match(/\b(\d+)\s*\/\s*(\d+)\s*$/m);
-  return r?{k:+r[1],n:+r[2]}:null;
+  // Sayfa numarası: "Sayfa 2/19", "Sayfa: 2 / 19", "Page 2 of 19", "(2/19)", tek başına "2/19" satırı (alt/üst bilgi), "- 2 -", "Sayfa 2"
+  const x=String(m||''),L=x.split(/\n+/).map(t=>t.trim()).filter(Boolean),kenar=L.slice(0,4).concat(L.slice(-5));
+  const ok=(k,n)=>k>=1&&k<=600&&(!n||(n>=k&&n<=600));
+  let r=x.match(/(?:sayfa|sayfa no|sf\.?|page)\s*[:.]?\s*(\d{1,3})\s*(?:[\/\-]|of|\\)\s*(\d{1,3})\b/i);
+  if(r&&ok(+r[1],+r[2]))return {k:+r[1],n:+r[2]};
+  for(const t of kenar){
+    r=t.match(/^\(?\s*(\d{1,3})\s*\/\s*(\d{1,3})\s*\)?$/)||t.match(/^(?:sayfa|page)?\s*(\d{1,3})\s*(?:\/|of)\s*(\d{1,3})$/i);
+    if(r&&ok(+r[1],+r[2]))return {k:+r[1],n:+r[2]};
+  }
+  for(const t of kenar){
+    r=t.match(/^(?:sayfa|page|sf\.?)\s*[:.]?\s*(\d{1,3})$/i)||t.match(/^[-–—]\s*(\d{1,3})\s*[-–—]$/);
+    if(r&&ok(+r[1],0))return {k:+r[1],n:null};
+  }
+  return null;
 }
 // Tarih çıkarımı
 function tarihler(m){
@@ -26394,25 +26407,51 @@ function alanlar(m){
   return f;
 }
 // Sayfaları bölümlere ayır
-function bol(H,sayfalar){
-  const res=sayfalar.map((m,i)=>({i,s:sinifla(H,m),metin:m}));
-  const bolumler=[];let cur=null;
-  res.forEach(p=>{
-    const g=p.s,sn=g.sayfaNo;
-    const guclu=g.en&&(g.guven==='yuksek'||g.guven==='orta');
-    const devam=cur&&((sn&&sn.k>1)||(!guclu));
-    const ayniYeniBelge=cur&&guclu&&g.en.id===cur.kat.id&&sn&&sn.k===1;
-    if(!cur||(!devam)||ayniYeniBelge){
-      if(devam&&!ayniYeniBelge){}
-      cur={kat:g.en?{id:g.en.id,ad:g.en.ad}:null,guven:g.guven,sayfalar:[p.i],ikinci:g.ikinci,devamdan:false,ipucu:g.en?g.en.ipucu:[]};
-      if(!g.en)cur.kat=null;
-      bolumler.push(cur);
-    }else{
-      cur.sayfalar.push(p.i);
+// Sayfaları belgelere ayır (birleştirme eğilimli): varsayılan "devam"; yalnızca kanıt varsa ayır.
+//  Sert devam: bildirilen sayfa serisi sürüyor (k -> k+1, k<n). Sert ayrım: sayfa no 1'e döndü, farklı güçlü başlık, farklı belge no.
+//  Aynı başlığın her sayfada tekrarı, başlıksız sayfa, okunamayan sayfa = devam.
+function bolBaslikTok(m){
+  const L=String(m||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,4).join(' ');
+  return new Set(fold(L).replace(/[0-9]+/g,' ').split(/[^a-z]+/).filter(w=>w.length>2));
+}
+function bolJaccard(a,b){if(!a.size||!b.size)return 0;let k=0;a.forEach(x=>{if(b.has(x))k++});return k/(a.size+b.size-k)}
+function bolUst(m){return String(m||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,8).join('\n')}
+function bol(H,sayfalar,opts){
+  const mod=(opts&&opts.mod)||'birlestir';
+  const res=sayfalar.map((m,i)=>{
+    const s=sinifla(H,m),su=sinifla(H,bolUst(m));
+    return {i,s,metin:m,sn:s.sayfaNo,ust:su.en&&su.en.puan>=12?su.en:null,bt:bolBaslikTok(m),no:belgeNoBul(m),bos:String(m||'').replace(/\s+/g,'').length<25};
+  });
+  const bolumler=[];let cur=null,ilk=null,neden=[];
+  res.forEach((p,x)=>{
+    let yeni=false,why='';
+    if(!cur){yeni=true;why='ilk sayfa'}
+    else if(mod==='tek'){why='tek belge'}
+    else if(mod==='sayfa'){yeni=true;why='sayfa sayfa'}
+    else{
+      const o=res[x-1],sn=p.sn,on=o.sn;
+      const seri=on&&sn&&sn.k===on.k+1&&(!sn.n||!on.n||sn.n===on.n);     // k -> k+1
+      const acik=on&&on.n&&on.k<on.n&&(!sn||sn.k!==1);                    // bildirilen seri bitmedi
+      const benz=bolJaccard(p.bt,ilk.bt);
+      if(p.bos){why='okunamayan sayfa: devam'}
+      else if(seri){why='sayfa no sürüyor ('+sn.k+(sn.n?'/'+sn.n:'')+')'}
+      else if(acik){why='sayfa serisi bitmedi ('+on.k+'/'+on.n+')'}
+      else if(sn&&sn.k===1&&on&&(on.n?on.k>=on.n:true)){yeni=true;why='sayfa no 1 e döndü'}
+      else if(sn&&sn.k===1&&!on&&cur.sayfalar.length){yeni=true;why='sayfa 1 (öncekinde numara yok)'}
+      else if(p.no&&ilk.no&&p.no!==ilk.no&&benz>=0.5&&p.ust&&cur.kat&&p.ust.id===cur.kat.id){yeni=true;why='farklı belge no ('+ilk.no+' / '+p.no+')'}
+      else if(p.ust&&cur.kat&&p.ust.id!==cur.kat.id&&benz<0.6){yeni=true;why='farklı başlık: '+p.ust.ad}
+      else if(p.ust&&!cur.kat&&!sn){yeni=true;why='başlıklı yeni belge'}
+      else why=p.ust&&cur.kat&&p.ust.id===cur.kat.id?'aynı başlık tekrarı: devam':'başlıksız sayfa: devam';
     }
+    if(yeni){
+      cur={kat:p.ust||(p.s.en&&(p.s.guven==='yuksek'||p.s.guven==='orta')?{id:p.s.en.id,ad:p.s.en.ad}:null),guven:'dusuk',sayfalar:[p.i],ikinci:null,devamdan:false,ipucu:[],neden:[why]};bolumler.push(cur);ilk=p;
+    }else{cur.sayfalar.push(p.i);cur.neden.push(why)}
   });
   bolumler.forEach(b=>{
     const m=b.sayfalar.map(i=>sayfalar[i]).join('\n');
+    // Bölümün kategorisi tüm sayfaların birleşik metninden (başlık bölgesi = ilk sayfanın başı)
+    const g1=sinifla(H,sayfalar[b.sayfalar[0]]),gA=sinifla(H,m),g=(g1.en&&(g1.guven==='yuksek'||g1.guven==='orta'))?g1:(gA.en?gA:g1);   // başlık sayfası güçlüyse o; değilse tüm sayfalar
+    b.kat=g.en?{id:g.en.id,ad:g.en.ad}:null;b.guven=g.guven;b.ikinci=g.ikinci;b.ipucu=g.en?g.en.ipucu:[];
     b.metin=m;b.tarih=tarihSec(m,(H.find(k=>b.kat&&k.id===b.kat.id)||{}).tarih);b.alan=alanlar(m);
   });
   return {sayfalar:res.map(r=>({i:r.i,kat:r.s.en&&r.s.en.id,guven:r.s.guven,sayfaNo:r.s.sayfaNo})),bolumler};
@@ -27047,7 +27086,7 @@ function bmKart(b, i) {
    ${b.uyari ? `<div class="warn">⚠ ${esc(b.uyari)}</div>` : ''}
    ${k && satirYok ? '<div class="nt">Bu fabrikada bu başlık için satır yok, onayda oluşturulur.</div>' : ''}
    ${b.fabOkunan && b.fab === b.fabOkunan && b.fab !== BM.fab ? `<div class="nt">Fabrika belgeden okundu: ${esc(b.fab)}</div>` : ''}
-   <div class="chips">${ayniDosya ? `<button class="chip" onclick="bmBirlestir(${i})">↑ Üsttekiyle birleştir</button>` : ''}${b.sayfalar.length > 1 ? `<button class="chip" onclick="bmAyir(${i})">Son sayfayı ayır</button>` : ''}${fabrikalar.length > 1 ? `<button class="chip" onclick="bmSheetAc('fab',${i})">Fabrika: ${esc(b.fab ? bmFabKisaAd(b.fab) : 'seç')}</button>` : ''}</div></div>`;
+   <div class="chips"><button class="chip${BM.bs && BM.bs.has(b) ? ' on' : ''}" onclick="bmSec(${i})">${BM.bs && BM.bs.has(b) ? '☑ Seçili' : '☐ Seç'}</button>${ayniDosya ? `<button class="chip" onclick="bmBirlestir(${i})">↑ Üsttekiyle birleştir</button>` : ''}${b.sayfalar.length > 1 ? `<button class="chip" onclick="bmAyir(${i})">Son sayfayı ayır</button>` : ''}${fabrikalar.length > 1 ? `<button class="chip" onclick="bmSheetAc('fab',${i})">Fabrika: ${esc(b.fab ? bmFabKisaAd(b.fab) : 'seç')}</button>` : ''}</div></div>`;
 }
 function bmEkrEsle() {
   const tot = BM.dosyalar.reduce((s, d) => s + d.n, 0), yuk = BM.bol.filter(b => b.guven === 'yuksek' && b.kat).length;
@@ -27060,11 +27099,36 @@ function bmEkrEsle() {
     const L = BM.bol.map((b, i) => [b, i]).filter(x => x[0].di === di), sorun = L.filter(x => !bmHazirMi(x[0])).length;
     if (BM.dosyalar.length > 1 || sorun) h += `<div class="lb" style="margin-top:4px">${esc(d.ad.toUpperCase())} · ${d.n} SAYFA${sorun ? ' · KONTROL GEREKİYOR' : ''}</div>`;
     if (sorun) h += '<div class="warn">Motor bazı sayfalardan emin olamadı. Kategori seçmediğin belge kayda işlenmez.</div>';
+    if (d.n > 1) { const tek = L.length === 1; h += `<div class="chips" style="margin:2px 0 8px"><button class="chip${tek ? ' on' : ''}" onclick="bmDosyaMod(${di},'tek')">Hepsini tek belge yap</button><button class="chip" onclick="bmDosyaMod(${di},'sayfa')">Sayfalara ayır</button><button class="chip" onclick="bmDosyaMod(${di},'birlestir')">Otomatik</button></div>`; }
     h += L.map(x => bmKart(x[0], x[1])).join('');
   });
   if (BM.cop.length) h += `<div class="card" style="border-style:dashed"><div class="lb">KALDIRILAN SAYFALAR · ${BM.cop.length} (kayda işlenmez)</div><div class="pg">${BM.cop.map(x => bmPTile(x.di, x.p, true)).join('')}</div></div>`;
   const eksikFab = bmHazirlar().some(b => !b.fab);
+  if (BM.bs) BM.bs = new Set(Array.from(BM.bs).filter(x => BM.bol.includes(x)));
+  const sn = BM.bs ? BM.bs.size : 0;
+  h += (sn > 1 ? `<div class="card" style="position:sticky;bottom:8px;z-index:3"><div class="one"><b>${sn}</b> belge seçili</div><div class="chips"><button class="chip on" onclick="bmSecBirlestir()">Seçilenleri birleştir</button><button class="chip" onclick="BM.bs=new Set();bmCiz()">Seçimi temizle</button></div></div>` : '')
+    + (BM.pun ? `<div class="chips"><button class="chip" onclick="bmPGeri()">↶ Son değişikliği geri al</button></div>` : '');
   return h + `</div>` + bmBtn(['Geri', "bmGit('yukle')"], 'bmIleri(\'esle\')', eksikFab ? 'Fabrika seç' : 'Devam', !bmHazirlar().length);
+}
+function bmSec(i) { const b = BM.bol[i]; if (!b) return; if (!BM.bs) BM.bs = new Set(); if (BM.bs.has(b)) BM.bs.delete(b); else BM.bs.add(b); bmCiz(); }
+function bmSecBirlestir() {
+  const L = BM.bol.filter(b => BM.bs && BM.bs.has(b)); if (L.length < 2) return;
+  if (!L.every(b => b.di === L[0].di)) { toast('Yalnızca aynı dosyadaki belgeler birleştirilir'); return; }
+  bmPSnap(); const a = L[0], t = BM.bol.indexOf(a);
+  L.slice(1).forEach(b => { a.sayfalar = a.sayfalar.concat(b.sayfalar); BM.bol.splice(BM.bol.indexOf(b), 1); });
+  a.sayfalar.sort((x, y) => x - y); BM.bs = new Set(); bmBolumDoldur(a); bmCiz(); bmPToast(L.length + ' belge birleştirildi', true);
+}
+function bmDosyaMod(di, mod) {
+  const d = BM.dosyalar[di]; if (!d) return;
+  const cop = new Set(BM.cop.filter(x => x.di === di).map(x => x.p)), idx = [];
+  d.sayfalar.forEach((p, k) => { if (!cop.has(k)) idx.push(k); });
+  if (!idx.length) return;
+  bmPSnap(); const ilk = BM.bol.findIndex(b => b.di === di);
+  const r = BME.bol(BM.H, idx.map(k => d.sayfalar[k].metin), { mod });
+  const yeni = r.bolumler.map(bl => { bl.sayfalar = bl.sayfalar.map(k => idx[k]); return bmBolumKur(di, bl); });
+  BM.bol = BM.bol.filter(b => b.di !== di); BM.bol.splice(ilk < 0 ? BM.bol.length : ilk, 0, ...yeni);
+  BM.bs = new Set(); bmHedefUygula(); bmCiz();
+  bmPToast(mod === 'tek' ? 'Tek belge yapıldı' : mod === 'sayfa' ? 'Sayfalara ayrıldı' : 'Otomatik bölme uygulandı', true);
 }
 function bmBirlestir(i) {
   const a = BM.bol[i - 1], b = BM.bol[i]; if (!a || a.di !== b.di) return;
