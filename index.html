@@ -13434,6 +13434,7 @@ function kontrolNextDate(lastDate, periodVal, periodUnit) {
 // Sonraki tarih: bitiş tarihi (süreli belge), alt kayıtlar ve takipsiz kayıt türlerini dikkate alır
 function kontrolSonraki(it) {
   if (!it || it.takip) return null;
+  if (typeof bmSozKat === 'function' && bmSozKat(it)) { const st = bmSozTur(it); if (st === 'suresiz' || st === 'sona') return null; }
   const alt = (it.altlar || []).filter(a => a.lastDate);
   if (alt.length) {
     let min = null;
@@ -13534,7 +13535,7 @@ function kontrolSatirToggle(id, btn) {
 function kontrolKartHtml(it) {
   const dl = it.daysLeft;
   const fabs = Array.isArray(it.fabs) ? it.fabs : (it.fab ? [it.fab] : []);
-  const periodStr = it.takip === 'olay' ? 'Olay bazlı' : it.takip === 'tekil' ? 'Tek sefer' : `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
+  let periodStr = it.takip === 'olay' ? 'Olay bazlı' : it.takip === 'tekil' ? 'Tek sefer' : `${it.periodVal||1} ${it.periodUnit==='year'?'Yıl':it.periodUnit==='month'?'Ay':'Hafta'}`;
   const sonuc = kontrolSonucBilgi(it.result || 'bekliyor');
   const firma = (it.firm || '').trim();
   const takipsiz = !!it.takip;
@@ -13549,7 +13550,7 @@ function kontrolKartHtml(it) {
     else { dgB = dl; dgS = 'gün kaldı'; }
   }
   const fmt = d => d.toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
-  const nextStr = tarihli ? fmt(it.nextDate) : (takipsiz ? (it.takip === 'olay' ? (it.grup === 'tmgd' ? 'Olay oldukça' : 'Her teslimde') : 'Takip gerekmez') : '—');
+  let nextStr = tarihli ? fmt(it.nextDate) : (takipsiz ? (it.takip === 'olay' ? (it.grup === 'tmgd' ? 'Olay oldukça' : 'Her teslimde') : 'Takip gerekmez') : '—');
   const lastStr = (tarihli || (takipsiz && it.lastDate)) ? fmt(new Date(it.lastDate+'T00:00:00')) : 'Tarih girilmedi';
   if (takipsiz) { dgB = '—'; dgS = 'takipsiz'; }
   const acik = kontrolSatirAcik.has(it.id);
@@ -13558,7 +13559,21 @@ function kontrolKartHtml(it) {
     : (kontrolFabrikaAtanmamisMi(it) ? '<span class="kx-fb" style="color:var(--kx-org)">⚠ Fabrika atanmamış</span>' : '');
 
   const bmNot = typeof bmSatirNot === 'function' ? bmSatirNot(it) : '';
-  const bmEt = typeof bmEtiket === 'function' ? bmEtiket(it) : ['Son kontrol','Sonraki kontrol'];
+  let bmEt = typeof bmEtiket === 'function' ? bmEtiket(it) : ['Son kontrol','Sonraki kontrol'];
+  const sozKat = typeof bmSozKat === 'function' ? bmSozKat(it) : null, sozT = sozKat ? bmSozTur(it) : null;
+  let dgStil = '';
+  if (sozKat && (sozT === 'suresiz' || sozT === 'sona')) {
+    const bs = it.lastDate ? new Date(it.lastDate + 'T00:00:00') : null, gun = bs ? Math.floor((Date.now() - bs) / 86400000) : null;
+    if (sozT === 'suresiz') {
+      ton = 'grn'; dgB = 'Yürürlükte'; dgStil = ' style="font-size:13px"';
+      dgS = gun === null ? 'tarihsiz' : gun >= 365 ? Math.floor(gun / 365.25) + ' yıldır' : gun >= 30 ? Math.floor(gun / 30.4) + ' aydır' : 'yeni';
+      periodStr = 'Süresiz · otomatik yenilenir'; nextStr = 'Feshe kadar geçerli';
+    } else {
+      ton = 'gry'; dgB = 'Sona erdi'; dgStil = ' style="font-size:13px"'; dgS = it.fesih ? fmt(new Date(it.fesih + 'T00:00:00')) : '';
+      periodStr = 'Sonlandırıldı'; nextStr = it.fesih ? fmt(new Date(it.fesih + 'T00:00:00')) : '—';
+    }
+    bmEt = ['Başlangıç', sozT === 'sona' ? 'Fesih tarihi' : 'Süre'];
+  }
   return `<div class="kx-row kx-${ton}${acik?' open':''}${tarihli?'':' kontrol-nodate'}" data-id="${esc(String(it.id))}">
     <button type="button" class="kx-sum" aria-expanded="${acik?'true':'false'}" onclick="kontrolSatirToggle('${idJs}',this)">
       <span class="kx-bar"></span>
@@ -13568,14 +13583,14 @@ function kontrolKartHtml(it) {
         ${bmNot ? `<div class="kx-nt">${esc(bmNot)}</div>` : ''}
         <div class="kx-mt">${fabHtml}<span style="white-space:nowrap">${esc(periodStr)}${tarihli?` · Sonraki: ${esc(nextStr)}`:''}</span></div>
       </span>
-      <span class="kx-dg"><b>${dgB}</b><span>${dgS}</span></span>
+      <span class="kx-dg"><b${dgStil}>${dgB}</b><span>${dgS}</span></span>
       <svg class="kx-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
     </button>
     <div class="kx-det">
-      <div class="kx-two">
+      ${sozKat && sozT !== 'sureli' ? '' : `      <div class="kx-two">
         <div class="kx-kv"><small>${esc(bmEt[0])}</small><b>${esc(lastStr)}</b></div>
         <div class="kx-kv"><small>${esc(bmEt[1])}</small><b>${esc(nextStr)}</b></div>
-      </div>
+      </div>`}
       ${fabs.length>1?`<div class="kx-inf">${fabs.map(f=>`<span class="kx-fb" style="--c:${kxFabRenk(f)}"><i></i>${esc(f)}</span>`).join('')}</div>`:''}
       <div class="kx-inf">
         <span>🏢 ${firma?esc(firma):'Firma girilmedi'}</span>
@@ -22015,6 +22030,12 @@ window.addEventListener('resize', calMobInit);
 /* Kontrol satırı içi */
 .kx-nt{font-size:11.5px;color:var(--text2);font-style:italic;line-height:1.35;margin-top:2px;white-space:normal}
 .bm-dc{display:flex;flex-direction:column;gap:6px}
+.bm-sk{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bm-sf{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}.bm-sf small{display:block;color:var(--text2);font-size:11px}.bm-sf b{font-size:13.5px;white-space:nowrap}
+.bm-sf .bm-add>button{border:0;background:none;padding:0;height:auto;font-weight:700;font-size:13.5px}
+.bm-sn{border-radius:10px;padding:9px 11px;font-size:12px;line-height:1.4;margin-top:8px}.bm-sn.ok{background:color-mix(in srgb,var(--good-tx) 14%,var(--surface));color:var(--good-tx)}.bm-sn.wr{background:color-mix(in srgb,var(--warn-tx) 16%,var(--surface));color:var(--warn-tx)}.bm-sn.gr{background:var(--surface2,#e9ecf2);color:var(--text2)}
+.bm-tl{margin-left:6px;border-left:2px solid var(--line);padding-left:14px}.bm-ev{position:relative;display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}.bm-ev:before{content:"";position:absolute;left:-21px;top:50%;width:10px;height:10px;border-radius:50%;background:var(--acc,#4472c4);border:2px solid var(--surface,#fff);box-shadow:0 0 0 1px var(--line);transform:translateY(-50%)}.bm-ev.ana:before{background:var(--good-tx)}.bm-ev b{display:block;font-size:13px}.bm-ev small{color:var(--text2);font-size:11.5px}
+.bm-sa{display:flex;gap:8px;margin-top:10px}.bm-sa button{flex:1;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface,#fff);color:var(--text);font:600 12.5px inherit;font-family:inherit;cursor:pointer}.bm-sa .d{color:var(--bad-tx)}.bm-sa .p{background:var(--bad-tx);color:#fff;border-color:var(--bad-tx)}
+.bm-sc{margin-top:10px;border:1px solid color-mix(in srgb,var(--bad-tx) 35%,var(--line));background:color-mix(in srgb,var(--bad-tx) 8%,var(--surface));border-radius:12px;padding:12px}.bm-sc small{display:block;color:var(--text2);font-size:12px;margin:4px 0 6px}.bm-sc input{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;font:13px inherit;font-family:inherit;background:var(--surface,#fff);color:var(--text)}
 .bm-ab{display:flex;align-items:center;gap:8px;margin:4px 0}
 .bm-as{margin-left:auto;font-size:12px;color:var(--text2)}.bm-as b{color:var(--text)}.bm-ak{font-style:normal;font-weight:700;color:#b3392d}
 .bm-add{position:relative}.bm-add>button{display:flex;gap:8px;align-items:center;height:34px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2,#f1f3f8);color:var(--text);font:600 13px inherit;font-family:inherit;cursor:pointer}
@@ -27490,6 +27511,7 @@ function bmKayda(b, k, doc) {
   if (b.duz) it.lastDate = b.duz;
   if (ilk) { const p = bmPeriyot(k.periyot); if (p && (BM.grup === 'cevre' || BM.grup === 'tmgd')) { it.periodVal = p.val; it.periodUnit = p.unit; } }
   if (k.tip === 'sureli') it.bitis = b.gec || '';
+  bmSozBelge(it, b.gec, b.metin);
   if (k.tip === 'olay' || k.tip === 'tekil') it.takip = k.tip;
   if (b.kurum) it.firm = b.kurum;
   if (b.belgeNo) it.belgeNo = b.belgeNo;
@@ -27509,12 +27531,52 @@ function bmAltTur(it) {
   if (it && kontrolGrupId(it) === 'cevre' && ktKat(it)) return BM_CEVRE_ALT[it.environmentKey] || null;
   return { ad: 'Alt kayıt', no: 'Seri / numara (isteğe bağlı)', ph: 'Alt kayıt adı', ornek: 'Örn. Hava Tankı, seri no HT-0412. Her alt kaydın belgeleri ve tarihi ayrı izlenir.' };
 }
+/* ===== Sözleşme / poliçe: süresiz-süreli-sona erdi ===== */
+const BM_SOZ = { 'tmgd-sozlesme': 'Sözleşme', 'cevre-gorevlisi': 'Sözleşme', 'tmgd-sigorta': 'Poliçe', 'yangin-sigorta-pol': 'Poliçe' };
+let bmSozMenu = null, bmSozOnay = null;
+function bmSozKat(it) { return (it && it.environmentKey && BM_SOZ[it.environmentKey]) || null; }
+function bmSozTur(it) {
+  if (it.surTur) return it.surTur;
+  if (bmSozKat(it) !== 'Sözleşme') return 'sureli';
+  return !it.bitis || (it.lastDate && it.bitis <= it.lastDate) ? 'suresiz' : 'sureli';   // bitiş yoksa (veya belge tarihine eşitlenmişse) süresiz say
+}
+// Belge işlenince süre türünü belirle (kullanıcı elle seçtiyse dokunma)
+function bmSozBelge(it, gec, metin) {
+  if (!bmSozKat(it) || it.surTurElle || it.surTur === 'sona') return;
+  if (gec) { it.surTur = 'sureli'; return; }
+  if (bmSozKat(it) === 'Sözleşme') { it.surTur = 'suresiz'; it.bitis = ''; }
+}
+function bmSozBul(id) { return kontrolItems.find(x => String(x.id) === String(id)); }
+function bmSozMenuAc(id) { bmSozMenu = bmSozMenu === id ? null : id; bmSozOnay = null; kontrolRender(); }
+function bmSozSec(id, t) { const it = bmSozBul(id); if (!it) return; it.surTur = t; it.surTurElle = true; if (t === 'suresiz') it.bitis = ''; bmSozMenu = null; kontrolSave(); kontrolRender(); }
+function bmSozOnayAc(id) { bmSozOnay = id; bmSozMenu = null; kontrolRender(); }
+function bmSozVazgec() { bmSozOnay = null; kontrolRender(); }
+function bmSozFesih(id) {
+  const it = bmSozBul(id), v = (document.getElementById('bm-soz-fes') || {}).value; if (!it) return;
+  it.surTur = 'sona'; it.surTurElle = true; it.fesih = v || new Date().toISOString().slice(0, 10); bmSozOnay = null; kontrolSave(); kontrolRender();
+}
+function bmSozGeriAl(id) { const it = bmSozBul(id); if (!it) return; it.surTur = bmSozKat(it) === 'Sözleşme' ? 'suresiz' : 'sureli'; it.surTurElle = true; delete it.fesih; kontrolSave(); kontrolRender(); }
+function bmSozHtml(it, idJs, th) {
+  const kat = bmSozKat(it), T = bmSozTur(it), fm = v => v ? new Date(v + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  const docs = (it.belgeler || []).slice().sort((a, b) => (a.tarih || '9999').localeCompare(b.tarih || '9999'));
+  const ad = kat === 'Poliçe' ? 'Poliçe' : 'Sözleşme', ek = kat === 'Poliçe' ? 'Zeyilname / yenileme' : 'Ek / yeni sürüm';
+  const sec = T === 'sona' ? 'suresiz' : T, tt = { suresiz: 'Süresiz / otomatik yenilenir', sureli: 'Süreli (bitiş tarihli)' };
+  const dd = `<div class="bm-add" style="width:100%"><button type="button" ${T === 'sona' ? 'disabled' : ''} style="width:100%;justify-content:space-between" onclick="bmSozMenuAc('${idJs}')"><span>${tt[sec]}</span><span aria-hidden="true">▾</span></button>${bmSozMenu === String(it.id) ? `<div class="mn" style="min-width:100%">${['suresiz', 'sureli'].map(x => `<button type="button" class="${x === sec ? 'on' : ''}" onclick="bmSozSec('${idJs}','${x}')"><span style="display:block">${tt[x]}</span><small style="display:block;font-size:11px;color:var(--text2)">${x === 'suresiz' ? 'Bitiş yok; feshe kadar geçerli' : 'Bitiş tarihi yazılır, kalan gün sayılır'}</small></button>`).join('')}</div>` : ''}</div>`;
+  const nt = T === 'suresiz' ? '<div class="bm-sn ok">✓ Bitiş tarihi yok / aksi belirtilmedikçe yenilenir. Feshedilmedikçe geçerli sayılır; süresi dolmuş görünmez.</div>'
+    : T === 'sona' ? '<div class="bm-sn gr">Sonlandırıldı. Yeni sözleşme yüklediğinizde bu kayıt güncellenir.</div>'
+    : '<div class="bm-sn wr">Süreli: bitiş tarihine kalan gün sayılır. Bitiş tarihini “Düzenle” bölümünden girebilirsiniz.</div>';
+  const tl = docs.length ? `<div class="lb">${ad.toUpperCase()} VE EKLERİ · ${docs.length}</div><div class="bm-tl">${docs.slice().reverse().map((x, i, a) => `<div class="bm-ev${i === a.length - 1 ? ' ana' : ''}">${th(x)}<div><b>${i === a.length - 1 ? 'Ana ' + ad.toLowerCase() : ek}</b><small>${x.tarih ? fm(x.tarih) : 'Tarihsiz'}</small></div></div>`).join('')}</div>` : '';
+  const act = T === 'sona' ? `<div class="bm-sa"><button type="button" onclick="bmSozGeriAl('${idJs}')">↶ Yeniden yürürlüğe al</button></div>`
+    : bmSozOnay === String(it.id) ? `<div class="bm-sc"><b>${ad} sona erdi olarak işaretlensin mi?</b><small>Fesih / bitiş tarihi</small><input type="date" id="bm-soz-fes" value="${new Date().toISOString().slice(0, 10)}"><div class="bm-sa"><button type="button" onclick="bmSozVazgec()">Vazgeç</button><button type="button" class="p" onclick="bmSozFesih('${idJs}')">Sonlandır</button></div></div>`
+    : `<div class="bm-sa"><button type="button" class="d" onclick="bmSozOnayAc('${idJs}')">${ad === 'Poliçe' ? 'Poliçeyi' : 'Sözleşmeyi'} sonlandır…</button></div>`;
+  return `<div class="lb">${ad.toUpperCase()}</div><div class="bm-sk"><div class="bm-sf"><small>Başlangıç</small><b>${fm(it.lastDate)}</b></div><div class="bm-sf"><small>${T === 'sona' ? 'Fesih tarihi' : T === 'sureli' ? 'Bitiş' : 'Süre'}</small>${T === 'sona' ? `<b>${fm(it.fesih)}</b>` : T === 'sureli' ? `<b>${it.bitis ? fm(it.bitis) : '—'}</b>` : '<b>Süresiz</b>'}</div></div><div class="bm-sf" style="margin-top:8px"><small>Süre türü</small>${dd}</div>${nt}${tl}${act}`;
+}
 /* ===== Periyodik satırlar için ay / yıl arşivi ===== */
 const BM_AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 const bmArsivYil = {}; let bmArsivMenu = null;
 function bmArsivKat(it) {
   const k = it && it.environmentKey ? bmEnvKat(it.environmentKey) : null;
-  return k && k.periyot && k.periyot !== '—' && k.tip !== 'olay' && k.tip !== 'tekil' ? k : null;
+  return k && k.periyot && k.periyot !== '—' && k.tip !== 'olay' && k.tip !== 'tekil' && !BM_SOZ[it.environmentKey] ? k : null;
 }
 function bmArsivAy(k) { const m = /(\d+)\s*(Ay|Yıl)/i.exec(k.periyot || ''); return m ? (/yıl/i.test(m[2]) ? +m[1] * 12 : +m[1]) : 12; }
 function bmArsivYilSec(id, y) { bmArsivYil[id] = y; bmArsivMenu = null; kontrolRender(); }
@@ -27565,7 +27627,7 @@ function bmSatirBelgeHtml(it, idJs) {
   const eslesen = aq ? bmTumBelgeler(it).filter(x => x.kaynak && kontrolAraDoc(x, aq)).map(x => x.kaynak).filter((v, i, a) => a.indexOf(v) === i).slice(0, 2) : [];
   return `<div class="bm-dc">
     ${eslesen.length ? `<div class="bm-src">📄 ${eslesen.map(esc).join(' · ')}</div>` : ''}
-    ${bmArsivKat(it) ? bmArsivHtml(it, idJs, th) : (L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : '')}
+    ${BM_SOZ[it.environmentKey] ? bmSozHtml(it, idJs, th) : bmArsivKat(it) ? bmArsivHtml(it, idJs, th) : (L.length ? `<div class="lb">BELGELER · ${L.length}</div><div class="bm-th">${L.map(x => th(x)).join('')}</div>` : '')}
     ${A.map(a => `<div class="bm-alt"><div class="kv"><span>▸ ${esc(a.ad)}${a.no ? ' · ' + esc(a.no) : ''}</span><b>${a.lastDate ? esc(bmFmt(a.lastDate)) : '—'}</b></div>${(a.belgeler || []).length ? `<div class="bm-th">${a.belgeler.map(x => th(x)).join('')}</div>` : ''}<div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}','${bmJ(a.id)}')">＋ Belge</button><button type="button" class="bm-ch" onclick="bmAltSil('${idJs}','${bmJ(a.id)}')">${esc(altT ? altT.ad : 'Alt kayıt')} sil</button></div></div>`).join('')}
     <div class="bm-chs"><button type="button" class="bm-ch" onclick="bmSatirDosya('${idJs}')">📄 Belge ekle</button>${altT ? `<button type="button" class="bm-ch" onclick="bmAltEkle('${idJs}')">＋ ${esc(altT.ad)}</button>` : ''}</div>
     ${!L.length && !A.length ? '<div class="nt" style="font-size:11.5px;color:var(--text2);font-style:italic">PDF ekleyince küçük resmi burada görünür.</div>' : ''}</div>`;
@@ -27766,7 +27828,8 @@ function bmTasiDoc(b, grupH, kid, altId) {
   if (nd && (!kon.lastDate || nd >= kon.lastDate)) {
     kon.lastDate = nd;
     if (kon === hed) {
-      if (kat.tip === 'sureli') hed.bitis = doc.gec || doc.tarih || '';
+      if (kat.tip === 'sureli') hed.bitis = (bmSozKat(hed) && !doc.gec) ? '' : (doc.gec || doc.tarih || '');
+      bmSozBelge(hed, doc.gec, doc.metin);
       if (kat.tip === 'olay' || kat.tip === 'tekil') hed.takip = kat.tip;
       if (doc.kurum && !hed.firm) hed.firm = doc.kurum;
       if (doc.belgeNo && !hed.belgeNo) hed.belgeNo = doc.belgeNo;
