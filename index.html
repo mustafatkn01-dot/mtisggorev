@@ -13434,7 +13434,7 @@ function kontrolNextDate(lastDate, periodVal, periodUnit) {
 // Sonraki tarih: bitiş tarihi (süreli belge), alt kayıtlar ve takipsiz kayıt türlerini dikkate alır
 function kontrolSonraki(it) {
   if (!it || it.takip) return null;
-  if (typeof bmSozKat === 'function' && bmSozKat(it)) { const st = bmSozTur(it); if (st === 'suresiz' || st === 'sona') return null; }
+  if (typeof bmSozKat === 'function' && bmSozKat(it)) { const st = bmSozTur(it); if (st === 'suresiz' || st === 'sona' || st === 'belgesiz') return null; }
   const alt = (it.altlar || []).filter(a => a.lastDate);
   if (alt.length) {
     let min = null;
@@ -13562,6 +13562,9 @@ function kontrolKartHtml(it) {
   let bmEt = typeof bmEtiket === 'function' ? bmEtiket(it) : ['Son kontrol','Sonraki kontrol'];
   const sozKat = typeof bmSozKat === 'function' ? bmSozKat(it) : null, sozT = sozKat ? bmSozTur(it) : null;
   let dgStil = '';
+  if (sozKat && sozT === 'belgesiz') {
+    ton = 'gry'; dgB = '—'; dgS = 'belge yok'; periodStr = sozKat + ' belgesi bekleniyor'; nextStr = '—';
+  }
   if (sozKat && (sozT === 'suresiz' || sozT === 'sona')) {
     const bs = it.lastDate ? new Date(it.lastDate + 'T00:00:00') : null, gun = bs ? Math.floor((Date.now() - bs) / 86400000) : null;
     if (sozT === 'suresiz') {
@@ -27537,6 +27540,7 @@ let bmSozMenu = null, bmSozOnay = null;
 function bmSozKat(it) { return (it && it.environmentKey && BM_SOZ[it.environmentKey]) || null; }
 function bmSozTur(it) {
   if (it.surTur) return it.surTur;
+  if (!(it.belgeler || []).length) return 'belgesiz';   // belge yüklenmeden süre/başlangıç varsayılmaz
   if (bmSozKat(it) !== 'Sözleşme') return 'sureli';
   return !it.bitis || (it.lastDate && it.bitis <= it.lastDate) ? 'suresiz' : 'sureli';   // bitiş yoksa (veya belge tarihine eşitlenmişse) süresiz say
 }
@@ -27557,7 +27561,9 @@ function bmSozFesih(id) {
 }
 function bmSozGeriAl(id) { const it = bmSozBul(id); if (!it) return; it.surTur = bmSozKat(it) === 'Sözleşme' ? 'suresiz' : 'sureli'; it.surTurElle = true; delete it.fesih; kontrolSave(); kontrolRender(); }
 function bmSozHtml(it, idJs, th) {
-  const kat = bmSozKat(it), T = bmSozTur(it), fm = v => v ? new Date(v + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  const kat = bmSozKat(it), T = bmSozTur(it);
+  if (T === 'belgesiz') return `<div class="lb">${kat.toUpperCase()}</div><div class="bm-sn gr">Belge yüklenince başlangıç, süre ve bitiş bilgisi belgeden okunur. Bitiş tarihi yoksa sözleşme “yürürlükte” sayılır.</div>`;
+  const fm = v => v ? new Date(v + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
   const docs = (it.belgeler || []).slice().sort((a, b) => (a.tarih || '9999').localeCompare(b.tarih || '9999'));
   const ad = kat === 'Poliçe' ? 'Poliçe' : 'Sözleşme', ek = kat === 'Poliçe' ? 'Zeyilname / yenileme' : 'Ek / yeni sürüm';
   const sec = T === 'sona' ? 'suresiz' : T, tt = { suresiz: 'Süresiz / otomatik yenilenir', sureli: 'Süreli (bitiş tarihli)' };
