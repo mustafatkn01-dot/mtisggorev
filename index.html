@@ -27539,8 +27539,8 @@ const BM_SOZ = { 'tmgd-sozlesme': 'Sözleşme', 'cevre-gorevlisi': 'Sözleşme',
 let bmSozMenu = null, bmSozOnay = null;
 function bmSozKat(it) { return (it && it.environmentKey && BM_SOZ[it.environmentKey]) || null; }
 function bmSozTur(it) {
-  if (it.surTur) return it.surTur;
-  if (!(it.belgeler || []).length) return 'belgesiz';   // belge yüklenmeden süre/başlangıç varsayılmaz
+  if (!(it.belgeler || []).length && !it.surTurElle) return 'belgesiz';   // belge yoksa, kullanıcı elle seçmedikçe hiçbir durum varsayılmaz (eski otomatik değerler de yok sayılır)
+  if (it.surTur) return it.surTur;   // belge yüklenmeden süre/başlangıç varsayılmaz
   if (bmSozKat(it) !== 'Sözleşme') return 'sureli';
   return !it.bitis || (it.lastDate && it.bitis <= it.lastDate) ? 'suresiz' : 'sureli';   // bitiş yoksa (veya belge tarihine eşitlenmişse) süresiz say
 }
