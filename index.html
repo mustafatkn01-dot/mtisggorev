@@ -26339,12 +26339,29 @@ function tarihler(m){
   }
   return out;
 }
+// Tek satırda "başlangıç - bitiş" aralığı (poliçe, sözleşme dönemi): bağlam başlangıç/vade/süre/dönem içeriyorsa
+function tarihAralik(m){
+  const t=String(m||''),D='(\\d{1,2})\\s*[.\\/]\\s*(\\d{1,2})\\s*[.\\/]\\s*(\\d{4})';
+  const re=new RegExp(D+'\\s*(?:[-–—]|ile|ila)\\s*'+D,'gi');let r;
+  const iso=(g,a,y)=>{g=+g;a=+a;y=+y;return(a<1||a>12||g<1||g>31||y<2000||y>2100)?null:`${y}-${String(a).padStart(2,'0')}-${String(g).padStart(2,'0')}`};
+  while((r=re.exec(t))){
+    const b=iso(r[1],r[2],r[3]),e=iso(r[4],r[5],r[6]);if(!b||!e||e<=b)continue;
+    const ctx=fold(t.slice(Math.max(0,r.index-70),r.index));
+    if(/baslangic|vade|sigorta(nin)? suresi|police suresi|gecerlilik|donem|sozlesme suresi|bitim|bitis/.test(ctx))return {bas:b,bit:e};
+  }
+  return null;
+}
 function tarihSec(m,tur){
   const L=tarihler(m);if(!L.length)return {};
   const bak=(re)=>L.find(d=>re.test(d.ctx));
-  const gec=bak(/gecerlilik|gecerli|bitis|son kullanma|sona er/);
+  const aralik=tarihAralik(m);   // "BAŞLANGIÇ VE BİTİM 09/08/2026 - 09/08/2027" gibi tek hücrede başlangıç–bitiş
+  const gec=bak(/gecerlilik|gecerli|bitis|bitim|vade sonu|son kullanma|sona er/);
   const dz=bak(/duzenleme|tanzim|rapor tarih|olcum tarih|muayene tarih|kontrol tarih|verilis|veris|onay|teslim tarih|bildirim tarih|beyan tarih|tarih/);
   const ilk=L.slice().sort((x,y)=>x.iso<y.iso?-1:1);
+  if(aralik){
+    const dzI=aralik.bas,gcI=aralik.bit;
+    return {tarih:tur==='gecerlilik'?gcI:dzI,gecerlilik:gcI,duzenleme:dzI,tumu:L.map(d=>d.iso)};
+  }
   const son=(dz&&dz.iso)||ilk[0].iso;
   return {tarih:tur==='gecerlilik'&&gec?gec.iso:son,gecerlilik:gec?gec.iso:null,duzenleme:(dz&&dz.iso)||null,tumu:L.map(d=>d.iso)};
 }
