@@ -22748,6 +22748,17 @@ window.addEventListener('resize', calMobInit);
     return { aiIncident: clean, localIdentity };
   }
 
+  // Anlatımdan "olaydan önceki iş" ve "tetikleyici sapma" cümlelerini yerel olarak ayıklar (ayrı form alanı yok).
+  const PRE_RE = /(\b\w+(?:[ıiuü]rken|[ae]rken|ken)\b|sırasında|esnasında|yapıyordu|yapmaktaydı|çalışıyordu|taşıyordu|yürüyordu|ilerliyordu|görevlendirildi|işe başla|iş yap|çıkmıştı|gitmişti|için .*(?:çık|git|yönel)|vardiya|mesai|üzerinde çalış|bakım|temizlik|ayar|setup|kurulum|yükleme|boşaltma|istif)/i;
+  const TRG_RE = /(kayıp|kayarak|kaydı|takılıp|takıldı|takılınca|düşünce|düştü|devrildi|devrilince|sıkış|çarp|aniden|birden|ani\b|dengesini kaybet|tutunamad|basamak|boşluğ|kopt|fırla|sıçra|geri tepme|temas|dokun|yanlışlıkla|fark etmeden|görmeden|dikkat dağıl|aceleyle|acele|koruyucu|emniyet|devre dışı|açık bırak|kapatmadan|kilitlemeden|izole)/i;
+  function narrativeSignals(n) {
+    const txt = str(n && n.narrative) + ' ' + str(n && n.whatHappened);
+    const sents = txt.split(/(?<=[.!?])\s+|\n+/).map(x => x.trim()).filter(x => x.length > 12);
+    const cut = x => x.length > 220 ? x.slice(0, 217).replace(/\s+\S*$/, '') + '...' : x;
+    const pre = sents.find(x => PRE_RE.test(x)) || '';
+    const trg = sents.find(x => x !== pre && TRG_RE.test(x)) || sents.find(x => TRG_RE.test(x)) || '';
+    return { preEventActivity: cut(pre), triggerEvent: cut(trg) };
+  }
   function buildEvidencePacket(incident) {
     const n = normalizeIncident(incident);
     const verified = [];
@@ -22761,8 +22772,9 @@ window.addEventListener('resize', calMobInit);
     n.injuries.forEach((x, i) => add(verified, 'injuries[' + i + ']', x.displayText));
     add(reported, 'whatHappened', n.whatHappened);
     add(reported, 'narrative', n.narrative);
-    add(reported, 'preEventActivity', n.preEventActivity);
-    add(reported, 'triggerEvent', n.triggerEvent);
+    const sg = narrativeSignals(n);
+    add(reported, 'preEventActivity', n.preEventActivity || (sg.preEventActivity && 'Anlatımdan çıkarıldı: ' + sg.preEventActivity));
+    add(reported, 'triggerEvent', n.triggerEvent || (sg.triggerEvent && 'Anlatımdan çıkarıldı: ' + sg.triggerEvent));
     add(reported, 'immediateResponse', n.immediateResponse);
     add(reported, 'existingMeasures', n.existingMeasures);
     return { verified, reported, observed: [], hypotheses: [], toVerify: [] };
@@ -22774,8 +22786,9 @@ window.addEventListener('resize', calMobInit);
     if (!n.time) qs.push({ priority: 'critical', key: 'time', question: 'Olayın yaklaşık saati nedir?', blocksReport: false });
     if (!n.department) qs.push({ priority: 'critical', key: 'department', question: 'Olay hangi bölüm veya birimde meydana geldi?', blocksReport: false });
     if (!n.narrative) qs.push({ priority: 'critical', key: 'narrative', question: 'Olay nasıl meydana geldi?', blocksReport: true });
-    if (!n.preEventActivity) qs.push({ priority: 'deepening', key: 'preEventActivity', question: 'Olaydan hemen önce hangi iş yapılıyordu?', blocksReport: false });
-    if (!n.triggerEvent) qs.push({ priority: 'deepening', key: 'triggerEvent', question: 'Olayı başlatan ilk sapma veya tetikleyici hareket neydi?', blocksReport: false });
+    const sg = narrativeSignals(n);
+    if (!n.preEventActivity && !sg.preEventActivity) qs.push({ priority: 'deepening', key: 'preEventActivity', question: 'Olaydan hemen önce hangi iş yapılıyordu?', blocksReport: false });
+    if (!n.triggerEvent && !sg.triggerEvent) qs.push({ priority: 'deepening', key: 'triggerEvent', question: 'Olayı başlatan ilk sapma veya tetikleyici hareket neydi?', blocksReport: false });
     if (!n.injuries.length && /kaza|ilk yardım/i.test(n.incidentType)) qs.push({ priority: 'critical', key: 'injuries', question: 'Yaralanan anatomik bölge ve hasar türü nedir?', blocksReport: false });
     if (!n.images.some(x => x.hasImage)) qs.push({ priority: 'optional', key: 'image', question: 'Olay yerini veya yerleşimi gösteren bir görsel var mı?', blocksReport: false });
     return qs;
@@ -22941,6 +22954,7 @@ ZORUNLU ANALİZ KURALLARI:
    - Araç-yaya: trafik ayrımı, bariyer, kör nokta/ayna, hız sınırı, sesli-ışıklı ikaz, geçiş kuralları.
    - Kimyasal / sıcak / elektrik: kapalı sistem, ikame, havalandırma, etiketleme/SDS, acil duş-göz yıkama, izolasyon.
 14. OLAY BAĞLANTISI KURALI: Rapordaki her neden, bulgu ve faaliyet olay anlatımındaki somut bir unsura (ekipman, alan, iş adımı, çalışan rolü, malzeme) bağlanmalıdır. Başka her olaya uyabilecek şablon cümleler ("eğitim verilecek", "denetim artırılacak", "prosedür güncellenecek") tek başına YAZILMAZ; yazılacaksa olaya özgü konu belirtilir (hangi prosedür, hangi alanda, ne sıklıkla).
+15. OLAY ÖNCESİ VE SAPMA: Önce BAŞLANGIÇ KANIT PAKETİ'ndeki preEventActivity (olaydan hemen önce yapılan iş) ve triggerEvent (normal iş akışından saptıran davranış/koşul) bilgilerini kullan. eventChain'in ilk adımı olay öncesi normal iş, ikinci adımı sapma/tetikleyici olsun; sonra temas ve yaralanma gelsin. Sapmayı kişiye değil sisteme bağla: bu sapma neden mümkün/olağan hale gelmişti (ekipman, düzen, gözetim, süre baskısı)? Bu iki bilgi anlatımda yoksa uydurma, missingInformation ve to_verify içine yaz. Rapor dilinde "şu yapılıyordu" diye ayrı başlık açma; olay anlatımına akıcı biçimde yedir.
 13. Olay görseli de gönderildiyse yalnız görselde AÇIKÇA görülen fiziksel bulguları "observed" olarak kullan; görselde görünmeyen şeyi uydurma.
 
 ${A3_KURALLARI}
@@ -23544,7 +23558,7 @@ SADECE ŞU JSON'U DÖNDÜR:
 
   return {
     ENGINE_VERSION, SCHEMA_VERSION, CAUSE_CATEGORIES, EVIDENCE_STATES,
-    normalizeIncident, prepareIncidentForAI, buildEvidencePacket, requiredQuestionCandidates,
+    normalizeIncident, prepareIncidentForAI, buildEvidencePacket, requiredQuestionCandidates, narrativeSignals,
     analystOutputTemplate, buildAnalystPrompt, buildReviewerPrompt, extractJson,
     normalizeAnalysis, validateAnalysis, generateDraft, createDraftStore, validateVisualCue, visualCandidates, ensureWhyActions, genericActionRatio,
     incidentFromCurrentForm, simpleHash
@@ -23813,7 +23827,9 @@ function kazaRaporTab(btn){
   if(analysis) analysis.hidden=tab!=='analysis';
   if(tab==='analysis' && analysis) analysis.scrollTop=0;
 }
-function kazaRaporPrecheck(inc){const qs=KazaAIRaporMotoru.requiredQuestionCandidates(inc),items=[{ok:!!inc.narrative,text:'Olay anlatımı ve temel bilgiler tamamlandı.'},{ok:inc.injuries.length>0,text:inc.injuries.length+' yaralanma/hasar kaydı mevcut.'},{ok:!!kazaPrimaryImageData,text:kazaPrimaryImageData?'Ana olay görseli rapora hazır.':'Ana olay görseli eklenmedi; rapor üretimini engellemez.'}];qs.filter(x=>x.key!=='narrative'&&x.key!=='injuries'&&x.key!=='image').slice(0,3).forEach(x=>items.push({ok:false,text:x.question+'; rapor üretimini engellemez.'}));document.getElementById('kaza-report-precheck').innerHTML=items.map(x=>'<div class="precheck-item '+(x.ok?'ok':'warning')+'"><i class="'+(x.ok?'':'warn')+'" aria-hidden="true">'+(x.ok?'✓':'!')+'</i><span>'+kazaEsc(x.text)+'</span></div>').join('')}
+function kazaRaporPrecheck(inc){const qs=KazaAIRaporMotoru.requiredQuestionCandidates(inc),items=[{ok:!!inc.narrative,text:'Olay anlatımı ve temel bilgiler tamamlandı.'},{ok:inc.injuries.length>0,text:inc.injuries.length+' yaralanma/hasar kaydı mevcut.'},{ok:!!kazaPrimaryImageData,text:kazaPrimaryImageData?'Ana olay görseli rapora hazır.':'Ana olay görseli eklenmedi; rapor üretimini engellemez.'}];const sg=KazaAIRaporMotoru.narrativeSignals(inc);
+  if(inc.narrative){items.push(sg.preEventActivity?{ok:true,text:'Olay öncesi iş anlatımda var; rapora aktarılır.'}:{ok:false,text:'Anlatımda olaydan hemen önce yapılan iş geçmiyor; yazarsan rapor güçlenir.'});items.push(sg.triggerEvent?{ok:true,text:'Normalden sapma/tetikleyici anlatımda var; rapora aktarılır.'}:{ok:false,text:'Anlatımda olayı başlatan sapma geçmiyor; yazarsan rapor güçlenir.'});}
+  qs.filter(x=>x.key==='time'||x.key==='department').slice(0,2).forEach(x=>items.push({ok:false,text:x.question+'; rapor üretimini engellemez.'}));document.getElementById('kaza-report-precheck').innerHTML=items.map(x=>'<div class="precheck-item '+(x.ok?'ok':'warning')+'"><i class="'+(x.ok?'':'warn')+'" aria-hidden="true">'+(x.ok?'✓':'!')+'</i><span>'+kazaEsc(x.text)+'</span></div>').join('')}
 function kazaEsc(v){return String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function kazaRaporApplyAnalysisEdits(draft){
   if(!draft || !draft.analysis) return draft;
