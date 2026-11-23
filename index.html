@@ -6513,6 +6513,87 @@ body.a3-open{overflow:hidden}
 .kaza-report-bottom button{grid-column:span 2}
 .kaza-report-bottom button:nth-child(n+4){grid-column:span 3}
 </style>
+
+<style id="board-tema-v2">
+@media screen{
+/* ===== Board: Durum Tablosu kartları ===== */
+html body #board{gap:12px}
+html body #board .col{background:color-mix(in srgb,var(--surface2) 72%,var(--bg));border:1px solid var(--line);border-radius:16px!important;min-width:272px}
+html body #board .card{min-width:0}
+html body #board .col-hd{border-bottom:0;padding:11px 13px 8px;font-size:11.5px;font-weight:800;letter-spacing:.04em;color:var(--text2)}
+html body #board .col-hd .cc{font-size:11px;font-weight:700;padding:1px 8px;color:var(--text2)}
+html body #board .col-body{padding:0 9px 10px;display:flex;flex-direction:column;gap:8px}
+html body #board .empty{border:1.5px dashed var(--line);border-radius:12px;padding:22px 8px;margin:0}
+html body #board .card{position:relative;margin:0;background:var(--surface)!important;border:1px solid var(--line);border-radius:13px!important;padding:10px 11px 9px 13px;box-shadow:var(--sh)!important}
+html body #board .card::before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:0 3px 3px 0;background:transparent}
+html body #board .card.overdue::before{background:var(--bad)}
+html body #board .card.due-soon::before{background:var(--warn)}
+html body #board .ctop{gap:6px;align-items:flex-start}
+html body #board .ctxt{font-size:12.5px;font-weight:650;line-height:1.38;cursor:pointer;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+html body #board .card.kb-open .ctxt{-webkit-line-clamp:unset}
+html body #board .kb-ib{flex:none;width:26px;height:26px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;color:var(--text3);cursor:pointer;padding:0}
+html body #board .kb-ib:hover{background:var(--surface2);color:var(--text)}
+html body #board .kb-ib.kb-del:hover{color:var(--bad-tx);background:color-mix(in srgb,var(--bad) 9%,var(--surface))}
+html body #board .kb-ib svg,html body #board .kb-mvb svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+html body #board .cmeta.kb-m{flex-wrap:nowrap;padding-left:0;margin-top:7px;gap:6px;font-size:11.5px;color:var(--text2);min-width:0;white-space:nowrap}
+.kb-dot{width:8px;height:8px;border-radius:50%;flex:none}
+.kb-el{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.kb-sep{color:var(--text3)}
+.kb-pl,html body #board .cprio-badge{display:inline-flex;align-items:center;font-size:10.5px;font-weight:800;border-radius:99px;padding:2px 8px;white-space:nowrap;flex:none;border:1px solid transparent}
+.kb-pl.kb-acc{background:color-mix(in srgb,var(--acc) 10%,var(--surface));color:var(--acc-tx);border-color:color-mix(in srgb,var(--acc) 24%,var(--surface))}
+.kb-pl.kb-bad,.kb-pl.cprio-high{background:color-mix(in srgb,var(--bad) 10%,var(--surface));color:var(--bad-tx);border-color:color-mix(in srgb,var(--bad) 25%,var(--surface))}
+.kb-pl.kb-warn{background:color-mix(in srgb,var(--warn) 12%,var(--surface));color:var(--warn-tx);border-color:color-mix(in srgb,var(--warn) 32%,var(--surface))}
+.kb-pl.cprio-normal{background:color-mix(in srgb,var(--acc) 10%,var(--surface));color:var(--acc-tx);border-color:color-mix(in srgb,var(--acc) 24%,var(--surface))}
+.kb-pl.cprio-low{background:var(--surface2);color:var(--text2);border-color:var(--line)}
+.kb-pr{border:0;background:transparent;padding:0;cursor:pointer;border-radius:99px;flex:none}
+.kb-pr:hover .kb-pl{filter:brightness(.96);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 18%,transparent)}
+html body #board .cmeta.kb-m .cdate{margin-left:auto;flex:none;font-size:11px;color:var(--text3)}
+html body #board .cbtns{padding-left:0;margin-top:8px;gap:6px;flex-wrap:nowrap}
+html body #board .kb-mvb{flex:1;height:30px;border:1px solid var(--line);background:var(--surface);border-radius:9px;font-size:11.5px;font-weight:700;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+html body #board .kb-mvb:hover{border-color:var(--acc);color:var(--acc-tx)}
+html body #board .cbtns .card-note-btn,html body #board .cbtns .bmv{flex:none;height:30px;border-radius:9px}
+/* ===== Liste ===== */
+html body #list-view-wrap{padding:0 14px 14px!important;background:var(--bg)!important}
+html body #list-table{border:1px solid var(--line)!important;border-radius:16px!important;box-shadow:var(--sh)!important;overflow:visible!important}
+html body #list-table thead th{background:var(--surface2)!important;color:var(--text2)!important;font-size:10.5px!important;font-weight:800!important;letter-spacing:.05em!important;text-transform:uppercase;padding:0!important;border-bottom:1px solid var(--line)!important}
+html body #list-table thead th:first-child{border-radius:16px 0 0 0}html body #list-table thead th:last-child{border-radius:0 16px 0 0}
+html body #list-table thead th:not(.lv-th-filterable){padding:11px 12px!important}
+html body #list-table .lv-th-inner{padding:11px 12px;justify-content:flex-start}
+html body #list-table .lf-icon{border-radius:7px;padding:2px 5px}
+html body #list-table .lf-icon:hover,html body #list-table .lf-icon.active{background:color-mix(in srgb,var(--acc) 14%,var(--surface));color:var(--acc-tx)}
+html body #list-table tbody td{padding:9px 12px!important;font-size:12.5px!important}
+html body #list-table tbody tr:last-child td:first-child{border-radius:0 0 0 16px}html body #list-table tbody tr:last-child td:last-child{border-radius:0 0 16px 0}
+html body #list-table .lv-text{font-size:12.5px!important;font-weight:600!important}
+html body #list-table .lv-nowrap{font-size:12.5px!important}
+html body #list-table .lv-sno{text-align:center;font-size:11px!important}
+html body #list-table tbody tr.lv-overdue td:first-child{box-shadow:inset 3px 0 0 var(--bad)!important}
+html body #list-table tbody tr.lv-due-soon td:first-child{box-shadow:inset 3px 0 0 var(--warn)!important}
+html body #list-table .lv-editable{display:inline-flex!important;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;border:1px solid transparent;border-radius:99px;padding:1px 3px 1px 1px}
+html body #list-table .lv-editable:hover{background:var(--surface2)!important;border-color:var(--line)}
+html body #list-table .lv-status-badge,html body #list-table .lv-prio-badge{font-size:10.5px!important;font-weight:800!important;border-radius:99px;padding:2px 9px!important;border:1px solid var(--line)}
+html body #list-table .lv-btn{width:28px;height:28px;border-radius:8px;border:0;background:transparent;color:var(--text3)}
+/* ===== Açılır listeler (filtre, durum, öncelik, fabrika, taşı) ===== */
+html body .lf-dropdown{text-transform:none;letter-spacing:normal;font-weight:400;position:fixed!important;z-index:80;background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:0 14px 36px rgba(10,34,54,.20);padding:6px;min-width:190px;max-width:260px;max-height:none;overflow:visible;display:flex;flex-direction:column;gap:1px}
+html body .lf-dropdown .lf-option{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;border:0;background:transparent;font-size:12.5px;text-align:left;width:100%;color:var(--text);cursor:pointer;font-family:inherit}
+html body .lf-dropdown .lf-option:hover{background:color-mix(in srgb,var(--acc) 8%,var(--surface))}
+html body .lf-dropdown .lf-option input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.kb-cb{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;font-size:10px;color:transparent;background:var(--surface)}
+.lf-option input:checked + .kb-cb{background:var(--acc);border-color:var(--acc);color:#fff}
+.kb-n{margin-left:auto;font-size:10.5px;color:var(--text3)}
+.kb-ck{margin-left:auto;color:var(--acc-tx);font-weight:800;font-size:12px}
+.kb-sr{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:0 8px;height:32px;margin:2px 2px 6px}
+.kb-sr input{flex:1;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:12px;min-width:0}
+.kb-sr svg{width:13px;height:13px;stroke:var(--text3);fill:none;stroke-width:2}
+.kb-ls{overflow-y:auto;max-height:230px;display:flex;flex-direction:column;gap:1px}
+.kb-ft{display:flex;gap:6px;border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.kb-ft button{flex:1;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:11.5px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit}
+.kb-ft button.pr{background:var(--acc);border-color:var(--acc);color:var(--acc-fg,#fff)}
+}
+@media print{.kb-ib,.kb-mvb,.kb-pr,.kb-dd{display:none!important}}
+@media screen and (max-width:760px){
+ html body #board .col{min-width:84vw}
+}
+</style>
 </head>
 <body>
 <div id="acilis" aria-hidden="true"><div class="sp"><div class="pl"></div><div class="rg"></div><div class="orb" id="acilis-orb"></div><img class="lg" alt="" src="data:image/png;base64,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"><div class="nm">İSG Yönetim &amp; Performans<small>Yükleniyor…</small></div></div></div>
@@ -9569,23 +9650,23 @@ function jsSafe(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 function getFilterOptions(colKey) {
   if (colKey === 'status') return COLS.map(c => ({ value:c.id, label:c.label, color:c.color }));
   if (colKey === 'prio') return [
-    { value:'high',   label:'🔴 Yüksek' },
-    { value:'normal', label:'🔵 Normal' },
-    { value:'low',    label:'⬇️ Düşük'  }
+    { value:'high',   label:'Yüksek' },
+    { value:'normal', label:'Normal' },
+    { value:'low',    label:'Düşük'  }
   ];
   if (colKey === 'fab') {
     return [{ value:'Tüm fabrikalar', label:'Tüm fabrikalar', color:'#888780' }]
       .concat(fabrikalar.map(f => ({ value:f.name, label:f.name, color:f.color })));
   }
   const raw = tasks.map(t => t[colKey]).filter(v => v !== undefined && v !== null && String(v).trim() !== '');
-  const uniq = Array.from(new Set(raw));
-  uniq.sort((a,b) => String(a).localeCompare(String(b), 'tr'));
-  return uniq.map(v => ({ value:v, label:v }));
+  const g = new Map(); raw.forEach(v => { const k = String(v).trim().toLocaleLowerCase('tr-TR'); if (!g.has(k)) g.set(k, String(v).trim()); });
+  return Array.from(g.entries()).sort((a,b) => a[1].localeCompare(b[1], 'tr')).map(x => ({ value:x[0], label:x[1] }));
 }
 
 function toggleListFilterDD(colKey, ev) {
+  kbFltQ = ''; kbLsKay = 0;
   if (openFilterCol === colKey) { openFilterCol = null; render(); return; }
-  openFilterCol = colKey;
+  openFilterCol = colKey; openInlineEdit = null;
   openFilterColDir = dropdownYonHesapla(ev, 260, 220);
   render();
 }
@@ -9600,19 +9681,30 @@ function clearListFilter(colKey) {
   render();
 }
 
+function kbOpSay(colKey, v) {
+  return tasks.filter(t => {
+    if (colKey === 'fab') { const f = (t.fabs && t.fabs.length) ? t.fabs : []; return f.length ? f.includes(v) : v === 'Tüm fabrikalar'; }
+    if (colKey === 'status') return t.status === v;
+    if (colKey === 'prio') return (t.prio || 'normal') === v;
+    return String(t[colKey] || '').trim().toLocaleLowerCase('tr-TR') === v;
+  }).length;
+}
 function buildListFilterDropdown(colKey) {
   const selected = listFilters[colKey] || new Set();
-  const options = getFilterOptions(colKey);
-  return `<div class="lf-dropdown" style="${dropdownPozStil(openFilterColDir)}" onclick="event.stopPropagation()">
-    ${selected.size > 0 ? `<div class="lf-clear" onclick="clearListFilter('${colKey}')">Tümünü Temizle (${selected.size})</div>` : ''}
-    ${options.length === 0 ? '<div class="lf-empty">Değer yok</div>' : options.map(o => `
-      <label class="lf-option">
-        <input type="checkbox" ${selected.has(o.value)?'checked':''} onchange="toggleListFilterVal('${colKey}','${jsSafe(o.value)}')">
+  const options = getFilterOptions(colKey), q = kbFltQ.toLocaleLowerCase('tr-TR');
+  return `<div class="lf-dropdown" onclick="event.stopPropagation()">
+    ${options.length > 6 ? `<div class="kb-sr"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input placeholder="Ara..." value="${esc(kbFltQ)}" oninput="kbFltAra(this)"></div>` : ''}
+    <div class="kb-ls">${options.length === 0 ? '<div class="lf-empty">Değer yok</div>' : options.map(o => `
+      <label class="lf-option kb-fo${selected.has(o.value) ? ' on' : ''}" style="${q && !String(o.label).toLocaleLowerCase('tr-TR').includes(q) ? 'display:none' : ''}">
+        <input type="checkbox" ${selected.has(o.value)?'checked':''} onchange="kbLsKay=this.closest('.kb-ls').scrollTop;toggleListFilterVal('${colKey}','${jsSafe(o.value)}')">
+        <span class="kb-cb">✓</span>
         ${o.color ? `<span class="lf-dot" style="background:${o.color}"></span>` : ''}
-        <span>${esc(o.label)}</span>
-      </label>`).join('')}
+        <span>${esc(o.label)}</span><span class="kb-n">${kbOpSay(colKey, o.value)}</span>
+      </label>`).join('')}</div>
+    <div class="kb-ft"><button type="button" onclick="kbLsKay=0;clearListFilter('${colKey}')">Temizle</button><button type="button" class="pr" onclick="kbFltKapat()">Tamam</button></div>
   </div>`;
 }
+function kbFltKapat() { openFilterCol = null; kbFltQ = ''; kbLsKay = 0; render(); }
 
 function applyListFilters(list) {
   return list.filter(t => {
@@ -9628,7 +9720,7 @@ function applyListFilters(list) {
       } else if (key === 'prio') {
         if (!set.has(t.prio || 'normal')) return false;
       } else {
-        if (!set.has(t[key] || '')) return false;
+        if (!set.has(String(t[key] || '').trim().toLocaleLowerCase('tr-TR'))) return false;
       }
     }
     return true;
@@ -9642,7 +9734,7 @@ let openInlineEditDir = { v: 'down', h: 'left' };
 function toggleInlineEdit(kind, id, ev) {
   const key = kind + ':' + id;
   if (openInlineEdit === key) { openInlineEdit = null; render(); return; }
-  openInlineEdit = key;
+  openInlineEdit = key; openFilterCol = null;
   const yaklasikYukseklik = kind === 'status' ? 300 : (kind === 'fab' ? 220 : 180);
   openInlineEditDir = dropdownYonHesapla(ev, yaklasikYukseklik, 210);
   render();
@@ -9698,9 +9790,9 @@ function buildInlineStatusDropdown(t) {
 
 function buildInlinePrioDropdown(t) {
   const opts = [
-    { value:'high',   label:'🔴 Yüksek' },
-    { value:'normal', label:'🔵 Normal' },
-    { value:'low',    label:'⬇️ Düşük'  }
+    { value:'high',   label:'Yüksek' },
+    { value:'normal', label:'Normal' },
+    { value:'low',    label:'Düşük'  }
   ];
   const cur = t.prio || 'normal';
   return `<div class="lf-dropdown" style="${dropdownPozStil(openInlineEditDir)}" onclick="event.stopPropagation()">
@@ -9720,6 +9812,7 @@ function buildInlineFabDropdown(t) {
       const checked = f.name === 'Tüm fabrikalar' ? allSelected : curFabs.includes(f.name);
       return `<label class="lf-option">
         <input type="checkbox" ${checked?'checked':''} onchange="toggleTaskFab('${t.id}','${jsSafe(f.name)}')">
+        <span class="kb-cb">✓</span>
         <span class="lf-dot" style="background:${f.color}"></span>
         <span>${esc(f.name)}</span>
       </label>`;
@@ -9808,6 +9901,57 @@ function renderListHseCell(t) {
   return badges.length ? `<div class="lv-hse-wrap">${badges.join('')}</div>` : '<span class="lv-muted">—</span>';
 }
 
+const KB_IC = {
+  edit:'<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
+  del:'<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+  arr:'<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+};
+// Kart üzerindeki Taşı / Öncelik listesi (temaya uygun, imlecin yanında açılır)
+function kbDdKapat() { document.querySelectorAll('.kb-dd').forEach(x => x.remove()); }
+function kbYerles(el, btn) {
+  document.body.appendChild(el);
+  const r = btn.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+  const x = Math.min(Math.max(8, r.left), window.innerWidth - w - 8);
+  let y = r.bottom + 4; if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 4);
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+}
+function kbDd(kind, id, ev) {
+  ev.stopPropagation();
+  const btn = ev.currentTarget, ac = document.querySelector('.kb-dd');
+  const ayni = ac && ac._k === kind + ':' + id; kbDdKapat(); if (ayni) return;
+  const t = tasks.find(x => String(x.id) === String(id)); if (!t) return;
+  const el = document.createElement('div'); el.className = 'lf-dropdown kb-dd'; el._k = kind + ':' + id;
+  el.onclick = e => e.stopPropagation();
+  const pr = [['high', 'Yüksek'], ['normal', 'Normal'], ['low', 'Düşük']];
+  el.innerHTML = kind === 'prio'
+    ? pr.map(o => `<button type="button" class="lf-option kb-op" onclick="kbDdKapat();setTaskPrio('${jsSafe(String(id))}','${o[0]}')"><span>${o[1]}</span>${(t.prio || 'normal') === o[0] ? '<span class="kb-ck">✓</span>' : ''}</button>`).join('')
+    : COLS.filter(c => c.id !== t.status).map(c => `<button type="button" class="lf-option kb-op" onclick="kbDdKapat();mv('${jsSafe(String(id))}','${c.id}')"><span class="lf-dot" style="background:${c.color}"></span><span>${esc(c.label)}</span></button>`).join('');
+  kbYerles(el, btn);
+}
+document.addEventListener('click', kbDdKapat);
+window.addEventListener('resize', kbDdKapat);
+document.addEventListener('scroll', e => { if (!(e.target.closest && e.target.closest('.kb-dd'))) kbDdKapat(); }, true);
+
+// Listedeki açılır kutuları (filtre / durum / öncelik / fabrika) tetikleyicinin yanına sabitler; kesilmez
+const kbTarih = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v)) ? String(v).split('-').reverse().join('.') : String(v);
+let kbLsKay = 0;
+function kbDdKonumla() {
+  document.querySelectorAll('#list-table .lf-dropdown').forEach(el => {
+    const host = el.parentElement; const a = host && host.querySelector('.lf-icon, .lv-editable'); if (!a) return;
+    el.removeAttribute('style'); el.style.visibility = 'hidden';
+    const r = a.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+    let x = Math.min(Math.max(8, r.left), window.innerWidth - w - 8), y = r.bottom + 4;
+    if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 4);
+    el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.visibility = '';
+    const ls = el.querySelector('.kb-ls'); if (ls && kbLsKay) ls.scrollTop = kbLsKay;
+  });
+}
+function kbFltAra(inp) {
+  kbFltQ = inp.value; const q = kbFltQ.toLocaleLowerCase('tr-TR');
+  inp.closest('.lf-dropdown').querySelectorAll('.kb-ls .lf-option').forEach(o => { o.style.display = o.textContent.toLocaleLowerCase('tr-TR').includes(q) ? '' : 'none'; });
+}
+let kbFltQ = '';
+window.addEventListener('resize', () => { if (openFilterCol || openInlineEdit) kbDdKonumla(); });
 function renderListView(tasksToShow) {
   const thead = document.getElementById('list-thead');
   const tbody = document.getElementById('list-tbody');
@@ -9826,7 +9970,7 @@ function renderListView(tasksToShow) {
     </th>`;
   }).join('') + '<th>İşlemler</th></tr>';
 
-  const pLabel = { high:'🔴 Yüksek', normal:'🔵 Normal', low:'⬇️ Düşük' };
+  const pLabel = { high:'Yüksek', normal:'Normal', low:'Düşük' };
   const pColor = { high:'var(--bad)', normal:'var(--acc)', low:'var(--text3)' };
 
   if (tasksToShow.length === 0) {
@@ -9855,8 +9999,8 @@ function renderListView(tasksToShow) {
       <td class="lv-nowrap">${cellEditable('sorumlu', t.id, t.sorumlu, t.sorumlu ? esc(t.sorumlu) : '<span class="lv-muted">—</span>')}</td>
       <td>${cellEditable('makine', t.id, t.makine, t.makine ? esc(t.makine) : '<span class="lv-muted">—</span>')}</td>
       <td class="lv-nowrap">${cellEditable('talep', t.id, t.talep, t.talep ? esc(t.talep) : '<span class="lv-muted">—</span>')}</td>
-      <td class="lv-nowrap">${cellEditable('acilis', t.id, t.acilis, t.acilis ? esc(t.acilis) : '<span class="lv-muted">—</span>')}</td>
-      <td class="lv-nowrap ${terminCls?'lv-termin '+terminCls:''}">${cellEditable('termin', t.id, t.termin, t.termin ? esc(t.termin) : '<span class="lv-muted">—</span>')}</td>
+      <td class="lv-nowrap">${cellEditable('acilis', t.id, t.acilis, t.acilis ? esc(kbTarih(t.acilis)) : '<span class="lv-muted">—</span>')}</td>
+      <td class="lv-nowrap ${terminCls?'lv-termin '+terminCls:''}">${cellEditable('termin', t.id, t.termin, t.termin ? esc(kbTarih(t.termin)) : '<span class="lv-muted">—</span>')}</td>
       <td class="lv-nowrap" style="position:relative">
         <div class="lv-editable" onclick="event.stopPropagation();toggleInlineEdit('prio','${t.id}', event)">
           <span class="lv-prio-badge" style="background:color-mix(in srgb, ${pColor[prio]} 14%, var(--surface));color:color-mix(in srgb, ${pColor[prio]} 70%, var(--text))">${pLabel[prio]}</span>
@@ -9878,6 +10022,7 @@ function renderListView(tasksToShow) {
       </td>
     </tr>`;
   }).join('');
+  kbDdKonumla();
 }
 
 function render() {
@@ -9935,7 +10080,6 @@ function render() {
 
   board.innerHTML = vcols.map(col => {
     const ts = filteredTasks.filter(t=>t.status===col.id);
-    const others = COLS.filter(c=>c.id!==col.id);
     const prioClass = { high:'prio-high', normal:'prio-normal', low:'prio-low' };
     const pBadge = { high:'cprio-high', normal:'cprio-normal', low:'cprio-low' };
     const pLabel = { high:'Yüksek', normal:'Normal', low:'Düşük' };
@@ -9946,26 +10090,27 @@ function render() {
           const cardCls = ti ? (ti.cls==='overdue'?'overdue':ti.cls==='due-soon'?'due-soon':'') : '';
           const prio = t.prio || 'normal';
           const hasNote = !!(t.note && t.note.trim());
+          const fl = (t.fabs && t.fabs.length) ? t.fabs : (t.fab ? t.fab.split(',').map(x=>x.trim()).filter(Boolean) : []);
+          const fadi = fl.length ? fl[0] + (fl.length > 1 ? ' +' + (fl.length - 1) : '') : 'Tüm fabrikalar';
+          const tlab = ti && ti.cls !== 'ok' ? ti.label.replace(/^[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+/, '') : '';
+          const gid = jsSafe(String(t.id));
           return `<div class="card ${prioClass[prio]||'prio-normal'} ${cardCls}" data-task-id="${esc(String(t.id))}">
             ${hasNote ? `<div class="note-tooltip">${esc(t.note)}</div>` : ''}
             <div class="ctop">
-              <span class="cdott" style="background:${col.color}"></span>
-              <span class="ctxt">${esc(t.text)}</span>
-              <span class="cedit" onclick="openEditModal('${t.id}')" title="Görevi düzenle">✏️</span>
-              <span class="cdel" onclick="del('${t.id}')" title="Sil">×</span>
+              <span class="ctxt" onclick="this.closest('.card').classList.toggle('kb-open')">${esc(t.text)}</span>
+              <button type="button" class="kb-ib" onclick="openEditModal('${gid}')" title="Düzenle">${KB_IC.edit}</button>
+              <button type="button" class="kb-ib kb-del" onclick="del('${gid}')" title="Sil">${KB_IC.del}</button>
             </div>
-            <div class="cmeta">
-              ${t.talep?`<span class="ctalep">#${esc(t.talep)}</span>`:''}
-              ${renderFabTags(t)}
-              ${t.sorumlu?`<span class="csorumlu">👤 ${esc(t.sorumlu)}</span>`:''}
-              ${ti?`<span class="ctermin ${ti.cls}">${ti.label}</span>`:''}
-              <span class="cprio-badge ${pBadge[prio]}">${pLabel[prio]}</span>
-              <span class="cdate">${t.date}</span>
+            <div class="cmeta kb-m"><span class="kb-dot" style="background:${fl.length ? fabColor(fl[0]) : 'var(--text3)'}"></span><span class="kb-el">${esc(fadi)}</span>${t.sorumlu ? `<span class="kb-sep">·</span><span class="kb-el">${esc(t.sorumlu)}</span>` : ''}<span class="cdate">${esc(t.date || '')}</span></div>
+            <div class="cmeta kb-m">
+              ${t.talep ? `<span class="kb-pl kb-acc">#${esc(t.talep)}</span>` : ''}
+              ${tlab ? `<span class="kb-pl ${cardCls === 'overdue' ? 'kb-bad' : 'kb-warn'}">${esc(tlab)}</span>` : ''}
+              <button type="button" class="kb-pr" onclick="kbDd('prio','${gid}',event)"><span class="kb-pl ${pBadge[prio]}">${pLabel[prio]}</span></button>
             </div>
             <div class="cbtns">
-              ${others.map(c=>`<button class="bmv" onclick="mv('${t.id}','${c.id}')">${c.label}</button>`).join('')}
-              <button class="card-note-btn ${hasNote?'has-note':''}" onclick="openNoteModal('${t.id}')" title="${hasNote?'Notu düzenle':'Not ekle'}">${hasNote?'📝':'+'}</button>
-              ${col.id==='tamam'?`<button class="bmv" onclick="archiveNow('${t.id}')" title="Hemen arşive taşı">📦 Arşivle</button>`:''}
+              <button type="button" class="kb-mvb" onclick="kbDd('move','${gid}',event)">Taşı ${KB_IC.arr}</button>
+              <button class="card-note-btn ${hasNote?'has-note':''}" onclick="openNoteModal('${gid}')" title="${hasNote?'Notu düzenle':'Not ekle'}">${hasNote?'📝':'+'}</button>
+              ${col.id==='tamam'?`<button class="bmv" onclick="archiveNow('${gid}')" title="Hemen arşive taşı">📦 Arşivle</button>`:''}
             </div>
           </div>`;
         }).join('');
@@ -20810,7 +20955,7 @@ window.addEventListener('resize', calMobInit);
   function kartYiginUygula() {
     const board = document.getElementById('board');
     if (!board) return;
-    const aktif = window.matchMedia(SORGU).matches;
+    const aktif = false; // Yeni kart tasarımı: kartlar üst üste binmez (iskambil yığını kapalı)
     board.classList.toggle('kart-yigin', aktif);
 
     board.querySelectorAll('.card').forEach(kart => {
