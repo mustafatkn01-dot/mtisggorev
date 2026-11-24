@@ -7542,7 +7542,7 @@ textarea.inp{height:68px;padding:8px 11px;resize:vertical;line-height:1.45}
 </style></head><body>
 <div class="top"><b>İSG Yönetim &amp; Performans</b><div class="tabs"><span>Özet</span><span>Board</span><span>Takvim</span><span>Personel</span><span>Kontroller</span><span>Denetimler</span><span>Kaza / Olay</span><span class="on">🔥 Yangın</span></div>
 <div class="th"><button class="on" data-t="mavi">Mavi</button><button data-t="yesil">Yeşil</button><button data-t="koyu">Koyu</button></div></div>
-<div class="wrap"><div class="acts"><button class="btn" data-a="bos">Temizle</button><button class="btn pr" data-a="dol">Örnek verilerle doldur</button></div>
+<div class="wrap"><div class="acts"><button class="btn" data-a="bos">Temizle</button></div>
 <div class="stats" id="kpi"></div><div id="cards"></div></div>
 <script>/* ===== D6a: Özel riskler (Evet / Hayır kapılı) ===== */
 const EH=['Evet','Hayır'],ND='Değer belirtilmemiştir.';
@@ -8000,7 +8000,7 @@ document.addEventListener('click',e=>{const t=s=>e.target.closest(s);let b;
  if(b=t('[data-multi]')){e.stopPropagation();openMulti(b);return}
  if(b=t('[data-dd]')){e.stopPropagation();const k=b.dataset.dd;openDD(b,OPTS[k],P[k],v=>{if(AREAKEY[k]){const ids=v.split(' + ').map(x=>SNI[x]).filter(Boolean);setArea(AREAKEY[k],ids[0]||'')}else P[k]=v;render()});return}
  if(t('.dd'))return;closeDD();if(t('input'))return;
- if(b=t('[data-a]')){const a=b.dataset.a;if(a==='dol')Object.assign(P,ORNEK);if(a==='bos'){Object.keys(P).forEach(k=>{if(k!=='open')delete P[k]});Object.assign(P,DEF,{sys:[],mal:[]});}render();return}
+ if(b=t('[data-a]')){const a=b.dataset.a;if(a==='dol')Object.assign(P,ORNEK);if(a==='bos'){if(!confirm('Girilen tüm bilgiler silinecek. Devam edilsin mi?'))return;Object.keys(P).forEach(k=>{if(k!=='open')delete P[k]});Object.assign(P,DEF,{sys:[],mal:[]});}render();return}
  if(b=t('[data-sub]')){const id=b.dataset.sub;P.sub=P.sub===id?null:id;render();return}
  if(b=t('[data-c]')){const id=b.dataset.c;P.open=P.open===id?null:id;render();return}
  if(b=t('.th button')){document.documentElement.dataset.t=b.dataset.t;document.querySelectorAll('.th button').forEach(x=>x.classList.toggle('on',x===b))}});
@@ -8378,7 +8378,7 @@ function girisHtml(){
  ${sug?`<div class="note" style="margin-top:10px"><h6>Ek-1 önerisi</h6>Seçilen faaliyet için Ek-1 sınıfı: <b>${sug}</b>.${G.th!==sug?` <button class="btn" data-act="uyg" style="height:28px;margin-left:6px">Uygula</button>`:' Seçili sınıfla aynıdır.'}<br>Orta tehlike-1 ve 2 alanlarında boyama gibi yüksek yangın yükü varsa alan Orta tehlike-3 sayılır.</div>`:''}
  <div class="grid" style="margin-top:12px">${gd('Kullanıcı yükü katsayısı (Ek-5/A)','kk',KA.map(x=>x[0]),{span:2})+gi('Kişi sayısı','kisi','belirliyse, kişi')}</div></div>
  ${yeni?`<div class="card" style="padding:14px 16px;margin-bottom:12px"><div class="gh">4. Bina ve tasarım verileri</div><div class="grid">${gi('Toplam kapalı alan','alan','m²')+gi('Kat sayısı','kat','adet')+gi('Toplam taban alanı','taban','m²')+gi('Bina boyutu – uzun kenar','a','m')+gi('Bina boyutu – kısa kenar','b','m')+gi('Bina yüksekliği','h','m')+gd('Yağmurlama sistemi','ym',YMO)+gi('Yağmurlama başlıkları arası yükseklik','hy','m')+gi('Kapalı otopark alanı','oto','m²')+gi('Kazan dairesi ısıl kapasitesi','kw','kW')+gd('Ayrı planlanan yerleşim alanında mı','ayri',['Evet','Hayır'])+gd('Dış hidrant sistemi','hid',['Planlanıyor','Planlanmıyor'])+gd('Hidrant bölge risk sınıfı','bolge',BOL)+gd('Yangın dolabı tipi','dtip',DTP)+gd('Su deposu yeri','tk',TKY)+gi('Tank net su derinliği (ön tahmin)','der','m')+gi('Hidrolik hesap basıncı (biliniyorsa)','pr','kPa')+gd('Pompa tahrik tipi','trk',TRK)}</div></div>`:''}
- <div class="acts" style="margin-top:14px;justify-content:space-between"><div><button class="btn" data-a="gbos">Temizle</button> <button class="btn" data-a="gdol">Örnek verilerle doldur</button></div><button class="btn pr" data-act="devam" ${GM?'':'disabled style="opacity:.5"'}>${yeni?'Kurulum rehberini oluştur':akt?'Denetim sorgusunu başlat':'Önce tesis durumunu seçiniz'}</button></div>`}
+ <div class="acts" style="margin-top:14px;justify-content:space-between"><div><button class="btn" data-a="gbos">Temizle</button></div><button class="btn pr" data-act="devam" ${GM?'':'disabled style="opacity:.5"'}>${yeni?'Kurulum rehberini oluştur':akt?'Denetim sorgusunu başlat':'Önce tesis durumunu seçiniz'}</button></div>`}
 /* --- aktif tesis üst çubuk + kapsam --- */
 function aktifUst(){
  const ks=KSN[G.ks];let ex=[];if(G.ozel==='Kimyasal (yanıcı sıvı / gaz)'||G.ozel==='Her ikisi')ex.push('kim');if(G.ozel==='Kolay yanıcı malzeme'||G.ozel==='Her ikisi')ex.push('depo');
@@ -8387,7 +8387,6 @@ function aktifUst(){
  const oz=ks&&OZEL[ks[0]]?OZEL[ks[0]]:[];
  return `<div class="card" style="padding:12px 16px;margin-bottom:10px"><div class="rhh" style="margin-bottom:6px"><div><div class="rht" style="font-size:15px">${esc(G.firma||'Firma adı belirtilmemiştir.')} · ${esc(G.tesis||'Tesis adı belirtilmemiştir.')}</div><div class="rhs">${ks?esc(ks[1]):'Kullanım sınıfı belirtilmemiştir.'} · ${G.th||'Bina tehlike sınıfı belirtilmemiştir.'} · ${G.eT||'İşyeri tehlike sınıfı belirtilmemiştir.'} · ${G.eN?esc(G.eN)+' çalışan':'Çalışan sayısı belirtilmemiştir.'}</div></div><div><button class="btn" data-act="geri">Girişe dön</button> <button class="btn" data-act="onizle" title="Rapor ön izleme">👁 Ön izleme</button> <button class="btn pr" data-act="rapor">Raporu oluştur</button></div></div>
  <div class="gh" style="margin-top:10px">Denetim kapsamı (sınıfa göre hazırlandı, değiştirilebilir)</div><div class="chips">${chips}</div>
- <div class="src" style="margin-top:8px"><h6>Onaylı modüller</h6>Kaçış ve yangın dolabı yerleşimi, yangın pompası ve su deposu, algılama hesapları, sprinkler / söndürme hesapları önceki demolarda onaylanmıştır; uygulamada bu ekranla birleşir.</div>
  ${ex.length?`<div class="note"><h6>Özel tehlike alanı</h6>Tesiste ${esc(G.ozel.toLowerCase())} bulunduğu için ${ex.map(i=>MODA.find(m=>m[0]===i)[1]).join(' ve ')} sorgusu bina yangın sınıfından bağımsız olarak kapsama eklendi.</div>`:''}
  ${oz.length?`<div class="note"><h6>Sınıfa özel ek sorgular (sonraki aşama)</h6>${oz.map(x=>'• '+x).join('<br>')}</div>`:''}</div>`}
 /* --- render sarmalayıcı --- */
@@ -8432,8 +8431,8 @@ document.addEventListener('click',e=>{const t=s=>e.target.closest(s);let b;
   else if(a==='kap'){const i=b.dataset.i;G.kapsam=G.kapsam.includes(i)?G.kapsam.filter(x=>x!==i):G.kapsam.concat(i);render()}
   return}
  if(b=t('[data-a]')){const a=b.dataset.a;
-  if(a==='gbos'){Object.keys(G).forEach(k=>delete G[k]);GM='';G.kapsam=null;render()}
-  if(a==='gdol'){Object.assign(G,GORN);G.kapsam=null;render()}}},true);
+  if(a==='gbos'){if(!confirm('Girilen tüm bilgiler silinecek. Devam edilsin mi?'))return;Object.keys(G).forEach(k=>delete G[k]);GM='';G.kapsam=null;render()}
+  }},true);
 const GKON={firma:'Örnek Turizm Ltd. Şti.',tesis:'Misafirhane Tesisi',adres:'Adana Seyhan',den:'Mustafa Tekin',tarih:'2026-11-24',rno:'YNG-2026-002',eN:'32',eT:'Tehlikeli',ks:KS[6][1],faal:'Hastane, otel, konut, lokanta, kütüphane (kitap deposu hariç), okul, büro',th:'Orta tehlike-1',ozel:'Her ikisi',ozth:'Yüksek tehlike-1',ozm:'1.200 L',cizim:'Evet',kk:KA.find(x=>x[0].startsWith('Otel'))[0]};
 const KONP={ko_Y:'48',ko_Kat:'4',ko_Yk:'13',ko_Ym:'Hayır',ko_C2:'2',ko_Dv:'Evet',ko_Kp:'Evet',ko_Hv:'Yok',ko_Dk:'28',ko_Yd:'Evet',ko_Mr:'Evet',ko_Eg:'Evet',ko_Bk:'Evet',ko_Uz:'12',ko_Mi:'90',ko_Alg:'Evet',ko_Ac:'Hayır',ko_Ds:'',ko_Kl:'Evet',ko_Tp:'Evet',ko_Gc:'Evet'};
 const GORN={firma:'Örnek Sanayi A.Ş.',tesis:'Adana Üretim Tesisi',adres:'Adana Hacı Sabancı OSB',den:'Mustafa Tekin',tarih:'2026-11-24',rno:'YNG-2026-001',eN:'208',eT:'Tehlikeli',ks:KS[0][1],faal:'Kablo, plastik döküm ve eşya, kauçuk, sentetik lif',th:'Orta tehlike-3',kk:KA.find(x=>x[0].startsWith('Paketleme'))[0],kisi:'',alan:'12000',kat:'2',taban:'6500',a:'110',b:'60',h:'12',ym:'Islak / ön tepkili',hy:'10',oto:'',kw:'400',ayri:'Evet',hid:'',bolge:'',dtip:DTP[0],tk:TKY[0],der:'3'};
