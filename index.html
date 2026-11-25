@@ -8372,7 +8372,7 @@ function GC(g){
   const row=ks?E5B[ks[3]]:null;c.e5=row;
   let n=2,gerekce=['Md. 39/1: en az 2 çıkış'];if(kf>500){n=3;gerekce=['Md. 39/2: 500 kişiyi aşan katta en az 3 çıkış']}if(kf>1000){n=4;gerekce=['Md. 39/2: 1000 kişiyi aşan katta en az 4 çıkış']}
   c.nMd=n;c.gerekce=gerekce[0];
-  if(row){const W=kf/row[4]*0.5;c.W=W;const wmin=kf>2000?2:kf>500?1.5:kf>=50?1:0.8;c.wmin=wmin;c.nW=ceil(W/wmin);c.n=Math.max(n,c.nW);c.wC=Math.max(wmin,W/c.n);c.wCt=ceil(c.wC*10)/10}
+  if(row){const W=kf/row[4]*0.5;c.W=W;const wmin=c.yuksek?1.2:kf>50?1:0.8;c.wmin=wmin;c.nW=ceil(W/wmin);c.n=Math.max(n,c.nW);c.wC=Math.max(wmin,W/c.n);c.wCt=ceil(c.wC*10)/10}
   else c.n=n}
  if(a&&b){c.dg=Math.hypot(a,b);c.cm=c.spr?c.dg/3:c.dg/2}
  /* söndürücü */
@@ -8460,7 +8460,7 @@ function rehber(mod){
     L.push('Her çıkışın temiz genişliği en az '+rnd(Math.max(c.wCt,0.8)*100,0)+' cm; tek kanatlı kapı 80 ile 120 cm arasında olabilir, daha geniş çıkışlarda çift kanat kullanılır.')}
    else L.push('Çıkış sayısı en az '+c.n+'. Kullanım sınıfı belirtilmediği için genişlik hesaplanmamıştır.');
    hs=L.join('<br>')}
-  R2.push(rr('Çıkış kapısı sayısı ve genişliği','Her yapıda en az 2 korunmuş çıkış; 50 kişiyi aşan her mekânda en az 2, 500 kişiyi aşınca 3, 1000 kişiyi aşınca 4 çıkış. Kişi sayısı 50 ila 500 arasında kaçış yolu en az 100 cm, 501 ila 2000 arasında 150 cm, 2001 ve üzerinde 200 cm. İki çıkış gereken yerde her çıkış kullanıcı yükünün en az yarısını karşılar.',hs,'BYKHY Md. 32, 33, 39; Ek-5/A, Ek-5/B','Mevzuat'));
+  R2.push(rr('Çıkış kapısı sayısı ve genişliği','Her yapıda en az 2 korunmuş çıkış; 50 kişiyi aşan her mekânda en az 2, 500 kişiyi aşınca 3, 1000 kişiyi aşınca 4 çıkış. Hiçbir kaçış yolu 80 cm’den dar olamaz; kullanıcı sayısı 50’yi aşan katlarda bir kaçış yolunun genişliği en az 100 cm, yüksek binalarda en az 120 cm olur. Toplam çıkış genişliği, kullanıcı sayısının birim genişlikten geçen kişi sayısına bölümünün 0,5 m ile çarpımından az olamaz. İki çıkış gereken yerde her çıkış kullanıcı yükünün en az yarısını karşılar.',hs,'BYKHY Md. 32, 33, 39; Ek-5/A, Ek-5/B','Mevzuat'));
   let ud;if(c.e5){ud='Tek yönde en çok '+(c.spr?c.e5[1]:c.e5[0])+' m, iki yönde en çok '+(c.spr?c.e5[3]:c.e5[2])+' m; çıkmaz koridor en çok '+(c.spr?c.e5[9]:c.e5[8])+' m ('+(c.spr?'yağmurlama sistemli':'yağmurlamasız')+').'+(ks&&ks[0]==='end'?'<br>Kolay alevlenici malzeme üretimi yapılmayan endüstriyel yapılarda tek ve iki yönlü uzaklıklar yarı oranında artırılabilir.':'')+(ks&&ks[0]==='kar'?'<br>Karışık kullanımda her bölüm kendi sınıfının değeriyle ayrıca kontrol edilir; ön hesapta en kısıtlayıcı satır alınmıştır.':'')}else ud=need('Bina kullanım sınıfı belirtilmelidir.');
   R2.push(rr('En uzun kaçış uzaklığı','Mekân içindeki en uzak noktadan en yakın çıkışa olan uzaklık Ek-5/B sınırlarını aşamaz. Uzaklık, duvarlardan 40 cm içeriden ölçülür.',ud,'BYKHY Md. 32/3-6; Ek-5/B','Mevzuat'));
   R2.push(rr('İki çıkış arası mesafe','Bölünmemiş tek mekânda 2 çıkış gerekiyorsa çıkışlar arası mesafe, yağmurlama yoksa diyagonal mesafenin 1/2’sinden, yağmurlama varsa 1/3’ünden az olamaz.',c.cm?'Diyagonal ≈ '+rnd(c.dg,1)+' m → çıkışlar arası en az <b>'+rnd(c.cm,1)+' m</b>':need('Bina boyutları veya taban alanı belirtilmelidir.'),'BYKHY Md. 39/3','Mevzuat'))}
