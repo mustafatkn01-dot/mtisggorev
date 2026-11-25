@@ -8146,7 +8146,7 @@ function raporHtml(){
  const I=(a,b)=>`<tr><th>${a}</th><td>${esc(b||'Belirtilmemiştir.')}</td></tr>`;
  const cover=`<section class="rs cover"><div class="cvt">${G.kapakImg?'<img src="'+G.kapakImg+'" alt="">':KAPAK_SVG}</div><div class="cvb"><div class="cvk">YANGIN GÜVENLİĞİ</div><div class="cvh">Saha Kontrol ve Denetim Raporu</div><div class="cvf">${esc(firma)}</div><div class="cvs">${esc(tesis)}</div>
  <table class="kv"><tbody>${I('Tesis adresi',G.adres)+I('Bina kullanım sınıfı',ks?ks[1]:'')+I('Bina yangın tehlike sınıfı',G.th)+I('İşyeri tehlike sınıfı',G.eT)+I('Çalışan sayısı',G.eN)+I('Denetçi',G.den)+I('Rapor no',G.rno)+I('Rapor tarihi',tarih)}</tbody></table>
- <div class="cvn">Bu rapor gizlidir ve yalnızca ilgili kuruma sunulmak üzere hazırlanmıştır.</div></div></section>`;
+ <div class="cvn">Bu rapor, yürürlükteki mevzuat ve ilgili teknik standart şartlarına göre hazırlanmıştır.</div></div></section>`;
  const ozetS=`<section class="rs"><h2 class="rh2"><span>1</span>Özet</h2>${P1.map(x=>'<p class="rp">'+x+'</p>').join('')}
  <div class="res rr4">${kp(all,'Değerlendirilen madde','big')+kp(tot.ok,'Uygun')+kp(tot.bad,'Uygun değil')+kp(tot.na,'Değerlendirilemedi')}</div>
  <div class="tbw"><table class="rt" style="margin-top:12px"><thead><tr><th>Başlık</th><th>Durum</th><th class="r">Madde</th><th class="r">Uygun</th><th class="r">Uygun değil</th><th class="r">Bilgi yok</th></tr></thead><tbody>${ozet.join('')}</tbody></table></div>
