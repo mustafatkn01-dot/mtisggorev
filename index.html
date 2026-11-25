@@ -8315,7 +8315,7 @@ function GC(){
  if(N(G.kw)>350)c.dolapZ.push('kazan dairesi ısıl kapasitesi 350 kW üzerinde');
  c.dolapZorunlu=c.dolapZ.length>0;
  c.sa60=c.a>60||c.b>60;c.sa=c.yuksek||c.sa60||(c.kat>1000&&ks&&['tic','dep'].includes(ks[0]));
- c.sp=c.spr&&c.sa?45:30;
+ c.sp=c.spr?45:30;
  if(a&&b){const ka=Math.max(1,ceil(a/c.sp)),kb=Math.max(1,ceil(b/c.sp));c.dkat=ka*kb;c.dTop=K?c.dkat*K:c.dkat;c.dim=[ka,kb];
   const s=60*Math.SQRT2,sa=Math.max(1,ceil(a/s))*Math.max(1,ceil(b/s));c.saKat=sa}
  c.dolapDebi=Math.max(th?E8C[th][0]:0,(G.dtip||DTP[0])===DTP[1]?400:100);
@@ -8340,7 +8340,7 @@ function GC(){
  const hy=N(G.hy)||hh;c.hy=hy;c.hyAss=!N(G.hy)&&!!hh;
  if(th){
   const eb=E8B[th];c.sprQ=null;c.sprNot='';
-  if(c.spr){if(eb){const k=c.kuru&&eb[2]?eb[2]:eb[1];if(c.kuru&&!eb[2]){const o=E8B.OT1;c.sprQ=o[0]*o[2];c.sprNot=th==='DT'?'Düşük tehlikede kuru sistem için Ek-8/B uyarınca Orta tehlike-1 değeri kullanılır.':'Bu sınıfta kuru sistem için Ek-8/B uyarınca bir üst sınıf değeri kullanılır.'}else c.sprQ=eb[0]*k}else c.sprNot='Yüksek tehlike-4 için Ek-8/B yoğun su öngörür, hidrolik hesap gerekir.'}
+  if(c.spr){if(eb){const k=c.kuru&&eb[2]?eb[2]:eb[1];if(c.kuru&&!eb[2]){const o=th==='OT4'?E8B.YT1:E8B.OT1;c.sprQ=o[0]*(o[2]||o[1]);c.sprNot=th==='DT'?'Düşük tehlikede kuru sistem için Ek-8/B uyarınca Orta tehlike-1 değeri kullanılır.':th==='OT4'?'Orta tehlike-4 için kuru sistemde Ek-8/B uyarınca Yüksek tehlike-1 değeri kullanılır; Ek-8/A’ya göre hidrolik hesap gerekir.':'Bu sınıfta kuru sistem için Ek-8/B uyarınca bir üst sınıf değeri kullanılır.'}else c.sprQ=eb[0]*k}else c.sprNot='Yüksek tehlike-4 için Ek-8/B yoğun su öngörür, hidrolik hesap gerekir.'}
   c.dQ=c.dolapZorunlu||c.spr||c.hid?Math.max(E8C[th][0],c.dolapDebi):Math.max(0,0);
   c.hQ=c.hid?E8C[th][1]:0;
   c.floor=c.hid?1900:0;
