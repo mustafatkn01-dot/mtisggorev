@@ -8022,7 +8022,7 @@ document.addEventListener('click',e=>{const t=s=>e.target.closest(s);let b;
  if(b=t('[data-multi]')){e.stopPropagation();openMulti(b);return}
  if(b=t('[data-dd]')){e.stopPropagation();const k=b.dataset.dd;openDD(b,OPTS[k],P[k],v=>{if(AREAKEY[k]){const ids=v.split(' + ').map(x=>SNI[x]).filter(Boolean);setArea(AREAKEY[k],ids[0]||'')}else P[k]=v;render()});return}
  if(t('.dd'))return;closeDD();if(t('input'))return;
- if(b=t('[data-a]')){const a=b.dataset.a;if(a==='dol')Object.assign(P,ORNEK);if(a==='bos'){if(!confirm('Girilen tüm bilgiler silinecek. Devam edilsin mi?'))return;Object.keys(P).forEach(k=>{if(k!=='open')delete P[k]});Object.assign(P,DEF,{sys:[],mal:[]});}render();return}
+ if(b=t('[data-a]')){const a=b.dataset.a;if(a==='dol')Object.assign(P,ORNEK);if(a==='bos'){ygOnay('Girilen bilgiler silinsin mi?','Denetim sorgusundaki tüm bilgiler silinecek.','Sil',()=>{Object.keys(P).forEach(k=>{if(k!=='open')delete P[k]});Object.assign(P,DEF,{sys:[],mal:[]});render()});return}render();return}
  if(b=t('[data-sub]')){const id=b.dataset.sub;P.sub=P.sub===id?null:id;render();return}
  if(b=t('[data-nx]')){const id=b.dataset.nx;if(id==='__son'){P.open=null;P.sub=null;render();const f=$('#foot');f&&f.scrollIntoView({behavior:'smooth',block:'center'});return}P.open=id;P.sub=null;render();ygGit(id);return}
  if(b=t('[data-c]')){const id=b.dataset.c;P.open=P.open===id?null:id;P.sub=null;render();if(P.open)ygGit(id);return}
@@ -8546,7 +8546,7 @@ document.addEventListener('click',e=>{const t=s=>e.target.closest(s);let b;
   else if(a==='kap'){const i=b.dataset.i;G.kapsam=G.kapsam.includes(i)?G.kapsam.filter(x=>x!==i):G.kapsam.concat(i);render()}
   return}
  if(b=t('[data-a]')){const a=b.dataset.a;
-  if(a==='gbos'){if(!confirm('Girilen tüm bilgiler silinecek. Devam edilsin mi?'))return;Object.keys(G).forEach(k=>delete G[k]);GM='';G.kapsam=null;render()}
+  if(a==='gbos'){ygOnay('Girilen bilgiler silinsin mi?','Giriş ekranındaki tüm bilgiler silinecek.','Sil',()=>{Object.keys(G).forEach(k=>delete G[k]);GM='';G.kapsam=null;render()});return}
   }},true);
 const GKON={firma:'Örnek Turizm Ltd. Şti.',tesis:'Misafirhane Tesisi',adres:'Adana Seyhan',den:'Mustafa Tekin',tarih:'2026-11-24',rno:'YNG-2026-002',eN:'32',eT:'Tehlikeli',ks:KS[6][1],faal:'Hastane, otel, konut, lokanta, kütüphane (kitap deposu hariç), okul, büro',th:'Orta tehlike-1',ozel:'Her ikisi',ozth:'Yüksek tehlike-1',ozm:'1.200 L',cizim:'Evet',kk:KA.find(x=>x[0].startsWith('Otel'))[0]};
 const KONP={ko_Y:'48',ko_Kat:'4',ko_Yk:'13',ko_Ym:'Hayır',ko_C2:'2',ko_Dv:'Evet',ko_Kp:'Evet',ko_Hv:'Yok',ko_Dk:'28',ko_Yd:'Evet',ko_Mr:'Evet',ko_Eg:'Evet',ko_Bk:'Evet',ko_Uz:'12',ko_Mi:'90',ko_Alg:'Evet',ko_Ac:'Hayır',ko_Ds:'',ko_Kl:'Evet',ko_Tp:'Evet',ko_Gc:'Evet'};
@@ -8660,6 +8660,8 @@ addEventListener('message',e=>{const d=e.data;if(!d||!d.yg||e.source!==parent)re
  else if(d.yg==='bulutOk'){const p=ST.pr.find(x=>x.id===d.id);if(p&&d.gun>(p.bg||0)){p.bg=d.gun;BL.hata=false;ygYaz2()}}
  else if(d.yg==='bulutHata'){BL.hata=true;if(GV==='proj')render()}});
 function ygYaz2(){try{localStorage.setItem(LSK,JSON.stringify(ST))}catch(e){}}
+
+function ygOnay(baslik,metin,btn,fn){const o=pjModal(`<h3>${baslik}</h3><p>${metin}</p><div class="pj-row"><button class="btn" data-pm2="x">Vazgeç</button><button class="btn dg" data-pm2="ok">${btn}</button></div>`);o.onclick=e=>{const b=e.target.closest('[data-pm2]');if(!b){if(e.target===o)pjKapMd();return}pjKapMd();if(b.dataset.pm2==='ok')fn()}}
 
 /* --- Uygulama: kayıt (yeni_isg_yangin_v1) + ana programla köprü --- */
 const LSK='yeni_isg_yangin_v1';
