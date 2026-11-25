@@ -8148,30 +8148,82 @@ function raporHtml(){
  <table class="kv"><tbody>${I('Tesis adresi',G.adres)+I('Bina kullanım sınıfı',ks?ks[1]:'')+I('Bina yangın tehlike sınıfı',G.th)+I('İşyeri tehlike sınıfı',G.eT)+I('Çalışan sayısı',G.eN)+I('Denetçi',G.den)+I('Rapor no',G.rno)+I('Rapor tarihi',tarih)}</tbody></table>
  <div class="cvn">Bu rapor, yürürlükteki mevzuat ve ilgili teknik standart şartlarına göre hazırlanmıştır.</div></div></section>`;
  const hasC=G.cizim==='Evet'&&G.cizimSv&&G.cizimSv.length;
- const tl=(n,t,id)=>`<div class="tcl"><span class="tn">${n}</span><span class="tt">${t}</span><i></i><span class="pg" data-t="${id}"></span></div>`;
- const tocS=`<section class="rs toc"><h2 class="rh2 tch">İçindekiler</h2><div class="tcb">${tl(1,'Özet','sc1')+cardStat.map((x,i)=>tl(i+2,x[0],'sc'+(i+2))).join('')+tl(gor,'Genel görüş','scg')+(hasC?tl('Ek-1','Teknik çizimler','sce'):'')}</div><div class="tcn">Bu rapor, rapor tarihindeki tesis yerleşim düzenine göre hazırlanmıştır. Makine, istif, bölme veya kullanım değişikliklerinde ilgili bölümler yeniden değerlendirilmelidir.</div></section>`;
+ const tl=tocLine;
+ const tocS=tocSection(`${tl(1,'Özet','sc1')+cardStat.map((x,i)=>tl(i+2,x[0],'sc'+(i+2))).join('')+tl(gor,'Genel görüş','scg')+(hasC?tl('Ek-1','Teknik çizimler','sce'):'')}`);
  const ozetS=`<section class="rs" id="sc1"><h2 class="rh2"><span>1</span>Özet</h2>${P1.map(x=>'<p class="rp">'+x+'</p>').join('')}
  <div class="res rr4">${kp(all,'Değerlendirilen madde','big')+kp(tot.ok,'Uygun')+kp(tot.bad,'Uygun değil')+kp(tot.na,'Değerlendirilemedi')}</div>
  <div class="tbw"><table class="rt" style="margin-top:12px"><thead><tr><th>Başlık</th><th>Durum</th><th class="r">Madde</th><th class="r">Uygun</th><th class="r">Uygun değil</th><th class="r">Bilgi yok</th></tr></thead><tbody>${ozet.join('')}</tbody></table></div>
  <div class="rnote"><b>Kısaltmalar</b><ul class="dl"><li>BYKHY: Binaların Yangından Korunması Hakkında Yönetmelik</li><li>NFPA: Ulusal Yangın Koruma Birliği standartları</li><li>TS EN: Türk Standartları Enstitüsü tarafından kabul edilen Avrupa standartları</li></ul></div></section>`;
  return `<div class="card rep" style="padding:0">${cover}${tocS}${ozetS}${secs.join('')}${gen}${cizim}</div>`.replace(/\s+(mu|mı|mi|mü)\?/g,'').replace(/\?/g,'')}
-/* ön izleme */
-function onizleme(){const o=document.createElement('div');o.id='prev';o.innerHTML=`<div class="pvb"><b>Rapor ön izleme</b><span>Sayfa düzeni, yazdırma ön izlemesinde (PDF) kesinleşir</span><button class="btn pr" data-act="yaz">Yazdır / PDF</button><button class="btn" data-act="pkapat">Kapat</button></div><div class="pvs"><div class="paper">${raporHtml()}</div></div>`;document.body.appendChild(o);sayfaDoldur(o)}
-
-/* içindekiler sayfa numaraları: raporu yazdırma düzeniyle gizli bir çerçevede sayfalara bölüp başlıkların sayfasını okur */
-function sayfaDoldur(root){return new Promise(res=>{try{
- const pgs=root.querySelectorAll('.pg[data-t]');if(!pgs.length)return res();
+/* ön izleme, yazdırma ve içindekiler sayfa numaraları: rapor, sabit A4 sayfa kutularına bölünen gizli/görünür bir çerçevede üretilir */
+const rapKaynak=()=>{const d=document.createElement('div');d.innerHTML=GV==='yeni'?rehber('rapor'):raporHtml();const e=d.querySelector('.rep');return e?e.innerHTML:d.innerHTML};
+function sayfaDoc(inner){
  const css=[...document.querySelectorAll('style')].map(x=>x.textContent).join('\n').replace(/@media\s+print/g,'@media all').replace(/@page[^{]*\{[^{}]*(\{[^{}]*\}[^{}]*)*\}/g,'');
- const W='186mm',H='262mm';
- const f=document.createElement('iframe');f.style.cssText='position:fixed;left:-9999px;top:0;width:186mm;height:262mm;border:0;visibility:hidden';
- f.srcdoc=`<!doctype html><html style="${document.documentElement.style.cssText.replace(/"/g,"'")}"><head><meta charset="utf-8"><style>${css}
- #prev,.top,.stepper,#giris,#ust,.acts{display:none!important}html,body{margin:0;background:#fff}
- #sim{width:${W};height:${H};column-width:${W};column-gap:0;column-fill:auto;padding:0!important;margin:0!important;box-shadow:none!important;border:0!important}
- #sim *{overflow:visible!important}#sim .rs.cover,#sim .rs.toc{break-after:column}#sim .rs.ek{break-before:column}</style></head><body><div id="sim" class="card rep">${root.querySelector('.rep')?root.querySelector('.rep').innerHTML:root.innerHTML}</div></body></html>`;
- f.onload=()=>{const go=()=>{try{const d=f.contentDocument,w=d.getElementById('sim').getBoundingClientRect().width;
-  pgs.forEach(p=>{const e=d.getElementById(p.dataset.t);p.textContent=e?String(Math.floor((e.getBoundingClientRect().left+2)/w)+1):''});}catch(e){}f.remove();res()};
-  (f.contentDocument.fonts&&f.contentDocument.fonts.ready?f.contentDocument.fonts.ready:Promise.resolve()).then(()=>setTimeout(go,60))};
- document.body.appendChild(f)}catch(e){res()}})}
+ const pc='html,body{margin:0;background:#dfe5ec}.pgs{padding:18px 0}.page{position:relative;width:210mm;height:297mm;box-sizing:border-box;padding:14mm 12mm 18mm;background:#fff;margin:0 auto 14px;box-shadow:0 2px 14px rgba(0,0,0,.25);overflow:hidden}.pgc{height:265mm;overflow:hidden;padding:0!important;background:#fff}.pgf{position:absolute;left:0;right:0;bottom:8mm;text-align:center;font:9pt Inter,Arial,sans-serif;color:#555}#src{position:absolute;left:-99999px;top:0;width:186mm}@media print{html,body{background:#fff}.pgs{padding:0;zoom:1!important}.page{margin:0;box-shadow:none;height:296.4mm;break-after:page}@page{size:A4;margin:0}}';
+ const js='const sayfala='+sayfala.toString()+';window.__hazir=false;addEventListener("load",()=>{document.fonts.ready.then(()=>{try{sayfala(document)}catch(e){window.__hata=String(e)}document.getElementById("src").remove();window.__hazir=true;fit()})});function fit(){const pw=210*96/25.4+24;document.getElementById("pages").style.zoom=innerWidth<pw?innerWidth/pw:1}addEventListener("resize",fit);';
+ return '<!doctype html><html lang="tr" style="'+document.documentElement.style.cssText.replace(/"/g,"'")+'"><head><meta charset="utf-8"><title>Rapor</title><style>'+css+'\n#prev,.top,.stepper{display:none!important}</style><style>'+pc+'</style></head><body><div class="pgs" id="pages"></div><div id="src" class="rep">'+inner+'</div><scr'+'ipt>'+js+'</scr'+'ipt></body></html>'}
+function sayfaCerceve(css){const f=document.createElement('iframe');f.style.cssText=css;f.srcdoc=sayfaDoc(rapKaynak());return f}
+const sayfaBekle=f=>new Promise(res=>{let n=0;const t=setInterval(()=>{const w=f.contentWindow;if((w&&w.__hazir)||++n>160){clearInterval(t);res(w&&w.__hazir?w:null)}},50)});
+function sayfaDoldur(root){return new Promise(res=>{try{const pgs=root.querySelectorAll('.pg[data-t]');if(!pgs.length)return res();
+ const f=sayfaCerceve('position:fixed;left:-9999px;top:0;width:900px;height:1200px;border:0;visibility:hidden');document.body.appendChild(f);
+ sayfaBekle(f).then(w=>{if(w){const m={};w.document.querySelectorAll('.pg[data-t]').forEach(p=>{m[p.dataset.t]=p.textContent});pgs.forEach(p=>{p.textContent=m[p.dataset.t]||''})}f.remove();res()})}catch(e){res()}})}
+function yazdir(){const f=sayfaCerceve('position:fixed;left:-9999px;top:0;width:900px;height:1200px;border:0');document.body.appendChild(f);
+ sayfaBekle(f).then(w=>{if(!w){f.remove();return}w.focus();w.print();setTimeout(()=>f.remove(),120000)})}
+function onizleme(){const o=document.createElement('div');o.id='prev';o.innerHTML='<div class="pvb"><b>Rapor ön izleme</b><span id="pvn">Sayfalar hazırlanıyor…</span><button class="btn pr" data-act="yazp">Yazdır / PDF</button><button class="btn" data-act="pkapat">Kapat</button></div>';
+ const f=sayfaCerceve('flex:1;width:100%;border:0;background:#dfe5ec');f.id='pvf';o.appendChild(f);document.body.appendChild(o);
+ sayfaBekle(f).then(w=>{const n=w&&w.document.querySelectorAll('.page').length;const e=document.getElementById('pvn');if(e)e.textContent=n?n+' sayfa · A4 · yazdırılan çıktı bu sayfalarla birebir aynıdır':'Rapor hazırlanamadı'})}
+const tocLine=(n,t,id)=>`<div class="tcl"><span class="tn">${n}</span><span class="tt">${t}</span><i></i><span class="pg" data-t="${id}"></span></div>`;
+const tocSection=l=>`<section class="rs toc"><h2 class="rh2 tch">İçindekiler</h2><div class="tcb">${l}</div><div class="tcn">Bu rapor, rapor tarihindeki tesis yerleşim düzenine göre hazırlanmıştır. Makine, istif, bölme veya kullanım değişikliklerinde ilgili bölümler yeniden değerlendirilmelidir.</div></section>`;
+
+/* Rapor sayfalayıcı: kaynak raporu (#src) ölçüp sabit A4 sayfa kutularına (#pages) yerleştirir. */
+function sayfala(doc){
+ const mm=v=>v*96/25.4,H=mm(265),MINL=4;
+ const src=doc.getElementById('src'),host=doc.getElementById('pages'),U=[],isHead=e=>/^H[1-4]$/.test(e.tagName)||/\b(rh2|rh3|rh4)\b/.test(e.className);
+ const atomic=e=>e.matches('.cover,.toc,.res,.rnote,.rsrc,.fgb,.fig,figure,svg,img,table.kv,.sg6,.lgr,.capr');
+ const lines=e=>{const cs=getComputedStyle(e),lh=parseFloat(cs.lineHeight)||parseFloat(cs.fontSize)*1.4;return Math.max(1,Math.round(e.getBoundingClientRect().height/lh))};
+ const chain=e=>{const c=[];let p=e.parentElement;while(p&&p!==src){c.unshift(p);p=p.parentElement}return c};
+ function walk(e){
+  if(e.tagName==='TABLE'&&!atomic(e)){[...e.tBodies].forEach(tb=>[...tb.rows].forEach(r=>U.push({el:r,table:e,lines:1})));return}
+  if(atomic(e)){U.push({el:e,lines:99,head:false});return}
+  if(e.matches('section,.tbw,.rep,ul.rl,ol.rl')||(e.tagName==='DIV'&&e.children.length&&!e.matches('.rp,.rsum')&&![...e.children].every(c=>/^(SPAN|B|I|A|BR|U|SUP)$/.test(c.tagName)))){[...e.children].forEach(walk);return}
+  U.push({el:e,head:isHead(e),lines:isHead(e)?0:lines(e)});
+ }
+ [...src.children].forEach(walk);
+ U.forEach((u,i)=>{if(u.table&&U[i+1]&&U[i+1].table===u.table&&!(U[i+2]&&U[i+2].table===u.table))u.pair=true});
+ U.forEach((u,i)=>{u.chain=chain(u.el);if(u.table){u.chain=chain(u.el)}const s=u.chain.find(x=>x.matches&&x.matches('section.rs'))||u.el.closest('section.rs');u.sec=s;
+  u.forceBefore=!!(s&&s.classList.contains('ek')&&(i===0||U[i-1].sec!==s));u.forceAfter=false});
+ U.forEach((u,i)=>{if(u.sec&&u.sec.matches('.cover,.toc')&&(i===U.length-1||U[i+1].sec!==u.sec))u.forceAfter=true});
+ let pages=[],cur=null,open=[],seen=new Set();
+ function newPage(){const pg=doc.createElement('div');pg.className='page';const c=doc.createElement('div');c.className='pgc rep';pg.appendChild(c);const f=doc.createElement('div');f.className='pgf';pg.appendChild(f);host.appendChild(pg);cur={pg,c};pages.push(cur);open=[]}
+ function place(u,force){ // başarı: geri alma işlevi; sığmazsa kendini geri alıp null döner
+  const made=[],keep=open.slice(),added=[];let k=0;const ch=u.chain;
+  while(k<open.length&&k<ch.length&&open[k].o===ch[k])k++;
+  open=open.slice(0,k);
+  const mark=o=>{if(!seen.has(o)){seen.add(o);added.push(o);return false}return true};
+  for(let i=k;i<ch.length;i++){const o=ch[i],cl=o.cloneNode(false);if(mark(o))cl.removeAttribute('id');
+   if(o.tagName==='TABLE'){[...o.children].forEach(x=>{if(x.tagName==='COLGROUP')cl.appendChild(x.cloneNode(true))});const th=o.tHead;if(th)cl.appendChild(th.cloneNode(true))}
+   (open.length?open[open.length-1].c:cur.c).appendChild(cl);made.push(cl);open.push({o,c:cl})}
+  const par=open.length?open[open.length-1].c:cur.c,n=u.el.cloneNode(true);if(mark(u.el))n.removeAttribute('id');par.appendChild(n);made.push(n);
+  const undo=()=>{made.slice().reverse().forEach(x=>x.remove());added.forEach(o=>seen.delete(o));open=keep};
+  if(!force&&cur.c.scrollHeight>H+0.5){undo();return null}
+  return undo}
+ const empty=()=>!cur.c.firstChild;
+ function tryGroup(g){const undos=[];for(const u of g){const r=place(u);if(!r){undos.reverse().forEach(f=>f());return false}undos.push(r)}return true}
+ let i=0;newPage();
+ while(i<U.length){
+  const u=U[i];if(u.forceBefore&&!empty())newPage();
+  let n=u.pair?2:1;if(u.head){let ln=0,j=i+1;while(j<U.length&&ln<MINL&&!U[j].forceBefore){ln+=U[j].lines;j++}n=j-i}
+  const g=U.slice(i,i+n);
+  if(!tryGroup(g)){
+   if(!empty())newPage();
+   if(!tryGroup(g))g.forEach(x=>{if(!place(x)){if(!empty())newPage();place(x,true)}});
+  }
+  if(g[g.length-1].forceAfter&&i+n<U.length)newPage();
+  i+=n;
+ }
+ const N=pages.length;pages.forEach((p,k)=>{p.pg.querySelector('.pgf').textContent=k?'Sayfa '+(k+1)+'/'+N:''});
+ host.querySelectorAll('.pg[data-t]').forEach(p=>{const e=doc.querySelector('#pages #'+p.dataset.t);const pg=e&&e.closest('.page');p.textContent=pg?String([...host.children].indexOf(pg)+1):''});
+ return pages}
 
 /* ===== D0: Giriş + Yeni tesis kurulum rehberi + Aktif tesis kapsamı ===== */
 const G={};let GV='giris',GM='';
@@ -8306,7 +8358,7 @@ function GC(){
  if(c.Q&&c.V!=null){c.Qh=c.Q*60/1000;const pr=N(G.pr)||(c.hid?700:400);c.pr=pr;c.prU=!!N(G.pr);const hs=hh||0;c.hs=hs;c.H=(pr/9.81+hs)*1.2;c.Ph=c.Qh*c.H/(367*0.65);c.Pm=MOT.find(x=>x>=c.Ph*1.15)||null;c.hsAss=!hh}
  return c}
 /* --- rehber çıktısı --- */
-function rehber(){
+function rehber(mod){
  RN=0;
  const c=GC(),ks=c.ks,th=c.th,K=c.K,R1=[],R2=[],R3=[],R4=[];
  const ND0='Değer belirtilmemiştir.';
@@ -8397,6 +8449,27 @@ function rehber(){
  if(G.tk===TKY[0])dn.push('Yeraltı tankında yer altı suyu seviyesi, zemin taşıma gücü ve kaldırma kuvveti zemin etüdü ile birlikte değerlendirilmelidir.');
  if(!dn.length)dn.push('Girdilerin tamamlanması ile rehber öneri sayısını artırır.');
  const kap=[c.sdN?'':'Kapalı alan ve bina tehlike sınıfı',c.n?'':'Bina kullanım sınıfı ve kapalı alan',c.dTop||c.dolapZorunlu===false?'':'Bina boyutları'].filter(Boolean);
+ if(mod==='rapor'){
+  const gtR=rows=>{RN=0;rows=rows.map(r=>r.replace(/<td class="r nn">\d+<\/td>/,()=>'<td class="r nn">'+(++RN)+'</td>'));return `<div class="tbw"><table class="rt fx"><colgroup><col style="width:34px"><col style="width:13%"><col style="width:27%"><col style="width:36%"><col style="width:14%"></colgroup><thead><tr class="chd"><th class="nn">No</th><th>Başlık</th><th>Olması gereken / öneri</th><th>Hesap</th><th>Dayanak</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`};
+  const tarih=G.tarih?G.tarih.split('-').reverse().join('.'):'Belirtilmemiştir.',firma=G.firma||'Firma adı belirtilmemiştir.',tesis=G.tesis||'Tesis adı belirtilmemiştir.';
+  const I=(a,b)=>`<tr><th>${a}</th><td>${esc(b||'Belirtilmemiştir.')}</td></tr>`;
+  const cov=`<section class="rs cover"><div class="cvt">${G.kapakImg?'<img src="'+G.kapakImg+'" alt="">':KAPAK_SVG}</div><div class="cvb"><div class="cvk">YENİ TESİS</div><div class="cvh">Yangın Güvenliği Kurulum Rehberi</div><div class="cvf">${esc(firma)}</div><div class="cvs">${esc(tesis)}</div>
+  <table class="kv"><tbody>${I('Tesis adresi',G.adres)+I('Bina kullanım sınıfı',ks?ks[1]:'')+I('Bina yangın tehlike sınıfı',th?TLN[th]:'')+I('Çalışan sayısı',G.eN)+I('Hazırlayan',G.den)+I('Rehber no',G.rno)+I('Tarih',tarih)}</tbody></table>
+  <div class="cvn">Bu rapor, yürürlükteki mevzuat ve ilgili teknik standart şartlarına göre hazırlanmıştır.</div></div></section>`;
+  const secsR=[['Özet','sc1'],['Su deposu, yangın dolabı ve hidrant','sc2'],['Kaçış ve çıkışlar','sc3'],['Taşınabilir söndürücü ve su deposu yapısı','sc4'],['Yangın pompası istasyonu','sc5']];
+  const hasC=G.cizimSv&&G.cizimSv.length;
+  const toc=secsR.map((x,i)=>tocLine(i+1,x[0],x[1])).join('')+tocLine(6,'Genel görüş','sc6')+tocLine(7,'Dayanak ve kapsam','sc7')+(hasC?tocLine('Ek-1','Teknik çizimler','sce'):'');
+  const h2=(n,t,id)=>`<section class="rs" id="${id}"><h2 class="rh2"><span>${n}</span>${t}</h2>`;
+  return cov+tocSection(toc)
+  +h2(1,'Özet','sc1')+`<p class="rp">Bu rehber, ${esc(firma)} ${esc(tesis)} için yeni kurulacak tesisin yangın güvenliği sistemlerine ilişkin ön büyüklükleri ve yönetmelik gereklerini içerir.</p><table class="kv"><tbody>${I('Kullanım sınıfı',ks?ks[1]:'')+I('Tehlike sınıfı',th?TLN[th]:'')+I('Kapalı alan',c.A?rnd(c.A,0)+' m²':'')+I('Kat sayısı',c.K?String(c.K):'')+I('Bina yüksekliği',c.hh?rnd(c.hh,1)+' m'+(c.yuksek?' (yüksek bina)':''):'')+I('Çalışan sayısı',G.eN)}</tbody></table>${kpi}</section>`
+  +h2(2,'Su deposu, yangın dolabı ve hidrant','sc2')+gtR(R1)+'</section>'
+  +h2(3,'Kaçış ve çıkışlar','sc3')+gtR(R2)+'</section>'
+  +h2(4,'Taşınabilir söndürücü ve su deposu yapısı','sc4')+gtR(R3)+'</section>'
+  +h2(5,'Yangın pompası istasyonu','sc5')+gtR(R4)+'</section>'
+  +h2(6,'Genel görüş','sc6')+`<div class="rnote"><b>Genel görüş</b><ul class="dl">${dn.map(x=>'<li>'+x+'</li>').join('')}</ul></div></section>`
+  +h2(7,'Dayanak ve kapsam','sc7')+`<div class="rsrc"><b>Dayanak ve kapsam</b><p class="rp">Binaların Yangından Korunması Hakkında Yönetmelik (Md. 8, 19, 32, 33, 39, 88, 92 ila 95, 99; Ek-1, Ek-5/A, Ek-5/B, Ek-8/A, Ek-8/B, Ek-8/C). Etiketi “Ön tahmin” veya “İyi uygulama” olan satırlar yönetmelikte sayısal olarak belirtilmemiş mühendislik önerileridir; proje müellifi, hidrolik hesap ve ürün onayı ile kesinleşir.</p></div></section>`
+  +(hasC?`<section class="rs ek" id="sce"><h2 class="rh2"><span>Ek-1</span>Teknik çizimler</h2><p class="rp">Aşağıdaki çizimler tesisin bölümlerine göre hazırlanmış kaçış ve yangın dolabı yerleşimini göstermektedir; ölçüler ve değerlendirme çizimin altında verilmiştir.</p>${cizimFigs('Ek-1')}</section>`:'');
+ }
  return `<div class="card" id="rhc" style="padding:16px"><div class="rhh"><div><div class="rht">Yeni Tesis Yangın Güvenliği Kurulum Rehberi</div><div class="rhs">${esc(G.firma||'Firma adı belirtilmemiştir.')} · ${esc(G.tesis||'Tesis adı belirtilmemiştir.')}</div></div><div class="rhm">Hazırlayan: ${esc(G.den||'Belirtilmemiştir.')}<br>Tarih: ${esc(G.tarih?G.tarih.split('-').reverse().join('.'):'Belirtilmemiştir.')}</div></div>
  <div class="rhk"><span>${ks?esc(ks[1]):'Kullanım sınıfı belirtilmemiştir.'}</span><span>${th?TLN[th]:'Tehlike sınıfı belirtilmemiştir.'}</span><span>${c.A?rnd(c.A,0)+' m² kapalı alan':'Kapalı alan belirtilmemiştir.'}</span><span>${c.K?c.K+' kat':'Kat sayısı belirtilmemiştir.'}</span>${c.hh?`<span>Bina yüksekliği ${rnd(c.hh,1)} m${c.yuksek?' (yüksek bina)':''}</span>`:''}${G.eN?`<span>${esc(G.eN)} çalışan</span>`:''}</div>
  ${kpi}
@@ -8442,7 +8515,7 @@ render=function(){
  document.querySelectorAll('.stp').forEach((e,i)=>{e.classList.toggle('on',GV==='giris'?i===0:GV==='rapor'?i===2:i===1);if(i===2)e.style.display=GM==='aktif'?'':'none'});
  const s2=document.querySelector('.stp:nth-child(2)');if(s2)s2.textContent=GM==='yeni'?'2  Kurulum rehberi':GM==='aktif'?'2  Denetim sorgusu':'2  Rehber / sorgu';
  if(GV==='giris')tab.innerHTML=girisHtml();
- else if(GV==='yeni')rh.innerHTML=`<div class="acts"><button class="btn" data-act="geri">Girişe dön</button>${top!==window?'<button class="btn" data-act="czAc">📐 Teknik çizim'+(G.cizimSv&&G.cizimSv.length?' ('+G.cizimSv.length+')':'')+'</button>':''}<button class="btn pr" data-act="yaz">Yazdır / PDF</button></div>`+rehber();
+ else if(GV==='yeni')rh.innerHTML=`<div class="acts"><button class="btn" data-act="geri">Girişe dön</button>${top!==window?'<button class="btn" data-act="czAc">📐 Teknik çizim'+(G.cizimSv&&G.cizimSv.length?' ('+G.cizimSv.length+')':'')+'</button>':''}<button class="btn" data-act="onizle">👁 Ön izleme</button><button class="btn pr" data-act="yaz">Yazdır / PDF</button></div>`+rehber();
  else if(GV==='rapor')rp.innerHTML=`<div class="acts"><button class="btn" data-act="denetim">Denetime dön</button>${gdc('Teknik çizim','cizim',['Eklenmesin','Eklensin'])}${top!==window?'<button class="btn" data-act="czAc">📐 Teknik çizim'+(G.cizimSv&&G.cizimSv.length?' ('+G.cizimSv.length+')':'')+'</button>':''}<button class="btn" data-act="kapak">Kapak görseli</button>${G.kapakImg?'<button class="btn" data-act="kapakSil">Standart kapak</button>':''}<button class="btn" data-act="onizle">👁 Ön izleme</button><button class="btn pr" data-act="yaz">Yazdır / PDF</button></div>`+raporHtml(),sayfaDoldur(rp);
  else{ust.innerHTML=aktifUst();const cs=G.kapsam;const bu=build;build=function(){return bu().filter(c=>cs.includes(c.id))};_render();ygFoot(build=bu,cs)}
  symm();
@@ -8460,7 +8533,8 @@ document.addEventListener('click',e=>{const t=s=>e.target.closest(s);let b;
   else if(a==='uyg'){G.th=TLN[FAN[G.faal]];render()}
   else if(a==='devam'&&GM){GV=GM;if(GM==='aktif'){const m={DT:'LH',OT1:'OH1',OT2:'OH2',OT3:'OH3',OT4:'OH4',YT1:'HHP1',YT2:'HHP2',YT3:'HHP3'}[TC[G.th]];if(m)P.sp_C=m}render();scrollTo(0,0)}
   else if(a==='geri'){GV='giris';render();scrollTo(0,0)}
-  else if(a==='yaz'){sayfaDoldur(document.getElementById('rapor')).then(()=>print())}
+  else if(a==='yaz'){yazdir()}
+  else if(a==='yazp'){const f=document.getElementById('pvf');f&&f.contentWindow&&f.contentWindow.print()}
   else if(a==='onizle'){onizleme()}
   else if(a==='kapak'){const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=()=>{const r=new FileReader();r.onload=()=>{G.kapakImg=r.result;render()};f.files[0]&&r.readAsDataURL(f.files[0])};f.click()}
   else if(a==='kapakSil'){delete G.kapakImg;render()}
