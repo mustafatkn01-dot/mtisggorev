@@ -8509,7 +8509,7 @@ const pjOz=p=>p.oz&&p.oz.ok+p.oz.bad+p.oz.na?`${p.oz.ok} uygun · ${p.oz.bad} uy
 const pjDur=p=>`<span class="pj-dot ${p.dur==='Tamamlandı'?'g':'w'}"></span>${p.dur}`;
 function projHtml(){const r=pjListe(),T=ST.pr.length,tp=ST.pr.filter(p=>p.dur==='Taslak').length;
  const th=(k,l,flt,sort)=>`<th class="${PF.fil[k]?'fa':''}"><span class="pj-th"><span class="${sort?'pj-s':''}" ${sort?`data-ps="${sort}"`:''}>${l}${sort&&PF.sk===sort?(PF.sd>0?' ▲':' ▼'):''}</span>${flt?`<button class="pj-f${PF.fil[k]?' on':''}" data-pf="${k}" title="Filtrele" aria-label="${l} filtrele">▾</button>`:''}</span></th>`;
- return `<div class="pj-h"><h1>📁 Projelerim</h1><button class="btn" data-pa="imp">⬆ İçe aktar</button><button class="btn pr" data-pa="yeni">＋ Yeni proje</button><div class="pj-sub">Her tesis ayrı bir proje dosyasıdır; açıp ekleme, çıkarma ve düzenleme yapabilirsiniz.</div></div>
+ return `<div class="pj-h"><h1>📁 Projelerim</h1><span class="pj-chip ${BL.ok&&!BL.hata?'g':'w'}" title="Projeler hesabınızdaki tüm cihazlarda eşitlenir">${BL.hata?'☁ Bulut yazma hatası':BL.ok?'☁ Bulutla eşitlendi':'☁ Bulut bağlı değil · yalnızca bu cihaz'}</span><button class="btn" data-pa="imp">⬆ İçe aktar</button><button class="btn pr" data-pa="yeni">＋ Yeni proje</button><div class="pj-sub">Her tesis ayrı bir proje dosyasıdır; açıp ekleme, çıkarma ve düzenleme yapabilirsiniz.</div></div>
 <div class="pj-k3"><div class="card pj-k"><b>${T}</b><span>Toplam proje</span></div><div class="card pj-k"><b>${tp}</b><span>Taslak</span></div><div class="card pj-k"><b>${T-tp}</b><span>Tamamlandı</span></div></div>
 <div class="card" style="overflow:hidden"><div class="pj-tw"><table class="pj-t"><colgroup><col style="width:44px"><col><col style="width:13%"><col style="width:13%"><col style="width:112px"><col style="width:140px"><col style="width:176px"><col style="width:118px"><col style="width:124px"><col style="width:118px"></colgroup>
 <thead><tr><th style="text-align:center">No</th>${th('ad','Proje adı',0,'ad')}${th('firma','Firma',1,'firma')}${th('tesis','Tesis / şube',1,'tesis')}${th('tur','Tür',1)}${th('th','Tehlike sınıfı',1)}<th>Sonuç özeti</th>${th('gun','Güncelleme',0,'gun')}${th('dur','Durum',1,'dur')}<th>İşlem</th></tr></thead><tbody>
@@ -8552,7 +8552,7 @@ function pjA(a,id){
  else if(a==='exp')pjExp(id)
  else if(a==='rap'){pjAc(id,'rapor')}
  else if(a==='fclr'){PF.fil={firma:'',tesis:'',tur:'',th:'',dur:''};render()}
- else if(a==='sil'){const p=ST.pr.find(x=>x.id===id);pjKapDr();const o=pjModal(`<h3>Proje silinsin mi?</h3><p><b>${esc(p.ad)}</b> kalıcı olarak silinecek. Önce “Dışa aktar” ile yedek alabilirsiniz.</p><div class="pj-row"><button class="btn" data-pm2="x">Vazgeç</button><button class="btn dg" data-pm2="ok">Sil</button></div>`);o.onclick=e=>{const b=e.target.closest('[data-pm2]');if(!b){if(e.target===o)pjKapMd();return}if(b.dataset.pm2==='ok'){ST.pr=ST.pr.filter(x=>x.id!==id);if(ST.aktif===id)ST.aktif=null;ygYaz();ygT('Proje silindi')}pjKapMd();render()}}
+ else if(a==='sil'){const p=ST.pr.find(x=>x.id===id);pjKapDr();const o=pjModal(`<h3>Proje silinsin mi?</h3><p><b>${esc(p.ad)}</b> kalıcı olarak silinecek. Önce “Dışa aktar” ile yedek alabilirsiniz.</p><div class="pj-row"><button class="btn" data-pm2="x">Vazgeç</button><button class="btn dg" data-pm2="ok">Sil</button></div>`);o.onclick=e=>{const b=e.target.closest('[data-pm2]');if(!b){if(e.target===o)pjKapMd();return}if(b.dataset.pm2==='ok'){ST.pr=ST.pr.filter(x=>x.id!==id);bulutSil(id);if(ST.aktif===id)ST.aktif=null;ygYaz();ygT('Proje silindi')}pjKapMd();render()}}
  else if(a==='imp'){const f=document.createElement('input');f.type='file';f.accept='.json,application/json';f.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(j.tur!=='yangin-proje'||!j.proje||!j.proje.veri||!j.proje.ad)throw 0;const p=Object.assign({},j.proje,{id:pjId()});if(pjAd(p.ad))p.ad+=' (içe aktarıldı)';ST.pr.unshift(p);ygYaz();render();ygT('Proje içe aktarıldı: '+p.ad)}catch(e){ygT('Geçersiz proje dosyası')}};f.files[0]&&r.readAsText(f.files[0])};f.click()}}
 document.addEventListener('click',e=>{const t=e.target;let b;
  if(!t.closest('.dd')&&!t.closest('[data-pf]')&&!t.closest('[data-pm]')&&!t.closest('[data-pd]'))closeDD();
@@ -8567,15 +8567,35 @@ document.addEventListener('click',e=>{const t=e.target;let b;
 document.addEventListener('input',e=>{const t=e.target;if(t.dataset&&t.dataset.pn){const p=ST.pr.find(x=>x.id===ST.aktif);if(p){p.ad=t.value||p.ad;p.gun=Date.now();ygYaz();const c=document.getElementById('pchip');if(c){c.className='pj-chip g';c.textContent='Kaydedildi · '+ygSaat()}}}});
 addEventListener('keydown',e=>{if(e.key==='Escape'){pjKapDr();pjKapMd()}});
 
+/* --- bulut eşitleme (Firebase köprüsü ana uygulamada) --- */
+const BL={ok:false,hata:false},_bt={};
+const bulutVar=()=>top!==window;
+function bulutYaz(p){if(!bulutVar()||!BL.ok)return;clearTimeout(_bt[p.id]);_bt[p.id]=setTimeout(()=>{const c=JSON.parse(JSON.stringify(p));delete c.bg;parent.postMessage({yg:'bulutYaz',id:p.id,gun:p.gun,j:JSON.stringify(c)},'*')},1200)}
+function bulutTara(){if(!bulutVar()||!BL.ok)return;ST.pr.forEach(p=>{if(p.gun>(p.bg||0))bulutYaz(p)})}
+function bulutSil(id){if(bulutVar())parent.postMessage({yg:'bulutSil',id},'*')}
+function bulutUygula(c,ok){BL.ok=!!ok;if(!ok){if(GV==='proj')render();return}c=c||{};let ch=false;
+ Object.keys(c).forEach(id=>{const r=c[id];if(!r||!r.j)return;const l=ST.pr.find(x=>x.id===id);
+  if(!l){try{const n=JSON.parse(r.j);n.bg=r.gun;ST.pr.push(n);ch=true}catch(e){}}
+  else if(r.gun>l.gun&&id!==ST.aktif){try{const n=JSON.parse(r.j);n.bg=r.gun;Object.assign(l,n);ch=true}catch(e){}}
+  else if(l.gun>r.gun)bulutYaz(l);
+  else if(l.bg!==r.gun)l.bg=r.gun});
+ ST.pr.slice().forEach(l=>{if(!c[l.id]){if(l.bg){if(l.id!==ST.aktif){ST.pr=ST.pr.filter(x=>x!==l);ch=true}}else bulutYaz(l)}});
+ if(ch){ygYaz();if(GV==='proj')render()}else if(GV==='proj')render()}
+addEventListener('message',e=>{const d=e.data;if(!d||!d.yg||e.source!==parent)return;
+ if(d.yg==='bulut')bulutUygula(d.pr,d.ok);
+ else if(d.yg==='bulutOk'){const p=ST.pr.find(x=>x.id===d.id);if(p&&d.gun>(p.bg||0)){p.bg=d.gun;BL.hata=false;ygYaz2()}}
+ else if(d.yg==='bulutHata'){BL.hata=true;if(GV==='proj')render()}});
+function ygYaz2(){try{localStorage.setItem(LSK,JSON.stringify(ST))}catch(e){}}
+
 /* --- Uygulama: kayıt (yeni_isg_yangin_v1) + ana programla köprü --- */
 const LSK='yeni_isg_yangin_v1';
 const P0=JSON.stringify(Object.fromEntries(Object.keys(P).filter(k=>k!=='open'&&k!=='sub').map(k=>[k,P[k]]))),G0=JSON.stringify(G);
 let ST={v:2,pr:[],aktif:null};
 const pFilt=()=>{const p={};Object.keys(P).forEach(k=>{if(k!=='open'&&k!=='sub')p[k]=P[k]});return p};
-function ygYaz(){try{localStorage.setItem(LSK,JSON.stringify(ST))}catch(e){}}
+function ygYaz(){try{localStorage.setItem(LSK,JSON.stringify(ST))}catch(e){}try{bulutTara()}catch(e){}}
 function ygOz(){if(GM!=='aktif')return null;const k=document.querySelectorAll('#kpi .stat b');return k.length>=4?{ok:+k[1].textContent,bad:+k[2].textContent,na:+k[3].textContent}:null}
 function ygKaydet(){const pr=ST.pr.find(x=>x.id===ST.aktif);if(pr&&GV!=='proj'){pr.veri={P:JSON.parse(JSON.stringify(pFilt())),G:JSON.parse(JSON.stringify(G)),GM:GM};pr.gun=Date.now();pr.kay=new Date().toTimeString().slice(0,5);const o=ygOz();if(o)pr.oz=o}ygYaz()}
-(function(){try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&s.v===2&&Array.isArray(s.pr)){ST=s;ST.aktif=null}else if(s&&s.v===1){const g=s.G||{},ad=[g.firma,g.tesis].filter(Boolean).join(' · ')||'Önceki çalışma';ST.pr=[{id:'p_eski',ad,olu:s.t||Date.now(),gun:s.t||Date.now(),sur:1,dur:'Taslak',veri:{P:s.P||{},G:g,GM:s.GM||''}}];ygYaz()}}catch(e){}GV='proj'})();
+(function(){try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&s.v===2&&Array.isArray(s.pr)){ST=s;ST.aktif=null}else if(s&&s.v===1){const g=s.G||{},ad=[g.firma,g.tesis].filter(Boolean).join(' · ')||'Önceki çalışma';ST.pr=[{id:'p'+Date.now().toString(36)+'e',ad,olu:s.t||Date.now(),gun:s.t||Date.now(),sur:1,dur:'Taslak',veri:{P:s.P||{},G:g,GM:s.GM||''}}];ygYaz()}}catch(e){}GV='proj'})();
 let _yt=0;const ygPlan=()=>{clearTimeout(_yt);_yt=setTimeout(ygKaydet,350)};
 const _r2=render;render=function(){_r2.apply(this,arguments);ygPlan()};
 document.addEventListener('input',ygPlan,true);document.addEventListener('change',ygPlan,true);
@@ -22529,6 +22549,16 @@ window.addEventListener('resize', calMobInit);
   // ── Uygulamanın beklediği kancalar ─────────────────────────
   const tasksYaz = () => { try { lsSaveTasks(); } catch (e) {} yaz('tasks', () => tasks); };
 
+  // Yangın modülü projeleri: her proje ayrı düğüm (yanginProje/<id>), içerik JSON metni olarak saklanır.
+  window.ygBulutBasla = function () {
+    if (window.__ygDinle) return; window.__ygDinle = true;
+    ROOT.child('yanginProje').on('value',
+      sn => { window.__ygSnap = sn.val() || {}; window.__ygOk = true; window.ygBulutGonder && window.ygBulutGonder(); },
+      err => { console.error('Yangın projeleri okunamadı', err); window.__ygOk = false; window.ygBulutGonder && window.ygBulutGonder(); });
+  };
+  window.ygBulutYaz = (id, gun, j) => ROOT.child('yanginProje').child(String(id)).set({ gun: gun, j: j });
+  window.ygBulutSil = id => ROOT.child('yanginProje').child(String(id)).remove();
+
   window._fbSave   = tasksYaz;
   window._fbUpdate = tasksYaz;
   window._fbDelete = tasksYaz;
@@ -23113,6 +23143,7 @@ window.addEventListener('resize', calMobInit);
       });
 
       nokta(true, 'Bulut bağlantısı aktif ve kimlik doğrulandı ✓');
+      try { window.ygBulutBasla(); } catch (e) {}
       hseKoprusuBaslat();
     } catch(err) {
       console.error('Firebase ilk okuma hatası:',err);
@@ -31620,10 +31651,14 @@ function ygTema(){
   fr.contentWindow.postMessage({yg:'tema',v:v},'*');
 }
 try{new MutationObserver(()=>setTimeout(ygTema,60)).observe(document.documentElement,{attributes:true});new MutationObserver(()=>setTimeout(ygTema,60)).observe(document.body,{attributes:true})}catch(e){}
+function ygBulutGonder(){const fr=document.getElementById('yg-frame');if(!fr||!fr.contentWindow)return;fr.contentWindow.postMessage({yg:'bulut',pr:window.__ygSnap||{},ok:!!window.__ygOk},'*')}
+window.ygBulutGonder=ygBulutGonder;
 function ygHash(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h.toString(36)}
 window.addEventListener('message',e=>{
   const fr=document.getElementById('yg-frame'); if(!fr||e.source!==fr.contentWindow) return;
-  const m=e.data||{}; if(m.yg==='hazir'){ygTema();return}
+  const m=e.data||{}; if(m.yg==='hazir'){ygTema();ygBulutGonder();return}
+  if(m.yg==='bulutYaz'&&window.ygBulutYaz){window.ygBulutYaz(m.id,m.gun,m.j).then(()=>fr.contentWindow.postMessage({yg:'bulutOk',id:m.id,gun:m.gun},'*')).catch(()=>fr.contentWindow.postMessage({yg:'bulutHata'},'*'));return}
+  if(m.yg==='bulutSil'&&window.ygBulutSil){window.ygBulutSil(m.id).catch(()=>{});return}
 
 });
 </script>
