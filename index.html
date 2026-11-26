@@ -8279,12 +8279,11 @@ function raporHtml(){
  <div class="cvn">Bu rapor, yürürlükteki mevzuat ve ilgili teknik standart şartlarına göre hazırlanmıştır.</div></div></section>`;
  const hasC=G.cizim==='Evet'&&(G.cizimSv&&G.cizimSv.length||G.cizimLev);
  const tl=tocLine;
- const tocS=tocSection(`${tl(1,'Özet','sc1')+cardStat.map((x,i)=>tl(i+2,x[0],'sc'+(i+2))).join('')+tl(gor,'Genel görüş','scg')+(hasC?tl('Ek-1','Teknik çizimler','sce'):'')}`);
+ const tocS=tocSection(`${tocLine('','Kısaltmalar','sck')+tl(1,'Özet','sc1')+cardStat.map((x,i)=>tl(i+2,x[0],'sc'+(i+2))).join('')+tl(gor,'Genel görüş','scg')+(hasC?tl('Ek-1','Teknik çizimler','sce'):'')}`);
  const ozetS=`<section class="rs" id="sc1"><h2 class="rh2"><span>1</span>Özet</h2>${P1.map(x=>'<p class="rp">'+x+'</p>').join('')}
  <div class="res rr4">${kp(all,'Değerlendirilen madde','big')+kp(tot.ok,'Uygun')+kp(tot.bad,'Uygun değil')+kp(tot.na,'Değerlendirilemedi')}</div>
- <div class="tbw"><table class="rt" style="margin-top:12px"><thead><tr><th>Başlık</th><th>Durum</th><th class="r">Madde</th><th class="r">Uygun</th><th class="r">Uygun değil</th><th class="r">Bilgi yok</th></tr></thead><tbody>${ozet.join('')}</tbody></table></div>
- @@KISALT@@</section>`;
- {const HT=`<div class="card rep" style="padding:0">${cover}${tocS}${ozetS}${secs.join('')}${gen}${cizim}</div>`;return HT.replace('@@KISALT@@',kisaltma(HT)).replace(/\s+(mu|mı|mi|mü)\?/g,'').replace(/\?/g,'')}}
+ <div class="tbw"><table class="rt" style="margin-top:12px"><thead><tr><th>Başlık</th><th>Durum</th><th class="r">Madde</th><th class="r">Uygun</th><th class="r">Uygun değil</th><th class="r">Bilgi yok</th></tr></thead><tbody>${ozet.join('')}</tbody></table></div></section>`;
+ {const HT=`<div class="card rep" style="padding:0">${cover}${tocS}@@KISALT@@${ozetS}${secs.join('')}${gen}${cizim}</div>`;return HT.replace('@@KISALT@@',kslSec(kisaltma(HT))).replace(/\s+(mu|mı|mi|mü)\?/g,'').replace(/\?/g,'')}}
 /* ön izleme, yazdırma ve içindekiler sayfa numaraları: rapor, sabit A4 sayfa kutularına bölünen gizli/görünür bir çerçevede üretilir */
 const rapKaynak=()=>{const d=document.createElement('div');d.innerHTML=GV==='yeni'?rehber('rapor'):raporHtml();const e=d.querySelector('.rep');return e?e.innerHTML:d.innerHTML};
 function sayfaDoc(inner){
@@ -8302,6 +8301,7 @@ function yazdir(){const f=sayfaCerceve('position:fixed;left:-9999px;top:0;width:
 function onizleme(){const o=document.createElement('div');o.id='prev';o.innerHTML='<div class="pvb"><div class="pvt"><b>Rapor ön izleme</b><i id="pvn">(Sayfalar hazırlanıyor…)</i></div><div class="pva"><button class="btn pr" data-act="yazp">Yazdır / PDF</button><button class="btn" data-act="pkapat">Kapat</button></div></div>';
  const f=sayfaCerceve('flex:1;width:100%;border:0;background:#dfe5ec');f.id='pvf';o.appendChild(f);document.body.appendChild(o);
  sayfaBekle(f).then(w=>{const n=w&&w.document.querySelectorAll('.page').length;const e=document.getElementById('pvn');if(e)e.textContent=n?'(Toplam '+n+' sayfa)':'(Rapor hazırlanamadı)'})}
+const kslSec=h=>h?'<section class="rs ksl" id="sck">'+h+'</section>':'';
 const tocLine=(n,t,id)=>`<div class="tcl"><span class="tn">${n}</span><span class="tt">${t}</span><i></i><span class="pg" data-t="${id}"></span></div>`;
 const tocSection=l=>`<section class="rs toc"><h2 class="rh2 tch">İçindekiler</h2><div class="tcb">${l}</div><div class="tcn">Bu rapor, rapor tarihindeki tesis yerleşim düzenine göre hazırlanmıştır. Makine, istif, bölme veya kullanım değişikliklerinde ilgili bölümler yeniden değerlendirilmelidir.</div></section>`;
 
@@ -8323,7 +8323,7 @@ function sayfala(doc){
  U.forEach((u,i)=>{if(u.table&&U[i+1]&&U[i+1].table===u.table&&!(U[i+2]&&U[i+2].table===u.table))u.pair=true});
  U.forEach((u,i)=>{u.chain=chain(u.el);if(u.table){u.chain=chain(u.el)}const s=u.chain.find(x=>x.matches&&x.matches('section.rs'))||u.el.closest('section.rs');u.sec=s;
   u.forceBefore=!!(s&&s.classList.contains('ek')&&(i===0||U[i-1].sec!==s));u.forceAfter=false});
- U.forEach((u,i)=>{if(u.sec&&u.sec.matches('.cover,.toc')&&(i===U.length-1||U[i+1].sec!==u.sec))u.forceAfter=true});
+ U.forEach((u,i)=>{if(u.sec&&u.sec.matches('.cover,.toc,.ksl')&&(i===U.length-1||U[i+1].sec!==u.sec))u.forceAfter=true});
  let pages=[],cur=null,open=[],seen=new Set();
  function newPage(){const pg=doc.createElement('div');pg.className='page';const c=doc.createElement('div');c.className='pgc rep';pg.appendChild(c);const f=doc.createElement('div');f.className='pgf';pg.appendChild(f);host.appendChild(pg);cur={pg,c};pages.push(cur);open=[]}
  function place(u,force){ // başarı: geri alma işlevi; sığmazsa kendini geri alıp null döner
@@ -8600,8 +8600,8 @@ function rehber(mod){
   const hasC=(G.cizimSv&&G.cizimSv.length||G.cizimLev);
   const toc=secsR.map((x,i)=>tocLine(i+1,x[0],x[1])).join('')+tocLine(7,'Genel görüş','sc6')+tocLine(8,'Dayanak ve kapsam','sc7')+(hasC?tocLine('Ek-1','Teknik çizimler','sce'):'');
   const h2=(n,t,id)=>`<section class="rs" id="${id}"><h2 class="rh2"><span>${n}</span>${t}</h2>`;
-  const OUT=cov+tocSection(toc)
-  +h2(1,'Özet','sc1')+`<p class="rp">Bu rehber, ${esc(firma)} ${esc(tesis)} için yeni kurulacak tesisin yangın güvenliği sistemlerine ilişkin ön büyüklükleri ve yönetmelik gereklerini içerir.</p><table class="kv"><tbody>${I('Kullanım sınıfı',ks?ks[1]:'')+I('Tehlike sınıfı',th?TLN[th]:'')+I('Kapalı alan',c.A?rnd(c.A,0)+' m²':'')+I('Kat sayısı',c.K?String(c.K):'')+I('Bina yüksekliği',c.hh?rnd(c.hh,1)+' m'+(c.yuksek?' (yüksek bina)':''):'')+I('Çalışan sayısı',G.eN)}</tbody></table>${kpi}@@KISALT@@</section>`
+  const OUT=cov+tocSection(tocLine('','Kısaltmalar','sck')+toc)+'@@KISALT@@'
+  +h2(1,'Özet','sc1')+`<p class="rp">Bu rehber, ${esc(firma)} ${esc(tesis)} için yeni kurulacak tesisin yangın güvenliği sistemlerine ilişkin ön büyüklükleri ve yönetmelik gereklerini içerir.</p><table class="kv"><tbody>${I('Kullanım sınıfı',ks?ks[1]:'')+I('Tehlike sınıfı',th?TLN[th]:'')+I('Kapalı alan',c.A?rnd(c.A,0)+' m²':'')+I('Kat sayısı',c.K?String(c.K):'')+I('Bina yüksekliği',c.hh?rnd(c.hh,1)+' m'+(c.yuksek?' (yüksek bina)':''):'')+I('Çalışan sayısı',G.eN)}</tbody></table>${kpi}</section>`
   +h2(2,'Su deposu, yangın dolabı ve hidrant','sc2')+gtR(R1)+'</section>'
   +h2(3,'Kaçış ve çıkışlar','sc3')+gtR(R2)+'</section>'
   +h2(4,'Taşınabilir söndürücü ve su deposu yapısı','sc4')+gtR(R3)+'</section>'
@@ -8610,7 +8610,7 @@ function rehber(mod){
   +h2(7,'Genel görüş','sc6')+`<div class="rnote"><b>Genel görüş</b><ul class="dl">${dn.map(x=>'<li>'+x+'</li>').join('')}</ul></div></section>`
   +h2(8,'Dayanak ve kapsam','sc7')+`<div class="rsrc"><b>Dayanak ve kapsam</b><p class="rp">Binaların Yangından Korunması Hakkında Yönetmelik (Md. 8, 19, 32, 33, 39, 88, 92 ila 95, 99; Ek-1, Ek-5/A, Ek-5/B, Ek-8/A, Ek-8/B, Ek-8/C). Depo ve pompa dairesi şartnamesinde ayrıca TS EN 12845, NFPA 20, NFPA 22, FM 4020, AWWA D102, AWWA D103, EN 13280, LPS 1276, TS EN 1992-3, TS EN 1998-4, NACE SP0285 ve TS EN 12954 esas alınmıştır. Etiketi “Ön tahmin” veya “İyi uygulama” olan satırlar yönetmelikte sayısal olarak belirtilmemiş mühendislik önerileridir; proje müellifi, hidrolik hesap ve ürün onayı ile kesinleşir.</p></div></section>`
   +(hasC?`<section class="rs ek" id="sce"><h2 class="rh2"><span>Ek-1</span>Teknik çizimler</h2><p class="rp">Aşağıdaki çizimler tesisin bölümlerine göre hazırlanmış kaçış ve yangın dolabı yerleşimini göstermektedir; ölçüler ve değerlendirme çizimin altında verilmiştir.</p>${cizimFigs('Ek-1')}</section>`:'');
-  return OUT.replace('@@KISALT@@',kisaltma(OUT))}
+  return OUT.replace('@@KISALT@@',kslSec(kisaltma(OUT)))}
  return `<div class="card" id="rhc" style="padding:16px"><div class="rhh"><div><div class="rht">Yeni Tesis Yangın Güvenliği Kurulum Rehberi</div><div class="rhs">${esc(G.firma||'Firma adı belirtilmemiştir.')} · ${esc(G.tesis||'Tesis adı belirtilmemiştir.')}</div></div><div class="rhm">Hazırlayan: ${esc(G.den||'Belirtilmemiştir.')}<br>Tarih: ${esc(G.tarih?G.tarih.split('-').reverse().join('.'):'Belirtilmemiştir.')}</div></div>
  <div class="rhk"><span>${ks?esc(ks[1]):'Kullanım sınıfı belirtilmemiştir.'}</span><span>${th?TLN[th]:'Tehlike sınıfı belirtilmemiştir.'}</span><span>${c.A?rnd(c.A,0)+' m² kapalı alan':'Kapalı alan belirtilmemiştir.'}</span><span>${c.K?c.K+' kat':'Kat sayısı belirtilmemiştir.'}</span>${c.hh?`<span>Bina yüksekliği ${rnd(c.hh,1)} m${c.yuksek?' (yüksek bina)':''}</span>`:''}${G.eN?`<span>${esc(G.eN)} çalışan</span>`:''}</div>
  ${kpi}
