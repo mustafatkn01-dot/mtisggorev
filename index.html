@@ -8309,12 +8309,13 @@ const tocSection=l=>`<section class="rs toc"><h2 class="rh2 tch">İçindekiler</
 function sayfala(doc){
  const mm=v=>v*96/25.4,H=mm(265),MINL=4;
  const src=doc.getElementById('src'),host=doc.getElementById('pages'),U=[],isHead=e=>/^H[1-4]$/.test(e.tagName)||/\b(rh2|rh3|rh4)\b/.test(e.className);
- const atomic=e=>e.matches('.cover,.toc,.res,.rnote,.rsrc,.fgb,.fig,figure,svg,img,table.kv,.sg6,.lgr,.capr');
+ const atomic=e=>e.matches('.cover,.toc,.res,.fgb,.fig,figure,svg,img,table.kv,.sg6,.lgr,.capr');
  const lines=e=>{const cs=getComputedStyle(e),lh=parseFloat(cs.lineHeight)||parseFloat(cs.fontSize)*1.4;return Math.max(1,Math.round(e.getBoundingClientRect().height/lh))};
  const chain=e=>{const c=[];let p=e.parentElement;while(p&&p!==src){c.unshift(p);p=p.parentElement}return c};
  function walk(e){
   if(e.tagName==='TABLE'&&!atomic(e)){[...e.tBodies].forEach(tb=>[...tb.rows].forEach(r=>U.push({el:r,table:e,lines:1})));return}
   if(atomic(e)){U.push({el:e,lines:99,head:false});return}
+  if(e.matches('.rnote,.rsrc')){[...e.children].forEach(c=>{if(c.tagName==='B'||c.tagName==='H6')U.push({el:c,head:true,lines:0});else if(c.tagName==='UL'||c.tagName==='OL')[...c.children].forEach(li=>U.push({el:li,lines:lines(li)}));else U.push({el:c,lines:lines(c)})});return}
   if(e.matches('section,.tbw,.rep,ul.rl,ol.rl')||(e.tagName==='DIV'&&e.children.length&&!e.matches('.rp,.rsum')&&![...e.children].every(c=>/^(SPAN|B|I|A|BR|U|SUP)$/.test(c.tagName)))){[...e.children].forEach(walk);return}
   U.push({el:e,head:isHead(e),lines:isHead(e)?0:lines(e)});
  }
