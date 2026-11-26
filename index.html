@@ -8343,7 +8343,16 @@ function sayfala(doc){
  let i=0;newPage();
  while(i<U.length){
   const u=U[i];if(u.forceBefore&&!empty())newPage();
-  let n=u.pair?2:1;if(u.head){let ln=0,j=i+1;while(j<U.length&&ln<MINL&&!U[j].forceBefore){ln+=U[j].lines;j++}n=j-i}
+  let n=u.pair?2:1;
+  /* başlık kuralı: başlıktan sonra en az 4 metin satırı veya (sütun başlığı hariç) en az 3 tablo satırı aynı sayfada kalır.
+     Arka arkaya gelen başlıklar (ana başlık + alt başlık) ve başlık altı özet satırı (.rsum) sayılmaz, gruba eklenir. */
+  if(u.head){let ln=0,rows=0,j=i+1;
+   while(j<U.length&&!U[j].forceBefore){const v=U[j];j++;
+    if(v.head||v.el.matches('.rsum'))continue;
+    if(v.table){rows++;if(rows>=3||!(U[j]&&U[j].table===v.table))break}else{ln+=v.lines;if(ln>=MINL)break}}
+   n=j-i}
+  /* tablo başı kuralı: başlıksız başlayan tablo da sayfa sonunda en az 3 satırla başlar */
+  else if(u.table&&(i===0||U[i-1].table!==u.table)){let j=i+1;while(j<U.length&&U[j].table===u.table&&j-i<3)j++;n=Math.max(n,j-i)}
   const g=U.slice(i,i+n);
   if(!tryGroup(g)){
    if(!empty())newPage();
