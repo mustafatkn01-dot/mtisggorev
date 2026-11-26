@@ -8179,8 +8179,8 @@ function raporHtml(){
  if(top.length)P1.push(`Uygunsuzluklar en çok ${top.map(x=>x[0]+' ('+x[1].bad+' madde)').join(', ')} başlıklarında görülmüştür; ilgili düzeltici faaliyetler Genel görüş bölümünde toplanmıştır.`);
  else if(all)P1.push('Değerlendirilen maddelerde uygunsuzluk tespit edilmemiştir.');
  if(tot.na>0)P1.push('Değer belirtilmeyen maddeler için gerekli teknik bilgi ilgili tablolarda ayrıca belirtilmiştir; bu bilgiler tamamlandığında değerlendirme yenilenmelidir.');
- if(G.ozel&&G.ozel!=='Yok')P1.push(`Tesiste ${esc(G.ozel.toLowerCase())} bulunduğu beyan edildiğinden, ilgili alanlar bina yangın sınıfından bağımsız olarak ayrıca sorgulanmıştır.`);
- const gor=no+1,oneri=ekipOneri();
+ if(G.ozel&&G.ozel!=='Yok'&&(cs.includes('depo')||cs.includes('kim')))P1.push(`Tesiste ${esc(G.ozel.toLowerCase())} bulunduğu beyan edildiğinden, ilgili alanlar bina yangın sınıfından bağımsız olarak ayrıca sorgulanmıştır.`);
+ const gor=no+1,oneri=cs.includes('ekip')?ekipOneri():[];
  /* genel görüş */
  const MX=15;
  const blk=(num,t,l,f)=>l.length?`<h3 class="rh3"><span>${gor}.${num}</span>${t}</h3><ol class="rl">${l.slice(0,MX).map(f).join('')}</ol>${l.length>MX?`<p class="rp">Diğer ${l.length-MX} madde ilgili bölüm tablolarında yer almaktadır.</p>`:''}`:'';
@@ -8633,7 +8633,7 @@ const pjOz=p=>p.oz&&p.oz.ok+p.oz.bad+p.oz.na?`${p.oz.ok} uygun · ${p.oz.bad} uy
 const pjDur=p=>`<span class="pj-dot ${p.dur==='Tamamlandı'?'g':'w'}"></span>${p.dur}`;
 function projHtml(){const r=pjListe(),T=ST.pr.length,tp=ST.pr.filter(p=>p.dur==='Taslak').length;
  const th=(k,l,flt,sort)=>`<th class="${PF.fil[k]?'fa':''}"><span class="pj-th"><span class="${sort?'pj-s':''}" ${sort?`data-ps="${sort}"`:''}>${l}${sort&&PF.sk===sort?(PF.sd>0?' ▲':' ▼'):''}</span>${flt?`<button class="pj-f${PF.fil[k]?' on':''}" data-pf="${k}" title="Filtrele" aria-label="${l} filtrele">▾</button>`:''}</span></th>`;
- return `<div class="pj-h"><h1>📁 Projelerim</h1><span class="pj-chip ${BL.ok&&!BL.hata?'g':'w'}" title="Projeler hesabınızdaki tüm cihazlarda eşitlenir">${BL.hata?'☁ Bulut yazma hatası':BL.ok?'☁ Bulutla eşitlendi':'☁ Bulut bağlı değil · yalnızca bu cihaz'}</span><button class="btn" data-pa="imp">⬆ İçe aktar</button><button class="btn pr" data-pa="yeni">＋ Yeni proje</button><div class="pj-sub">Her tesis ayrı bir proje dosyasıdır; açıp ekleme, çıkarma ve düzenleme yapabilirsiniz.</div></div>
+ return `<div class="pj-h"><h1>📁 Projelerim</h1><span class="pj-chip ${BL.ok&&!BL.hata?'g':'w'}" title="Projeler hesabınızdaki tüm cihazlarda eşitlenir">${BL.hata?'☁ Bulut yazma hatası':BL.ok?'☁ Bulutla eşitlendi':'☁ Bulut bağlı değil · yalnızca bu cihaz'}</span><button class="btn pr" data-pa="yeni">＋ Yeni proje</button><div class="pj-sub">Her tesis ayrı bir proje dosyasıdır; açıp ekleme, çıkarma ve düzenleme yapabilirsiniz.</div></div>
 <div class="pj-k3"><div class="card pj-k"><b>${T}</b><span>Toplam proje</span></div><div class="card pj-k"><b>${tp}</b><span>Taslak</span></div><div class="card pj-k"><b>${T-tp}</b><span>Tamamlandı</span></div></div>
 <div class="card" style="overflow:hidden"><div class="pj-tw"><table class="pj-t"><colgroup><col style="width:44px"><col><col style="width:13%"><col style="width:13%"><col style="width:112px"><col style="width:140px"><col style="width:176px"><col style="width:118px"><col style="width:124px"><col style="width:118px"></colgroup>
 <thead><tr><th style="text-align:center">No</th>${th('ad','Proje adı',0,'ad')}${th('firma','Firma',1,'firma')}${th('tesis','Tesis / şube',1,'tesis')}${th('tur','Tür',1)}${th('th','Tehlike sınıfı',1)}<th>Sonuç özeti</th>${th('gun','Güncelleme',0,'gun')}${th('dur','Durum',1,'dur')}<th>İşlem</th></tr></thead><tbody>
@@ -8677,7 +8677,7 @@ function pjA(a,id){
  else if(a==='rap'){pjAc(id,'rapor')}
  else if(a==='fclr'){PF.fil={firma:'',tesis:'',tur:'',th:'',dur:''};render()}
  else if(a==='sil'){const p=ST.pr.find(x=>x.id===id);pjKapDr();const o=pjModal(`<h3>Proje silinsin mi?</h3><p><b>${esc(p.ad)}</b> kalıcı olarak silinecek.</p><div class="pj-row"><button class="btn" data-pm2="x">Vazgeç</button><button class="btn dg" data-pm2="ok">Sil</button></div>`);o.onclick=e=>{const b=e.target.closest('[data-pm2]');if(!b){if(e.target===o)pjKapMd();return}if(b.dataset.pm2==='ok'){ST.pr=ST.pr.filter(x=>x.id!==id);bulutSil(id);if(ST.aktif===id)ST.aktif=null;ygYaz();ygT('Proje silindi')}pjKapMd();render()}}
- else if(a==='imp'){const f=document.createElement('input');f.type='file';f.accept='.json,application/json';f.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(j.tur!=='yangin-proje'||!j.proje||!j.proje.veri||!j.proje.ad)throw 0;const p=Object.assign({},j.proje,{id:pjId()});if(pjAd(p.ad))p.ad+=' (içe aktarıldı)';ST.pr.unshift(p);ygYaz();render();ygT('Proje içe aktarıldı: '+p.ad)}catch(e){ygT('Geçersiz proje dosyası')}};f.files[0]&&r.readAsText(f.files[0])};f.click()}}
+}
 document.addEventListener('click',e=>{const t=e.target;let b;
  if(!t.closest('.dd')&&!t.closest('[data-pf]')&&!t.closest('[data-pm]')&&!t.closest('[data-pd]'))closeDD();
  if(b=t.closest('[data-po]')){e.stopPropagation();pjAc(b.dataset.po);return}
