@@ -7500,7 +7500,7 @@ textarea.inp{height:68px;padding:8px 11px;resize:vertical;line-height:1.45}
 .dd{position:fixed;z-index:80;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:4px;min-width:220px;max-height:320px;overflow:auto}.op{display:flex;align-items:center;gap:8px;padding:8px 10px;border:0;background:transparent;border-radius:8px;width:100%;font-size:12.5px;text-align:left}
 .btn{height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 14px;font-weight:700;font-size:12.5px}.btn.pr{background:var(--acc);color:#fff;border-color:var(--acc)}.res{grid-template-columns:repeat(4,1fr)}
 @media(max-width:760px){.res{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(5){display:none}}
-
+.dp{width:288px;max-width:calc(100vw - 24px);max-height:none;padding:10px;overflow:visible}.dp-h{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px}.dp-h b{font-size:14px;color:var(--text)}.dp-n{width:32px;height:32px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);font-size:18px;line-height:1;cursor:pointer}.dp-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.dp-w{font-size:11px;font-weight:700;color:var(--text3);text-align:center;padding:4px 0}.dp-d{height:34px;border:0;border-radius:9px;background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}.dp-d:hover{background:var(--surface2)}.dp-d.o{color:var(--text3);opacity:.55}.dp-d.t{box-shadow:inset 0 0 0 1.5px var(--acc);font-weight:700}.dp-d.s{background:var(--acc);color:#fff;font-weight:700}.dp-f{display:flex;justify-content:space-between;gap:8px;margin-top:8px}.dp-f .btn{flex:1}.rnw{position:relative}.rnp{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text2);pointer-events:none;font-size:14px}.rnw .inp{padding-left:calc(13px + 9.6ch)}
 .stepper{display:flex;gap:8px;margin:0 0 12px}.stp{flex:1;text-align:center;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:800;font-size:12.5px;color:var(--text3)}.stp.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .gh{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--acc-tx)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.tile{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:13px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);min-height:104px}.tile b{font-size:15px}.tile span{font-size:12px;color:var(--text2);line-height:1.4}.tile .ti2{font-size:22px}.tile.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--surface))}
@@ -8146,6 +8146,21 @@ function render(){const act=document.activeElement,an=act&&act.dataset&&act.data
  if(an){const e=document.querySelector(`[data-n="${an}"]`);if(e){e.focus();try{e.setSelectionRange(pos,pos)}catch(_){}}}}
 function closeDD(){const e=document.querySelector('.dd');if(e)e.remove()}
 function place(el,btn){const r=btn.getBoundingClientRect(),w=el.offsetWidth,h=el.offsetHeight;el.style.left=Math.min(Math.max(8,r.left),innerWidth-w-8)+'px';let y=r.bottom+4;if(y+h>innerHeight-8)y=Math.max(8,r.top-h-4);el.style.top=y+'px'}
+/* temaya uygun tarih seçici (yyyy-mm-dd) */
+const AYL=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const trTar=s=>s&&/^\d{4}-\d{2}-\d{2}$/.test(s)?s.split('-').reverse().join('.'):'';
+function openDP(btn,cur,pick){closeDD();const el=document.createElement('div');el.className='dd dp';const bug=ymd(new Date());
+ let v=cur&&/^\d{4}-\d{2}-\d{2}$/.test(cur)?new Date(cur+'T00:00'):new Date();let y=v.getFullYear(),m=v.getMonth();
+ const paint=()=>{const f=new Date(y,m,1),bas=(f.getDay()+6)%7,gun=new Date(y,m+1,0).getDate(),onc=new Date(y,m,0).getDate();let h='';
+  for(let i=0;i<42;i++){let d,o=false,mm=m,yy=y;if(i<bas){d=onc-bas+i+1;o=true;mm=m-1}else if(i>=bas+gun){d=i-bas-gun+1;o=true;mm=m+1}else d=i-bas+1;
+   const dt=ymd(new Date(yy,mm,d));h+=`<button class="dp-d${o?' o':''}${dt===bug?' t':''}${dt===cur?' s':''}" data-dt="${dt}">${d}</button>`}
+  el.innerHTML=`<div class="dp-h"><button class="dp-n" data-dn="-1" aria-label="Önceki ay">‹</button><b>${AYL[m]} ${y}</b><button class="dp-n" data-dn="1" aria-label="Sonraki ay">›</button></div><div class="dp-g">${['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'].map(w=>`<span class="dp-w">${w}</span>`).join('')}${h}</div><div class="dp-f"><button class="btn" data-dx="sil">Temizle</button><button class="btn pr" data-dx="bug">Bugün</button></div>`};
+ paint();document.body.appendChild(el);place(el,btn);
+ el.onclick=e=>{e.stopPropagation();const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.dn){m+=+b.dataset.dn;if(m<0){m=11;y--}if(m>11){m=0;y++}paint();return}
+  if(b.dataset.dt){pick(b.dataset.dt);closeDD();return}
+  if(b.dataset.dx){pick(b.dataset.dx==='bug'?bug:'');closeDD()}}}
 function openDD(btn,list,cur,pick){closeDD();const el=document.createElement('div');el.className='dd';el.innerHTML=list.map(o=>`<button class="op" data-o="${esc(o)}">${esc(o)}${o===cur?'<span class="ck">✓</span>':''}</button>`).join('');document.body.appendChild(el);place(el,btn);el.onclick=e=>{const b=e.target.closest('.op');if(b){pick(b.dataset.o);closeDD()}e.stopPropagation()}}
 function openMulti(btn){closeDD();const k=btn.dataset.multi,L=k==='sys'?SYS:k.startsWith('sa_')?AREAS:MAL,el=document.createElement('div');el.className='dd';const paint=()=>{el.innerHTML=L.map(([i,n])=>`<button class="op" data-o="${i}">${esc(n)}${(P[k]||[]).includes(i)?'<span class="ck">✓</span>':''}</button>`).join('')};paint();document.body.appendChild(el);place(el,btn);
  el.onclick=e=>{const b=e.target.closest('.op');if(b){const i=b.dataset.o;if(!P[k])P[k]=[];P[k]=P[k].includes(i)?P[k].filter(x=>x!==i):P[k].concat(i);const st=el.scrollTop;paint();el.scrollTop=st;render()}e.stopPropagation()}}
@@ -8282,7 +8297,7 @@ function raporHtml(){
  const cizim=G.cizim==='Evet'&&(G.cizimSv&&G.cizimSv.length||G.cizimLev)?`<section class="rs ek" id="sce"><h2 class="rh2"><span>Ek-1</span>Teknik çizimler</h2><p class="rp">Aşağıdaki çizimler tesisin bölümlerine göre hazırlanmış kaçış ve yangın dolabı yerleşimini göstermektedir; ölçüler ve değerlendirme çizimin altında verilmiştir.</p>${cizimFigs('Ek-1')}</section>`:'';
  const I=(a,b)=>`<tr><th>${a}</th><td>${esc(b||'Belirtilmemiştir.')}</td></tr>`;
  const cover=`<section class="rs cover"><div class="cvt">${G.kapakImg?'<img src="'+G.kapakImg+'" alt="">':KAPAK_SVG}</div><div class="cvb"><div class="cvk">YANGIN GÜVENLİĞİ</div><div class="cvh">Saha Kontrol ve Denetim Raporu</div><div class="cvf">${esc(firma)}</div><div class="cvs">${esc(tesis)}</div>
- <table class="kv"><tbody>${I('Tesis adresi',G.adres)+I('Bina kullanım sınıfı',ks?ks[1]:'')+I('Bina yangın tehlike sınıfı',G.th)+I('İşyeri tehlike sınıfı',G.eT)+I('Çalışan sayısı',G.eN)+I('Denetçi',G.den)+I('Rapor no',G.rno)+I('Rapor tarihi',tarih)}</tbody></table>
+ <table class="kv"><tbody>${I('Tesis adresi',G.adres)+I('Bina kullanım sınıfı',ks?ks[1]:'')+I('Bina yangın tehlike sınıfı',G.th)+I('İşyeri tehlike sınıfı',G.eT)+I('Çalışan sayısı',G.eN)+I('Denetçi',G.den)+I('Rapor no',rnoOf())+I('Rapor tarihi',tarih)}</tbody></table>
  <div class="cvn">Bu rapor, yürürlükteki mevzuat ve ilgili teknik standart şartlarına göre hazırlanmıştır.</div></div></section>`;
  const hasC=G.cizim==='Evet'&&(G.cizimSv&&G.cizimSv.length||G.cizimLev);
  const tl=tocLine;
@@ -8436,6 +8451,12 @@ G.kapsam=null;
 /* --- yardımcılar --- */
 const gi=(l,k,u,o)=>{o=o||{};return `<div class="fld${o.span?' s'+o.span:''}"><label>${l}${u?' ('+u+')':''}</label><input class="inp" data-g="${k}" type="${o.type||'text'}" inputmode="${o.type?'':o.num===false?'text':'decimal'}" value="${esc(G[k]||'')}" placeholder="${o.ph||''}"></div>`};
 const gdc=(l,k,list)=>{OG[k]=list;return `<button class="sel" data-gd="${k}" style="width:auto;min-width:200px"><span>${l}: ${esc(G[k]==='Evet'?'Eklensin':G[k]==='Hayır'||!G[k]?'Eklenmesin':G[k])}</span><i>▼</i></button>`};
+const gdt=(l,k)=>`<div class="fld"><label>${l}</label><button class="sel" data-gdt="${k}"><span>${esc(trTar(G[k])||'Seçiniz')}</span><i>▼</i></button></div>`;
+function rnoYil(){return (G.tarih||'').slice(0,4)||String(new Date().getFullYear())}
+function rnoOto(){try{const y=+rnoYil(),pr=ST.pr.filter(p=>new Date(p.olu).getFullYear()===y).sort((a,b)=>a.olu-b.olu),i=pr.findIndex(p=>p.id===ST.aktif);return String((i<0?pr.length:i)+1).padStart(2,'0')}catch(e){return '01'}}
+function rnoSira(){if(G.rnoS)return G.rnoS;const m=/^YNG-\d{4}-(\w+)$/.exec(G.rno||'');return m?m[1]:''}
+function rnoOf(){if(G.rno&&!G.rnoS&&!/^YNG-\d{4}-/.test(G.rno))return G.rno;return 'YNG-'+rnoYil()+'-'+(rnoSira()||rnoOto())}
+const grno=()=>`<div class="fld"><label>Rapor no</label><div class="rnw"><span class="rnp">YNG-${rnoYil()}-</span><input class="inp" data-g="rnoS" inputmode="numeric" maxlength="4" value="${esc(rnoSira())}" placeholder="${rnoOto()}"></div></div>`;
 const gd=(l,k,list,o)=>{OG[k]=list;return `<div class="fld${o&&o.span?' s'+o.span:''}"><label>${l}</label><button class="sel" data-gd="${k}"><span>${esc(G[k]||'Seçiniz')}</span><i>▼</i></button></div>`};
 const bl=(h,sp)=>{if(!h||/<ul|class="na"|<table/.test(h))return h;let p=String(h).split('<br>');if(sp)p=p.flatMap(x=>x.split(' · '));p=p.map(x=>x.trim()).filter(Boolean);return p.length<2?h:'<ul class="dl">'+p.map(x=>'<li>'+x+'</li>').join('')+'</ul>'};
 const gtSE=rows=>{RN=0;rows=rows.map(r=>r.replace(/<td class="r nn">\d+<\/td>/,()=>'<td class="r nn">'+(++RN)+'</td>'));return `<div class="tbw"><table class="tb gt"><colgroup><col style="width:34px"><col style="width:20%"><col style="width:60%"><col style="width:20%"></colgroup><thead><tr><th class="nn">No</th><th>Madde</th><th>Gereklilik / öneri</th><th>Dayanak</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`};
@@ -8625,7 +8646,7 @@ function rehber(mod){
   const tarih=G.tarih?G.tarih.split('-').reverse().join('.'):'Belirtilmemiştir.',firma=G.firma||'Firma adı belirtilmemiştir.',tesis=G.tesis||'Tesis adı belirtilmemiştir.';
   const I=(a,b)=>`<tr><th>${a}</th><td>${esc(b||'Belirtilmemiştir.')}</td></tr>`;
   const cov=`<section class="rs cover"><div class="cvt">${G.kapakImg?'<img src="'+G.kapakImg+'" alt="">':KAPAK_SVG}</div><div class="cvb"><div class="cvk">YENİ TESİS</div><div class="cvh">Yangın Güvenliği Kurulum Rehberi</div><div class="cvf">${esc(firma)}</div><div class="cvs">${esc(tesis)}</div>
-  <table class="kv"><tbody>${I('Tesis adresi',G.adres)+I('Bina kullanım sınıfı',ks?ks[1]:'')+I('Bina yangın tehlike sınıfı',th?TLN[th]:'')+I('Çalışan sayısı',G.eN)+I('Hazırlayan',G.den)+I('Rehber no',G.rno)+I('Tarih',tarih)}</tbody></table>
+  <table class="kv"><tbody>${I('Tesis adresi',G.adres)+I('Bina kullanım sınıfı',ks?ks[1]:'')+I('Bina yangın tehlike sınıfı',th?TLN[th]:'')+I('Çalışan sayısı',G.eN)+I('Hazırlayan',G.den)+I('Rehber no',rnoOf())+I('Tarih',tarih)}</tbody></table>
   <div class="cvn">Bu rapor, yürürlükteki mevzuat ve ilgili teknik standart şartlarına göre hazırlanmıştır.</div></div></section>`;
   const secsR=[['Özet','sc1'],['Su deposu, yangın dolabı ve hidrant','sc2'],['Kaçış ve çıkışlar','sc3'],['Taşınabilir söndürücü ve su deposu yapısı','sc4'],['Yangın pompası istasyonu','sc5'],['Depo ve pompa dairesi teknik şartnamesi','sc8']];
   const hasC=(G.cizimSv&&G.cizimSv.length||G.cizimLev);
@@ -8659,7 +8680,7 @@ function girisHtml(){
  const sug=G.faal&&FAN[G.faal]?TLN[FAN[G.faal]]:'';
  const tile=(m,i,t,d)=>`<button class="tile${GM===m?' on':''}" data-act="mode" data-m="${m}"><span class="ti2">${i}</span><b>${t}</b><span>${d}</span></button>`;
  return `<div class="card" style="padding:14px 16px;margin-bottom:12px"><div class="gh">1. Tesis durumu</div><div class="tiles">${tile('yeni','🏗️','Yeni kurulan tesis','Yapılacak tesis için yangın güvenliği kurulum rehberi hazırlanır: su deposu, dolap, hidrant, çıkış, pompa.')+tile('aktif','🔎','Aktif tesis','Çalışan tesis denetlenir: sınıfa uygun sorgu başlıkları açılır, uygunluk raporu üretilir.')}</div></div>
- <div class="card" style="padding:14px 16px;margin-bottom:12px"><div class="gh">2. Firma ve denetim bilgileri</div><div class="grid">${gi('Firma adı','firma','',{num:false})+gi('Tesis / şube adı','tesis','',{num:false})+gi('Tesis adresi','adres','',{num:false})+gi('Denetçi ad soyad','den','',{num:false})+gi('Tarih','tarih','',{type:'date'})+gi('Rapor no','rno','',{num:false})}</div></div>
+ <div class="card" style="padding:14px 16px;margin-bottom:12px"><div class="gh">2. Firma ve denetim bilgileri</div><div class="grid">${gi('Firma adı','firma','',{num:false})+gi('Tesis / şube adı','tesis','',{num:false})+gi('Tesis adresi','adres','',{num:false})+gi('Denetçi ad soyad','den','',{num:false})+gdt('Rapor tarihi','tarih')+grno()}</div></div>
  <div class="card" style="padding:14px 16px;margin-bottom:12px"><div class="gh">3. İşyeri ve bina sınıfı</div><div class="grid">${gi('Çalışan sayısı','eN','tüm vardiyalar, kişi')+gd('İşyeri tehlike sınıfı (6331)','eT',TH)+gd('Bina yangın tehlike sınıfı (Md. 19, Ek-1)','th',TL)+gd('Bina kullanım sınıfı (BYY Md. 8)','ks',KS.map(k=>k[1]),{span:3})+gd('Faaliyet türü (Ek-1 tehlike sınıfı için)','faal',FA.map(f=>f[0]),{span:3})+gd('Kolay yanıcı kimyasal / malzeme','ozel',OZO)+gd('Özel alanın tehlike sınıfı','ozth',TL)+gi('Özel alan miktarı','ozm','L veya kg')}</div>
  ${sug?`<div class="note" style="margin-top:10px"><h6>Ek-1 önerisi</h6>Seçilen faaliyet için Ek-1 sınıfı: <b>${sug}</b>.${G.th!==sug?` <button class="btn" data-act="uyg" style="height:28px;margin-left:6px">Uygula</button>`:' Seçili sınıfla aynıdır.'}<br>Orta tehlike-1 ve 2 alanlarında boyama gibi yüksek yangın yükü varsa alan Orta tehlike-3 sayılır.</div>`:''}
  <div class="grid" style="margin-top:12px">${gd('Kullanıcı yükü katsayısı (Ek-5)','kk',KA.map(x=>x[0]),{span:2})+gi('Kişi sayısı','kisi','belirliyse, kişi')}</div></div>
@@ -8699,6 +8720,7 @@ function symm(){const wide=innerWidth>760;document.querySelectorAll('#cards .gri
 addEventListener('resize',symm);
 document.addEventListener('input',e=>{const t=e.target;if(t.dataset&&t.dataset.g){G[t.dataset.g]=t.value;if(t.dataset.g==='ks')G.kapsam=null;render()}});
 document.addEventListener('click',e=>{const t=s=>e.target.closest(s);let b;
+ if(b=t('[data-gdt]')){e.stopPropagation();const k=b.dataset.gdt;openDP(b,G[k],v=>{G[k]=v;render()});return}
  if(b=t('[data-gd]')){e.stopPropagation();const k=b.dataset.gd;openDD(b,OG[k],G[k],v=>{G[k]=v;if(k==='ks'||k==='ozel')G.kapsam=null;if(k==='cizim')G[k]=v==='Eklensin'?'Evet':'Hayır';render()});return}
  if(t('.dd'))return;
  if(b=t('[data-act]')){const a=b.dataset.act;
@@ -8803,7 +8825,7 @@ function pjA(a,id){
  else if(a==='sil'){const p=ST.pr.find(x=>x.id===id);pjKapDr();const o=pjModal(`<h3>Proje silinsin mi?</h3><p><b>${esc(p.ad)}</b> kalıcı olarak silinecek.</p><div class="pj-row"><button class="btn" data-pm2="x">Vazgeç</button><button class="btn dg" data-pm2="ok">Sil</button></div>`);o.onclick=e=>{const b=e.target.closest('[data-pm2]');if(!b){if(e.target===o)pjKapMd();return}if(b.dataset.pm2==='ok'){ST.pr=ST.pr.filter(x=>x.id!==id);bulutSil(id);if(ST.aktif===id)ST.aktif=null;ygYaz();ygT('Proje silindi')}pjKapMd();render()}}
 }
 document.addEventListener('click',e=>{const t=e.target;let b;
- if(!t.closest('.dd')&&!t.closest('[data-pf]')&&!t.closest('[data-pm]')&&!t.closest('[data-pd]'))closeDD();
+ if(!t.closest('.dd,[data-pf],[data-pm],[data-pd],[data-gd],[data-dd],[data-multi],[data-gdt],.dp'))closeDD();
  if(b=t.closest('[data-po]')){e.stopPropagation();pjAc(b.dataset.po);return}
  if(b=t.closest('[data-pm]')){e.stopPropagation();const id=b.dataset.pm;openDD(b,['Detay','Adı değiştir','Kopyala','Sil'],'',v=>{if(v==='Detay')pjDetay(id);else if(v==='Adı değiştir')pjA('ren',id);else if(v==='Kopyala')pjA('kop',id);else pjA('sil',id)});return}
  if(b=t.closest('[data-pf]')){e.stopPropagation();const k=b.dataset.pf;openDD(b,['Tümü'].concat(pjDeg(k)),PF.fil[k]||'Tümü',v=>{PF.fil[k]=v==='Tümü'?'':v;render()});return}
