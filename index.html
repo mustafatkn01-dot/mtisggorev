@@ -8054,9 +8054,10 @@ const tspTxt=(v,o)=>typeof v==='function'?v(o):v;
 function tspRows(o,g){return TSP.filter(x=>x.g===g&&(!x.w||x.w(o)))}
 
 /* ===== Yangın suyu sistemi: su deposu, pompa, hidrant, yangın dolabı (aktif tesis) ===== */
-Object.assign(Q,{su_A:'Toplam kapalı alan kaç m²?',su_K:'Bina kat sayısı kaçtır?',su_tb:'Toplam taban alanı kaç m²?',su_a:'Bina uzun kenarı kaç metre?',su_b:'Bina kısa kenarı kaç metre?',su_h:'Bina yüksekliği kaç metre?',su_ym:'Binada yağmurlama (sprinkler) sistemi var mı, tipi nedir?',su_hy:'En yüksek yağmurlama başlığının yüksekliği kaç metre?',su_oto:'Kapalı otopark alanı kaç m²?',su_kw:'Kazan dairesi net alanı kaç m²?',su_o7:'Tesis orman alanı içinde veya bitişiğinde rafineri, fosil yakıtlı ya da 500 MW üzeri enerji tesisi veya 2000 m² üzeri endüstriyel yapı mı? (Md. 7/11)',su_ay:'Bina ayrı planlanan yerleşim alanında (ayrık nizam) mı?',su_hid:'Dış hidrant sistemi var mı?',su_bolge:'Hidrant bölge risk sınıfı nedir?',su_dt:'Yangın dolabı tipi nedir?',su_pr:'Sistemin hidrolik hesap basıncı kaç kPa?',su_V:'Mevcut su deposunun kullanılabilir hacmi kaç m³?',su_Qm:'Mevcut yangın pompasının anma debisi kaç m³/saat?',su_Hm:'Mevcut pompanın anma basma yüksekliği kaç mSS?',su_Pm:'Mevcut pompa motorunun gücü kaç kW?',su_Yp:'Aynı kapasitede yedek pompa ve ayrı enerji kaynağı var mı?',su_Kv:'Kapalı vana basma yüksekliği anma değerinin %140’ını aşmıyor mu?',su_Bs:'%150 debide basma yüksekliği anma değerinin en az %65’i mi?',su_dN:'Binadaki toplam yangın dolabı sayısı kaçtır?',su_hN:'Binadaki toplam dış hidrant sayısı kaçtır?'});
+Object.assign(Q,{su_A:'Toplam kapalı alan kaç m²?',su_K:'Bina kat sayısı kaçtır?',su_tb:'Toplam taban alanı kaç m²?',su_a:'Bina uzun kenarı kaç metre?',su_b:'Bina kısa kenarı kaç metre?',su_h:'Bina yüksekliği kaç metre?',su_ym:'Binada yağmurlama (sprinkler) sistemi var mı, tipi nedir?',su_hy:'En yüksek yağmurlama başlığının yüksekliği kaç metre?',su_otV:'Tesiste kapalı veya katlı açık otopark var mı?',su_oto:'Otopark alanı kaç m²?',su_kzV:'Tesiste kazan dairesi var mı?',su_kw:'Kazan dairesi net alanı kaç m²?',su_o7:'Tesis orman alanı içinde veya bitişiğinde rafineri, fosil yakıtlı ya da 500 MW üzeri enerji tesisi veya 2000 m² üzeri endüstriyel yapı mı? (Md. 7/11)',su_ay:'Bina ayrı planlanan yerleşim alanında (ayrık nizam) mı?',su_hid:'Dış hidrant sistemi var mı?',su_bolge:'Hidrant bölge risk sınıfı nedir?',su_dt:'Yangın dolabı tipi nedir?',su_pr:'Sistemin hidrolik hesap basıncı kaç kPa?',su_V:'Mevcut su deposunun kullanılabilir hacmi kaç m³?',su_Qm:'Mevcut yangın pompasının anma debisi kaç m³/saat?',su_Hm:'Mevcut pompanın anma basma yüksekliği kaç mSS?',su_Pm:'Mevcut pompa motorunun gücü kaç kW?',su_Yp:'Aynı kapasitede yedek pompa ve ayrı enerji kaynağı var mı?',su_Kv:'Kapalı vana basma yüksekliği anma değerinin %140’ını aşmıyor mu?',su_Bs:'%150 debide basma yüksekliği anma değerinin en az %65’i mi?',su_dN:'Binadaki toplam yangın dolabı sayısı kaçtır?',su_hN:'Binadaki toplam dış hidrant sayısı kaçtır?'});
 const suUp=(x,d)=>Math.ceil(x*Math.pow(10,d||0)-1e-9)/Math.pow(10,d||0);
-function suG(){let g0={};try{g0=G}catch(e){}return{th:g0.th,ks:g0.ks,ozel:g0.ozel,ozth:g0.ozth,alan:P.su_A,kat:P.su_K,taban:P.su_tb,a:P.su_a,b:P.su_b,h:P.su_h,ym:P.su_ym||'Yok',hy:P.su_hy,oto:P.su_oto,kza:P.su_kw,o711:P.su_o7,ayri:P.su_ay,hid:P.su_hid==='Var'?'Planlanıyor':P.su_hid==='Yok'?'Planlanmıyor':'',bolge:P.su_bolge,dtip:P.su_dt,pr:P.su_pr}}
+function suKzK(){try{return !!(G.kapsam&&G.kapsam.includes('kazan'))}catch(e){return false}}
+function suG(){let g0={};try{g0=G}catch(e){}return{th:g0.th,ks:g0.ks,ozel:g0.ozel,ozth:g0.ozth,alan:P.su_A,kat:P.su_K,taban:P.su_tb,a:P.su_a,b:P.su_b,h:P.su_h,ym:P.su_ym||'Yok',hy:P.su_hy,oto:P.su_otV==='Yok'?0:P.su_oto,kza:suKzK()?(P.g_kazan==='Evet'?P.k_al:0):(P.su_kzV==='Yok'?0:P.su_kw),o711:P.su_o7,ayri:P.su_ay,hid:P.su_hid==='Var'?'Planlanıyor':P.su_hid==='Yok'?'Planlanmıyor':'',bolge:P.su_bolge,dtip:P.su_dt,pr:P.su_pr}}
 Object.assign(Q,{su_Iv:'En az 100 mm çaplı, 2 adet 65 mm Storz rakorlu ve çek valfli itfaiye su verme bağlantısı var mı?',su_tk:'Su deposu yeri neresidir?',su_tt:'Su deposu tipi nedir?',su_trk:'Pompa tahrik tipi nedir?',su_yk:'Dizel yakıt tankı hacmi kaç litre?'});
 function cSu(){
  let ok=true;try{YMO;DTP;BOL;TLN;GC}catch(e){ok=false}
@@ -8071,7 +8072,7 @@ function cSu(){
  const dN=c.dolapZorunlu||c.spr,noSys=!!c.th&&!c.spr&&!c.dolapZorunlu&&!c.hid,nz='Bu tesis için zorunlu değil';
  const sp=[
   inp('su_A','Toplam kapalı alan','m²'),inp('su_K','Kat sayısı','adet'),inp('su_tb','Toplam taban alanı','m²'),inp('su_a','Bina uzun kenarı','m'),inp('su_b','Bina kısa kenarı','m'),inp('su_h','Bina yüksekliği','m'),
-  inp('su_ym','Yağmurlama sistemi','',YMO),inp('su_hy','En yüksek yağmurlama başlığı yüksekliği','m'),inp('su_oto','Kapalı otopark alanı','m²'),inp('su_kw','Kazan dairesi net alanı','m²'),inp('su_o7','Orman içi/bitişiği özel tesis (Md. 7/11)','',['Evet','Hayır']),
+  inp('su_ym','Yağmurlama sistemi','',YMO),inp('su_hy','En yüksek yağmurlama başlığı yüksekliği','m'),inp('su_otV','Kapalı veya katlı açık otopark','',['Var','Yok']),inp('su_oto','Otopark alanı','m²'),inp('su_kzV','Kazan dairesi','',['Var','Yok']),inp('su_kw','Kazan dairesi net alanı','m²'),inp('su_o7','Orman içi/bitişiği özel tesis (Md. 7/11)','',['Evet','Hayır']),
   inp('su_ay','Ayrık nizam yerleşim','',['Evet','Hayır']),inp('su_hid','Dış hidrant sistemi','',['Var','Yok']),inp('su_bolge','Hidrant bölge risk sınıfı','',BOL),inp('su_dt','Yangın dolabı tipi','',DTP),inp('su_pr','Hidrolik hesap basıncı','kPa'),
   Sn('su_V','Su deposu (kullanılabilir hacim)',noSys?nz:Vn!=null?`En az ${fm(Vn,1)} m³`:yok,noSys?'ge:0':Vn!=null?`ge:${Vn}`:'gt0','BYY Md. 94, Ek-9/A, 8/B, 8/C','Su deposu hacmi; yağmurlama varsa en yüksek başlık yüksekliğine göre Ek-9/A tablosundaki değer ile yağmurlama, yangın dolabı ve hidrant debileri toplamının tehlike sınıfına göre 30 / 60 / 90 dakika ile çarpımından büyük olanı kadar olmalıdır. Yalnız hidrant varsa en az 1900 l/dk debiyi tehlike sınıfına göre 30 / 60 / 90 dakika karşılamalıdır; Md. 7/11 kapsamındaki tesislerde çevre hidrant sistemi için 5700 l/dk × 60 dakika gerekir. Mevcut hacim girilirse karşılaştırılır.','m³'),
   Sn('su_Qm','Pompa debisi (anma)',noSys?nz:Qn!=null?`En az ${fm(Qn,1)} m³/saat (${fm(c.Q,0)} l/dk)`:yok,noSys?'ge:0':Qn!=null?`ge:${Qn}`:'gt0','BYY Md. 94, 95; Ek-9','Pompa debisi, aynı anda çalışacak yağmurlama, yangın dolabı ve hidrant debilerinin toplamından az olmamalıdır.','m³/saat'),
@@ -8083,6 +8084,10 @@ function cSu(){
   S('su_Bs','%150 debide basma yüksekliği','Anma değerinin en az %65’i','ev','BYY Md. 95/1','Pompanın %150 debideki basma yüksekliği, anma değerinin %65’inden küçük olmamalıdır.'),
   Sn('su_dN','Yangın dolabı sayısı',dN?(c.dTop?`En az ${c.dTop} adet (kat başına ${c.dkat}; en çok ${c.sp} m aralıkla)`:yok):nz,c.dTop&&dN?`ge:${c.dTop}`:dN?'gt0':'ge:0','BYY Md. 96','Yangın dolapları arasındaki uzaklık 30 m’yi geçmez; bina yağmurlama ile korunuyor, katlara itfaiye su alma ağzı bırakılmış ve dolaplar ıslak tip yağmurlama branşman hattından besleniyorsa bu uzaklık 45 m’ye çıkabilir. Bina boyutları ve kat sayısı girilince adet ön hesapla bulunur.','adet'),
   Sn('su_hN','Dış hidrant sayısı',c.hid?(c.hN?`En az ${c.hN} adet (çevre ${fm(c.per,0)} m ÷ ${c.bolM} m${c.bolAss?'; hidrant aralığı bölge risk sınıfı seçilmediği için tehlike sınıfına göre alınmıştır':''})`:yok):'Bu tesis için zorunlu değil',c.hid&&c.hN?`ge:${c.hN}`:c.hid?'gt0':'ge:0','BYY Md. 97','Hidrantlar binadan ortalama 3–15 m uzağa yerleştirilir; sayı, binadan 10 m uzaklıktaki çevre hattı boyunca bölgedeki yapıların tehlike sınıfına göre aralıkla (yüksek 50 / orta 100 / düşük 150 m) bulunur. En az 2 adet alınması iyi uygulamadır.','adet')];
+ {const kzK=suKzK(),dr=k=>{const i=sp.findIndex(x=>x.k===k);if(i>=0)sp.splice(i,1)};
+  if(!P.su_ym||P.su_ym==='Yok')dr('su_hy');
+  if(!(P.su_otV==='Var'||(!P.su_otV&&N(P.su_oto))))dr('su_oto');
+  if(kzK){dr('su_kzV');dr('su_kw')}else if(!(P.su_kzV==='Var'||(!P.su_kzV&&N(P.su_kw))))dr('su_kw')}
  if(noSys){for(let i=sp.length-1;i>=0;i--)if(/^su_(V|Qm|Hm|Pm|Yp|Kv|Bs|dN|hN)$/.test(sp[i].k))sp.splice(i,1)}
  const fl={su_V:!noSys&&Vn==null,su_Qm:!noSys&&Qn==null,su_Hm:!noSys&&Hn==null,su_Pm:!noSys&&Pn==null,su_dN:dN&&!c.dTop,su_hN:c.hid&&!c.hN};sp.forEach(x=>{if(fl[x.k])x.na=true});
  /* depo yapısı ve pompa dairesi */
@@ -8473,7 +8478,7 @@ const need=(t)=>`<span class="na">Hesaplanamadı</span><br><span class="bek">${t
 const ceil=Math.ceil,rnd=(x,d=0)=>fm(x,d);
 /* --- hesap motoru --- */
 function GC(g){
- const G=g||GRH;const c={};const ks=KSN[G.ks]||null,th0=TC[G.th]||null,A=N(G.alan),K=N(G.kat),tb=N(G.taban),hh=N(G.h),kisiB=N(G.kisi);
+ const G=g||GRH;const c={};const oto=G.otoV==='Yok'?0:N(G.oto),kza=G.kzV==='Yok'?0:N(G.kza);const ks=KSN[G.ks]||null,th0=TC[G.th]||null,A=N(G.alan),K=N(G.kat),tb=N(G.taban),hh=N(G.h),kisiB=N(G.kisi);
  let th=th0;const oz=TC[G.ozth];c.thOz=false;if(G.ozel&&G.ozel!=='Yok'&&oz&&(!th0||AYR[oz]>AYR[th0])){th=oz;c.thOz=true}
  c.th0=th0;c.ks=ks;c.th=th;c.A=A;c.K=K;c.hh=hh;c.tb=tb;
  let a=N(G.a),b=N(G.b),est=false;
@@ -8489,14 +8494,14 @@ function GC(g){
  if(c.yuksek)c.dolapZ.push('yüksek bina (bina yüksekliği 21,50 m üzerinde)');
  if(g1&&A>1000)c.dolapZ.push('yapı inşaat alanı 1000 m² üzerinde konut harici bina ('+ks[1].split(' (')[0].toLowerCase()+')');
  if(ks&&ks[0]==='kut'&&c.kat>1000)c.dolapZ.push('herhangi bir katının alanı 1000 m² üzerinde konut');
- if(N(G.oto)>300)c.dolapZ.push('kapalı veya katlı açık otopark alanı 300 m² üzerinde');
- if(N(G.kza)>100)c.dolapZ.push('kazan dairesi net alanı 100 m² üzerinde');
+ if(oto>300)c.dolapZ.push('kapalı veya katlı açık otopark alanı 300 m² üzerinde');
+ if(kza>100)c.dolapZ.push('kazan dairesi net alanı 100 m² üzerinde');
  c.dolapZorunlu=c.dolapZ.length>0;
  /* yağmurlama zorunluluğu (Md. 98/2) */
  {const k=ks?ks[0]:null,Z=[];
   if(k&&k!=='kut'&&hh>30.5)Z.push('yapı yüksekliği 30,50 m üzerinde');
   if(k==='kut'&&hh>51.5)Z.push('konutta yapı yüksekliği 51,50 m üzerinde');
-  if(N(G.oto)>300)Z.push('kapalı veya katlı açık otopark alanı 300 m² üzerinde');
+  if(oto>300)Z.push('kapalı veya katlı açık otopark alanı 300 m² üzerinde');
   if(k==='kon'&&hh>15.5)Z.push('konaklama yapısında yapı yüksekliği 15,50 m üzerinde');
   if((k==='tic'||k==='top')&&A>1000)Z.push('ticaret veya toplanma amaçlı binada toplam alan 1000 m² üzerinde');
   if(k==='yt'&&A>500)Z.push('kolay alevlenici ve parlayıcı madde bulunan yapıda alan 500 m² üzerinde');
@@ -8504,7 +8509,7 @@ function GC(g){
   if(k==='dep'&&A>2000)Z.push('depolama amaçlı yapıda toplam alan 2000 m² üzerinde');
   if(k==='hos'&&hh>9.5)Z.push('yataklı sağlık yapısında yapı yüksekliği 9,50 m üzerinde');
   c.sprZ=Z}
- c.sa60=c.a>60||c.b>60;c.sa=c.yuksek||c.sa60||c.kat>1000||N(G.oto)>300;
+ c.sa60=c.a>60||c.b>60;c.sa=c.yuksek||c.sa60||c.kat>1000||oto>300;
  c.sp=c.spr?45:30;
  if(a&&b){const ka=Math.max(1,ceil(a/c.sp)),kb=Math.max(1,ceil(b/c.sp));c.dkat=ka*kb;c.dTop=K?c.dkat*K:c.dkat;c.dim=[ka,kb];
   const s=60*Math.SQRT2,sa=Math.max(1,ceil(a/s))*Math.max(1,ceil(b/s));c.saKat=sa}
@@ -8691,7 +8696,7 @@ function girisHtml(){
  <div class="card" style="padding:14px 16px;margin-bottom:12px"><div class="gh">3. İşyeri ve bina sınıfı</div><div class="grid">${gi('Çalışan sayısı','eN','tüm vardiyalar, kişi')+gd('İşyeri tehlike sınıfı (6331)','eT',TH)+gd('Bina yangın tehlike sınıfı (Md. 19, Ek-1)','th',TL)+gd('Bina kullanım sınıfı (BYY Md. 8)','ks',KS.map(k=>k[1]),{span:3})+gd('Faaliyet türü (Ek-1 tehlike sınıfı için)','faal',FA.map(f=>f[0]),{span:3})+gd('Kolay yanıcı kimyasal / malzeme','ozel',OZO)+gd('Özel alanın tehlike sınıfı','ozth',TL)+gi('Özel alan miktarı','ozm','L veya kg')}</div>
  ${sug?`<div class="note" style="margin-top:10px"><h6>Ek-1 önerisi</h6>Seçilen faaliyet için Ek-1 sınıfı: <b>${sug}</b>.${G.th!==sug?` <button class="btn" data-act="uyg" style="height:28px;margin-left:6px">Uygula</button>`:' Seçili sınıfla aynıdır.'}<br>Orta tehlike-1 ve 2 alanlarında boyama gibi yüksek yangın yükü varsa alan Orta tehlike-3 sayılır.</div>`:''}
  <div class="grid" style="margin-top:12px">${gd('Kullanıcı yükü katsayısı (Ek-5)','kk',KA.map(x=>x[0]),{span:2})+gi('Kişi sayısı','kisi','belirliyse, kişi')}</div></div>
- ${yeni?`<div class="card" style="padding:14px 16px;margin-bottom:12px"><div class="gh">4. Bina ve tasarım verileri</div><div class="grid">${gi('Toplam kapalı alan','alan','m²')+gi('Kat sayısı','kat','adet')+gi('Toplam taban alanı','taban','m²')+gi('Bina boyutu – uzun kenar','a','m')+gi('Bina boyutu – kısa kenar','b','m')+gi('Bina yüksekliği','h','m')+gd('Yağmurlama sistemi','ym',YMO)+gi('Yağmurlama başlıkları arası yükseklik','hy','m')+gi('Kapalı otopark alanı','oto','m²')+gi('Kazan dairesi net alanı','kza','m²')+gd('Ayrı planlanan yerleşim alanında mı','ayri',['Evet','Hayır'])+gd('Orman içi/bitişiği özel tesis mi (Md. 7/11)','o711',['Evet','Hayır'])+gd('Dış hidrant sistemi','hid',['Planlanıyor','Planlanmıyor'])+gd('Hidrant bölge risk sınıfı','bolge',BOL)+gd('Yangın dolabı tipi','dtip',DTP)+gd('Su deposu yeri','tk',TKY)+gd('Su deposu tipi','tt',TTPL)+gi('Tank net su derinliği (ön tahmin)','der','m')+gi('Hidrolik hesap basıncı (biliniyorsa)','pr','kPa')+gd('Pompa tahrik tipi','trk',TRK)}</div></div>`:''}
+ ${yeni?`<div class="card" style="padding:14px 16px;margin-bottom:12px"><div class="gh">4. Bina ve tasarım verileri</div><div class="grid">${gi('Toplam kapalı alan','alan','m²')+gi('Kat sayısı','kat','adet')+gi('Toplam taban alanı','taban','m²')+gi('Bina boyutu – uzun kenar','a','m')+gi('Bina boyutu – kısa kenar','b','m')+gi('Bina yüksekliği','h','m')+gd('Yağmurlama sistemi','ym',YMO)+(G.ym&&G.ym!=='Yok'?gi('Yağmurlama başlıkları arası yükseklik','hy','m'):'')+gd('Kapalı veya katlı açık otopark','otoV',['Var','Yok'])+(G.otoV==='Var'||(!G.otoV&&N(G.oto))?gi('Otopark alanı','oto','m²'):'')+gd('Kazan dairesi','kzV',['Var','Yok'])+(G.kzV==='Var'||(!G.kzV&&N(G.kza))?gi('Kazan dairesi net alanı','kza','m²'):'')+gd('Ayrı planlanan yerleşim alanında mı','ayri',['Evet','Hayır'])+gd('Orman içi/bitişiği özel tesis mi (Md. 7/11)','o711',['Evet','Hayır'])+gd('Dış hidrant sistemi','hid',['Planlanıyor','Planlanmıyor'])+gd('Hidrant bölge risk sınıfı','bolge',BOL)+gd('Yangın dolabı tipi','dtip',DTP)+gd('Su deposu yeri','tk',TKY)+gd('Su deposu tipi','tt',TTPL)+gi('Tank net su derinliği (ön tahmin)','der','m')+gi('Hidrolik hesap basıncı (biliniyorsa)','pr','kPa')+gd('Pompa tahrik tipi','trk',TRK)}</div></div>`:''}
  <div class="acts" style="margin-top:14px;justify-content:space-between"><div><button class="btn" data-a="gbos">Temizle</button></div><button class="btn pr" data-act="devam" ${GM?'':'disabled style="opacity:.5"'}>${yeni?'Kurulum rehberini oluştur':akt?'Denetim sorgusunu başlat':'Önce tesis durumunu seçiniz'}</button></div>`}
 /* --- aktif tesis üst çubuk + kapsam --- */
 function aktifUst(){
@@ -8753,7 +8758,7 @@ document.addEventListener('click',e=>{const t=s=>e.target.closest(s);let b;
   }},true);
 const GKON={firma:'Örnek Turizm Ltd. Şti.',tesis:'Misafirhane Tesisi',adres:'Adana Seyhan',den:'Mustafa Tekin',tarih:'2026-11-24',rno:'YNG-2026-002',eN:'32',eT:'Tehlikeli',ks:KS[6][1],faal:'Hastane, otel, konut, lokanta, kütüphane (kitap deposu hariç), okul, büro',th:'Orta tehlike-1',ozel:'Her ikisi',ozth:'Yüksek tehlike-1',ozm:'1.200 L',cizim:'Evet',kk:KA.find(x=>x[0].startsWith('Otel'))[0]};
 const KONP={ko_Y:'48',ko_Kat:'4',ko_Yk:'13',ko_Ym:'Hayır',ko_C2:'2',ko_Dv:'Evet',ko_Kp:'Evet',ko_Hv:'Yok',ko_Dk:'28',ko_Yd:'Evet',ko_Mr:'Evet',ko_Eg:'Evet',ko_Bk:'Evet',ko_Uz:'12',ko_Mi:'90',ko_Alg:'Evet',ko_Ac:'Hayır',ko_Ds:'',ko_Kl:'Evet',ko_Tp:'Evet',ko_Gc:'Evet'};
-const GORN={firma:'Örnek Sanayi A.Ş.',tesis:'Adana Üretim Tesisi',adres:'Adana Hacı Sabancı OSB',den:'Mustafa Tekin',tarih:'2026-11-24',rno:'YNG-2026-001',eN:'208',eT:'Tehlikeli',ks:KS[0][1],faal:'Kablo, plastik döküm ve eşya, kauçuk, sentetik lif',th:'Orta tehlike-3',kk:KA.find(x=>x[0].startsWith('Paketleme'))[0],kisi:'',alan:'12000',kat:'2',taban:'6500',a:'110',b:'60',h:'12',ym:'Islak / ön tepkili',hy:'10',oto:'',kza:'120',o711:'Hayır',ayri:'Evet',hid:'',bolge:'',dtip:DTP[0],tk:TKY[0],tt:'Betonarme',trk:TRK[1],der:'3'};
+const GORN={firma:'Örnek Sanayi A.Ş.',tesis:'Adana Üretim Tesisi',adres:'Adana Hacı Sabancı OSB',den:'Mustafa Tekin',tarih:'2026-11-24',rno:'YNG-2026-001',eN:'208',eT:'Tehlikeli',ks:KS[0][1],faal:'Kablo, plastik döküm ve eşya, kauçuk, sentetik lif',th:'Orta tehlike-3',kk:KA.find(x=>x[0].startsWith('Paketleme'))[0],kisi:'',alan:'12000',kat:'2',taban:'6500',a:'110',b:'60',h:'12',ym:'Islak / ön tepkili',hy:'10',oto:'',kza:'120',kzV:'Var',otoV:'Yok',o711:'Hayır',ayri:'Evet',hid:'',bolge:'',dtip:DTP[0],tk:TKY[0],tt:'Betonarme',trk:TRK[1],der:'3'};
 /* --- giriş arayüzü iskeleti --- */
 (function(){const w=document.querySelector('.wrap');
  const st=document.createElement('div');st.className='stepper';st.innerHTML='<span class="stp on">1  Giriş</span><span class="stp">2  Rehber / sorgu</span><span class="stp">3  Rapor</span>';
