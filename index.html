@@ -7520,6 +7520,7 @@ textarea.inp{height:68px;padding:8px 11px;resize:vertical;line-height:1.45}
 .rep .rs{padding:0 16mm;margin:0 0 6mm}.rep .cover{padding:0}
 .rep .rh2{display:flex;align-items:center;gap:10px;font-size:15pt;font-weight:800;color:var(--rn);border-bottom:2.5px solid var(--rn);padding:4px 0 5px;margin:14px 0 8px}.rep .rh2 span{background:var(--rn);color:#fff;border-radius:6px;min-width:30px;padding:1px 8px;text-align:center;font-size:13pt}
 .rep .rh3{display:flex;align-items:center;gap:8px;font-size:12pt;font-weight:800;color:var(--rn);margin:12px 0 4px}.rep .rh3 span{color:#e64a19}
+.rep .opr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:1px solid var(--rb);padding:6px 10px;margin:8px 0;background:#f5f8fb;font-size:9.5pt}.rep .opr b{font-size:8.5pt;letter-spacing:.05em;text-transform:uppercase;color:#6b7b8a;margin-right:2px}.rep .oc{display:inline-flex;align-items:center;gap:5px;font-weight:800;border-radius:999px;padding:1px 9px;font-size:9pt}.rep .oc::before{content:'';width:7px;height:7px;background:currentColor;border-radius:50%}.rep .oc.a{background:#fbe9e6;color:#b02e22}.rep .oc.a::before{border-radius:1px}.rep .oc.o{background:#fdf1de;color:#9a5b0a}.rep .oc.d{background:#e9f0f6;color:#3e6079}.rep .oc.t{background:#e4f4eb;color:#1f7549}.rep .mn{display:block;color:#5a6b7b;font-size:8.5pt;margin-top:2px}.rep .sr{font-weight:700;white-space:nowrap}.rep .ndm{display:block;margin-top:4px;padding:3px 7px;background:#e9f0f6;color:#3e6079;font-size:8.5pt}
 .rep .rsum{font-size:10.5pt;font-weight:700;color:#3b5068;margin:0 0 6px}.rep .rp{font-size:10.5pt;line-height:1.6;margin:6px 0;text-align:justify}
 .rep table.rt{width:100%;border-collapse:collapse;font-size:9.5pt;margin-top:6px}.rep .rt th{background:var(--rn);color:#fff;border:1px solid var(--rn);padding:7px 8px;text-align:left;font-size:9pt;letter-spacing:.02em}.rep .rt td{border:1px solid var(--rb);padding:6px 8px;vertical-align:top;line-height:1.4}
 .rep .rt tbody tr:nth-child(even) td{background:#f5f8fb}.rep .rt tr.band td.bandc{background:#fff!important;color:#12365a;font-style:italic;font-weight:600;font-size:11.5pt;border:0!important;border-left:5px solid #e64a19!important;border-bottom:1px solid #8da0b3!important;padding:10px 10px 5px!important;text-align:left}.rep .rt tr.band td.bandc b{font-style:normal}
@@ -8647,7 +8648,7 @@ function cizimFigs(pre){const S=(G.cizimSv||[]),sn={ok:'Uygun',bad:'Uygun değil
 function cizimBlok(m){return (G.cizimSv&&G.cizimSv.length||G.cizimLev)?`<h3 class="rh3">5. Teknik çizimler</h3><div class="rep" style="padding:0">${cizimFigs('5')}</div>`:''}
 const FIG_SVG=`<svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="11"><rect x="1" y="1" width="558" height="248" fill="#fff" stroke="#9fb0c0"/><rect x="60" y="40" width="440" height="160" fill="#f4f7fb" stroke="#12365a" stroke-width="3"/><g fill="#d32f2f"><rect x="110" y="48" width="14" height="14"/><rect x="250" y="48" width="14" height="14"/><rect x="390" y="48" width="14" height="14"/><rect x="180" y="178" width="14" height="14"/><rect x="320" y="178" width="14" height="14"/></g><g fill="#2e7d32"><rect x="56" y="110" width="8" height="40"/><rect x="496" y="110" width="8" height="40"/></g><path d="M40 130 H56 M504 130 H520" stroke="#2e7d32" stroke-width="3" marker-end="url(#a)"/><text x="280" y="228" text-anchor="middle" fill="#12365a">Örnek çizim alanı: kaçış çıkışları (yeşil) ve yangın dolapları (kırmızı)</text></svg>`;
 const SOND_KART={tr:'trafo',mut:'mutfak',kim:'kim',dep:'depo',jen:'jen',adp:'pano',mp:'pano',kmp:'pano'};
-function sondKul(cards){const num={};cards.forEach((c,i)=>num[c.id]=i+2);
+function sondKul(cards){const num={};cards.forEach((c,i)=>num[c.id]=i+2+ONCO());
  const sys=P.sys||[];if(!sys.length)return '';
  let n1=0,n2=0;
  const r1=sys.map(i=>{const al=(P['sa_'+i]||[]);return `<tr><td class="r nn">${++n1}</td><td class="w"><b>${SN[i]}</b></td><td class="w">${al.length?al.map(a=>ARN[a]).join(', '):'Değer belirtilmemiştir.'}</td><td class="w">${al.length?al.length+' alan':'Korunan alan belirtilmelidir'}</td></tr>`}).join('');
@@ -8656,23 +8657,60 @@ function sondKul(cards){const num={};cards.forEach((c,i)=>num[c.id]=i+2);
  return `<h3 class="rh3"><span>${num.sond}.1</span>Söndürme sistemlerinin kullanıldığı yerler</h3><p class="rp">Aynı söndürme türü birden fazla alanda kullanılabilir. Aşağıdaki tablolar hangi sistemin hangi alanı koruduğunu iki yönden gösterir; sistem ayrıntıları bu bölümün devamında, alana özel sorgular ise belirtilen bölümlerde yer alır.</p>
  <div class="tbw"><table class="rt"><thead><tr><th class="nn">No</th><th>Söndürme sistemi</th><th>Korunan alanlar</th><th>Durum</th></tr></thead><tbody>${r1}</tbody></table></div>
  ${r2?`<div class="tbw"><table class="rt" style="margin-top:8px"><thead><tr><th class="nn">No</th><th>Korunan alan</th><th>Kullanılan sistem(ler)</th><th>Ayrıntı</th></tr></thead><tbody>${r2}</tbody></table></div>`:''}`}
+
+/* ---- öncelikli yapılacaklar ve "Ne demek?" ---- */
+const ONCO=()=>G.onc!==1?1:0;
+const ONC_A=['kon','alg','sond','su','lpg','kim','hol'];
+const ONC_SURE={a:'15 gün',o:'30 gün',d:'90 gün'};
+const ONC_NEDEN={ekip:'Eğitimli ekip olmadan müdahale ve tahliye gecikir.',yon:'Tatbikat ve eğitim yapılmazsa personel yangında ne yapacağını bilmez.',kon:'Konukların kaçış yolunu bilmemesi can kaybı riskini artırır.',hol:'Dumandan korunan hol, merdivene güvenli geçişi sağlar.',alg:'Yangın erken fark edilmezse kaçış süresi kısalır.',sond:'Yangın ilk dakikalarda kontrol altına alınamazsa büyür.',su:'Su yoksa söndürme sistemleri çalışmaz.',trafo:'Yağlı trafo yangını yayılır ve elektrik kesintisine yol açar.',jen:'Yakıt deposu ve sıcak yüzeyler yangın riski taşır.',pano:'Gevşek bağlantı ve aşırı ısınma, pano yangınlarının en yaygın nedenidir.',ges:'Güneş panelleri ışık aldıkça gerilim üretir; bu durum yangında müdahaleyi zorlaştırır.',kazan:'Yakıt ve yüksek sıcaklık nedeniyle yangın ve patlama riski taşır.',mutfak:'Yağ yangınları suyla söndürülemez ve hızla büyür.',lpg:'Gaz kaçağı patlamaya yol açabilir.',depo:'Yanıcı malzeme yığını yangını büyütür.',kim:'Yanıcı sıvı ve gazlar yangını çok hızlı büyütür.',oto:'Araç ve şarj yangınları hızla yayılır, söndürülmesi zordur.'};
+function oncG(h){let t=STRIP(h).replace(/\s*\(Beklenen cevap:[^)]*\)/g,'').replace(/\s+\./g,'.').trim();return /[.)]$/.test(t)?t:t+'.'}
+function oncSinif(id,r){if(ONC_A.includes(id))return'a';return /kayıt|belge|sertifika|tutanak|rapor|etiket|levha/i.test(String(r.p).replace(/<[^>]+>/g,''))?'d':'o'}
+const NDT=[[/kompozit/i,'k1','Kompozit test: yalıtımın bütün katmanları (yalıtım levhası, yapıştırıcı, dübel, file ve sıva) birlikte yangın deneyinden geçmiş olmalıdır; tek tek malzeme raporu yeterli değildir.'],
+[/ihbar butonu|manuel ihbar/i,'k2','Manuel ihbar butonu: yangını gören kişinin alarmı elle çalıştırdığı, duvardaki kutudur.'],
+[/adresli/i,'k3','Adresli sistem: her dedektörün ayrı bir adresi vardır; yangın paneli yangının tam yerini gösterir.'],
+[/yağmurlama/i,'k4','Yağmurlama: tavanda ısıdan açılan ve otomatik su püskürten söndürme sistemidir.'],
+[/hidrant/i,'k5','Hidrant: bina dışında, itfaiyenin hortum bağladığı su alma noktasıdır.'],
+[/itfaiye su alma/i,'k6','İtfaiye su alma ağzı: itfaiyenin bina içindeki sabit boruya hortum bağladığı bağlantı noktasıdır.'],
+[/yangın dolabı/i,'k7','Yangın dolabı: içinde hortum bulunan, duvara monte su kabinidir; eğitimli kişi yangına ilk müdahaleyi bununla yapar.'],
+[/güvenlik holü/i,'k8','Yangın güvenlik holü: kaçış merdiveni girişinde, yangına dayanıklı duvar ve kapılarla dumandan korunan küçük holdür.'],
+[/bekleme noktası/i,'k9','Tahliye bekleme noktası: hareket kısıtlı kişilerin yardım gelene kadar güvenle beklediği korunumlu alandır.'],
+[/kompartıman/i,'k10','Yangın kompartımanı: yangının yayılmasını engelleyen, yangına dayanıklı duvar ve döşemelerle ayrılmış bölümdür.'],
+[/panik/i,'k11','Panikbar: kapıya içeriden bastırarak açılan, kaçışı hızlandıran kapı koludur.'],
+[/ATEX/,'k12','ATEX: patlayıcı ortamda kullanılacak ekipmanın uygunluk belgesidir.'],
+[/LEL|alt patlama/i,'k13','Alt patlama sınırı (LEL): gazın havayla karışarak patlayabileceği en düşük orandır.']];
+let NDSEEN={};
+function ndHtml(x){if(G.ndm===1)return'';const t=(String(x.p)+' '+String(x.gerek)).replace(/<[^>]+>/g,' ');for(const [re,k,tx] of NDT){if(re.test(t)&&!NDSEEN[k]){NDSEEN[k]=1;return '<span class="ndm"><b>Ne demek?</b> '+tx+'</span>'}}return''}
+function oncSec(bad,tkL,tot,off){
+ const nm=(k)=>k==='a'?['Acil','Hemen veya en geç 15 gün içinde']:k==='o'?['Orta','30 gün içinde']:['Düşük','90 gün içinde'];
+ let b='';
+ if(tot.ok+tot.bad===0)b='<p class="rp">Öncelik sıralaması için gerekli bilgiler girilmemiştir. Bilgiler girilip maddeler değerlendirildikten sonra bu bölüm otomatik oluşur. Eksik bilgilerin listesi Genel görüş bölümündedir.</p>';
+ else if(!bad.length)b='<p class="rp">Değerlendirilen maddelerin tamamı uygundur; öncelikli yapılacak madde bulunmamaktadır. Mevcut düzenin periyodik kontrol ve bakım kayıtlarıyla sürdürülmesi önerilir.</p>';
+ else{
+  const C={a:[],o:[],d:[]};bad.forEach(([t,r,bn,id])=>C[oncSinif(id,r)].push([t,r,bn,id]));
+  b='<p class="rp">Aşağıdaki maddeler yangın riskine göre sıralanmıştır. Önce <b>Acil</b> maddeleri tamamlayın. Her satırda eksiğin ne olduğu, neden önemli olduğu, yapılması gereken ve ilgili bölüm yazılıdır. Süreler önerilen varsayılan değerlerdir.</p>';
+  let i=0,g=0;const nds={};
+  ['a','o','d'].forEach(k=>{if(!C[k].length)return;g++;const [ad,ac]=nm(k);
+   b+=`<h3 class="rh3"><span>${off+1}.${g}</span>${ad}: ${ac}</h3><div class="tbw"><table class="rt fx"><colgroup><col style="width:34px"><col style="width:17%"><col style="width:33%"><col style="width:36%"><col></colgroup><thead><tr class="chd"><th class="nn">No</th><th>Konu</th><th>Tespit</th><th>Yapılması gereken</th><th>Süre</th></tr></thead><tbody>${C[k].map(([t,r,bn,id])=>`<tr><td class="r nn">${++i}</td><td class="w"><b>${t}</b><span class="mn">Bölüm ${bn}</span></td><td class="w"><b>${r.p}</b> ${esc(r.cur)}${ONC_NEDEN[id]&&!nds[id+k]&&(nds[id+k]=1)?'<span class="mn">Neden önemli: '+ONC_NEDEN[id]+'</span>':''}</td><td class="w">${oncG(r.gerek)}</td><td class="w sr">${ONC_SURE[k]}</td></tr>`).join('')}</tbody></table></div>`});
+  if(tot.na>0)b+=`<p class="rp">${tot.na} madde için bilgi girilmediğinden değerlendirme yapılamamıştır; eksik bilgiler Genel görüş bölümünde listelenmiştir.</p>`}
+ if(tkL.length)b+=`<div class="rnote"><b>Süreli takip</b><ul class="dl">${tkL.map(([t,r,bn])=>`<li><b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;color:inherit">${t}, ${r.p}.</b> ${r.note?r.note:'Yönetmelikte verilen süre devam etmektedir.'} (Bölüm ${bn})</li>`).join('')}</ul></div>`;
+ return `<section class="rs" id="scon"><h2 class="rh2"><span>${off+1}</span>Öncelikli yapılacaklar</h2>${b}</section>`}
 function raporHtml(){
  const cs=G.kapsam||[],ks=KSN[G.ks],cards=build().filter(c=>cs.includes(c.id));
- const tot={ok:0,bad:0,na:0,tk:0},bad=[],na=[],onl=[],secs=[],ozet=[],cardStat=[],toc=[];
- let no=1;
+ const tot={ok:0,bad:0,na:0,tk:0},bad=[],na=[],onl=[],secs=[],ozet=[],cardStat=[],toc=[],tkL=[];NDSEEN={};
+ const ONC=ONCO();let no=1+ONC;
  cards.forEach(c=>{no++;const g=c.gate?P[c.gate]:'Evet';let rows=[],body='',notes=[];
   if(g==='Evet'){let tb='',rn=0;const cg='<colgroup><col style="width:34px"><col style="width:17%"><col style="width:31%"><col style="width:15%"><col style="width:12%"><col></colgroup>',hd='<tr class="chd"><th class="nn">No</th><th>Parametre</th><th>Olması gereken</th><th>Mevcut</th><th>Sonuç</th><th>Dayanak</th></tr>';
    c.parts.forEach((pt,pi)=>{const r=rowsOf(pt.sp);rows=rows.concat(r);
     const al=c.id==='sond'?(P['sa_'+pt.id]||[]).map(x=>ARN[x]):null;
     const band=pt.h?`<tr class="band"><td colspan="6" class="bandc">${no}.${pi+1+(c.id==='sond'&&(P.sys||[]).length?1:0)}&nbsp;&nbsp;${pt.h}${al?' &nbsp;·&nbsp; Korunan alan: '+(al.length?al.join(', '):'Değer belirtilmemiştir.'):''}</td></tr>`:'';
     if(al&&!al.length)notes.push(pt.h+' sisteminin hangi mahalli koruduğu (örneğin trafo odası, sunucu odası) belirtilmelidir.');
-    const tr=r.map(x=>`<tr><td class="r nn">${++rn}</td><td class="w">${x.p}</td><td class="w">${x.gerek}</td><td class="w">${esc(x.cur)}</td><td class="n ${x.s}">${SONH(x)}</td><td class="dy">${String(x.dy).replace(/<span class="pill">Standart<\/span>\s*/g,'')}</td></tr>`).join('');
+    const tr=r.map(x=>`<tr><td class="r nn">${++rn}</td><td class="w">${x.p}</td><td class="w">${x.gerek}${ndHtml(x)}</td><td class="w">${esc(x.cur)}</td><td class="n ${x.s}">${SONH(x)}</td><td class="dy">${String(x.dy).replace(/<span class="pill">Standart<\/span>\s*/g,'')}</td></tr>`).join('');
     r.filter(x=>x.note).forEach(x=>notes.push(x.note));
     tb+=`<div class="tbw"><table class="rt fx">${cg}<thead>${band}${hd}</thead><tbody>${tr}</tbody></table></div>`});
    body=(rows.length?tb:'<p class="rp">'+(c.zr||'')+'</p>')+(notes.length?`<div class="rnote"><b>Bilgi notu</b><ul class="dl">${notes.map(x=>'<li>'+x+'</li>').join('')}</ul></div>`:'')+`<div class="rsrc"><b>Dayanak ve standartlar</b>${bul(c.dy)}</div>`}
   else if(g==='Hayır')body='<p class="rp">Tesiste bulunmamaktadır; bu başlık için değerlendirme yapılmamıştır.</p>';
   else body='<p class="rp">Bu başlığın tesiste bulunup bulunmadığı belirtilmemiştir. Değerlendirme yapılamamıştır.</p>';
-  const n={ok:0,bad:0,na:0,tk:0};rows.forEach(r=>{n[r.s]++;tot[r.s]++;if(r.s==='bad')bad.push([c.t,r]);if(r.on)onl.push([c.t,r]);if(r.s==='na')na.push([c.t,r])});
+  const n={ok:0,bad:0,na:0,tk:0};rows.forEach(r=>{n[r.s]++;tot[r.s]++;if(r.s==='bad')bad.push([c.t,r,no,c.id]);if(r.s==='tk')tkL.push([c.t,r,no]);if(r.on)onl.push([c.t,r]);if(r.s==='na')na.push([c.t,r])});
   cardStat.push([c.t,n,g]);
   ozet.push(`<tr><td class="w"><b>${no}.</b> ${c.t}</td><td class="w">${g==='Evet'?esc(c.sum):g==='Hayır'?'Tesiste bulunmamaktadır':'Belirtilmemiştir'}</td>${rows.length?`<td class="r">${rows.length}</td><td class="r ok">${n.ok}</td><td class="r bad">${n.bad}</td><td class="r na">${n.na}</td>`:'<td class="r">—</td><td class="r ok">—</td><td class="r bad">—</td><td class="r na">—</td>'}</tr>`);
   toc.push(`${no}. ${c.t}`);
@@ -8687,7 +8725,7 @@ function raporHtml(){
  P1.push(`Bu rapor, ${esc(firma)} ${esc(tesis)} için ${tarih==='Belirtilmemiştir.'?'denetim tarihinde':esc(tarih)+' tarihinde'} yürütülen yangın güvenliği denetiminin sonuçlarını içermektedir. Tesis ${ks?esc(ks[1].split(' (')[0].toLowerCase()):'kullanım sınıfı belirtilmemiş bir yapı'} olarak değerlendirilmiş; bina yangın tehlike sınıfı ${esc(G.th||'belirtilmemiştir')}, işyeri tehlike sınıfı ${esc(G.eT||'belirtilmemiştir')}${G.eN?' ve çalışan sayısı '+esc(G.eN):''} olarak alınmıştır.`);
  P1.push(`Denetim kapsamında ${cards.length} başlık ve ${all} madde değerlendirilmiştir. Maddelerin ${tot.ok} adedi (%${pc}) uygun, ${tot.bad} adedi uygun değil bulunmuş, ${tot.na} adedi için değer belirtilmediğinden değerlendirme yapılamamıştır.${tot.tk?' '+tot.tk+' maddede ise yönetmelikte verilen süre devam etmektedir; bu maddeler bilgi notlarında belirtilen tarihe kadar takip edilmelidir.':''}`);
  const top=cardStat.filter(x=>x[1].bad>0).sort((a,b)=>b[1].bad-a[1].bad).slice(0,3);
- if(top.length)P1.push(`Uygunsuzluklar en çok ${top.map(x=>x[0]+' ('+x[1].bad+' madde)').join(', ')} başlıklarında görülmüştür; ilgili düzeltici faaliyetler Genel görüş bölümünde toplanmıştır.`);
+ if(top.length)P1.push(`Uygunsuzluklar en çok ${top.map(x=>x[0]+' ('+x[1].bad+' madde)').join(', ')} başlıklarında görülmüştür; ilgili düzeltici faaliyetler ${ONC?'Öncelikli yapılacaklar bölümünde öncelik sırasına göre':'Genel görüş bölümünde'} toplanmıştır.`);
  else if(tot.ok+tot.bad>0)P1.push('Değerlendirilen maddelerde uygunsuzluk tespit edilmemiştir.');
  else P1.push('Değerlendirme için yeterli bilgi girilmediğinden uygunluk sonucu verilememiştir.');
  if(tot.na>0)P1.push('Değer belirtilmeyen maddeler için gerekli teknik bilgi ilgili tablolarda ayrıca belirtilmiştir; bu bilgiler tamamlandığında değerlendirme yenilenmelidir.');
@@ -8697,10 +8735,10 @@ function raporHtml(){
  const MX=15;
  const blk=(num,t,l,f)=>l.length?`<h3 class="rh3"><span>${gor}.${num}</span>${t}</h3><ol class="rl">${l.slice(0,MX).map(f).join('')}</ol>${l.length>MX?`<p class="rp">Diğer ${l.length-MX} madde ilgili bölüm tablolarında yer almaktadır.</p>`:''}`:'';
  let k=0;const nn=l=>l.length===0?0:++k;
- const sonuc=tot.bad===0&&tot.na===0?'Değerlendirilen maddelerin tamamı uygundur; mevcut düzenin periyodik kontrol ve bakım kayıtlarıyla sürdürülmesi önerilir.':tot.bad>0?'Uygun olmayan maddelerin giderilmesi için aşağıdaki düzeltici faaliyetlerin öncelik sırasına göre planlanması önerilir.':'Eksik bilgiler tamamlandıktan sonra değerlendirmenin yenilenmesi önerilir.';
+ const sonuc=tot.bad===0&&tot.na===0?'Değerlendirilen maddelerin tamamı uygundur; mevcut düzenin periyodik kontrol ve bakım kayıtlarıyla sürdürülmesi önerilir.':tot.bad>0?(ONC?'Uygun olmayan maddelerin giderilmesi için Öncelikli yapılacaklar bölümündeki sıraya uyulması önerilir.':'Uygun olmayan maddelerin giderilmesi için aşağıdaki düzeltici faaliyetlerin öncelik sırasına göre planlanması önerilir.'):'Eksik bilgiler tamamlandıktan sonra değerlendirmenin yenilenmesi önerilir.';
  const naK=[];na.forEach(([t,r])=>{const pp=String(r.p).replace(/\?/g,'').replace(/<[^>]*>/g,'');const g=naK.find(x=>x[0]===t);if(g)g[1].p+=', '+pp;else naK.push([t,{p:pp}])});
  const gen=`<section class="rs" id="scg"><h2 class="rh2"><span>${gor}</span>Genel görüş</h2><p class="rp">${sonuc}</p>
- ${blk(nn(bad),'Öncelikli düzeltici faaliyetler',bad,([t,r])=>`<li><b>${t}, ${r.p}.</b> Olması gereken: ${STRIP(r.gerek)} Mevcut durum: ${esc(r.cur)}.</li>`)}
+ ${ONC?'':blk(nn(bad),'Öncelikli düzeltici faaliyetler',bad,([t,r])=>`<li><b>${t}, ${r.p}.</b> Olması gereken: ${STRIP(r.gerek)} Mevcut durum: ${esc(r.cur)}.</li>`)}
  ${blk(nn(onl),'İyileştirme önerileri (mevcut yapı)',onl,([t,r])=>`<li><b>${t}, ${r.p}.</b> Bina Yangın Yönetmeliğine göre: ${STRIP(r.gerek)} Mevcut durum: ${esc(r.cur)}.</li>`)}${onl.length?'<p class="rp">Bu maddeler Md. 141/1 gereği mevcut yapı için zorunlu değildir; yeni yönetmelik düzeyine geçiş için önerilir.</p>':''}
  ${G.ggm===1?blk(nn(na),'Tamamlanması gereken bilgiler',na,([t,r])=>`<li><b>${t}, ${r.p}.</b> ${ntSt(r.note,r.p)||'Değer belirtilmemiştir.'}</li>`):blk(nn(na),'Tamamlanması gereken bilgiler',naK,([t,r])=>`<li><b>${t}.</b> ${r.p} satırları için bilgi girilmemiştir; hangi bilginin gerektiği ilgili bölümün bilgi notunda yazılıdır.</li>`)}
  ${oneri.length?`<h3 class="rh3"><span>${gor}.${nn(oneri)}</span>Kişi yükü, acil durum ekipleri ve ilkyardım</h3><ol class="rl">${oneri.map(x=>'<li>'+x+'</li>').join('')}</ol><p class="rp">Bu maddeler iyi uygulama önerisidir; yönetmeliğe göre ekip sayısı hesabı Acil durum ekipleri bölümündeki tabloda verilmiştir.</p>`:''}
@@ -8713,11 +8751,12 @@ function raporHtml(){
  <div class="cvn">Bu rapor, yürürlükteki mevzuat ve ilgili teknik standart şartlarına göre hazırlanmıştır.</div></div></section>`;
  const hasC=G.cizim==='Evet'&&(G.cizimSv&&G.cizimSv.length||G.cizimLev);
  const tl=tocLine;
- const tocS=tocSection(`${tocLine('','Kısaltmalar','sck')+tl(1,'Özet','sc1')+cardStat.map((x,i)=>tl(i+2,x[0],'sc'+(i+2))).join('')+tl(gor,'Genel görüş','scg')+(hasC?tl('Ek-1','Teknik çizimler','sce'):'')}`);
+ const tocS=tocSection(`${tocLine('','Kısaltmalar','sck')+tl(1,'Özet','sc1')+(ONC?tl(2,'Öncelikli yapılacaklar','scon'):'')+cardStat.map((x,i)=>tl(i+2+ONC,x[0],'sc'+(i+2+ONC))).join('')+tl(gor,'Genel görüş','scg')+(hasC?tl('Ek-1','Teknik çizimler','sce'):'')}`);
  const ozetS=`<section class="rs" id="sc1"><h2 class="rh2"><span>1</span>Özet</h2>${P1.map(x=>'<p class="rp">'+x+'</p>').join('')}
+ ${ONC&&bad.length?(()=>{const C={a:0,o:0,d:0};bad.forEach(([t,r,bn,id])=>C[oncSinif(id,r)]++);return `<div class="opr"><b>Öncelik dağılımı</b><span class="oc a">Acil ${C.a}</span><span class="oc o">Orta ${C.o}</span><span class="oc d">Düşük ${C.d}</span>${tkL.length?'<span class="oc t">Süreli takip '+tkL.length+'</span>':''}</div>`})():''}
  <div class="res rr4">${kp(all,'Değerlendirilen madde','big')+kp(tot.ok,'Uygun')+kp(tot.bad,'Uygun değil')+kp(tot.na,'Değerlendirilemedi')}</div>
  <div class="tbw"><table class="rt" style="margin-top:12px"><thead><tr><th>Başlık</th><th>Durum</th><th class="r">Madde</th><th class="r">Uygun</th><th class="r">Uygun değil</th><th class="r">Bilgi yok</th></tr></thead><tbody>${ozet.join('')}</tbody></table></div>${ntRapor()}</section>`;
- {const HT=`<div class="card rep" style="padding:0">${cover}${tocS}@@KISALT@@${ozetS}${secs.join('')}${gen}${cizim}</div>`;return HT.replace('@@KISALT@@',kslSec(kisaltma(HT))).replace(/\s+(mu|mı|mi|mü)\?/g,'').replace(/\?/g,'')}}
+ {const HT=`<div class="card rep" style="padding:0">${cover}${tocS}@@KISALT@@${ozetS}${ONC?oncSec(bad,tkL,tot,1):''}${secs.join('')}${gen}${cizim}</div>`;return HT.replace('@@KISALT@@',kslSec(kisaltma(HT))).replace(/\s+(mu|mı|mi|mü)\?/g,'').replace(/\?/g,'')}}
 /* ön izleme, yazdırma ve içindekiler sayfa numaraları: rapor, sabit A4 sayfa kutularına bölünen gizli/görünür bir çerçevede üretilir */
 const rapKaynak=()=>{const d=document.createElement('div');d.innerHTML=GV==='yeni'?rehber('rapor'):raporHtml();const e=d.querySelector('.rep');return e?e.innerHTML:d.innerHTML};
 function sayfaDoc(inner){
@@ -9213,9 +9252,9 @@ const ntTar=()=>G.tarih||ymd(new Date());
 function ntAktif(n){if(n.sys)return n.mod===1||(n.mod!==2&&ntTar()<NT_YUR);return !!n.ek}
 function ntNeden(n){if(!n.sys)return n.ek?'Rapora eklenecek':'Rapora eklenmeyecek';if(n.mod===0)return ntTar()<NT_YUR?'Rapor tarihi 01.01.2028 öncesi, rapora eklenecek':'Rapor tarihi 01.01.2028 sonrası, eklenmeyecek';return n.mod===1?'Elle açık, her tarihte eklenecek':'Elle kapalı, eklenmeyecek'}
 function ntEditor(n){return `<div class="fld"><label>Başlık</label><input class="inp" id="ntT" value="${esc(n?n.t:'')}" ${n&&n.sys?'disabled':''}></div><div class="fld"><label>Not metni</label><textarea class="inp nta" id="ntX">${esc(n?n.x:'')}</textarea></div><div class="ntr" style="justify-content:flex-end"><button class="btn" data-act="ntVaz">Vazgeç</button><button class="btn" data-act="ntKayV">Varsayılan olarak kaydet</button><button class="btn pr" data-act="ntKay">Kaydet</button></div>`}
-const NT_GG=['Kısa liste','Tam not'];
+const NT_GG=['Kısa liste','Tam not'],NT_EK2=['Eklensin','Eklenmesin'];
 function notKart(no){const L=ntList(),ak=L.filter(ntAktif).length;let h='';
- if(NE.open){if(GM==='aktif')h+=`<div class="nt"><div class="nth"><b>Genel görüş · eksik bilgilerin gösterimi</b></div><div class="ntx">Kısa liste: başlık başına eksik satırların adı yazılır, ayrıntı ilgili bölümdeki bilgi notunda kalır. Tam not: her eksik satırın bilgi notu Genel görüşte yeniden yazılır.</div><div class="ntr"><button class="sel" data-ntd="gg">${NT_GG[G.ggm===1?1:0]}</button></div></div>`;
+ if(NE.open){if(GM==='aktif')h+=`<div class="nt"><div class="nth"><b>Genel görüş · eksik bilgilerin gösterimi</b></div><div class="ntx">Kısa liste: başlık başına eksik satırların adı yazılır, ayrıntı ilgili bölümdeki bilgi notunda kalır. Tam not: her eksik satırın bilgi notu Genel görüşte yeniden yazılır.</div><div class="ntr"><button class="sel" data-ntd="gg">${NT_GG[G.ggm===1?1:0]}</button></div></div><div class="nt"><div class="nth"><b>Öncelikli yapılacaklar sayfası</b></div><div class="ntx">Özet'ten sonra, uygun olmayan maddeleri Acil, Orta ve Düşük sınıfla süreleriyle birlikte tek yerde listeler.</div><div class="ntr"><button class="sel" data-ntd="onc">${NT_EK2[G.onc===1?1:0]}</button></div></div><div class="nt"><div class="nth"><b>“Ne demek?” açıklamaları</b></div><div class="ntx">Teknik terim geçen tablo satırlarının altına, terimin ilk geçtiği yerde sade bir açıklama ekler.</div><div class="ntr"><button class="sel" data-ntd="ndm">${NT_EK2[G.ndm===1?1:0]}</button></div></div>`;
   for(const n of L){const on=ntAktif(n),df=n.sys?!!ntDef().yur:!!n.def;
   h+=`<div class="nt${on?'':' off'}" data-nid="${n.id}"><div class="nth"><b>${esc(n.t)}</b><span class="ntg ${n.sys?'s':''}">${n.sys?'Sistem notu':'Kullanıcı notu'}</span>${df?'<span class="ntg">Varsayılan</span>':''}<span class="nts ${on?'y':''}">${on?'Raporda':'Raporda değil'}</span></div>`;
   if(NE.edit===n.id)h+=ntEditor(n);else{const dis=n.sys&&n.x===ntVars()&&n.mod===0;
@@ -9228,6 +9267,7 @@ function notKart(no){const L=ntList(),ak=L.filter(ntAktif).length;let h='';
 function ntRapor(){const L=ntList().filter(ntAktif);if(!L.length)return'';return `<div class="rnote"><b>Rapor notları</b><ul class="dl">${L.map(n=>'<li><b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;color:inherit">'+esc(n.t)+':</b> '+esc(n.x)+'</li>').join('')}</ul></div>`}
 function ntDefKaydet(n){try{ST.notDef=ST.notDef||{};if(n.sys)ST.notDef.yur=n.x;else{const u=(ST.notDef.u||[]).filter(x=>x.t!==n.t);u.push({t:n.t,x:n.x});ST.notDef.u=u;n.def=1}ygYaz()}catch(e){}}
 document.addEventListener('click',e=>{const t=s=>e.target.closest(s);let b;
+ if(b=t('[data-ntd="onc"],[data-ntd="ndm"]')){e.stopPropagation();const kk=b.dataset.ntd;openDD(b,NT_EK2,NT_EK2[G[kk]===1?1:0],v=>{G[kk]=NT_EK2.indexOf(v);render()});return}
  if(b=t('[data-ntd="gg"]')){e.stopPropagation();openDD(b,NT_GG,NT_GG[G.ggm===1?1:0],v=>{G.ggm=NT_GG.indexOf(v);render()});return}
  if(b=t('[data-ntd]')){e.stopPropagation();const n=ntList().find(x=>x.id===b.dataset.ntd);if(!n)return;
   openDD(b,n.sys?NT_MODS:NT_EK,n.sys?NT_MODS[n.mod]:NT_EK[n.ek?0:1],v=>{if(n.sys)n.mod=NT_MODS.indexOf(v);else n.ek=v===NT_EK[0]?1:0;NE.msg=null;render()});return}
