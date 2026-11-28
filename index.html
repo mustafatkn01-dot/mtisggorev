@@ -8291,7 +8291,7 @@ function cYon(){
    return rt>son3?{cur:v,s:'bad',g,note:'3 aylık tekrar süresi '+trTar(son3)+' tarihinde dolmuştur; tekrar tatbikatı yapılmamıştır.'}
     :{cur:v,s:'tk',g,note:'Tekrar tatbikatı henüz yapılmamıştır; süre devam etmektedir ve en geç '+trTar(son3)+' tarihine kadar yapılmalıdır.'}}}))}
  const gz0=yoGoz().filter(x=>!x.includes('51,50'));
- if(!gz0.length&&!(N(P.ko_Yk)>0))s3.push(inp('yo_Yk','Yapı yüksekliği 51,50 m’yi geçiyor mu','',EH));
+ if(!gz0.length&&!(N(P.ko_Yk)>0))s3.push(S('yo_Yk','Yapı yüksekliği 51,50 m’yi geçiyor mu','Hesap girdisi',()=>true,'BYY Md. 134/2','','',EH));
  const gz=yoGoz();
  if(gz.length)s3.push(Object.assign(Y('yo_Gz','Tatbikat gözetimi','Gerekçe: '+gz.join(', '),['Evet'],'BYY Md. 134/2','Yataklı sağlık, eğitim, 25 odadan fazla konaklama, 51,50 m’yi geçen ve yüksek tehlikeli yapılarda tatbikat itfaiye veya yangın güvenlik uzmanı gözetiminde yapılmalıdır.'),{}));
  s3.push(Y('yo_Tr','Tatbikat raporu','Zaman, senaryo ve katılımcı bilgilendirme dokümanlarını içerir; istendiğinde sunulur',['Evet'],'BYY Md. 134/4','Tatbikat raporu zamanı, senaryoyu ve katılımcıların bilgilendirildiği dokümanları içermeli, istendiğinde sunulmak üzere saklanmalıdır.'));
